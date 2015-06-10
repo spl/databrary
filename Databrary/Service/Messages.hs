@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE CPP, OverloadedStrings #-}
 module Databrary.Service.Messages
   ( Messages
   , initMessages
@@ -15,6 +15,13 @@ import Data.Maybe (mapMaybe)
 import Data.Monoid ((<>))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
+
+#if !MIN_VERSION_hashable(1,2,3)
+import Data.Hashable (Hashable(..))
+instance Hashable BSS.ShortByteString where
+  hashWithSalt i = hashWithSalt i . BSS.fromShort
+  hash = hash . BSS.fromShort
+#endif
 
 newtype Messages = Messages { messagesMap :: HM.HashMap BSS.ShortByteString T.Text }
 

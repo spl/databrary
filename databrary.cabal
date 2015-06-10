@@ -100,6 +100,7 @@ Executable databrary
     exceptions,
     monad-control >= 1,
     streaming-commons,
+    blaze-builder >= 0.4,
     blaze-markup,
     blaze-html,
     regex-posix,
