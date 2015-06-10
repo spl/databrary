@@ -38,7 +38,7 @@ Source-Repository head
 
 Flag devel
   description: Enable development mode
-  default: True
+  default: False
   manual: True
 
 Flag tls
