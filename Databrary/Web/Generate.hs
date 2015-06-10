@@ -11,8 +11,8 @@ import Control.Monad.IO.Class (liftIO)
 import qualified Data.Foldable as Fold
 import Data.Function (on)
 import Data.Maybe (isNothing, fromJust)
--- import System.Directory (createDirectoryIfMissing)
-import System.FilePath (splitFileName)
+import System.Directory (createDirectoryIfMissing)
+import System.FilePath (splitFileName, takeDirectory)
 import System.Posix.Files (createLink, rename)
 
 import Paths_databrary (getDataFileName)
@@ -47,7 +47,6 @@ webRegenerate :: IO () -> [FilePath] -> [WebFilePath] -> WebGenerator
 webRegenerate g fs ws fo@(_, o) = do
   wr <- mapM (generateWebFile False) ws
   fr <- anyM (return (isNothing o) : map (`fileNewer` fo) fs)
-  -- when (isNothing ft) $ createDirectoryIfMissing True $ FP.takeDirectory (webFileAbs f)
   liftIO $ whether (fr || any (on (<) webFileTimestamp (fromJust o)) wr) g
 
 staticWebGenerate :: (FilePath -> IO ()) -> WebGenerator
@@ -66,6 +65,7 @@ webLinkDataFile :: FilePath -> WebGenerator
 webLinkDataFile s fo@(f, _) = do
   wf <- liftIO $ getDataFileName s
   webRegenerate (do
-    _ <- removeFile f
+    r <- removeFile f
+    unless r $ createDirectoryIfMissing False $ takeDirectory (webFileAbs f)
     createLink wf (webFileAbs f))
     [wf] [] fo
