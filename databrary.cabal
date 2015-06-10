@@ -3,10 +3,12 @@ Version:             0
 Synopsis:            Databrary
 Description:         An experimental rewrite of Databrary (http://databrary.org, http://github.com/databrary/databrary) in Haskell.
 License:             GPL-3
+License-file:        COPYING
 Author:              Dylan Simon
 Maintainer:          dylan@dylex.net
 Stability:           Experimental
 Category:            Web
+Tested-with:         GHC == 7.8.4
 Build-type:          Custom
 Cabal-version:       >=1.6
 
@@ -54,7 +56,7 @@ Executable databrary
   c-sources: Databrary/Store/avFrame.c
 
   Build-depends:
-    base >= 4.7 && < 5,
+    base == 4.7.*,
     bytestring,
     containers,
     transformers,
@@ -74,7 +76,7 @@ Executable databrary
     text,
     base64-bytestring,
     utf8-string,
-    hashable >= 1.2.3,
+    hashable >= 1.2.1,
     unordered-containers,
     attoparsec,
     byteable,
