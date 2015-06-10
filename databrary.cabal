@@ -29,7 +29,6 @@ data-files:
   web/images/icon/*.svg,
   web/images/logo/*.png,
   web/images/logo/*.svg,
-  web/images/profiles/*.png,
   web/images/social/16px/*.png,
   web/lib/*.min.js
 
