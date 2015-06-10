@@ -1,8 +1,8 @@
 'use strict'
 
 app.directive 'spreadsheet', [
-  'constantService', 'pageService','displayService', 'messageService', 'tooltipService', 'styleService', '$compile', '$templateCache', '$timeout', '$document', '$location',
-  (constants, page, display, messages, tooltips, styles, $compile, $templateCache, $timeout, $document, $location) ->
+  'constantService', 'displayService', 'messageService', 'tooltipService', 'styleService', '$compile', '$templateCache', '$timeout', '$document', '$location',
+  (constants, display, messages, tooltips, styles, $compile, $templateCache, $timeout, $document, $location) ->
     maybeInt = (s) ->
       if isNaN(i = parseInt(s, 10)) then s else i
     byDefault = (a,b) -> +(a > b) || +(a == b) - 1
@@ -1248,7 +1248,6 @@ app.directive 'spreadsheet', [
             return
 
         $scope.tabOptionsClick = false
-        $scope.page = page
         $scope.tabOptionsToggle = ($event) ->
           $scope.tabOptionsClick = !$scope.tabOptionsClick
           $event.stopPropagation()
