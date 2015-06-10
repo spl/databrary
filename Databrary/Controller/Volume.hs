@@ -15,12 +15,15 @@ module Databrary.Controller.Volume
   ) where
 
 import Control.Applicative (Applicative, (<*>), optional)
+import Control.Arrow ((&&&))
 import Control.Monad (mfilter, guard, void, when, liftM2)
 import Control.Monad.Trans.Class (lift)
+import Control.Monad.Trans.State.Lazy (StateT(..), evalStateT, get, put)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
-import Data.Maybe (fromMaybe, isNothing, catMaybes)
-import Data.Monoid ((<>), mempty)
+import qualified Data.HashMap.Lazy as HML
+import Data.Maybe (fromMaybe, isNothing)
+import Data.Monoid (Monoid(..), (<>), mempty)
 import qualified Data.Text as T
 import qualified Network.Wai as Wai
 
@@ -41,7 +44,6 @@ import Databrary.Model.Citation.CrossRef
 import Databrary.Model.Funding
 import Databrary.Model.Container
 import Databrary.Model.Record
-import Databrary.Model.Segment
 import Databrary.Model.RecordSlot
 import Databrary.Model.Slot
 import Databrary.Model.Asset
@@ -63,7 +65,26 @@ getVolume :: Permission -> Id Volume -> AuthActionM Volume
 getVolume p i =
   checkPermission p =<< maybeAction =<< lookupVolume i
 
-volumeJSONField :: (MonadDB m, MonadHasIdentity c m) => Volume -> BS.ByteString -> Maybe BS.ByteString -> m (Maybe JSON.Value)
+data VolumeCache = VolumeCache
+  { volumeCacheRecords :: Maybe (HML.HashMap (Id Record) Record)
+  }
+
+instance Monoid VolumeCache where
+  mempty = VolumeCache mempty
+  mappend (VolumeCache r1) (VolumeCache r2) = VolumeCache (mappend r1 r2)
+
+cacheVolumeRecords :: MonadDB m => Volume -> StateT VolumeCache m ([Record], HML.HashMap (Id Record) Record)
+cacheVolumeRecords vol = do
+  vc <- get
+  maybe (do
+    l <- lookupVolumeRecords vol
+    let m = HML.fromList [ (recordId r, r) | r <- l ]
+    put $ vc{ volumeCacheRecords = Just m }
+    return (l, m))
+    (return . (HML.elems &&& id))
+    $ volumeCacheRecords vc
+
+volumeJSONField :: (MonadDB m, MonadHasIdentity c m) => Volume -> BS.ByteString -> Maybe BS.ByteString -> StateT VolumeCache m (Maybe JSON.Value)
 volumeJSONField vol "access" ma = do
   Just . JSON.toJSON . map (\va -> 
     volumeAccessJSON va JSON..+ ("party" JSON..= partyJSON (volumeAccessParty va)))
@@ -74,17 +95,17 @@ volumeJSONField vol "links" _ =
   Just . JSON.toJSON <$> lookupVolumeLinks vol
 volumeJSONField vol "funding" _ =
   Just . JSON.toJSON . map fundingJSON <$> lookupVolumeFunding vol
+volumeJSONField vol "containers" (Just "records") = do
+  (_, rm) <- cacheVolumeRecords vol
+  let rjs c (s, r) = recordSlotJSON $ RecordSlot (HML.lookupDefault (Record r vol Nothing Nothing []) r rm) (Slot c s)
+  Just . JSON.toJSON . map (\(c, rl) -> containerJSON c JSON..+ "records" JSON..= map (rjs c) rl) <$> lookupVolumeContainersRecordIds vol
 volumeJSONField vol "containers" _ =
-  Just . JSON.toJSON . map (\(c, rl) -> containerJSON c JSON..+ "records" JSON..= map rjs rl) <$> lookupVolumeContainersRecordIds vol
-  where
-  rjs (s, r) = JSON.object $ catMaybes
-    [ segmentJSON s
-    , Just $ "id" JSON..= r
-    ]
+  Just . JSON.toJSON . map containerJSON <$> lookupVolumeContainers vol
 volumeJSONField vol "top" _ =
   Just . JSON.toJSON . containerJSON <$> lookupVolumeTopContainer vol
-volumeJSONField vol "records" _ =
-  Just . JSON.toJSON . map recordJSON <$> lookupVolumeRecords vol
+volumeJSONField vol "records" _ = do
+  (l, _) <- cacheVolumeRecords vol
+  return $ Just $ JSON.toJSON $ map recordJSON l
 volumeJSONField o "excerpts" _ =
   Just . JSON.toJSON . map excerptJSON <$> lookupVolumeExcerpts o
 volumeJSONField o "tags" n = do
@@ -94,7 +115,7 @@ volumeJSONField o "tags" n = do
 volumeJSONField _ _ _ = return Nothing
 
 volumeJSONQuery :: (MonadDB m, MonadHasIdentity c m) => Volume -> JSON.Query -> m JSON.Object
-volumeJSONQuery vol = JSON.jsonQuery (volumeJSON vol) (volumeJSONField vol)
+volumeJSONQuery vol q = evalStateT (JSON.jsonQuery (volumeJSON vol) (volumeJSONField vol) q) mempty
 
 volumeDownloadName :: (MonadDB m, MonadHasIdentity c m) => Volume -> m [T.Text]
 volumeDownloadName v = do

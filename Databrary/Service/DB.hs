@@ -24,7 +24,9 @@ import Control.Applicative (Applicative, (<$>))
 import Control.Exception (onException, tryJust, bracket)
 import Control.Monad (unless, (<=<))
 import Control.Monad.IO.Class (MonadIO, liftIO)
-import Control.Monad.Reader (ReaderT(..))
+import Control.Monad.Trans.Class (lift)
+import Control.Monad.Trans.Reader (ReaderT(..))
+import Control.Monad.Trans.State (StateT)
 import qualified Data.ByteString.Lazy as BSL
 import qualified Data.Configurator as C
 import qualified Data.Configurator.Types as C
@@ -83,6 +85,8 @@ class (Functor m, Applicative m, Monad m) => MonadDB m where
     liftIO $ withResource db f
 
 instance (Functor m, Applicative m, MonadIO m, Has DBConn c) => MonadDB (ReaderT c m)
+instance MonadDB m => MonadDB (StateT a m) where
+  liftDB = lift . liftDB
 
 dbRunQuery :: (MonadDB m, PGQuery q a) => q -> m (Int, [a])
 dbRunQuery q = liftDB $ \c -> pgRunQuery c q

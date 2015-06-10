@@ -29,7 +29,7 @@
   </div>
   <div class="popup-classification">
     <span class="icon release" ng-class="::page.constants.release[asset.release]"></span>
-    <span class="popup-classification-title" ng-bind="::'release.'+page.constants.release[asset.release]+'.title' | message"></span>:
+    <span class="popup-classification-title" ng-bind="::'release.'+page.constants.release[asset.release]+'.title' | message"></span>: 
     <span ng-bind="::'release.'+page.constants.release[asset.release]+'.description' | message"></span>.
   </div>
   <a ng-href="{{::asset.downloadRoute(false)}}" class=" button green" target="_self" tooltip="'excerpts.download' | message">

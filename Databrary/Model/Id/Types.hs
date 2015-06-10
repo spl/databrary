@@ -7,6 +7,7 @@ module Databrary.Model.Id.Types
 
 import Control.Applicative ((<$>))
 import qualified Data.Aeson as JSON
+import Data.Hashable (Hashable(..))
 import Data.Int (Int32)
 import Database.PostgreSQL.Typed.Types (PGParameter(..), PGColumn(..))
 import Database.PostgreSQL.Typed.Dynamic (PGRep)
@@ -20,6 +21,9 @@ newtype Id a = Id { unId :: IdType a }
 
 deriving instance Eq (IdType a) => Eq (Id a)
 deriving instance Ord (IdType a) => Ord (Id a)
+instance Hashable (IdType a) => Hashable (Id a) where
+  hashWithSalt i = hashWithSalt i . unId
+  hash = hash . unId
 
 instance PGParameter t (IdType a) => PGParameter t (Id a) where
   pgEncode t (Id i) = pgEncode t i
