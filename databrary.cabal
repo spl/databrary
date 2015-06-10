@@ -22,7 +22,6 @@ data-files:
   web/icons/*.png,
   web/icons/release/*.svg,
   web/images/*.png,
-  web/images/*.svg,
   web/images/elements/*.svg,
   web/images/filetype/16px/*.svg,
   web/images/grants/*.png,
