@@ -35,7 +35,7 @@
 
           <ul class="flat spreadsheet-tab-options" click-elsewhere="tabOptionsToggle($event)" ng-if="key == col.category && !!tabOptionsClick">
             <li ng-if="key.id !== 'slot'" class="spreadsheet-tab-option default" ng-click="setKey('slot')">back to default view</li>
-            <li ng-repeat="c in page.constants.category track by c.id" class="spreadsheet-tab-option" ng-click="setKey(c.id)" ng-bind="::c.name+' view'" ng-if="key != c && c.id !== 'asset'"></li>
+            <li ng-repeat="c in page.constants.category track by c.id" class="spreadsheet-tab-option" ng-click="setKey(c.id)" ng-bind="::c.name+' view'" ng-if="key !== c"></li>
           </ul>
 
         </th>
