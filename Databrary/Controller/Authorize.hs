@@ -3,10 +3,11 @@ module Databrary.Controller.Authorize
   ( viewAuthorize
   , postAuthorize
   , deleteAuthorize
+  , postAuthorizeNotFound
   ) where
 
 import Control.Applicative ((<|>))
-import Control.Monad (when)
+import Control.Monad (when, liftM2)
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Lazy as BSL
 import qualified Data.ByteString.Lazy.Char8 as BSLC
@@ -21,6 +22,7 @@ import Network.HTTP.Types (noContent204, StdMethod(DELETE))
 import Databrary.Ops
 import Databrary.Has (peek, peeks)
 import qualified Databrary.JSON as JSON
+import Databrary.Service.Types
 import Databrary.Service.DB
 import Databrary.Service.Mail
 import Databrary.Model.Party
@@ -30,7 +32,6 @@ import Databrary.Model.Authorize
 import Databrary.HTTP.Path.Parser
 import Databrary.HTTP.Form.Deform
 import Databrary.Action
-import Databrary.Controller.Permission
 import Databrary.Controller.Paths
 import Databrary.Controller.Form
 import Databrary.Controller.Party
@@ -59,8 +60,8 @@ partyDelegates p =
     . filter ((PermissionADMIN <=) . accessPermission)
     <$> lookupAuthorizedChildren p False
 
-authorizeAddr :: [Either T.Text Account]
-authorizeAddr = [Left "authorize@databrary.org"]
+authorizeAddr :: Service -> [Either T.Text Account]
+authorizeAddr rc = [Left (serviceAuthorizeAddr rc)]
 
 postAuthorize :: AppRoute (API, PartyTarget, AuthorizeTarget)
 postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarget) $ \arg@(api, i, AuthorizeTarget app oi) -> withAuth $ do
@@ -69,6 +70,7 @@ postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarge
   let (child, parent) = if app then (p, o) else (o, p)
   c <- lookupAuthorize child parent
   let c' = Authorize (Authorization mempty child parent) Nothing `fromMaybe` c
+  authaddr <- peeks authorizeAddr
   a <- if app
     then do
       when (isNothing c) $ do
@@ -76,7 +78,7 @@ postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarge
         dl <- partyDelegates parent
         agent <- peeks $ fmap accountEmail . partyAccount
         req <- peek
-        sendMail (map Right dl ++ authorizeAddr)
+        sendMail (map Right dl ++ authaddr)
           ("Databrary authorization request from " <> partyName child)
           $ BSL.fromChunks [TE.encodeUtf8 (partyName child), " <", maybe "" TE.encodeUtf8 agent, "> has requested to be authorized by ", TE.encodeUtf8 (partyName parent), ".\n\n\
             \To approve or reject this authorization request, go to:\n" ] <>
@@ -100,7 +102,7 @@ postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarge
           return $ Authorize (Authorization (Access site member) child parent) $ fmap (`UTCTime` 43210) expires
       maybe (Fold.mapM_ removeAuthorize c) changeAuthorize a
       when (Fold.any ((PermissionPUBLIC <) . accessSite) a && Fold.all ((PermissionPUBLIC >=) . accessSite) c) $
-        sendMail (maybe id (:) (Right <$> partyAccount child) authorizeAddr)
+        sendMail (maybe id (:) (Right <$> partyAccount child) authaddr)
           "Databrary authorization approved"
           $ BSL.fromChunks ["You have been authorized for Databrary access by ", TE.encodeUtf8 (partyName parent), ".\n"]
       return a
@@ -110,7 +112,6 @@ postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarge
 
 deleteAuthorize :: AppRoute (API, PartyTarget, AuthorizeTarget)
 deleteAuthorize = action DELETE (pathAPI </>> pathPartyTarget </> pathAuthorizeTarget) $ \arg@(api, i, AuthorizeTarget app oi) -> withAuth $ do
-  guardVerfHeader
   p <- getParty (Just PermissionADMIN) i
   o <- maybeAction =<< lookupParty oi
   let (child, parent) = if app then (p, o) else (o, p)
@@ -118,3 +119,16 @@ deleteAuthorize = action DELETE (pathAPI </>> pathPartyTarget </> pathAuthorizeT
   case api of
     JSON -> emptyResponse noContent204 []
     HTML -> redirectRouteResponse [] viewAuthorize arg []
+
+postAuthorizeNotFound :: AppRoute (API, PartyTarget)
+postAuthorizeNotFound = action POST (pathAPI </> pathPartyTarget </< "notfound") $ \(api, i) -> withAuth $ do
+  p <- getParty (Just PermissionADMIN) i
+  agent <- peeks $ fmap accountEmail . partyAccount
+  (name, info) <- runForm Nothing $ liftM2 (,)
+    ("name" .:> deform)
+    ("info" .:> deformNonEmpty deform)
+  authaddr <- peeks authorizeAddr
+  sendMail authaddr
+    ("Databrary authorization request from " <> partyName p)
+    $ BSL.fromChunks [TE.encodeUtf8 (partyName p), " <", maybe "" TE.encodeUtf8 agent, "> has requested to be authorized by ", TE.encodeUtf8 name, maybe "" (\it -> " (" <> TE.encodeUtf8 it <> ")") info, ".\n"]
+  emptyResponse noContent204 []

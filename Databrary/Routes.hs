@@ -64,6 +64,7 @@ routeMap = fromRouteList
   , route viewAuthorize
   , route postAuthorize
   , route deleteAuthorize
+  , route postAuthorizeNotFound
   , route viewAvatar
   , route createParty
   , route queryParties
@@ -187,6 +188,7 @@ jsRoutes = mconcat
   , jsRoute "postAuthorizeApply" postAuthorize (JSON, TargetParty party, AuthorizeTarget True party)
   , jsRoute "postAuthorize" postAuthorize (JSON, TargetParty party, AuthorizeTarget False party)
   , jsRoute "deleteAuthorize" deleteAuthorize (JSON, TargetParty party, AuthorizeTarget False party)
+  , jsRoute "postAuthorizeNotFound" postAuthorizeNotFound (JSON, TargetParty party)
 
   , jsRoute "getVolume" viewVolume (JSON, volume)
   , jsRoute "postVolume" postVolume (JSON, volume)

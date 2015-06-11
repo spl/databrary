@@ -253,6 +253,10 @@ app.factory('modelService', [
         });
     };
 
+    Party.prototype.authorizeNotFound = function (data) {
+      return router.http(router.controllers.postAuthorizeNotFound, this.id, data);
+    };
+
     Party.prototype.authorizeSave = function (target, data) {
       var p = this;
       return router.http(router.controllers.postAuthorize, this.id, target, data)

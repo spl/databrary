@@ -6,6 +6,7 @@ module Databrary.Service.Types
   ) where
 
 import qualified Data.ByteString as BS
+import qualified Data.Text as T
 
 import Databrary.Has (makeHasRec)
 import Databrary.Service.DB (DBConn)
@@ -26,6 +27,7 @@ data Service = Service
   , serviceSecret :: !Secret
   , serviceEntropy :: !Entropy
   , servicePasswd :: !Passwd
+  , serviceAuthorizeAddr :: !T.Text
   , serviceLogs :: !Logs
   , serviceMessages :: !Messages
   , serviceDB :: !DBConn

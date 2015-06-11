@@ -45,7 +45,7 @@ permissionParty :: Has (Id Party) a => (Permission -> Maybe Access -> a) -> Mayb
 permissionParty pf a ident = p where
   p = pf
     (max PermissionPUBLIC $ min PermissionREAD $ accessSite ident)
-    (((identitySuperuser ident || view ident == (view p :: Id Party)) ?> maxBound) <|> a)
+    (((identitySuperuser ident || foldIdentity False (((view p :: Id Party) ==) . view) ident) ?> maxBound) <|> a)
 
 selectParty :: TH.Name -- ^ 'Identity'
   -> Selector -- ^ @'Party'@

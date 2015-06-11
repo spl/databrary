@@ -35,6 +35,7 @@ initService conf = do
   secret <- C.require conf "secret"
   entropy <- initEntropy
   passwd <- initPasswd
+  authaddr <- C.require conf "authorize"
   messages <- initMessages (C.subconfig "message" conf)
   db <- initDB (C.subconfig "db" conf)
   storage <- initStorage (C.subconfig "store" conf)
@@ -46,6 +47,7 @@ initService conf = do
     , serviceSecret = Secret secret
     , serviceEntropy = entropy
     , servicePasswd = passwd
+    , serviceAuthorizeAddr = authaddr
     , serviceLogs = logs
     , serviceMessages = messages
     , serviceDB = db
