@@ -675,9 +675,9 @@ app.directive 'spreadsheet', [
           else
             cls.push 'sort'
           if currentSort == col
-            cls.push 'sort-'+(if currentSortDirection then 'desc' else 'asc')
+            cls.push 'intransitive sort-'+(if currentSortDirection then 'desc' else 'asc')
           else
-            cls.push 'sortable'
+            cls.push 'intransitive sortable'
           cls
 
         ################################# Backend saving
