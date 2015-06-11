@@ -68,9 +68,11 @@
       background-size 85%
       cursor pointer
       position absolute
-      right 0px
       margin b8
-
+      &.add
+        right 0
+      &.list
+        left 0
 
   td.add
     color pale
@@ -231,19 +233,16 @@
   color #999
   
 .spreadsheet-tab-options
-  right 0
+  left 0
 .spreadsheet-tab-option
   text-align justify
   text-transform none
   font-weight normal
   padding b8 b3
   cursor pointer
-.spreadsheet-tab-option > .icon
-  margin-right b3
-  line-height b1
-  vertical-align middle
-  height b23
-  width b23
+  .default
+    color green
+    font-weight bold
 .spreadsheet-tab-option:hover
   background-color yellow51
   

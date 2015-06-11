@@ -1,5 +1,5 @@
 <div ng-switch="::type" class="spreadsheet-edit">
-  <input-completer ng-switch-when="ident" input-name="edit" ng-model="input.value" min="0" completer="identCompleter($input)" submit="unedit($event)" key-escape="unedit(false)" class="ident-completer"></input-completer>
+  <input-completer ng-switch-when="ident" input-name="edit" ng-model="input.value" min="0" debounce="0" completer="identCompleter($input)" submit="unedit($event)" key-escape="unedit(false)" class="ident-completer"></input-completer>
   <input ng-switch-when="text" name="edit" type="text" ng-model="input.value" key-enter="unedit($event)" ng-blur="unedit($event)" key-tab="unedit($event)" key-escape="unedit(false)"/>
   <textarea ng-switch-when="long" name="edit" ng-model="input.value" ng-blur="unedit($event)" key-tab="unedit($event)" key-escape="unedit(false)"></textarea>
   <input ng-switch-when="date" name="edit" input-date ng-model="input.value" key-enter="unedit($event)" ng-blur="unedit($event)" key-tab="unedit($event)" key-escape="unedit(false)" placeholder="YYYY-MM-DD"/>

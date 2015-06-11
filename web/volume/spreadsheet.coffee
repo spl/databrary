@@ -395,12 +395,15 @@ app.directive 'spreadsheet', [
               start: si
             }
           $scope.cols = Cols
-          if Editing && Key.id == 'slot'
-            ### jshint ignore:start #### fixed in jshint 2.5.7
-            $scope.categories = (c for ci, c of constants.category when ci not of Data)
-            ### jshint ignore:end ###
-            $scope.categories.sort(bySortId)
-            $scope.categories.push(pseudoCategory[0]) unless 0 of Data
+          if Key.id == 'slot'
+            $scope.views = (g.category for g in Groups when g.category.id != 'asset')
+            if Editing
+              ### jshint ignore:start #### fixed in jshint 2.5.7
+              $scope.categories = (c for ci, c of constants.category when ci not of Data)
+              ### jshint ignore:end ###
+              $scope.categories.sort(bySortId)
+              $scope.categories.push(pseudoCategory[0]) unless 0 of Data
+              Array.prototype.push.apply($scope.views, $scope.categories)
           else
             $scope.categories = []
           return
@@ -675,9 +678,9 @@ app.directive 'spreadsheet', [
           else
             cls.push 'sort'
           if currentSort == col
-            cls.push 'sort-'+(if currentSortDirection then 'desc' else 'asc')
+            cls.push 'intransitive sort-'+(if currentSortDirection then 'desc' else 'asc')
           else
-            cls.push 'sortable'
+            cls.push 'intransitive sortable'
           cls
 
         ################################# Backend saving
@@ -1135,6 +1138,7 @@ app.directive 'spreadsheet', [
 
         editScope.unedit = (event) ->
           doneEdit(event, unedit(event))
+          event.preventDefault() if event
           false
 
         editSelect = (event) ->
@@ -1241,11 +1245,9 @@ app.directive 'spreadsheet', [
               $scope.$applyAsync(unedit)
             return
 
-        $scope.tabOptionsToggle = ($event, categoryId) ->
-          if $scope.tabOptionsClick == categoryId
-            $scope.tabOptionsClick = undefined
-          else
-            $scope.tabOptionsClick = categoryId
+        $scope.tabOptionsClick = false
+        $scope.tabOptionsToggle = ($event) ->
+          $scope.tabOptionsClick = !$scope.tabOptionsClick
           $event.stopPropagation()
           false
 
