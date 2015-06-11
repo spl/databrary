@@ -51,4 +51,4 @@ main = do
     schema <- getDataFileName "schema"
     runReaderT (updateDBSchema schema) (serviceDB rc)
 #endif
-    runWarp conf (runAppRoute routes rc)
+    runWarp conf rc (runAppRoute routes rc)

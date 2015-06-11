@@ -42,7 +42,7 @@ runApp rc act req send = do
   ts <- liftIO getCurrentTime
   runResourceT $ withInternalState $ \is -> do
     r <- runResult (runReaderT act (AppRequest rc is ts req))
-    logAccess (serviceLogs rc) ts req r
+    logAccess ts req r (serviceLogs rc)
     send r
 
 instance ActionData AppRequest where

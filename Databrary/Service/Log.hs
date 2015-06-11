@@ -1,15 +1,15 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Databrary.Service.Log
   ( Logs
-  , MonadLog
   , initLogs
   , finiLogs
+  , toLogStr
+  , requestLog
   , logMsg
   , logAccess
   ) where
 
 import Control.Applicative ((<$>), (<*>))
-import Control.Monad.IO.Class (MonadIO, liftIO)
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.Configurator as C
 import qualified Data.Configurator.Types as C
@@ -25,14 +25,11 @@ import qualified Network.Wai as Wai
 import System.Locale (defaultTimeLocale)
 import System.Log.FastLogger
 
-import Databrary.Has (MonadHas, peek, peeks)
 import Databrary.Model.Time
 
 data Logs = Logs
   { loggerMessages, loggerAccess :: Maybe LoggerSet
   }
-
-type MonadLog c m = (MonadHas Logs c m, MonadIO m)
 
 initLog :: C.Config -> IO (Maybe LoggerSet)
 initLog conf = do
@@ -83,18 +80,15 @@ infixr 6 &
 (&) :: LogStr -> LogStr -> LogStr
 x & y = x <> char ' ' <> y
 
-logMsg :: (MonadLog c m, MonadHas Timestamp c m, ToLogStr a) => a -> m ()
-logMsg m = peeks loggerMessages >>= Fold.mapM_ (\l -> do
-  t :: Timestamp <- peek
-  liftIO $ pushLogStr l $ time t & str m <> char '\n')
+logStr :: LoggerSet -> Timestamp -> LogStr -> IO ()
+logStr l t s = pushLogStr l $ time t & s <> char '\n'
 
-logAccess :: Logs -> Timestamp -> Wai.Request -> Wai.Response -> IO ()
-logAccess Logs{ loggerAccess = Just l } qt q r = do
-  (Just h, Nothing) <- liftIO $ Net.getNameInfo [Net.NI_NUMERICHOST] True False $ Wai.remoteHost q
+requestLog :: Timestamp -> Wai.Request -> Wai.Response -> IO LogStr
+requestLog qt q r = do
+  (Just h, Nothing) <- Net.getNameInfo [Net.NI_NUMERICHOST] True False $ Wai.remoteHost q
   rt <- getCurrentTime
-  pushLogStr l
-    $ time qt
-    & pad (-15) h
+  return
+    $ pad (-15) h
     & pad 3 (show $ HTTP.statusCode $ Wai.responseStatus r)
     & pad 4 (fromMaybe "-" $ lookup "user" rh)
     & pad 4 (show (floor $ 1000 * rt `diffUTCTime` qt :: Integer))
@@ -103,8 +97,16 @@ logAccess Logs{ loggerAccess = Just l } qt q r = do
     & quote (lookup "location" rh)
     & quote (lookup "referer" qh)
     & quote (lookup "user-agent" qh)
-    <> char '\n'
   where
   qh = Wai.requestHeaders q
   rh = Wai.responseHeaders r
+
+logMsg :: ToLogStr a => Timestamp -> a -> Logs -> IO ()
+logMsg t m Logs{ loggerMessages = Just l } = do
+  logStr l t $ str m
+logMsg _ _ _ = return ()
+
+logAccess :: Timestamp -> Wai.Request -> Wai.Response -> Logs -> IO ()
+logAccess qt q r Logs{ loggerAccess = Just l } =
+  logStr l qt =<< requestLog qt q r
 logAccess _ _ _ _ = return ()
