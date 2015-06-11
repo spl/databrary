@@ -93,7 +93,9 @@ app.provider('routerService', [
       templateUrl: 'site/home.html',
       resolve: {
         volume: [
-          'modelService', function (models) {
+          'modelService', 'constantService',
+          function (models, constants) {
+            if (constants.sandbox) return; else
             return models.Volume.get(9, ['access'])
               .catch(function() {
                 return {};

@@ -38,7 +38,7 @@
   <div class="wrap">
     <div class="row">
       <div class="col-desktop-10 col-tablet-6 col-mobile-6">
-        <article class="home-panel home-feature row">
+        <article class="home-panel home-feature row" ng-if="::volume">
           <div class="home-feature-inner">
             <img ng-src="{{::volume.thumbRoute()}}" class="home-feature-thumb" ng-click="page.$location.url(volume.route())">
 
