@@ -34,7 +34,10 @@
           <span class="icon add spreadsheet-tab-options-icon" ng-if="::editing && !col.category.fixed" ng-click="clickCategoryAdd($event, col)" tooltip="'spreadsheet.add.metric' | message:col.category.name"></span>
 
           <ul class="flat spreadsheet-tab-options" click-elsewhere="tabOptionsToggle($event)" ng-if="key === col.category && tabOptionsClick">
-            <li ng-repeat="c in views track by c.id" class="spreadsheet-tab-option" ng-click="setKey(c.id)" ng-bind="::c.name+' view'" ng-if="key !== c"></li>
+            <li ng-repeat="c in views track by c.id" class="spreadsheet-tab-option" ng-click="setKey(c.id)" ng-if="key !== c">
+              <span ng-if="::key.id !== 'slot' && c.id == 'slot'" ng-bind="::'back to '+c.name+' view'" class="default"></span>
+              <span ng-if="::key.id !== 'slot' && c.id !== 'slot' || key.id === 'slot'" ng-bind="::c.name+' view'"></span>
+            </li>
           </ul>
 
         </th>
