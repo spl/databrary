@@ -11,9 +11,10 @@ var keys = {
   Right: 39,
   Down: 40,
 };
-_.each(keys, function(key, name){
+var dirs = {};
+angular.forEach(keys, function(key, name){
   var directive = 'key' + name;
-  keys[directive] = [
+  dirs[directive] = [
     '$parse',
     function ($parse) { return {
       compile: function ($element, $attrs) {
@@ -36,6 +37,6 @@ _.each(keys, function(key, name){
   ];
 });
 
-app.directive(keys);
+app.directive(dirs);
 
 })();
