@@ -66,7 +66,7 @@ initDB :: C.Config -> IO DBConn
 initDB conf = do
   db <- getPGDatabase conf
   stripes <- C.lookupDefault 1 conf "stripes"
-  idle <- C.lookupDefault 60 conf "idle"
+  idle <- C.lookupDefault 300 conf "idle"
   conn <- C.lookupDefault 16 conf "maxconn"
   PGPool <$> createPool
     (pgConnect db)
