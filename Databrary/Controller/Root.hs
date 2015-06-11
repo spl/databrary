@@ -1,11 +1,13 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE CPP, OverloadedStrings #-}
 module Databrary.Controller.Root
   ( viewRoot
   , viewConstants
+  , viewRobotsTxt
   ) where
 
 import Control.Monad (when)
 import qualified Data.Aeson.Types as JSON
+import qualified Data.Text as T
 
 import Databrary.Has (peek)
 import Databrary.HTTP.Path.Parser
@@ -24,3 +26,13 @@ viewRoot = action GET pathAPI $ \api -> withAuth $ do
 viewConstants :: AppRoute ()
 viewConstants = action GET (pathJSON >/> "constants") $ \() ->
   okResponse [] constantsJSON
+
+viewRobotsTxt :: AppRoute ()
+viewRobotsTxt = action GET "robots.txt" $ \() -> do
+  okResponse [] (
+#if defined(DEVEL) || defined(SANDBOX)
+    "User-agent: *\nDisallow: /\n"
+#else
+    ""
+#endif
+    :: T.Text)

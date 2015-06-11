@@ -36,14 +36,19 @@ Source-Repository head
   Type:	git
   Location: https://github.com/dylex/databrary
 
+Flag tls
+  description: Enable TLS/SSL https connections
+  default: True
+
 Flag devel
   description: Enable development mode
   default: False
   manual: True
 
-Flag tls
-  description: Enable TLS/SSL https connections
-  default: True
+Flag sandbox
+  description: Enable sandbox/demo mode
+  default: False
+  manual: True
 
 Executable schemabrary
   main-is: Databrary/Setup/DB.hs
@@ -117,6 +122,8 @@ Executable databrary
 
   if flag(devel)
     cpp-options: -DDEVEL
+  if flag(sandbox)
+    cpp-options: -DSANDBOX
 
   pkgconfig-depends: libavformat, libswscale, libavcodec, libavutil
   extra-libraries: crack

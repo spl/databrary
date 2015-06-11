@@ -39,6 +39,9 @@ constantsJSON = JSON.Object $ JSON.object
 #ifdef DEVEL
   , "devel" JSON..= True
 #endif
+#ifdef SANDBOX
+  , "sandbox" JSON..= True
+#endif
   -- TODO: url?
   ]
   where

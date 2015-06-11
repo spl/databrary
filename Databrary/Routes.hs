@@ -44,6 +44,7 @@ import Databrary.Web.Routes
 routeMap :: RouteMap AppAction
 routeMap = fromRouteList
   [ route viewRoot
+  , route viewRobotsTxt
 
   , route viewUser
   , route postUser

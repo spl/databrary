@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE CPP, OverloadedStrings #-}
 module Databrary.View.Angular
   ( htmlAngular
   ) where
@@ -46,8 +46,8 @@ htmlAngular debug nojs auth = H.docTypeHtml H.! ngAttribute "app" "databraryModu
       H.! HA.name "viewport"
       H.! HA.content "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     H.title
-      H.! ngAttribute "bind" "page.display.title + ' || Databrary'"
-      $ "Databrary"
+      H.! ngAttribute "bind" (byteStringValue $ "page.display.title + ' || " <> title <> "'")
+      $ H.unsafeByteString title
     forM_ [Just "114x114", Just "72x72", Nothing] $ \size ->
       H.link
         H.! HA.rel "apple-touch-icon-precomposed"
@@ -74,7 +74,11 @@ htmlAngular debug nojs auth = H.docTypeHtml H.! ngAttribute "app" "databraryModu
         $ "simple version"
       H.preEscapedString " of this page."
     H.preEscapedString "<toolbar></toolbar>"
-    H.preEscapedString "<main ng-view id=\"main\" class=\"main\" autoscroll ng-if=\"!page.display.error\"></main>"
+    H.preEscapedString $ "<main ng-view id=\"main\" class=\"main"
+#ifdef SANDBOX
+      <> " sandbox"
+#endif
+      <> "\" autoscroll ng-if=\"!page.display.error\"></main>"
     H.preEscapedString "<errors></errors>"
     htmlFooter
     H.preEscapedString "<messages></messages>"
@@ -93,3 +97,10 @@ htmlAngular debug nojs auth = H.docTypeHtml H.! ngAttribute "app" "databraryModu
           "[" >> H.span "loading" >> "]"
     H.script
       $ H.preEscapedString "document.getElementById('loading').style.display='block';"
+  where
+  title =
+#ifdef SANDBOX
+    "Databrary Demo"
+#else
+    "Databrary"
+#endif

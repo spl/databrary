@@ -1,12 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Databrary.Controller.Register
-  ( viewRegister
-  , postRegister
-  , viewPasswordReset
+  ( viewPasswordReset
   , postPasswordReset
+  , viewRegister
+  , postRegister
   ) where
 
-import Control.Monad (mfilter)
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Lazy as BSL
 import Data.Monoid ((<>), mempty)
@@ -17,7 +16,6 @@ import Databrary.Has (view, peek)
 import Databrary.Action
 import Databrary.Action.Auth
 import Databrary.Service.Mail
-import Databrary.Model.Permission
 import Databrary.Model.Party
 import Databrary.Model.Identity
 import Databrary.Model.Token
@@ -89,7 +87,7 @@ postPasswordReset :: AppRoute API
 postPasswordReset = action POST (pathAPI </< "user" </< "password") $ \api -> withoutAuth $ do
   email <- runForm (api == HTML ?> htmlPasswordReset) $ do
     "email" .:> emailTextForm
-  auth <- mfilter ((PermissionADMIN >) . accessMember) <$> lookupSiteAuthByEmail email
+  auth <- lookupPasswordResetAccount email
   resetPasswordMail (maybe (Left email) Right auth)
     "Databrary password reset" $
     ("Someone (hopefully you) has requested to reset the password for the Databrary\n\
@@ -100,3 +98,4 @@ postPasswordReset = action POST (pathAPI </< "user" </< "password") $ \api -> wi
       \try again with a different email address, or reply to this email for assistance.\n"
       ("Otherwise, you may use this link to reset your Databrary password:\n\n" <>)
   okResponse [] $ "Your password reset information has been sent to '" <> email <> "'."
+
