@@ -395,12 +395,15 @@ app.directive 'spreadsheet', [
               start: si
             }
           $scope.cols = Cols
-          if Editing && Key.id == 'slot'
-            ### jshint ignore:start #### fixed in jshint 2.5.7
-            $scope.categories = (c for ci, c of constants.category when ci not of Data)
-            ### jshint ignore:end ###
-            $scope.categories.sort(bySortId)
-            $scope.categories.push(pseudoCategory[0]) unless 0 of Data
+          if Key.id == 'slot'
+            $scope.views = (g.category for g in Groups when g.category.id != 'asset')
+            if Editing
+              ### jshint ignore:start #### fixed in jshint 2.5.7
+              $scope.categories = (c for ci, c of constants.category when ci not of Data)
+              ### jshint ignore:end ###
+              $scope.categories.sort(bySortId)
+              $scope.categories.push(pseudoCategory[0]) unless 0 of Data
+              Array.prototype.push.apply($scope.views, $scope.categories)
           else
             $scope.categories = []
           return
