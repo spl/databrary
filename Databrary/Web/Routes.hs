@@ -25,6 +25,7 @@ jsRoute n r v = B.char7 '\n' <> quoteByteString '"' n
 generateRoutesJS :: WebGenerator
 generateRoutesJS = staticWebGenerate $ \f ->
   withBinaryFile f WriteMode $ \h -> do
+    hPutStrLn h "'use strict';"
     hPutStr h "app.constant('routeData',{"
     B.hPutBuilder h jsRoutes
     hPutStrLn h "});"

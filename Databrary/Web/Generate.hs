@@ -9,8 +9,6 @@ import Control.Monad (when, unless)
 import Control.Monad.Except (throwError)
 import Control.Monad.IO.Class (liftIO)
 import qualified Data.Foldable as Fold
-import Data.Function (on)
-import Data.Maybe (isNothing, fromJust)
 import System.Directory (createDirectoryIfMissing)
 import System.FilePath (splitFileName, takeDirectory)
 import System.Posix.Files (createLink, rename)
@@ -18,6 +16,7 @@ import System.Posix.Files (createLink, rename)
 import Paths_databrary (getDataFileName)
 import Databrary.Ops
 import Databrary.Files
+import Databrary.Model.Time
 import Databrary.Web
 import Databrary.Web.Types
 import {-# SOURCE #-} Databrary.Web.Rules
@@ -31,23 +30,27 @@ anyM (a:l) = do
 fileNotFound :: IsFilePath f => f -> WebGeneratorM a
 fileNotFound f = throwError $ toFilePath f ++ " not found"
 
+fileNewerThan :: IsFilePath f => Timestamp -> f -> WebGeneratorM Bool
+fileNewerThan t f =
+  maybe (fileNotFound f) (return . (t <) . snd) =<< liftIO (fileInfo f)
+
 fileNewer :: IsFilePath f => f -> WebGenerator
 fileNewer f (_, Nothing) = do
   e <- liftIO $ fileExist f
   unless e $ fileNotFound f
   return True
 fileNewer f (_, Just o) =
-  maybe (fileNotFound f) (return . (webFileTimestamp o <) . snd)
-    =<< liftIO (fileInfo f)
+  fileNewerThan (webFileTimestamp o) f
 
 whether :: Bool -> IO () -> IO Bool
 whether g = (g <$) . when g
 
 webRegenerate :: IO () -> [FilePath] -> [WebFilePath] -> WebGenerator
-webRegenerate g fs ws fo@(_, o) = do
+webRegenerate g fs ws (f, o) = do
   wr <- mapM (generateWebFile False) ws
-  fr <- anyM (return (isNothing o) : map (`fileNewer` fo) fs)
-  liftIO $ whether (fr || any (on (<) webFileTimestamp (fromJust o)) wr) g
+  ft <- maybe (fmap snd <$> liftIO (fileInfo f)) (return . Just . webFileTimestamp) o
+  fr <- maybe (return False) (\t -> anyM $ map (fileNewerThan t) fs) ft
+  liftIO $ whether (Fold.all (\t -> fr || any ((t <) . webFileTimestamp) wr) ft) g
 
 staticWebGenerate :: (FilePath -> IO ()) -> WebGenerator
 staticWebGenerate g (w, _) = liftIO $ do

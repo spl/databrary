@@ -4,7 +4,7 @@ module Databrary.Web.Rules
   , generateWebFiles
   ) where
 
-import Control.Monad (mzero, msum)
+import Control.Monad (guard, mzero, msum)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.State.Strict (execStateT, modify, gets)
 import Control.Monad.Trans.Except (runExceptT, withExceptT)
@@ -24,6 +24,7 @@ import Databrary.Web.Coffee
 import Databrary.Web.Uglify
 import Databrary.Web.Stylus
 import Databrary.Web.Libs
+import Databrary.Web.JSHint
 
 staticGenerators :: [(FilePath, WebGenerator)]
 staticGenerators =
@@ -54,6 +55,7 @@ generateRules a f = msum $ map ($ f)
   [ generateFixed a
   , generateCoffeeJS
   , generateLib
+  , checkJSHint
   , generateStatic
   ]
 
@@ -67,7 +69,7 @@ generateWebFile :: Bool -> WebFilePath -> WebGeneratorM WebFileInfo
 generateWebFile a f = withExceptT (label (webFileRel f)) $ do
   o <- gets $ HM.lookup f
   r <- generateRules a (f, o)
-  if r then updateWebInfo f else maybeA o
+  fromMaybeM (updateWebInfo f) (guard (not r) >> o)
   where
   label n "" = n
   label n s = n ++ ": " ++ s
@@ -80,5 +82,4 @@ generateAll = do
 
 generateWebFiles :: IO WebFileMap
 generateWebFiles = do
-  execStateT (either fail return =<< runExceptT generateAll)
-    =<< loadWebFileMap
+  execStateT (either fail return =<< runExceptT generateAll) HM.empty

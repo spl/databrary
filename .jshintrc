@@ -7,8 +7,5 @@
 "devel": true,
 
 "eqnull": true,
-"boss": true,
-"validthis": true,
-"newcap": false,
-"shadow": true
+"newcap": false
 }
