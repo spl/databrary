@@ -1,13 +1,12 @@
 'use strict'
 
 app.controller 'asset/volumeZipView', [
-  '$scope', 'displayService','routerService', 'asset',
-  ($scope, display, router, asset) ->
+  '$scope', 'displayService','routerService', 'asset','volume', 'fileList',
+  ($scope, display, router, asset,volume, fileList) ->
     $scope.close = ->
       window.history.back()
-    console.log "Fart", router.controllers.VolumeApi.zipList
-    router.http(router.controllers.VolumeApi.zipList, 5).then (list) ->
-      $scope.assets = list.data
+    console.log "Volume:", volume
+    $scope.assets = fileList.data
     console.log asset
     display.title = asset.displayName
     $scope.volume = asset.volume
