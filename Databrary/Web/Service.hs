@@ -4,23 +4,17 @@ module Databrary.Web.Service
   , initWeb
   ) where
 
-import Control.Applicative ((<$>))
 #ifdef DEVEL
 import Control.Concurrent.MVar (newMVar)
 #endif
 
 import Databrary.Web.Types
-#ifdef DEVEL
-import Databrary.Web.Rules
-#else
 import Databrary.Web.Info
-#endif
 
 initWeb :: IO Web
 initWeb =
-  Web <$>
+  fmap Web $
 #ifdef DEVEL
-    (newMVar =<< generateWebFiles)
-#else
-    loadWebFileMap
+    newMVar =<<
 #endif
+    loadWebFileMap
