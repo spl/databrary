@@ -344,11 +344,16 @@ app.provider('routerService', [
       templateUrl: 'asset/volumeZipView.html', 
       resolve: {
         volume: [
-          'modelService', function (models) {
-            return models.Volume.get(9, ['access'])
-              .catch(function() {
-                return {};
-              });
+          'pageService', function (page) {
+            
+              return page.models.Volume.get(page.$route.current.params.id);
+                  },
+        ],
+        fileList : [
+          'pageService', 'routerService', function(page, router){
+             return page.models.Volume.get(page.$route.current.params.id).then(function(volume){
+              return router.http(router.controllers.VolumeApi.zipList, volume.id);
+            });
           }
         ],
         asset: [
