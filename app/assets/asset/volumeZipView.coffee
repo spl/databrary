@@ -1,12 +1,11 @@
 'use strict'
 
-app.controller 'asset/zipView', [
-  '$scope', 'displayService', 'asset','slot', 'volume'
-  ($scope, display, asset, volume) ->
+app.controller 'asset/volumeZipView', [
+  '$scope', 'displayService', 'asset',
+  ($scope, display, asset) ->
     $scope.close = ->
       window.history.back()
-    $scope.asset = $scope.volume = volume
-    console.log $scope.asset
+    console.log asset
     display.title = asset.displayName
     $scope.volume = asset.volume
  ]

@@ -339,7 +339,27 @@ app.provider('routerService', [
 
     routes.record = makeRoute(controllers.RecordHtml.view, ['id']);
     routes.volumeThumb = makeRoute(controllers.VolumeController.thumb, ['id', 'size']);
-    routes.volumeZip = makeRoute(controllers.VolumeController.zip, ['id']);
+    routes.volumeZip = makeRoute(controllers.VolumeController.zip, ['id'], {
+      controller: 'asset/volumeZipView',
+      templateUrl: 'asset/volumeZipView.html', 
+      resolve: {
+        volume: [
+          'modelService', function (models) {
+            return models.Volume.get(9, ['access'])
+              .catch(function() {
+                return {};
+              });
+          }
+        ],
+        asset: [
+          'pageService', function(page){
+            return page;
+          }
+        ]
+
+      }
+    
+    });
     routes.volumeCSV = makeRoute(controllers.VolumeController.csv, ['id']);
     routes.slotZip = makeRoute(controllers.SlotController.zip, ['vid', 'id', 'segment'], {
       controller: 'asset/slotZipView',

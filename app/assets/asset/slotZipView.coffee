@@ -5,11 +5,9 @@ app.controller 'asset/slotZipView', [
   ($scope, display, slot, asset,  router) ->
     $scope.close = ->
       window.history.back()
-    console.log "router.controllers", router.controllers
-    console.log "asset",asset
-    console.log "slot",slot.volume.zip
-    router.http(router.controllers.SlotApi.zip slot.volume.id, slot.id).then (list) ->
+    router.http((router.controllers.SlotApi.zip), slot.volume.id, slot.id, slot.segment.format()).then (list) ->
       console.log list
+      $scope.assets = list.data
     $scope.asset = $scope.slot = slot
     display.title = asset.displayName
     $scope.volume = asset.volume
