@@ -9,6 +9,7 @@ app.controller 'asset/slotZipView', [
       console.log list
       $scope.assets = list.data
     $scope.asset = $scope.slot = slot
-    display.title = asset.displayName
-    $scope.volume = asset.volume
+    $scope.volume = slot.volume
+    console.log slot.volume
  ]
+

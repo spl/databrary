@@ -2,33 +2,29 @@
   <span ng-click="close()" class="button icon close"></span>
 
   <div class="popup-file-info">
-    <h3>
-      <img class="popup-format-icon" ng-src="{{::asset.icon}}"/> 
-      <span ng-bind="::asset.name"></span>
-    </h3>
-    <ul>
-      <li>
-        <span>Content from </span>
-        <a ng-href="{{::asset.slotRoute()}}">
-          <span ng-bind="::asset.container.displayName"></span>
-          <span ng-if="::asset.container.date" ng-bind="::' (' + asset.container.date + ')'"></span>
-        </a>
+    <h4>
+      <span>Downloading content from </span>
+      <a ng-href="{{::asset.slotRoute()}}">
+        <span ng-bind="::asset.container.displayName"></span>
+        <span ng-if="::asset.container.date" ng-bind="::' (' + asset.container.date + ')'"></span>
+      </a>
+    </h4>
+    <span ng-bind="volume.name"></span>
+  </div>
+
+  <ul class="download-list">
+      <li class="flat" ng-repeat="asset in assets">
+        <span ng-if="::asset.name" ng-bind="::asset.name + ' '"></span>
+        <span class="untitled" ng-if="::!asset.name">(unnamed asset) </span>
+        <span class="icon release" ng-class="::page.constants.release[asset.release]"></span>
+        <span class="popup-classification-title" ng-bind="::'release.'+page.constants.release[asset.release]+'.title' | message"></span>
       </li>
-      <li>File format: {{asset.format.extension}}</li>
-    </ul>
-  </div>
-  <div>
-      <li ng-repeat="asset in assets"> {{asset.name}} </li>
-  </div>
-  <div ng-if="::hasThumbnail">
-    <img class="popup-thumb" ng-src="{{::asset.thumbRoute(480)}}">
-  </div>
+  </ul>
   <div class="popup-cite" ng-if="::volume">
     <cite-volume></cite-volume>
   </div>
   <div class="popup-classification">
-    <span class="icon release" ng-class="::page.constants.release[asset.release]"></span>
-    <span class="popup-classification-title" ng-bind="::'release.'+page.constants.release[asset.release]+'.title' | message"></span>: 
+: 
     <span ng-bind="::'release.'+page.constants.release[asset.release]+'.description' | message"></span>.
   </div>
   <a ng-href="{{::slot.zipRoute()}}" class=" button green" target="_self" tooltip="'excerpts.download' | message">
