@@ -152,13 +152,13 @@ GET     /api/volume                                                             
 GET     /api/volume/$volumeId<[0-9]+>                                                             controllers.VolumeApi.get(volumeId : models.Volume.Id)
 POST    /api/volume                                                                               controllers.VolumeApi.create(owner : Option[models.Party.Id] ?= None)
 POST    /api/volume/$volumeId<[0-9]+>                                                             controllers.VolumeApi.update(volumeId : models.Volume.Id)
+GET     /api/volume/$vID<[0-9]+>/zip                                                              controllers.VolumeApi.zipList(vID : models.Volume.Id)
 
 # ----- VOLUME ACCESS ----- #
 GET     /api/volume/$volumeId<[0-9]+>/access                                                      controllers.VolumeApi.accessGet(volumeId : models.Volume.Id)
 GET     /api/volume/$volumeId<[0-9]+>/access/search                                               controllers.VolumeApi.accessSearch(volumeId : models.Volume.Id)
 POST    /api/volume/$volumeId<[0-9]+>/access/$partyId<-?[0-9]+>                                   controllers.VolumeApi.accessChange(volumeId : models.Volume.Id, partyId : models.Party.Id)
 DELETE  /api/volume/$volumeId<[0-9]+>/access/$partyId<-?[0-9]+>                                   controllers.VolumeApi.accessRemove(volumeId : models.Volume.Id, partyId : models.Party.Id)
-GET     /api/volume/$vID<[0-9]+>/access/zip                                                       controllers.VolumeApi.zipList(vID : models.Volume.Id)
 
 # volume funding
 # SEARCH (see also search.crossref.org/funders?q=)
@@ -175,7 +175,7 @@ GET     /api/volume/$volumeId<[0-9]+>/slot/$containerId<[0-9]+>                 
 POST    /api/slot/$containerId<[0-9]+>                                                            controllers.SlotApi.update(containerId : models.Container.Id, segment : dbrary.Segment)
 POST    /api/volume/$volumeId<[0-9]+>/slot                                                        controllers.SlotApi.create(volumeId : models.Volume.Id)
 DELETE  /api/slot/$containerId<[0-9]+>                                                            controllers.SlotApi.remove(containerId : models.Container.Id)
-GET     /api/volume/$vID<[0-9]+>/slot/$sID<[0-9]+>/zip                                            controllers.SlotApi.zip(vID : models.Volume.Id, sID : models.Container.Id, segment : dbrary.Segment)
+GET     /api/volume/$vID<[0-9]+>/slot/$sID<[0-9]+>/zip                                            controllers.SlotApi.zipList(vID : models.Volume.Id, sID : models.Container.Id, segment : dbrary.Segment)
 
 # ----- RECORD ----- #
 # QUERY     ?volume=ID;category=ID                                                                TODO: container=ID;asset=ID

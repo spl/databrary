@@ -136,8 +136,8 @@ object SlotApi extends SlotController with ApiController {
         if (r) NoContent else Conflict(request.obj.json)
       }
     }
-  def zip(v : Volume.Id, i : Container.Id, segment : Segment) = Action(i, segment).async { implicit request =>
+
+  def zipList(v : Volume.Id, i : Container.Id, segment : Segment) = Action(i, segment).async { implicit request =>
     store.Zip.slotAssetList(request.obj).map(x => Ok(JsObject(x)))
   }
-
 }

@@ -300,9 +300,8 @@ object VolumeApi extends VolumeController with ApiController {
     } yield (Ok(JsonArray(vols)))
   }
 
-  def zipList(i:Volume.Id) = Action(i).async { implicit request =>
-    store.Zip.volumeAssetList(request.obj).map (x => Ok(JsObject(x)))
-  
+  def zipList(i : Volume.Id) = Action(i).async { implicit request =>
+    store.Zip.volumeAssetList(request.obj).map(x => Ok(JsObject(x)))
   }
 
   def accessGet(volumeId : Volume.Id) = Action(volumeId, Permission.ADMIN).async { implicit request =>

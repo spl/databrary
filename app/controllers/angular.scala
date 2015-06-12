@@ -121,7 +121,7 @@ object AngularController extends SiteController {
     , SlotHtml.view
     , SlotHtml.edit
     , SlotController.zip
-    , SlotApi.zip
+    , SlotApi.zipList
     , SlotApi.get
     , SlotApi.update
     , SlotApi.create
