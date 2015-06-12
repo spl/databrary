@@ -206,7 +206,22 @@ app.provider('routerService', [
       },
     });
 
-    //
+    // Solr search
+
+    routes.postSearch = makeRoute(controllers.viewSearch, [], {
+      controller: 'site/search',
+      templateUrl: "site/search.html",
+      resolve: {
+        results: [
+          'pageService', function (page) {
+            return page.router.http(page.router.controllers.postSearch, page.$route.current.params)
+              .then(function (res) {
+                return res.data;
+              });
+          }
+        ]
+      }
+    });
 
     var partyView = {
       controller: 'party/view',

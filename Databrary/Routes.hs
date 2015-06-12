@@ -39,6 +39,7 @@ import Databrary.Controller.CSV
 import Databrary.Controller.Audit
 import Databrary.Controller.Transcode
 import Databrary.Controller.Web
+import Databrary.Controller.Search
 import Databrary.Web.Routes
 
 routeMap :: RouteMap AppAction
@@ -123,6 +124,8 @@ routeMap = fromRouteList
   , route viewTopTags
   , route postComment
 
+  , route postSearch
+
   , route uploadStart
   , route uploadChunk
   , route testChunk
@@ -166,6 +169,8 @@ jsRoutes = mconcat
   , jsRoute "viewAssetEdit" viewAssetEdit (asset)
   , jsRoute "downloadAssetSegment" downloadAssetSegment (slot, asset)
   , jsRoute "thumbAssetSegment" thumbAssetSegment (slot, asset)
+  , jsRoute "viewSearch" postSearch (HTML)
+
 
   , jsRoute "zipSlot" zipContainer (container)
   , jsRoute "zipVolume" zipVolume (volume)
@@ -231,6 +236,8 @@ jsRoutes = mconcat
   , jsRoute "deleteKeyword" deleteTag (JSON, slot, TagId True tag)
   , jsRoute "getTopTags" viewTopTags ()
   , jsRoute "getActivity" viewActivity ()
+
+  , jsRoute "postSearch" postSearch (JSON)
   ] where
   token = Id ""
   party = Id 0

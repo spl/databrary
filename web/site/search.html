@@ -1,4 +1,30 @@
-<ng-form isolate>
-  <select class="search-select" ng-model="type" ng-options="t as d for (t, d) in ::types"/>
-  <input class="search-input" type="search" ng-model="query" key-enter="search()"/>
-</ng-form>
+<article class="view search-view">
+  <div class="wrap">
+    <div class="row">
+      <div class="col">
+        <h3>Search Data</h3>
+        <ng-form isolate>
+          <select class="search-select" ng-model="type" ng-options="t as d for (t, d) in ::types"/>
+          <input class="search-input" type="search" ng-model="query" key-enter="search()"/>
+        </ng-form>
+        <ul>
+          <li ng-repeat="result in results.docs">
+            <!-- This is where we return what we want-->
+            <span ng-bind="result.title_t"></span>
+          </li>
+        </ul>
+        <div class="search-pages">
+          <span ng-if="::prev">
+            <a ng-if="::prev" ng-click="prev()">&lt; {{::number-1}}</a>
+            |
+          </span>
+          <b ng-bind="::number"></b>
+          <span ng-if="::next">
+            |
+            <a ng-click="next()">{{::number+1}} &gt;</a>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</article>
