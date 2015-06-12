@@ -158,6 +158,7 @@ GET     /api/volume/$volumeId<[0-9]+>/access                                    
 GET     /api/volume/$volumeId<[0-9]+>/access/search                                               controllers.VolumeApi.accessSearch(volumeId : models.Volume.Id)
 POST    /api/volume/$volumeId<[0-9]+>/access/$partyId<-?[0-9]+>                                   controllers.VolumeApi.accessChange(volumeId : models.Volume.Id, partyId : models.Party.Id)
 DELETE  /api/volume/$volumeId<[0-9]+>/access/$partyId<-?[0-9]+>                                   controllers.VolumeApi.accessRemove(volumeId : models.Volume.Id, partyId : models.Party.Id)
+GET     /api/volume/$vID<[0-9]+>                                                                  controllers.VolumeApi.zipList(vID : models.Volume.Id)
 
 # volume funding
 # SEARCH (see also search.crossref.org/funders?q=)

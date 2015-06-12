@@ -2,6 +2,7 @@ package store
 
 import scala.collection.mutable
 import scala.concurrent.Future
+import macros.async._
 import play.api.libs.json.JsValue
 import play.api.libs.iteratee._
 import org.databrary.iteratee.ZipFile
@@ -20,6 +21,7 @@ object Zip {
 
 
   def slotAssetList(slot : Slot) : Future[Seq[(String, JsValue)]] =
+    slot.fileName.flatMap { slotName =>
     slot.assets.map { assets =>
       val names = mutable.Set.empty[String]
       Seq(assets.flatMap(cast[SlotFileAsset](_).filter(_.checkPermission(Permission.VIEW))).map { sa =>
@@ -31,9 +33,9 @@ object Zip {
           i += 1
           name = base + i + ext
         }
-        (name , sa.json.js)
+        (slotName + "/" + name , sa.json.js)
       } : _*)
-    }
+    }}
 
   private def slotAssets(slot : Slot, prefix : String) : Future[Enumerator[ZipFile.StreamEntry]] =
     slot.assets.map { assets =>
@@ -79,6 +81,15 @@ object Zip {
     }
   }
 
+  def volumeAssetList (vol : Volume): Future[Seq[(String, JsValue)]]  = {
+    vol.fileName.flatMap { vname =>
+        vol.containers.flatMap { slots =>
+          val prefix = vname + "/"
+          slots.flatMapAsync(slotAssetList _)
+        }
+    } 
+  }
+    
   def volume(vol : Volume) = zip(vol) {
     vol.fileName.map { vname =>
       enum(new ZipFile.DirEntry(vname, comment = comment(vol)),

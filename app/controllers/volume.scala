@@ -5,6 +5,7 @@ import play.api._
 import          mvc._
 import          data._
 import          i18n.Messages
+import          libs.json._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import java.net.URL
 import macros._
@@ -297,6 +298,11 @@ object VolumeApi extends VolumeController with ApiController {
       vl <- searchResults._2
       vols <- vl.mapAsync[JsonRecord, Seq[JsonRecord]](_.json(queryOpts))
     } yield (Ok(JsonArray(vols)))
+  }
+
+  def zipList(i:Volume.Id) = Action(i).async { implicit request =>
+    store.Zip.volumeAssetList(request.obj).map (x => Ok(JsObject(x)))
+  
   }
 
   def accessGet(volumeId : Volume.Id) = Action(volumeId, Permission.ADMIN).async { implicit request =>
