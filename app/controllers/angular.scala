@@ -110,6 +110,8 @@ object AngularController extends SiteController {
     , VolumeApi.search
     , VolumeApi.update
     , VolumeApi.create
+    , VolumeController.zip
+    , VolumeApi.zipList
     , VolumeApi.accessSearch
     , VolumeApi.accessChange
     , VolumeApi.accessRemove
