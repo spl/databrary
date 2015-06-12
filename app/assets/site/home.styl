@@ -65,14 +65,6 @@
 
     li
       display inline-block
-      margin-right f6
-
-      &:after
-        content ', '
-
-      &:last-child
-        &:after
-          content none
 
 .home-supportad
   margin-left b1*2
@@ -83,10 +75,11 @@
     font-size 0.8em
     line-height 1.2em
     margin-right 0
+  @media screen and (max-width: grid-mobile-width)
+    margin-left 0
 
 .home-tags
   overflow hidden
-  padding-left b1*2
   ol
     list-style-type none
     padding 0
@@ -96,6 +89,8 @@
       padding-left b3
   span
     font-weight 700
+  @media screen and (min-width: grid-mobile-width+1)
+    padding-left b1*2
 
 .home-tags-item
   font-line 1 1.25
