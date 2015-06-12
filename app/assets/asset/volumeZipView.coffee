@@ -5,7 +5,6 @@ app.controller 'asset/volumeZipView', [
   ($scope, display, router, asset,volume, fileList) ->
     $scope.close = ->
       window.history.back()
-    console.log "Volume:", volume
     $scope.assets = fileList.data
     console.log asset
     display.title = asset.displayName
