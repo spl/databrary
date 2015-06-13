@@ -179,5 +179,5 @@ CREATE TABLE "upload" (
 ) INHERITS ("account_token");
 COMMENT ON TABLE "upload" IS 'Tokens issued to track active uploads.';
 
-ALTER TABLE audit."analytic" ALTER "data" DROP NOT NULL,
-	ALTER "data" TYPE jsonb USING (data->'data')::jsonb;
+ALTER TABLE audit."analytic" ALTER "data" DROP NOT NULL;
+UPDATE audit.analytic SET data = data->'data';
