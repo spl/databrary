@@ -32,7 +32,7 @@
               <div class="player-info">
                 <h1 class="player-info-name">
                   <img ng-if="!editing && !!current.asset" ng-src="{{current.asset.icon}}" ng-class="'hint-format-'+current.asset.format.extension" class="player-info-file-icon">
-                  <span ng-if="!editing && !!current.asset" class="release icon" ng-class="[page.constants.release[current.asset.release], 'hint-release-'+page.constants.release[current.asset.release]]"></span>
+                  <span ng-if="!editing && !!current.asset && current.asset.release" class="release icon" ng-class="[page.constants.release[current.asset.release], 'hint-release-'+page.constants.release[current.asset.release]]"></span>
                   <span class="filename" ng-if="!editing && !!current.asset" ng-bind="current.asset.name"></span>
                   <span class="category" ng-if="!editing && !!current.record" ng-bind="current.record.displayName"></span>
                   <span class="category" ng-if="editing && !!current.record.category" ng-bind="page.constants.category[current.record.category].name"></span>
@@ -228,7 +228,7 @@
                     <span class="track-status" ng-if="t.asset && !t.asset.duration && t.asset.format.type==='video'"> (processing)</span>
                   </div>
                   <upload-progress class="upload-progress-info" ng-if="!!t.file" progress-value="t.progress"></upload-progress>
-                  <span ng-if="!!t.asset" class="classification-info release icon" ng-class="[page.constants.release[t.asset.release], 'hint-release-'+page.constants.release[t.asset.release]]"></span>
+                  <span ng-if="!!t.asset && t.asset.release" class="classification-info release icon" ng-class="[page.constants.release[t.asset.release], 'hint-release-'+page.constants.release[t.asset.release]]"></span>
                 </div>
                 <div class="slot-track-asset" ng-if="t.asset && !t.full" ng-style="t.style()">
                   <div ng-if="t === current && editing === 'position'" class="slot-handle slot-handle-move" mouse-drag="t.dragMove($down, $up)"></div>

@@ -117,8 +117,8 @@ login.noCookie=You must be logged in to perform that action. Please make sure yo
 login.expired=Your session has expired. Please login again.
 login.error=Unable to log in with those credentials.
 
-login.email.help=Enter the email address you used to register.
-login.email.error=This email address is invalid.
+login.email.help=Enter the email address you used to register
+login.email.error=This email address is invalid
 login.password.help=Enter your password.
 
 # --- Reset page
@@ -214,27 +214,27 @@ party.edit.personal=Personal Information
 party.edit.account=Login Information
 party.edit.confirm=Confirm Access
 
-party.edit.prename.help=Enter your first or given name.
-party.edit.sortname.help=Enter your last or family name.
-party.edit.affiliation.help=Specify your institutional affiliation as you wish it to display on your profile.
+party.edit.prename.help=Enter your first or given name
+party.edit.sortname.help=Enter your last or family name
+party.edit.affiliation.help=Specify your institutional affiliation as you wish it to display on your profile
 
 party.edit.url.title=Website
 party.edit.url.help=Specify whatever personal web page you''d like (faculty page, ResearchGate, etc.)
 
-party.edit.orcid.help=Enter your ORCiD.
+party.edit.orcid.help=Enter your ORCiD
 
 party.edit.email.title=Email
 party.edit.email.help=Enter a valid email address. We recommend using your institutional email address.
 
 party.edit.password.title=New password
-party.edit.password.help=Enter a new, secure password.
+party.edit.password.help=Enter a new, secure password
 
 party.edit.password.again.title=New password (again)
-party.edit.password.again.help=Enter your new password again.
-party.edit.password.again.error=Passwords do not match.
+party.edit.password.again.help=Enter your new password again
+party.edit.password.again.error=Passwords do not match
 
 party.edit.auth.title=Current password
-party.edit.auth.help=Enter your current password to save changes.
+party.edit.auth.help=Enter your current password to save changes
 
 party.edit.avatar.title=Avatar
 party.edit.avatar.exists=Choose a new profile image
@@ -321,12 +321,12 @@ auth.member.ADMIN.title=Manager
 auth.member.ADMIN=Can create volumes and change volume access on all {0} group data.
 
 # note: {0} may be name or "You"
-access.NONE={0} cannot access these data.
-access.PUBLIC={0} can access only public data.
-access.SHARED={0} can access only shared data.
-access.READ={0} has read-only access.
-access.EDIT={0} has read-write access.
-access.ADMIN={0}, as an investigator on these data, can fully edit and share them.
+access.NONE={0} cannot access these data
+access.PUBLIC={0} can access only public data
+access.SHARED={0} can access only shared data
+access.READ={0} has read-only access
+access.EDIT={0} has read-write access
+access.ADMIN={0}, as an investigator on these data, can fully edit and share them
 
 access.edit.NONE=No access
 access.edit.PUBLIC=View access only public data
@@ -392,7 +392,7 @@ volume.owner=Owner
 
 sessions.title=Data
 session=Session
-session.jump=Jump to the session from which this {0} originates.
+session.jump=Jump to the session from which this {0} originates
 
 materials.title=Materials
 materials=Materials
@@ -405,7 +405,7 @@ not.condition=No conditions
 not.group=Not grouped
 
 excerpts.title=Highlights
-excerpts.download=Download this file.
+excerpts.download=Download this file
 
 position=Position
 position.placeholder=MM:SS
@@ -431,12 +431,12 @@ comments.add.success=Comment added.
 comments.add.error=Error while posting comment.
 
 comments.text.title=Comment
-comments.text.help=Comment on the content of this page.
-comments.text.error=Must be at least 3 characters long.
+comments.text.help=Comment on the content of this page
+comments.text.error=Must be at least 3 characters long
 
 tags.title=Tags
-tags.vote.up=Vote this tag up.
-tags.vote.null=Remove your vote on this tag.
+tags.vote.up=Vote this tag up
+tags.vote.null=Remove your vote on this tag
 tags.auto.error=The auto-suggestion list is out-of-order.
 tags.vote.up.success=Tag <strong>{0}</strong> voted up.
 tags.vote.null.success=Tag <strong>{0}</strong> vote canceled.
@@ -490,7 +490,7 @@ funding.search.name.help=Start typing the name of the desired funding agency.
 search.title=Search
 search.prompt=Search data
 search.active=Searching...
-search.none=No matches found.
+search.none=No matches found
 
 # --- Registration
 register.title=Register
@@ -555,20 +555,20 @@ volume.edit.autodoi.donthave=I don''t have one
 volume.edit.autodoi.citation.success=Citation retrieved from DOI.
 volume.edit.autodoi.citation.error=Could not retrieve citation from provided DOI.
 
-volume.edit.citation.head.help=Enter the full citation of the associated paper, preferably in APA format.
+volume.edit.citation.head.help=Enter the full citation of the associated paper, preferably in APA format
 volume.edit.citation.head.placeholder=Last, F. (2014). Title...
-volume.edit.name.help=Enter the title of the paper or volume.
+volume.edit.name.help=Enter the title of the paper or volume
 volume.edit.name.placeholder=Title
-volume.edit.citation.year.help=Enter the publication year of the associated paper.
-volume.edit.body.help=Enter or paste the abstract of the associated paper or other summary description.
+volume.edit.citation.year.help=Enter the publication year of the associated paper
+volume.edit.body.help=Enter or paste the abstract of the associated paper or other summary description
 volume.edit.body.placeholder=
-volume.edit.alias.help=This optional name may be how you refer to this volume within your lab, and will only be shown to those with edit access.
+volume.edit.alias.help=This optional name may be how you refer to this volume within your lab, and will only be shown to those with edit access
 volume.edit.alias.placeholder=
 volume.edit.success=Volume saved successfully.
 
 wizard.volume-edit-materials.name=Materials
 wizard.volume-edit-materials.description=Upload clips, images, stimuli, documents, and other materials.
-wizard.volume-edit-materials.instructions=<p>Provide any files related to this volume.  For each file, you must indicate whether it contains <b>restricted</b> identifying information (such as faces or birthdates), or <b>shared</b> or <b>public</b> non-data (stimuli or displays used during data collection, blank questionnaire forms).</p><p>Any representative video clips or still images may additionally be selected as highlights, and possibly shared more broadly given appropriate, explicit consent for release by depicted individuals.</p><p>Click the <em>folder</em> (<img src="/public/images/icon/session.png">) on the left or "no file" to upload files. Click the <em>plus</em> (<img src="/public/images/icon/add.png">) sign on the rightmost tab to add a new tab. Click the <em>plus</em> (<img src="/public/images/icon/add.png">) sign within a tab to add a new column within the given tab.</p>See our <a href="/asset/formats">list of accepted file types</a>.</p>
+wizard.volume-edit-materials.instructions=<p>Provide any files related to this volume.  For each file, you must indicate whether it contains <b>restricted</b> identifying information (such as faces or birthdates), or <b>shared</b> or <b>public</b> non-data (stimuli or displays used during data collection, blank questionnaire forms).</p><p>Any representative video clips or still images may additionally be selected as highlights, and possibly shared more broadly given appropriate, explicit consent for release by depicted individuals.</p><p>Click the <em>folder</em> (<img src="/public/images/icon/session.png">) on the left to upload files. Click the <em>plus</em> (<img src="/public/images/icon/add.png">) sign on the rightmost tab to add a new tab. Click the <em>plus</em> (<img src="/public/images/icon/add.png">) sign within a tab to add a new column within the given tab.</p>See our <a href="/asset/formats">list of accepted file types</a>.</p>
 
 wizard.volume-edit-data.name=Data
 wizard.volume-edit-data.description=Provide data from collected sessions.

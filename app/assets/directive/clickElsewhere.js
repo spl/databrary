@@ -7,11 +7,15 @@ app.directive('clickElsewhere', [
     compile: function ($element, $attrs) {
       var action = $parse($attrs.clickElsewhere);
       return function ($scope, $element) {
-        $document.on('click', function (event) {
+        function handler(event) {
           if ($element[0] != event.target && !$.contains($element[0], event.target))
             $scope.$apply(function () {
               action($scope, {$event:event});
             });
+        }
+        $document.on('click', handler);
+        $scope.$on('$destroy', function () {
+          $document.off('click', handler);
         });
       };
     }

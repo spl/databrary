@@ -1,15 +1,22 @@
 .input-completer-choices
+.spreadsheet-tab-options
   background-color white
   box-shadow b8 b8 b8 -b8 black
-  border 1px black solid
   z-index 9
-  max-height 200px
   overflow-y auto
   position absolute
   width inherit
-  min-width 200px
   padding-right 0
   padding-left 0
+  
+.input-completer-choices
+  border 1px black solid
+  min-width 200px
+  max-height 200px
+
+.spreadsheet-tab-options
+  border 2px black solid
+  border-radius b3  
 
 .spreadsheet-edit
   .ident-completer
@@ -19,6 +26,7 @@
       width max-content
 
 .input-completer-choice
+.spreadsheet-tab-option
   margin-bottom 0
   transition none
 
@@ -37,6 +45,11 @@
 
   &.default
     font-weight bold
+    a
+      color green53
+    a:before
+      content '\279e\00a0'
+      color black
 
   &.selected
     background-color yellow52

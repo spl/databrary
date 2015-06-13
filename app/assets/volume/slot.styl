@@ -125,7 +125,7 @@
     border-top-left-radius b1
     border-bottom-left-radius b1
 
-.slot-timeline-time, .slot-timeline-control > button
+input[type='text'].slot-timeline-time, .slot-timeline-control > button
   @media screen and (max-width: grid-mobile-width)
     font-size 0.6em
     padding-left 2px
@@ -218,8 +218,9 @@
   display inline-block
   overflow hidden
   text-overflow ellipsis
-  width 96%
+  width 95%
   padding-left b2
+  padding-right b1+b3
   .track-status
     color red
   &.uploading
@@ -311,6 +312,8 @@
   overflow hidden
   text-overflow ellipsis
   padding-top b8
+  margin-left 2px
+  pointer-events none
 
 .slot-record
   background yellow51
@@ -414,6 +417,7 @@
 .player-info-name
   font-line 1
   padding-bottom f2
+  width 90%
 
   img.player-info-file-icon span.icon
     height 19px
@@ -429,6 +433,9 @@
   .category
     text-transform capitalize
     font-weight bold
+  
+  .filename
+    word-break break-all
 
 .player-info-list
   margin-bottom 0
