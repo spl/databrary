@@ -91,7 +91,7 @@ htmlAngular debug nojs auth = H.docTypeHtml H.! ngAttribute "app" "databraryModu
       H.div H.! HA.class_ "loading-animation" $ do
         H.div H.! HA.class_ "loading-spinner" $
           H.div H.! HA.class_ "loading-mask" $
-            H.div H.! HA.class_ "loading-cicle" $
+            H.div H.! HA.class_ "loading-circle" $
               return ()
         H.div H.! HA.class_ "loading-text" $
           "[" >> H.span "loading" >> "]"
