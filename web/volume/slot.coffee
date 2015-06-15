@@ -4,7 +4,7 @@ app.controller('volume/slot', [
   '$scope', '$location', '$sce', '$timeout', 'constantService', 'displayService', 'messageService', 'tooltipService', 'styleService', 'storageService', 'Offset', 'Segment', 'uploadService', 'routerService', 'slot', 'edit',
   ($scope, $location, $sce, $timeout, constants, display, messages, tooltips, styles, storage, Offset, Segment, uploads, router, slot, editing) ->
     display.title = slot.displayName
-    $scope.flowOptions = uploads.flowOptions
+    $scope.flowOptions = uploads.flowOptions()
     $scope.slot = slot
     $scope.volume = slot.volume
     $scope.editing = editing # $scope.editing (but not editing) is also a modal (toolbar) indicator

@@ -16,7 +16,7 @@ app.factory('uploadService', [
       file.store.progress = file.progress()
       return
 
-    flowOptions:
+    flowOptions: () ->
       target: router.controllers.uploadChunk.route()
       method: 'octet'
       chunkSize: 4194304
@@ -27,4 +27,5 @@ app.factory('uploadService', [
       successStatuses: [200, 201, 202, 204],
       progressCallbacksInterval: 500
       prioritizeFirstAndLastChunk: true
+      headers: {'x-csverf': router.http.csverf}
 ])
