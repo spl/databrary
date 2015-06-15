@@ -32,8 +32,11 @@ app.directive('toolbar', [
           $scope.hoverNav = false;
         });
 
+        //$scope.search = function () {
+        //  page.$location.url(page.router.volumeSearch()).search($scope.search.data);
+        //};
         $scope.search = function () {
-          page.$location.url(page.router.volumeSearch()).search($scope.search.data);
+          page.$location.url(page.router.postSearch()).search($scope.search.data);
         };
         $scope.search.data = {};
       }

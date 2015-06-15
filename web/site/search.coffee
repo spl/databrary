@@ -8,7 +8,14 @@ app.controller 'site/search', [
     display.title = 'Search'
     $scope.results = results?.response
     $scope.number = 1 + (offset / limit)
-    if results?.docs?.length > limit
+
+    params = $location.search()
+    $scope.query = params.query
+    $scope.search = ->
+      $location.search('query', $scope.query)
+
+
+    if parseInt(results?.numFound) > limit
       $scope.next = -> $location.search('offset', offset + limit)
       $scope.results.docs.pop()
     if offset > 0

@@ -4,13 +4,14 @@
       <div class="col">
         <h3>Search Data</h3>
         <ng-form isolate>
-          <select class="search-select" ng-model="type" ng-options="t as d for (t, d) in ::types"/>
+          <!--<select class="search-select" ng-model="type" ng-options="t as d for (t, d) in ::types"/>-->
           <input class="search-input" type="search" ng-model="query" key-enter="search()"/>
         </ng-form>
         <ul>
           <li ng-repeat="result in results.docs">
             <!-- This is where we return what we want-->
-            <span ng-bind="result.title_t"></span>
+            <a ng-href="volume/{{result.volume_id_i}}">{{result.title_t}}</a>
+            <span ng-bind="[result.title_t, result.content_type].join(' ')"></span>
           </li>
         </ul>
         <div class="search-pages">
