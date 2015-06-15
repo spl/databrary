@@ -1,6 +1,6 @@
 #!/bin/sh -e
 declare -A opt
-while getopts 'fnp' o ; do
+while getopts 'fnpi' o ; do
 	opt[$o]=$OPTARG
 done
 shift $[OPTIND-1]
@@ -8,6 +8,9 @@ setup=dist/setup/setup
 ghc -Wall -fwarn-tabs --make -odir dist/setup -hidir dist/setup -i. Setup.hs -o $setup
 [[ -z ${opt[f]+set} && -f dist/setup-config ]] || $setup configure --user -f ${opt[p]+-}devel
 $setup build
-[[ -z ${opt[n]+set}${opt[p]+set} ]] || exit 0
-echo "Starting databrary..."
-databrary_datadir=. databrary_sysconfdir=. dist/build/databrary/databrary "$@"
+if [[ -n ${opt[i]+set} ]] ; then
+	$setup install "$@"
+elif [[ -z ${opt[n]+set}${opt[p]+set} ]] ; then
+	echo "Starting databrary..."
+	databrary_datadir=. databrary_sysconfdir=. dist/build/databrary/databrary "$@"
+fi
