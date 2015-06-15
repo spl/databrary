@@ -321,10 +321,8 @@ app.directive 'spreadsheet', [
 
         populateSlots = () ->
           i = 0
-          ### jshint ignore:start #### fixed in jshint 2.5.7
           for ci, slot of volume.containers when Top != !slot.top
             populateSlot(i++, slot)
-          ### jshint ignore:end ###
           i
 
         populateRecord = (i, record) ->
@@ -337,15 +335,12 @@ app.directive 'spreadsheet', [
           i = 0
 
           records = {}
-          ### jshint ignore:start #### fixed in jshint 2.5.7
           for r, record of volume.records when (record.category || 0) == Key.id
             populateRecord(i, record)
             records[r] = i++
-          ### jshint ignore:end ###
           Counts[count = i] = {slot: 0}
           Counts[i][Key.id] = 0
 
-          ### jshint ignore:start #### fixed in jshint 2.5.7
           for s, slot of volume.containers when Top != !slot.top
             deps = Depends[slot.id] = {}
             any = false
@@ -362,7 +357,6 @@ app.directive 'spreadsheet', [
               populateSlotData(count, n, slot)
               populateDatum(count, 'slot', n, 'summary', (rrr.record.displayName for rrr in slot.records).join(', '))
               deps[count] = n
-          ### jshint ignore:end ###
 
           count+!!Counts[count].slot
 
@@ -398,9 +392,7 @@ app.directive 'spreadsheet', [
           if Key.id == 'slot'
             $scope.views = (g.category for g in Groups when g.category.id != 'asset')
             if Editing
-              ### jshint ignore:start #### fixed in jshint 2.5.7
               $scope.categories = (c for ci, c of constants.category when ci not of Data)
-              ### jshint ignore:end ###
               $scope.categories.sort(bySortId)
               $scope.categories.push(pseudoCategory[0]) unless 0 of Data
               Array.prototype.push.apply($scope.views, $scope.categories)

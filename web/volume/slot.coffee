@@ -318,10 +318,8 @@ app.controller('volume/slot', [
     playerMinHeight = 200
     viewportMinHeight = 120
     playerHeight = parseInt(storage.get('player-height'), 10) || 400
-    ### jshint ignore:start ###
     unless playerHeight >= playerMinHeight
       playerHeight = playerMinHeight
-    ### jshint ignore:end ###
 
     playerImgHeightStyle = undefined
     playerVideoHeightStyle = undefined
@@ -411,14 +409,12 @@ app.controller('volume/slot', [
         # First, let's make a giant array of all the items we want to compare
         # times against.  Then let's extract all the times for the objects into
         # an even bigger array.
-        ### jshint ignore:start ###
         for i in $scope.assets.concat(records, $scope.consents) when i isnt this
           # We don't want to have the item snap to itself.
 
           # We want to have all the times that are finite in our array to compare against
           listOfAllPlacements.push i.lt if i.lt.defined
           listOfAllPlacements.push i.ut if i.ut.defined
-        ### jshint ignore:end ###
 
         # If there aren't any items in the timeline that we can snap to, let's just break
         # out and return the original time sent in.
@@ -643,9 +639,7 @@ app.controller('volume/slot', [
           ).then (res) =>
             file.uniqueIdentifier = res.data
             file.resume()
-            ### jshint ignore:start ###
             @data.name ||= file.file.name
-            ### jshint ignore:end ###
             return
           , (res) =>
             messages.addError
@@ -884,7 +878,6 @@ app.controller('volume/slot', [
               owner: this
             return
 
-      ### jshint ignore:start #### fixed in jshint 2.5.7
       metrics: ->
         ident = constants.category[@record.category]?.ident || [constants.metricName.ID.id]
         (constants.metric[m] for m of @record.measures when !(+m in ident)).sort(byId)
@@ -894,7 +887,6 @@ app.controller('volume/slot', [
         metrics = (metric for m, metric of constants.metric when !(m of @data.measures)).sort(byId)
         metrics.unshift addMetric
         metrics
-      ### jshint ignore:end ###
 
       add: ->
         @data.measures[@data.add] = '' if @data.add
@@ -1175,11 +1167,9 @@ app.controller('volume/slot', [
 
     ################################### Initialization
 
-    ### jshint ignore:start #### fixed in jshint 2.5.7
     $scope.tags = (new Tag(tag) for tagId, tag of slot.tags when (if editing then tag.keyword?.length else tag.coverage?.length))
     $scope.comments = (new Comment(comment) for comment in slot.comments)
     $scope.assets = (new Asset(asset) for assetId, asset of slot.assets)
-    ### jshint ignore:end ###
     Asset.sort()
     Excerpt.fill()
 

@@ -17,15 +17,11 @@ app.directive 'inputPosition', [
       if 'positionMin' of $attrs
         min = $parse($attrs.positionMin)
         ngModel.$validators.min = (value) ->
-          ### jshint ignore:start ###
           ngModel.$isEmpty(value) || !(value < min($scope))
-          ### jshint ignore:end ###
       if 'positionMax' of $attrs
         max = $parse($attrs.positionMax)
         ngModel.$validators.max = (value) ->
-          ### jshint ignore:start ###
           ngModel.$isEmpty(value) || !(value > max($scope))
-          ### jshint ignore:end ###
 
       return
 ]
