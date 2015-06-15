@@ -14,10 +14,6 @@ import org.json4s.native.Serialization.{read, write}
 object Indexer {
   import scalikejdbc._
 
-  // Database information.
-  Class.forName("org.postgresql.Driver")
-  ConnectionPool.singleton("jdbc:postgresql:databrary", "databrary", "")
-
 
   /*
   Names of the different types of content we have inside of Solr
@@ -171,7 +167,16 @@ object Indexer {
   def main(args: Array[String]) {
     // ad-hoc session provider on the REPL
     implicit val session = AutoSession
-//    import MyJsonProtocol._
+
+    // Params passed in from outside world
+    val dbHost = if(args.length > 0) args(0) else "localhost"
+    val dbPort = if(args.length > 1) args(1) else "5432"
+    val dbName = if(args.length > 2) args(2) else "databrary"
+    val dbUser = if(args.length > 3) args(3) else "jesse"
+    val dbPw = if(args.length > 4) args(4) else ""
+
+    // Database information.
+    ConnectionPool.singleton(s"jdbc:postgresql://$dbHost:$dbPort/$dbName", dbUser, dbPw)
 
 
 
@@ -231,7 +236,7 @@ object Indexer {
 
 
     /*
-    These are methods that extract each type of segment.
+    These are methods that extract each type of segment into scala objects.
      */
     object SQLSegmentTag extends SQLSyntaxSupport[SQLSegmentTag] {
       // We need a lookup function for getting the other information that we need out of this thing
