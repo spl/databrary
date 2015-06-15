@@ -12,5 +12,5 @@
 *.dyn_hi
 *.dyn_o
 /npm-debug.log
-/local.conf
+/databrary.conf
 /unreset.dump
