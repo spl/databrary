@@ -5,6 +5,7 @@ while getopts 'fnpi' o ; do
 done
 shift $[OPTIND-1]
 setup=dist/setup/setup
+mkdir -p `dirname $setup`
 ghc -Wall -fwarn-tabs --make -odir dist/setup -hidir dist/setup -i. Setup.hs -o $setup
 [[ -z ${opt[f]+set} && -f dist/setup-config ]] || $setup configure --user -f ${opt[p]+-}devel
 $setup build
