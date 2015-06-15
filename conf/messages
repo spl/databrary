@@ -573,7 +573,7 @@ wizard.volume-edit-data.instructions=<p>Here you can enter data about individual
 
 asset.file=File
 asset.file.help=Select the file you wish to upload.
-asset.untitled=(Unnamed asset)
+asset.untitled=(Unnamed file)
 asset.name=Name
 asset.name.help=You may optionally provide a brief description of this file for other users.
 asset.name.placeholder=New file name

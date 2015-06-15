@@ -1,23 +1,23 @@
 <div class="download-popup"> 
   <span ng-click="close()" class="button icon close"></span>
+  <a class="view-link" ng-href="{{::volume.route() + '#panel-' + (slot.top ? 'materials' : 'sessions')}}" ng-bind="::volume.name"></a>
+
 
   <div class="popup-file-info">
     <h4>
-      <span>Downloading content from </span>
+      <span>Files from </span>
       <a ng-href="{{::asset.slotRoute()}}">
-        <span ng-bind="::asset.container.displayName"></span>
-        <span ng-if="::asset.container.date" ng-bind="::' (' + asset.container.date + ')'"></span>
+        <span ng-bind="::slot.container.displayName"></span>
+        <span ng-if="::slot.container.date" ng-bind="::' (' + slot.container.date + ')'"></span>
       </a>
     </h4>
-    <span ng-bind="volume.name"></span>
   </div>
 
   <ul class="download-list">
       <li class="flat" ng-repeat="asset in assets">
         <span ng-if="::asset.name" ng-bind="::asset.name + ' '"></span>
-        <span class="untitled" ng-if="::!asset.name" ng-bind="'asset.untitled' | message + ' '"></span>
+        <span class="untitled" ng-if="::!asset.name" ng-bind="::asset.name || ('asset.untitled' | message) + ' '"></span>
         <span class="icon release" ng-class="::page.constants.release[asset.release]"></span>
-        <span class="popup-classification-title" ng-bind="::'release.'+page.constants.release[asset.release]+'.title' | message"></span>
       </li>
   </ul>
   <div class="popup-cite" ng-if="::volume">
@@ -25,9 +25,10 @@
   </div>
   <div class="popup-classification release-legend">
     <ul>
+      <li>Release Levels</li>
       <li ng-repeat="(i,c) in page.constants.release" ng-if="i>0">
         <span class="icon release" ng-class="c"></span>
-        <span ng-bind="'release.'+c+'.title' | message"></span>: 
+        <span class="popup-classification-title" ng-bind="'release.'+c+'.title' | message"></span>: 
         <span ng-bind="'release.'+c+'.description' | message"></span>
       </li>
     </ul>
