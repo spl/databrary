@@ -1,7 +1,7 @@
 'use strict';
 
 app.directive('volumeEditFundingForm', [
-  'pageService', function (page) {
+  'pageService','$q', function (page, $q) {
     var link = function ($scope) {
       var volume = $scope.volume;
       var form = $scope.volumeEditFundingForm;
@@ -11,9 +11,26 @@ app.directive('volumeEditFundingForm', [
       var subforms = [];
 
       form.saveAll = function () {
-        subforms.forEach(function (subform) {
-          if (subform.$dirty)
-            subform.save(false);
+        form.$setSubmitted();
+
+        // Kickstart all the subforms. 
+        var formPromises = _.map(subforms, function(subform){
+          if (subform.$dirty){
+            return subform.save(false);
+          }
+        });
+
+
+        // Due to the fact that lodash doesn't automatically
+        // discard the `undefined` values. 
+        formPromises = _.compact(formPromises);
+
+        // Once all the forms are done, we need to set the state to
+        // unsubmitted
+        $q.all(formPromises).then(function(){
+          form.$setUnsubmitted();
+        }, function(){
+          form.$setUnsubmitted();
         });
       };
 
