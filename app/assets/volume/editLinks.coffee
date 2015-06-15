@@ -44,6 +44,7 @@ app.directive 'volumeEditLinksForm', [
             form.$setPristine()
             form.$setUnsubmitted()
           , (res) ->
+            form.$setUnsubmitted()
             form.validator.server res
           )
 
