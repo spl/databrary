@@ -2,34 +2,34 @@
   <span ng-click="close()" class="button icon close"></span>
 
   <div class="popup-file-info">
-    <h3>
-      <img class="popup-format-icon" ng-src="{{::asset.icon}}"/> 
-      <span ng-bind="::asset.name"></span>
-    </h3>
-    <ul>
-      <li>
-        <span>Content from </span>
-        <a ng-href="{{::asset.slotRoute()}}">
-          <span ng-bind="::asset.container.displayName"></span>
-          <span ng-if="::asset.container.date" ng-bind="::' (' + asset.container.date + ')'"></span>
-        </a>
+    <h4>
+      <span>Files from </span>
+      <a ng-href="{{::volume.route() + '#panel-' + (slot.top ? 'materials' : 'sessions')}}" ng-bind="::volume.name"></a>
+    </h4>
+  </div>
+
+  <p ng-if="::assets" ng-bind="'download.zip.prompt.partial' | message"></p>
+  <p ng-if="::!assets" ng-bind="'download.zip.prompt.empty' | message"></p>
+  <ul class="download-list">
+      <li ng-repeat="(filename,asset) in assets">
+        <span class="icon release" ng-class="::page.constants.release[asset.release]"></span>
+        <span ng-if="::asset.name" ng-bind="::asset.name + ' '"></span>
+        <span class="untitled" ng-if="::!asset.name" ng-bind="::asset.name || ('asset.untitled' | message) + ' '"></span>
+        <span class="download-filename" ng-bind="::' ('+filename+')'"></span>
       </li>
-      <li>File format: {{asset.format.extension}}</li>
-    </ul>
-  </div>
-  <div>
-      <li ng-repeat="asset in assets"> {{asset.name}} </li>
-  </div>
-  <div ng-if="::hasThumbnail">
-    <img class="popup-thumb" ng-src="{{::asset.thumbRoute(480)}}">
-  </div>
+  </ul>
   <div class="popup-cite" ng-if="::volume">
     <cite-volume></cite-volume>
   </div>
-  <div class="popup-classification">
-    <span class="icon release" ng-class="::page.constants.release[asset.release]"></span>
-    <span class="popup-classification-title" ng-bind="::'release.'+page.constants.release[asset.release]+'.title' | message"></span>: 
-    <span ng-bind="::'release.'+page.constants.release[asset.release]+'.description' | message"></span>.
+  <div class="popup-classification release-legend">
+    <ul>
+      <li>File release levels</li>
+      <li ng-repeat="(i,c) in page.constants.release" ng-if="i>0">
+        <span class="icon release" ng-class="c"></span>
+        <span class="popup-classification-title" ng-bind="'release.'+c+'.title' | message"></span>: 
+        <span ng-bind="'release.'+c+'.description' | message"></span>
+      </li>
+    </ul>
   </div>
   <a ng-href="{{::slot.zipRoute()}}" class=" button green" target="_self" tooltip="'excerpts.download' | message">
     <span class="download icon"></span><span>Download</span>

@@ -21,7 +21,7 @@
         <span class="icon release" ng-class="::page.constants.release[asset.release]"></span>
         <span ng-if="::asset.name" ng-bind="::asset.name + ' '"></span>
         <span class="untitled" ng-if="::!asset.name" ng-bind="::asset.name || ('asset.untitled' | message) + ' '"></span>
-        <span ng-bind="::' ('+filename+')'"></span>
+        <span class="download-filename" ng-bind="::' ('+filename+')'"></span>
       </li>
   </ul>
   <div class="popup-cite" ng-if="::volume">
