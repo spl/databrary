@@ -1,8 +1,8 @@
 'use strict'
 
 app.factory('uploadService', [
-  'routerService', 'messageService'
-  (router, messages) ->
+  'routerService',
+  (router) ->
     removedAsset: undefined
 
     # callbacks for ng-flow:
