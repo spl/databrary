@@ -466,8 +466,6 @@ app.factory('modelService', [
       var v = this;
       return router.http(router.controllers.postVolume, this.id, data)
         .then(function (res) {
-          if ('citation' in data)
-            v.clear('citation');
           return v.update(res.data);
         });
     };

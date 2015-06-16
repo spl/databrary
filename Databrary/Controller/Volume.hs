@@ -101,7 +101,7 @@ volumeJSONField vol "access" ma = do
     volumeAccessJSON va JSON..+ ("party" JSON..= partyJSON (volumeAccessParty va)))
     <$> lookupVolumeAccess vol (fromMaybe PermissionNONE $ readDBEnum . BSC.unpack =<< ma)
 volumeJSONField vol "citation" _ =
-  Just . maybe JSON.Null JSON.toJSON <$> lookupVolumeCitation vol
+  Just . JSON.toJSON <$> lookupVolumeCitation vol
 volumeJSONField vol "links" _ =
   Just . JSON.toJSON <$> lookupVolumeLinks vol
 volumeJSONField vol "funding" _ =
@@ -197,9 +197,9 @@ postVolume = action POST (pathAPI </> pathId) $ \arg@(api, vi) -> withAuth $ do
   cite <- lookupVolumeCitation v
   (v', cite') <- runForm (api == HTML ?> htmlVolumeForm (Just v) cite) $ volumeCitationForm v
   changeVolume v'
-  _ <- changeVolumeCitation v' cite'
+  r <- changeVolumeCitation v' cite'
   case api of
-    JSON -> okResponse [] $ volumeJSON v'
+    JSON -> okResponse [] $ volumeJSON v' JSON..+ "citation" JSON..= if r then cite' else cite
     HTML -> redirectRouteResponse [] viewVolume arg []
 
 createVolume :: AppRoute API

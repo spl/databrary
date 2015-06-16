@@ -7,7 +7,7 @@ app.factory('constantService', [
     constants.messages = messages;
 
     constants.regex = {
-      doi: /^(?:[dD][oO][iI]:|(?:http:\/\/)?dx\.doi\.org\/)?(10\.[0-9\.]+\/\S+)\s*$/,
+      doi: /^(?:[dD][oO][iI]:|[hH][dD][lL]:|(?:http:\/\/)?dx\.doi\.org\/)?(10\.[0-9\.]+\/\S+)\s*$/,
     };
 
     //
