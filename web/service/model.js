@@ -1179,7 +1179,9 @@ app.factory('modelService', [
       if (arguments.length < 3 && this instanceof Comment)
         reply = this.id;
       var s = this;
-      return router.http(router.controllers.postComment, this.container.id, segment.format(), reply, data)
+      if (reply != null)
+        data.parent = reply;
+      return router.http(router.controllers.postComment, this.container.id, segment.format(), data)
         .then(function (res) {
           s.volume.clear('comments');
           s.clear('comments');
