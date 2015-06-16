@@ -89,8 +89,8 @@ serveAssetSegment dl as = do
 downloadAssetSegment :: AppRoute (Id Slot, Id Asset)
 downloadAssetSegment = action GET (pathSlotId </> pathId </< "download") $ \(si, ai) -> withAuth $ do
   as <- getAssetSegment PermissionPUBLIC Nothing si ai
-  inline <- peeks $ lookupQueryParameters "inline"
-  serveAssetSegment (null inline) as
+  inline <- peeks $ boolQueryParameter "inline"
+  serveAssetSegment (not inline) as
 
 thumbAssetSegment :: AppRoute (Id Slot, Id Asset)
 thumbAssetSegment = action GET (pathSlotId </> pathId </< "thumb") $ \(si, ai) -> withAuth $ do
