@@ -3,14 +3,21 @@
 app.controller('party/profile', [
   '$scope', 'displayService', 'party', 'pageService',
   function ($scope, display, party, page) {
-    $scope.clickUser = function(user){
-      _.each($scope.volumes, function(v, i){
+
+    // This function takes in a user, and loops through
+    // volumes, and attaches a "volumeSelected" class 
+    // to all the pertinent volumes.  
+    $scope.clickUser = function(user) {
+      _.each($scope.volumes, function(v, i) {
         $scope.volumes[i].selectedClass = (v.users.indexOf(user.id) > -1) ? "volumeSelected" : "" ;
       });
     };
 
-    $scope.clickVolume = function(volume){
-      _.each($scope.users, function(u, i){
+    // This function takes in a volume, and loops
+    // through the users and attaches a class 
+    // called "userSelected" 
+    $scope.clickVolume = function(volume) {
+      _.each($scope.users, function(u, i) {
         $scope.users[i].selectedClass = (u.volumes.indexOf(volume.id) > -1) ? "userSelected" : "" ;
       });
     };
