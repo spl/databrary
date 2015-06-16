@@ -3,7 +3,7 @@
 
   <div class="popup-file-info">
     <h4>
-      <span>Files from </span>
+      <span>ARAWRAWDSFSDF </span>
       <a ng-href="{{::asset.slotRoute()}}">
         <span ng-bind="::slot.container.displayName"></span>
         <span ng-if="::slot.container.date" ng-bind="::' (' + slot.container.date + ')'"></span>
@@ -14,7 +14,7 @@
     </span>
   </div>
 
-  <p ng-if="::assets" ng-bind="'download.zip.prompt.partial' | message"></p>
+  <p ng-if="::!!assets" ng-bind="'download.zip.prompt.partial' | message"></p>
   <p ng-if="::!assets" ng-bind="'download.zip.prompt.empty' | message"></p>
   <ul class="download-list">
       <li class="flat" ng-repeat="(filename,asset) in assets">

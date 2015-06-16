@@ -4,18 +4,20 @@
   <div class="popup-file-info">
     <h4>
       <span>Files from </span>
-      <a ng-href="{{::volume.route() + '#panel-' + (slot.top ? 'materials' : 'sessions')}}" ng-bind="::volume.name"></a>
+      <a ng-if="::!slot" ng-href="{{::volume.route()}}" ng-bind="::volume.name"></a>
+      <a ng-if="::slot" ng-href="{{::asset.slotRoute()}}">
+        <span ng-bind="::slot.container.displayName"></span>
+        <span ng-if="::slot.container.date" ng-bind="::' (' + slot.container.date + ')'"></span>
+      </a>
     </h4>
   </div>
 
-  <p ng-if="::assets" ng-bind="'download.zip.prompt.partial' | message"></p>
+  <p ng-if="::!!assets" ng-bind="'download.zip.prompt.partial' | message"></p>
   <p ng-if="::!assets" ng-bind="'download.zip.prompt.empty' | message"></p>
   <ul class="download-list">
       <li ng-repeat="(filename,asset) in assets">
         <span class="icon release" ng-class="::page.constants.release[asset.release]"></span>
-        <span ng-if="::asset.name" ng-bind="::asset.name + ' '"></span>
-        <span class="untitled" ng-if="::!asset.name" ng-bind="::asset.name || ('asset.untitled' | message) + ' '"></span>
-        <span class="download-filename" ng-bind="::' ('+filename+')'"></span>
+        <span ng-bind="::filename"></span>
       </li>
   </ul>
   <div class="popup-cite" ng-if="::volume">

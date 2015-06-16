@@ -303,6 +303,8 @@ app.provider('routerService', [
             return page.models.Volume.get(page.$route.current.params.id);
           }
         ],
+        slot: function(){
+        },
         fileList: [
           'pageService', function (page) {
             return page.router.http(page.router.controllers.VolumeApi.zipList, page.$route.current.params.id)
@@ -338,8 +340,8 @@ app.provider('routerService', [
     routes.slotEdit = makeRoute(controllers.SlotHtml.edit, ['vid', 'id', 'segment'], slotRoute(true));
 
     routes.slotZip = makeRoute(controllers.SlotController.zip, ['vid', 'id', 'segment'], {
-      controller: 'volume/slotZip',
-      templateUrl: 'volume/slotZip.html', 
+      controller: 'volume/zip',
+      templateUrl: 'volume/zip.html', 
       resolve: {
         slot: [
           'pageService', function (page) {
@@ -348,6 +350,8 @@ app.provider('routerService', [
             }); 
           }
         ],
+        volume: function () {
+        },
         fileList: [
           'pageService', 'Segment', function (page, Segment) {
             return page.router.http(page.router.controllers.SlotApi.zipList, page.$route.current.params.vid,
