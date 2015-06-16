@@ -34,7 +34,7 @@ postVolumeAccess = action POST (pathAPI </> pathId </> pathVolumeAccessTarget) $
   a <- maybeAction =<< lookupVolumeAccessParty v ap
   u <- peek
   let su = identitySuperuser u
-      restr = unId ap <= 0
+      ru = unId ap > 0
   a' <- runForm (api == HTML ?> htmlVolumeAccessForm a) $ do
     csrfForm
     delete <- "delete" .:> deform
@@ -42,11 +42,11 @@ postVolumeAccess = action POST (pathAPI </> pathId </> pathVolumeAccessTarget) $
           | delete = return PermissionNONE
           | otherwise = deform
     individual <- "individual" .:> (del
-      >>= deformCheck "Cannot share full access." ((||) (not restr) . (PermissionSHARED >=))
+      >>= deformCheck "Cannot share full access." ((||) ru . (PermissionSHARED >=))
       >>= deformCheck "Cannot remove your ownership." ((||) (su || not (volumeAccessProvidesADMIN a)) . (PermissionADMIN <=)))
     children <- "children" .:> (del
       >>= deformCheck "Inherited access must not exceed individual." (individual >=)
-      >>= deformCheck "You are not authorized to share data." ((||) (accessSite u >= PermissionEDIT) . (PermissionNONE ==)))
+      >>= deformCheck "You are not authorized to share data." ((||) (ru || accessSite u >= PermissionEDIT) . (PermissionNONE ==)))
     return a
       { volumeAccessIndividual = individual
       , volumeAccessChildren = children
