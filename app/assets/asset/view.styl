@@ -23,6 +23,8 @@
   .view-link
     display inherit
     text-align justify
+  p
+    margin b1 b2
 
 .popup-thumb
   box-shadow box-shadow-def
@@ -34,7 +36,7 @@
 .popup-file-info
   a
     color green
-  h3
+  h3,h4,span
     word-break break-all
     margin-top 3
   ul
@@ -66,9 +68,14 @@
     
 .download-list
   position relative
-  margin-left auto
-  margin-right auto
+  margin b2
+  padding-left 0
   text-align justify
-  
+  li
+    border-top 1px solid neutral51
+    padding-top b8
+    padding-bottom b8
+  li:last-of-type
+    border-bottom 1px solid neutral51
   li:before
     content none

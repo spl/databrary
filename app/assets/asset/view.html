@@ -5,6 +5,7 @@
     <h3>
       <img class="popup-format-icon" ng-src="{{::asset.icon}}"/>
       <span ng-bind="::asset.name"></span>
+      <span class="untitled" ng-if="::!asset.name" ng-bind="::asset.name || ('asset.untitled' | message) + ' '"></span>
     </h3>
     <ul>
       <li>
