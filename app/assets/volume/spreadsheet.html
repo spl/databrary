@@ -1,4 +1,4 @@
-<div class="spreadsheet-legend" ng-if="::editing && !top">
+<div class="release-legend" ng-if="::editing && !top">
   <a href="" ng-click="showConsents=false" ng-show="showConsents">
     Hide legend of session release levels
   </a>
@@ -58,7 +58,7 @@
   </table>
 </div>
 
-<a ng-if="::!editing && !top" ng-href="{{::volume.zipRoute()}}" target="_self">
+<a ng-if="::!editing && !top" ng-href="{{::volume.zipRoute()}}">
   <span class="icon download"></span>
   <span class="download" message="download.zip"></span>
 </a>
