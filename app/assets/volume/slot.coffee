@@ -513,12 +513,6 @@ app.controller('volume/slot', [
 
       type: 'asset'
 
-      error: (message) ->
-        messages.addError
-          owner: @
-          color: 'red'
-          body: message
-
       reset: ->
         super()
         for e in @excerpts
@@ -665,6 +659,16 @@ app.controller('volume/slot', [
             @removed()
             false
         return
+
+      error: (message) ->
+        messages.addError
+          owner: @
+          color: 'red'
+          body: constants.message('asset.upload.error', @name, message || 'unknown error')
+        @file.cancel()
+        delete @file
+        delete @progress
+        @removed()
 
       rePosition: () ->
         $scope.editing = 'position'

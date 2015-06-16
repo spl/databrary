@@ -17,8 +17,8 @@ app.factory('uploadService', [
     # let's first kill the upload process, then 
     # send back the error message. 
     fileError: (file, message) ->
-      file.abort()
       file.store.error message
+      return
 
     fileProgress: (file) ->
       file.store.progress = file.progress()
