@@ -12,10 +12,9 @@ app.factory('uploadService', [
       file.store.save()
       return
 
-
-    # If there's an error in the file-upload, 
-    # let's first kill the upload process, then 
-    # send back the error message. 
+    # If there's an error in the file-upload,
+    # let's first kill the upload process, then
+    # send back the error message.
     fileError: (file, message) ->
       file.store.error message
       return
