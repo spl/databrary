@@ -831,7 +831,7 @@ app.controller('volume/slot', [
       file.store.progress = 1
       file.store.save()
     $scope.fileProgress = (file) ->
-      file.store.progress()
+      file.store.progress = file.progress()
     $scope.fileError = (file, message) ->
       file.store.error(message)
 
