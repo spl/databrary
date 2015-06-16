@@ -1,8 +1,8 @@
 'use strict'
 
 app.factory('uploadService', [
-  'routerService',
-  (router) ->
+  'routerService', 'messageService'
+  (router, messages) ->
     removedAsset: undefined
 
     # callbacks for ng-flow:
@@ -14,7 +14,10 @@ app.factory('uploadService', [
 
     fileError: (file, message, flow) ->
       file.abort()
-      alert("There was an error uploading the file")
+      messages.addError
+        type: 'red'
+        body: message
+        owner: this
 
     fileProgress: (file) ->
       file.store.progress = file.progress()
