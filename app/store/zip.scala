@@ -20,8 +20,8 @@ object Zip {
     Enumerator(a) >>> Enumerator.flatten(e2)
 
 
-  def slotAssetList(slot : Slot) : Future[Seq[(String, JsValue)]] =
-    slot.fileName.flatMap { slotName =>
+  def slotAssetList(slot : Slot, prefix : String = "") : Future[Seq[(String, JsValue)]] =
+    slotName(slot).flatMap { sname =>
     slot.assets.map { assets =>
       val names = mutable.Set.empty[String]
       Seq(assets.flatMap(cast[SlotFileAsset](_).filter(_.checkPermission(Permission.VIEW))).map { sa =>
@@ -33,7 +33,7 @@ object Zip {
           i += 1
           name = base + i + ext
         }
-        (slotName + "/" + name , sa.json.js)
+        (prefix + sname + "/" + name , sa.json.js)
       } : _*)
     }}
 
@@ -83,11 +83,10 @@ object Zip {
 
   def volumeAssetList (vol : Volume): Future[Seq[(String, JsValue)]]  = {
     vol.fileName.flatMap { vname =>
-        vol.containers.flatMap { slots =>
-          val prefix = vname + "/"
-          slots.flatMapAsync(slotAssetList _)
-        }
-    } 
+      vol.containers.flatMap { slots =>
+        slots.flatMapAsync(slotAssetList(_, vname + "/"))
+      }
+    }
   }
     
   def volume(vol : Volume) = zip(vol) {
