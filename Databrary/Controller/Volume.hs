@@ -14,7 +14,7 @@ module Databrary.Controller.Volume
   , volumeJSONQuery
   ) where
 
-import Control.Applicative (Applicative, (<*>), optional)
+import Control.Applicative (Applicative, (<*>), (<|>), optional)
 import Control.Arrow ((&&&))
 import Control.Monad (mfilter, guard, void, when, liftM2)
 import Control.Monad.Trans.Class (lift)
@@ -49,6 +49,7 @@ import Databrary.Model.Slot
 import Databrary.Model.Asset
 import Databrary.Model.Excerpt
 import Databrary.Model.Tag
+import Databrary.Model.Comment
 import Databrary.HTTP.Form.Deform
 import Databrary.HTTP.Path.Parser
 import Databrary.Action.Route
@@ -67,11 +68,12 @@ getVolume p i =
 
 data VolumeCache = VolumeCache
   { volumeCacheRecords :: Maybe (HML.HashMap (Id Record) Record)
+  , volumeCacheTopContainer :: Maybe Container
   }
 
 instance Monoid VolumeCache where
-  mempty = VolumeCache mempty
-  mappend (VolumeCache r1) (VolumeCache r2) = VolumeCache (mappend r1 r2)
+  mempty = VolumeCache mempty Nothing
+  mappend (VolumeCache r1 t1) (VolumeCache r2 t2) = VolumeCache (r1 <> r2) (t1 <|> t2)
 
 cacheVolumeRecords :: MonadDB m => Volume -> StateT VolumeCache m ([Record], HML.HashMap (Id Record) Record)
 cacheVolumeRecords vol = do
@@ -79,10 +81,19 @@ cacheVolumeRecords vol = do
   maybe (do
     l <- lookupVolumeRecords vol
     let m = HML.fromList [ (recordId r, r) | r <- l ]
-    put $ vc{ volumeCacheRecords = Just m }
+    put vc{ volumeCacheRecords = Just m }
     return (l, m))
     (return . (HML.elems &&& id))
     $ volumeCacheRecords vc
+
+cacheVolumeTopContainer :: MonadDB m => Volume -> StateT VolumeCache m Container
+cacheVolumeTopContainer vol = do
+  vc <- get
+  fromMaybeM (do
+    t <- lookupVolumeTopContainer vol
+    put vc{ volumeCacheTopContainer = Just t }
+    return t)
+    $ volumeCacheTopContainer vc
 
 volumeJSONField :: (MonadDB m, MonadHasIdentity c m) => Volume -> BS.ByteString -> Maybe BS.ByteString -> StateT VolumeCache m (Maybe JSON.Value)
 volumeJSONField vol "access" ma = do
@@ -102,16 +113,20 @@ volumeJSONField vol "containers" (Just "records") = do
 volumeJSONField vol "containers" _ =
   Just . JSON.toJSON . map containerJSON <$> lookupVolumeContainers vol
 volumeJSONField vol "top" _ =
-  Just . JSON.toJSON . containerJSON <$> lookupVolumeTopContainer vol
+  Just . JSON.toJSON . containerJSON <$> cacheVolumeTopContainer vol
 volumeJSONField vol "records" _ = do
   (l, _) <- cacheVolumeRecords vol
   return $ Just $ JSON.toJSON $ map recordJSON l
 volumeJSONField o "excerpts" _ =
   Just . JSON.toJSON . map excerptJSON <$> lookupVolumeExcerpts o
 volumeJSONField o "tags" n = do
-  t <- lookupVolumeTopContainer o
+  t <- cacheVolumeTopContainer o
   tc <- lookupSlotTagCoverage (containerSlot t) (maybe 64 fst $ BSC.readInt =<< n)
   return $ Just $ JSON.toJSON $ map tagCoverageJSON tc
+volumeJSONField o "comments" n = do
+  t <- cacheVolumeTopContainer o
+  tc <- lookupSlotComments (containerSlot t) (maybe 64 fst $ BSC.readInt =<< n)
+  return $ Just $ JSON.toJSON $ map commentJSON tc
 volumeJSONField _ _ _ = return Nothing
 
 volumeJSONQuery :: (MonadDB m, MonadHasIdentity c m) => Volume -> JSON.Query -> m JSON.Object
