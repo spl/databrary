@@ -16,6 +16,8 @@ data-files:
   databrary.conf,
   messages.conf,
   schema/*.sql,
+  transctl.sh,
+  transcode,
   web/*.min.css,
   web/*.min.js,
   web/icons/*.ico,
