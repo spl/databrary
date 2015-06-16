@@ -333,6 +333,8 @@ object AssetApi extends AssetController with ApiController {
     val size = Field(Forms.longNumber(1))
   }
 
+  private val logger = play.api.Logger("upload")
+
   def uploadStart(v : Volume.Id) =
     VolumeApi.Action(v, Permission.EDIT).async { implicit request =>
       val form = new StartForm(v)._bind
@@ -353,6 +355,7 @@ object AssetApi extends AssetController with ApiController {
 
   private class ChunkForm extends ApiForm(routes.AssetApi.uploadChunk) {
     val flowChunkNumber = Field(Forms.number(1))
+    val flowCurrentChunkSize = Field(Mappings.option(Forms.number(1)))
     val flowChunkSize = Field(Forms.number(1024))
     val flowTotalSize = Field(Forms.longNumber(1))
     val flowIdentifier = Field(Forms.text)
@@ -367,20 +370,29 @@ object AssetApi extends AssetController with ApiController {
       if (f.length != form.flowTotalSize.get)
         form.flowTotalSize.withError("size mismatch")._throw
       f.seek(form.flowChunkSize.get.toLong * (form.flowChunkNumber.get-1).toLong)
-      run(f, form.flowChunkSize.get)
+      run(f, form.flowCurrentChunkSize.get.getOrElse(form.flowChunkSize.get))
     })
   }
 
   def uploadChunk = DeferredAction.site(SiteAction.auth) { implicit request =>
     Iteratee.flatten {
       uploadChunkPrepare(Iteratee.ignore[Array[Byte]].map[Result](_ => NotFound), true) { (f, z) =>
-        Iteratee.foreach[Array[Byte]](f.write(_))
-        .map[Result] { _ =>
+        var t = 0
+        Iteratee.foreach[Array[Byte]] { b =>
+          f.write(b)
+          t += b.length
+        }.map[Result] { _ =>
           f.close
-          NoContent
+          if (t == z)
+            NoContent
+          else {
+            logger.error("wrong size chunk " + t + "/" + z)
+            BadRequest("Wrong size upload: file being uploaded may have moved or changed")
+          }
         }
         .recover[Result] { case e : Throwable =>
           f.close
+          logger.error("uploading", e)
           throw e
         }
       }
