@@ -185,5 +185,5 @@ changeAvatar p Nothing = do
 changeAvatar p (Just a) = do
   ident <- getAuditIdentity
   (0 <) . fst <$> updateOrInsert
-    $(auditInsert 'ident "avatar" [("asset", "${assetId a}"), ("party", "${partyId p}")] Nothing)
     $(auditUpdate 'ident "avatar" [("asset", "${assetId a}")] "party = ${partyId p}" Nothing)
+    $(auditInsert 'ident "avatar" [("asset", "${assetId a}"), ("party", "${partyId p}")] Nothing)
