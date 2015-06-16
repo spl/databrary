@@ -18,10 +18,7 @@ app.factory('uploadService', [
     # send back the error message. 
     fileError: (file, message) ->
       file.abort()
-      messages.addError
-        type: 'red'
-        body: message
-        owner: this
+      file.store.error message
 
     fileProgress: (file) ->
       file.store.progress = file.progress()

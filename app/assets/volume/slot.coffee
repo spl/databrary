@@ -513,6 +513,12 @@ app.controller('volume/slot', [
 
       type: 'asset'
 
+      error: (message) ->
+        messages.addError
+          owner: @
+          color: 'red'
+          body: message
+
       reset: ->
         super()
         for e in @excerpts
