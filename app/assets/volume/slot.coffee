@@ -633,6 +633,7 @@ app.controller('volume/slot', [
         messages.clear(this)
         return if @file
         file.pause()
+        console.log file
         @file = file
         @progress = 0
         file.store = this
@@ -828,6 +829,7 @@ app.controller('volume/slot', [
 
     $scope.fileSuccess = uploads.fileSuccess
     $scope.fileProgress = uploads.fileProgress
+    $scope.fileError = uploads.fileError
 
     class Record extends TimeBar
       constructor: (r) ->

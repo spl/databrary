@@ -12,6 +12,10 @@ app.factory('uploadService', [
       file.store.save()
       return
 
+    fileError: (file, message, flow) ->
+      file.abort()
+      alert("There was an error uploading the file")
+
     fileProgress: (file) ->
       file.store.progress = file.progress()
       return
