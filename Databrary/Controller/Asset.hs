@@ -185,6 +185,9 @@ processAsset api target = do
   as'' <- maybe (return as') (\up@FileUpload{ fileUploadFile = upfile } -> do
     a' <- addAsset (slotAsset as')
       { assetName = Just $ TE.decodeUtf8 $ fileUploadName upfile
+      , assetDuration = Nothing
+      , assetSize = Nothing
+      , assetSHA1 = Nothing
       } . Just =<< peeks (fileUploadPath upfile)
     fileUploadRemove upfile
     case target of

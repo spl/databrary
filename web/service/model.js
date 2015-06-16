@@ -1120,7 +1120,7 @@ app.factory('modelService', [
 
     Asset.prototype.replace = function (data) {
       var a = this;
-      return router.http(router.controllers.AssetApi.replace, this.id, data)
+      return router.http(router.controllers.postAsset, this.id, data)
         .then(function (res) {
           if (a.container)
             a.container.clear('assets');
