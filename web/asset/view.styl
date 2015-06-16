@@ -20,6 +20,11 @@
   .popup-thumb,a.button
     margin b1
     margin-bottom b2
+  .view-link
+    display inherit
+    text-align justify
+  p
+    margin b1 b2
 
 .popup-thumb
   box-shadow box-shadow-def
@@ -29,8 +34,11 @@
   color red
 
 .popup-file-info
+  a
+    color green
   h3
     word-break break-all
+  h3,h4,span
     margin-top 3
   ul
     padding 0
@@ -51,7 +59,25 @@
   padding-top b1
   margin-top b2
 
+.popup-classification > ul
+  text-align justify
+  li:first-of-type
+    font-weight bold
 .popup-cite
   p
     text-align center
     font-size b2
+    
+.download-list
+  position relative
+  margin b2
+  padding-left 0
+  text-align justify
+  li
+    border-top 1px solid neutral51
+    padding-top b8
+    padding-bottom b8
+  li:last-of-type
+    border-bottom 1px solid neutral51
+  li:before
+    content none

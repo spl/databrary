@@ -1,0 +1,39 @@
+<div class="download-popup"> 
+  <span ng-click="close()" class="button icon close"></span>
+
+  <div class="popup-file-info">
+    <h4>
+      <span>Files from </span>
+      <a ng-if="::!slot" ng-href="{{::volume.route()}}" ng-bind="::volume.name"></a>
+      <a ng-if="::slot" ng-href="{{::asset.slotRoute()}}">
+        <span ng-bind="::slot.container.displayName"></span>
+        <span ng-if="::slot.container.date" ng-bind="::' (' + slot.container.date + ')'"></span>
+      </a>
+    </h4>
+  </div>
+
+  <p ng-if="::assetCount" message="download.zip.prompt.partial"></p>
+  <p ng-if="::!assetCount" message="download.zip.prompt.empty"></p>
+  <ul class="download-list">
+    <li ng-repeat="(filename,asset) in assets">
+      <span class="icon release" ng-class="::page.constants.release[asset.release]"></span>
+      <span ng-bind="::filename"></span>
+    </li>
+  </ul>
+  <div class="popup-cite" ng-if="::volume">
+    <cite-volume></cite-volume>
+  </div>
+  <div class="popup-classification release-legend">
+    <ul>
+      <li>File release levels</li>
+      <li ng-repeat="(i,c) in page.constants.release" ng-if="i>0">
+        <span class="icon release" ng-class="c"></span>
+        <span class="popup-classification-title" ng-bind="::'release.'+c+'.title' | message"></span>: 
+        <span ng-bind="::'release.'+c+'.description' | message"></span>
+      </li>
+    </ul>
+  </div>
+  <a ng-href="{{::slot.zipRoute()}}" class="button green" target="_self">
+    <span class="download icon"></span><span>Download</span>
+  </a>  
+</div>

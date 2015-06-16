@@ -577,7 +577,6 @@ app.controller('volume/slot', [
 
       save: ->
         return if @pending # sorry
-        $scope.form.edit.$setSubmitted()
         @pending = 1
         messages.clear(this)
         (if @file
@@ -588,7 +587,6 @@ app.controller('volume/slot', [
         ).then (asset) =>
             delete @pending
 
-            $scope.form.edit.$setUnsubmitted()
             first = !@asset
             @setAsset(asset)
 
@@ -610,7 +608,6 @@ app.controller('volume/slot', [
             return
           , (res) =>
             delete @pending
-            $scope.form.edit.$setUnsubmitted()
             messages.addError
               type: 'red'
               body: constants.message('asset.update.error', @name)
@@ -656,11 +653,12 @@ app.controller('volume/slot', [
       error: (message) ->
         messages.addError
           type: 'red'
-          body: 'Error during ' + @name + ' upload: ' + message
+          body: constants.message('asset.upload.error', @name, message || 'unknown error')
           owner: this
         @file.cancel()
         delete @file
         delete @progress
+        @removed()
         return
 
       rePosition: () ->
@@ -829,8 +827,11 @@ app.controller('volume/slot', [
       (!$scope.current?.file && $scope.current || $scope.addBlank()).upload(file) if editing
       return
 
-    $scope.fileSuccess = uploads.fileSuccess
-    $scope.fileProgress = uploads.fileProgress
+    $scope.fileSuccess = (file) ->
+      file.store.progress = 1
+      file.store.save()
+    $scope.fileProgress = (file) ->
+      file.store.progress()
     $scope.fileError = (file, message) ->
       file.store.error(message)
 

@@ -5,17 +5,6 @@ app.factory('uploadService', [
   (router) ->
     removedAsset: undefined
 
-    # callbacks for ng-flow:
-
-    fileSuccess: (file) ->
-      file.store.progress = 1
-      file.store.save()
-      return
-
-    fileProgress: (file) ->
-      file.store.progress = file.progress()
-      return
-
     flowOptions: () ->
       target: router.controllers.uploadChunk.route()
       method: 'octet'

@@ -289,8 +289,6 @@ app.provider('routerService', [
     routes.volumeCreate = makeRoute(controllers.viewVolumeCreate, ['owner'], volumeEdit);
     routes.volumeEdit = makeRoute(controllers.viewVolumeEdit, ['id'], volumeEdit);
 
-    //
-
     routes.volume = makeRoute(controllers.viewVolume, ['id'], {
       controller: 'volume/view',
       templateUrl: 'volume/view.html',
@@ -305,7 +303,27 @@ app.provider('routerService', [
       reloadOnSearch: false,
     });
 
-    //
+    routes.volumeZip = makeRoute(controllers.zipVolume, ['id'], {
+      controller: 'volume/zip',
+      templateUrl: 'volume/zip.html', 
+      resolve: {
+        volume: [
+          'pageService', function (page) {
+            return page.models.Volume.get(page.$route.current.params.id);
+          }
+        ],
+        slot: function(){
+        },
+        fileList: [
+          'pageService', function (page) {
+            return page.router.http(page.router.controllers.VolumeApi.zipList, page.$route.current.params.id)
+              .then(function (res) {
+                return res.data;
+              });
+          }
+        ],
+      }
+    });
 
     function slotRoute(edit) { return {
       controller: 'volume/slot',
@@ -330,7 +348,30 @@ app.provider('routerService', [
     routes.slotEdit = makeRoute(controllers.viewSlotEdit, ['vid', 'id'], slotRoute(true));
     routes.slot = makeRoute(controllers.viewSlot, ['vid', 'id', 'segment'], slotRoute(false));
 
-    //
+    routes.slotZip = makeRoute(controllers.zipSlot, ['vid', 'id', 'segment'], {
+      controller: 'volume/zip',
+      templateUrl: 'volume/zip.html', 
+      resolve: {
+        slot: [
+          'pageService', function (page) {
+            return page.models.Volume.get(page.$route.current.params.vid).then(function(v) {
+              return v.getSlot(page.$route.current.params.id, page.$route.current.params.segment);
+            }); 
+          }
+        ],
+        volume: function () {
+        },
+        fileList: [
+          'pageService', 'Segment', function (page, Segment) {
+            return page.router.http(page.router.controllers.SlotApi.zipList, page.$route.current.params.vid,
+              page.$route.current.params.id, Segment.format(page.$route.current.params.segment))
+              .then(function (res) {
+                return res.data;
+              });
+          }
+        ],
+      }
+    });
 
     routes.slotAsset = makeRoute(controllers.viewAssetSegment, ['vid', 'cid', 'segment', 'id'], {
       controller: 'asset/view',
@@ -357,8 +398,6 @@ app.provider('routerService', [
     routes.partyAvatar = makeRoute(controllers.partyAvatar, ['id', 'size']);
     routes.volumeThumb = makeRoute(controllers.thumbVolume, ['id', 'size']);
     routes.volumeCSV = makeRoute(controllers.csvVolume, ['id']);
-    routes.volumeZip = makeRoute(controllers.zipVolume, ['id']);
-    routes.slotZip = makeRoute(controllers.zipSlot, ['vid', 'id', 'segment']);
     routes.assetThumb = makeRoute(controllers.thumbAssetSegment, ['cid', 'segment', 'id', 'size']);
     routes.assetDownload = makeRoute(controllers.downloadAssetSegment, ['cid', 'segment', 'id', 'inline']);
     routes.assetEdit = makeRoute(controllers.viewAssetEdit, ['id']);
