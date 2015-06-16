@@ -12,7 +12,11 @@ app.factory('uploadService', [
       file.store.save()
       return
 
-    fileError: (file, message, flow) ->
+
+    # If there's an error in the file-upload, 
+    # let's first kill the upload process, then 
+    # send back the error message. 
+    fileError: (file, message) ->
       file.abort()
       messages.addError
         type: 'red'
