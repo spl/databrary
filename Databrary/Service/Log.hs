@@ -49,8 +49,8 @@ initLog conf = do
 
 initLogs :: C.Config -> IO Logs
 initLogs conf = Logs
-  <$> initLog (C.subconfig "access" conf)
-  <*> initLog (C.subconfig "messages" conf)
+  <$> initLog (C.subconfig "messages" conf)
+  <*> initLog (C.subconfig "access" conf)
 
 finiLogs :: Logs -> IO ()
 finiLogs (Logs lm la) =
