@@ -12,8 +12,8 @@
     </h4>
   </div>
 
-  <p ng-if="::!!assets" ng-bind="'download.zip.prompt.partial' | message"></p>
-  <p ng-if="::!assets" ng-bind="'download.zip.prompt.empty' | message"></p>
+  <p ng-if="assetCount.length > 0" ng-bind="'download.zip.prompt.partial' | message"></p>
+  <p ng-if="assetCount.length === 0" ng-bind="'download.zip.prompt.empty' | message"></p>
   <ul class="download-list">
       <li ng-repeat="(filename,asset) in assets">
         <span class="icon release" ng-class="::page.constants.release[asset.release]"></span>

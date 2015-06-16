@@ -13,6 +13,7 @@ app.controller 'volume/zip', [
       $scope.volume = volume
 
     $scope.assets = fileList
+    $scope.assetCount = Object.keys(fileList)
     
     $scope.close = ->
       window.history.back()
