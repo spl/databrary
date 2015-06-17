@@ -49,8 +49,7 @@ object Indexer {
   case class Record(recordId:Long, containerId:Long, date:Option[DateTime], age:Option[Duration])
 
   case class SQLSegmentTag(volumeId:Long, containerId:Long, segment:String, tags:Option[String])
-  case class SQLSegmentRecord(volumeId:Long, containerId:Long, segment:String, record:Long, metric:String, date:Option[DateTime],
-                              num:Option[Double], text:Option[String])
+  case class SQLSegmentRecord(volumeId:Long, containerId:Long, segment:String, record:Long, metric:String, datum:Option[String])
   case class SQLSegmentRelease(volumeId:Long, containerId:Long, segment:String, release:String)
   case class SQLSegmentAsset(volumeId:Long, containerId:Long, segment:String, asset:Long, assetName:String, duration:String)
 
@@ -153,8 +152,7 @@ object Indexer {
   def createSegmentRecordDocument(segment:SQLSegmentRecord) = {
     new JsonDocument(content_type = ContentTypes.SEGMENT_RECORD, segment_volume_id_i = Some(segment.volumeId.toInt),
       segment_container_id_i = Some(segment.containerId.toInt), segment_record_id_i = Some(segment.record.toInt),
-      record_num_d = segment.num, record_date_tdt = None,
-      record_text_t = segment.text
+      record_text_t = segment.datum
     )
   }
 
@@ -252,7 +250,7 @@ object Indexer {
       // We need a lookup function for getting the other information that we need out of this thing
       def apply(rs: WrappedResultSet): SQLSegmentRecord = new SQLSegmentRecord(
         sQLContainerVolumeLookup(rs.long("container").toInt).volumeId, rs.long("container"), rs.string("segment"),
-        rs.long("record"), rs.string("metric"), rs.jodaDateTimeOpt("datum_date"), rs.doubleOpt("datum_number"), rs.stringOpt("datum_text")
+        rs.long("record"), rs.string("metric"), rs.stringOpt("datum")
       )
     }
 
@@ -285,17 +283,19 @@ object Indexer {
 
     // This will get all of the public measures
     val sQLSegmentRecords = sql"""
-         SELECT container, segment, slot_record.record AS record, metric.name AS metric, datum_date, datum_number, datum_text
-         FROM slot_record, measure_all, metric WHERE measure_all.record = slot_record.record AND measure_all.metric = metric.id AND metric.release >= 'EXCERPTS'
+         SELECT container, segment, slot_record.record AS record, metric.name AS metric, datum
+         FROM slot_record, measure as measure_all, metric
+         WHERE measure_all.record = slot_record.record AND measure_all.metric = metric.id AND metric.release >= 'EXCERPTS'
        """.map(x => SQLSegmentRecord(x)).list().apply()
 
-    // Need to calculate age for each container using private measure, have to do in separate query
+
+
     sql"""
-         SELECT container, segment, slot_record.record AS record, metric.name AS metric, datum_date, datum_number, datum_text
-         FROM slot_record, measure_all, metric WHERE measure_all.record = slot_record.record AND measure_all.metric = metric.id AND metric.name = 'birthdate'
+         SELECT container, segment, slot_record.record AS record, metric.name AS metric, datum
+         FROM slot_record, measure as measure_all, metric WHERE measure_all.record = slot_record.record AND measure_all.metric = metric.id AND metric.name = 'birthdate'
        """.map(x => SQLSegmentRecord(x)).list().apply().map{x =>
-      sQLContainers(x.containerId).age = if(sQLContainers(x.containerId).date.isDefined && x.date.isDefined)
-        Some(new Duration(x.date.get, sQLContainers(x.containerId).date.get).getStandardDays) else None
+      sQLContainers(x.containerId).age = if(sQLContainers(x.containerId).date.isDefined && x.datum.isDefined && x.metric == "birthdate")
+        Some(new Duration(new DateTime(x.datum.get), sQLContainers(x.containerId).date.get).getStandardDays) else None
     }
 
     val sQLSegmentAssets = sql"""
@@ -306,7 +306,7 @@ object Indexer {
          SELECT container, segment, release FROM slot_release
        """.map(x => SQLSegmentRelease(x)).list().apply()
 
-    sQLSegmentRecords.map(x => println(x.volumeId, x.containerId, x.record, x.segment, x.metric, x.date, x.num, x.text))
+//    sQLSegmentRecords.map(x => println(x.volumeId, x.containerId, x.record, x.segment, x.metric, x.date, x.num, x.text))
 
 
     /*
