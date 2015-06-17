@@ -13,6 +13,7 @@ app.directive 'tagAdd', [
         $scope.vote(tag, true).then () -> ''
 
       form.search = (input) ->
+        return input unless form.$valid
         page.models.Tag.search(input).then (data) ->
             l = for tag in data
               text: tag

@@ -15,6 +15,7 @@ module Databrary.Model.Tag.Types
 import Control.Monad ((<=<))
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
+import Data.Char (toLower)
 import Data.Typeable (Typeable)
 import Database.PostgreSQL.Typed.Types (PGParameter(..), PGColumn(..))
 import qualified Text.Regex.Posix as Regex
@@ -38,7 +39,7 @@ validTag = Regex.makeRegex
 
 validateTag :: BS.ByteString -> Maybe TagName
 validateTag t = Regex.matchTest validTag tt ?> TagName tt where
-  tt = BSC.unwords $ BSC.words t
+  tt = BSC.map toLower $ BSC.unwords $ BSC.words t
 
 instance PathDynamic TagName where
   pathDynamic = validateTag <=< pathDynamic

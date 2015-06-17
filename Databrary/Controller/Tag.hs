@@ -27,7 +27,7 @@ _tagNameForm = deformMaybe' "Invalid tag name." . validateTag =<< deform
 
 queryTags :: AppRoute TagName
 queryTags = action GET (pathJSON >/> "tags" >/> PathDynamic) $ \t ->
-  okResponse [] . toJSON . map tagId =<< findTags t
+  okResponse [] . toJSON . map tagName =<< findTags t
 
 tagResponse :: API -> TagUse -> AuthAction
 tagResponse JSON t = okResponse [] . tagCoverageJSON =<< lookupTagCoverage (useTag t) (tagSlot t)
