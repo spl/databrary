@@ -9,12 +9,15 @@ app.directive('partyEditApplyForm', [
       form.data = party.parents.slice();
 
       $scope.$on('authApplyForm-init', function (event, applyForm) {
-        applyForm.successFn = function () {
+        applyForm.successFn = function (auth) {
           page.messages.add({
             body: page.constants.message('auth.apply.save.success'),
             type: 'green',
             owner: form
           });
+
+          if (!auth.party)
+            form.data.remove(auth);
         };
 
         applyForm.cancelFn = function (auth) {

@@ -283,7 +283,6 @@ auth.search.grant.legend=Authorize a new affiliate
 # --- Auth apply
 auth.request.title=Request authorization from {0}
 auth.request.notfound.user=User Not Found
-auth.request.notfound.success=Thank you for submitting a request to be Authorized. We will let you know as soon your application is Authorized.
 auth.request.notfound.info=Contact info
 
 # Permission levels

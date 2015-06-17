@@ -22,7 +22,7 @@ app.directive('authApplyForm', [
           form.$setPristine();
           delete auth.new;
 
-          form.successFn();
+          form.successFn(auth);
         }, function (res) {
           form.validator.server(res);
           page.display.scrollTo(form.$element);
@@ -39,13 +39,7 @@ app.directive('authApplyForm', [
           form.$setPristine();
           delete auth.new;
 
-          page.messages.add({
-            type: 'green',
-            body: page.constants.message('auth.request.notfound.success'),
-            owner: form
-          });
-
-          form.successFn();
+          form.successFn(auth);
         }, function (res) {
           form.validator.server(res);
           page.display.scrollTo(form.$element);
