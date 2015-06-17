@@ -658,7 +658,6 @@ app.controller('volume/slot', [
         @file.cancel()
         delete @file
         delete @progress
-        @removed()
         return
 
       rePosition: () ->
