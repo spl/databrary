@@ -157,7 +157,7 @@ password.check=Insecure password: {0}
 prename=First and middle name
 sortname=Last name
 openid=OpenID
-orcid=ORCiD
+orcid=ORCID iD
 avatar=avatar
 affiliation=Affiliation
 
@@ -221,7 +221,7 @@ party.edit.affiliation.help=Specify your institutional affiliation as you wish i
 party.edit.url.title=Website
 party.edit.url.help=Specify whatever personal web page you''d like (faculty page, ResearchGate, etc.)
 
-party.edit.orcid.help=Enter your ORCiD
+party.edit.orcid.help=Enter your ORCID iD
 
 party.edit.email.title=Email
 party.edit.email.help=Enter a valid email address. We recommend using your institutional email address.
