@@ -30,6 +30,7 @@ import Databrary.Model.Permission
 import Databrary.Model.Release
 import Databrary.Model.Identity
 import Databrary.Model.Party
+import Databrary.Model.ORCID
 import Databrary.Model.Authorize
 import Databrary.Model.Volume
 import Databrary.Model.VolumeAccess
@@ -103,6 +104,7 @@ processParty api p = do
     csrfForm
     name <- "sortname" .:> (deformRequired =<< deform)
     prename <- "prename" .:> deformNonEmpty deform
+    orcid <- "orcid" .:> deformNonEmpty (deformRead blankORCID)
     affiliation <- "affiliation" .:> deformNonEmpty deform
     url <- "url" .:> deformNonEmpty deform
     avatar <- "avatar" .:>
@@ -114,6 +116,7 @@ processParty api p = do
     return ((fromMaybe blankParty p)
       { partySortName = name
       , partyPreName = prename
+      , partyORCID = orcid
       , partyAffiliation = affiliation
       , partyURL = url
       }, avatar)

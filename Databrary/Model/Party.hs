@@ -75,6 +75,7 @@ partyJSON p@Party{..} = JSON.record partyId $ catMaybes
   [ Just $ "sortname" JSON..= partySortName
   , ("prename" JSON..=) <$> partyPreName
   , Just $ "name" JSON..= partyName p
+  , ("orcid" JSON..=) . show <$> partyORCID
   , ("affiliation" JSON..=) <$> partyAffiliation
   , ("url" JSON..=) <$> partyURL
   , "institution" JSON..= True <? isNothing partyAccount

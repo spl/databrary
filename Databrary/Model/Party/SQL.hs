@@ -26,7 +26,7 @@ import Databrary.Model.Identity.Types
 import Databrary.Model.Party.Types
 
 partyRow :: Selector -- ^ @Maybe 'Account' -> 'Permission' -> Maybe 'Access' -> 'Party'@
-partyRow = selectColumns 'Party "party" ["id", "name", "prename", "affiliation", "url"]
+partyRow = selectColumns 'Party "party" ["id", "name", "prename", "orcid", "affiliation", "url"]
 
 accountRow :: Selector -- ^ @'Party' -> 'Account'@
 accountRow = selectColumns 'Account "account" ["email", "password"]
