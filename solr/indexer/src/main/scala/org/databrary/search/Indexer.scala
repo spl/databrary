@@ -96,6 +96,7 @@ object Indexer {
                            record_container_i:Option[Int] = None, record_date_tdt:Option[String] = None,
                            record_text_t:Option[String] = None,
                            record_num_d:Option[Double] = None,
+                           record_metric:Option[String] = None,
                            segment_volume_id_i:Option[Int] = None, segment_record_id_i:Option[Int] = None,
                            segment_container_id_i:Option[Int] = None,
                            segment_start_tl:Option[Long] = None, segment_end_tl:Option[Long] = None,
@@ -152,7 +153,7 @@ object Indexer {
   def createSegmentRecordDocument(segment:SQLSegmentRecord) = {
     new JsonDocument(content_type = ContentTypes.SEGMENT_RECORD, segment_volume_id_i = Some(segment.volumeId.toInt),
       segment_container_id_i = Some(segment.containerId.toInt), segment_record_id_i = Some(segment.record.toInt),
-      record_text_t = segment.datum
+      record_text_t = segment.datum, record_metric = Some(segment.metric)
     )
   }
 
