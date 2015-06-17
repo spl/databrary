@@ -12,7 +12,7 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy as BSL
-import Data.Maybe (fromJust, listToMaybe)
+import Data.Maybe (isJust, fromJust, listToMaybe)
 import Data.Monoid ((<>))
 import qualified Data.Text as T
 import qualified Network.Wai as Wai
@@ -97,7 +97,7 @@ thumbAssetSegment = action GET (pathSlotId </> pathId </< "thumb") $ \(si, ai) -
   as <- getAssetSegment PermissionPUBLIC Nothing si ai
   q <- peeks Wai.queryString
   let as' = assetSegmentInterp 0.25 as
-  if formatIsImage (view as')
+  if formatIsImage (view as') && isJust (assetFile (view as))
     then do
       redirectRouteResponse [] downloadAssetSegment (slotId $ view as', assetId $ view as') q
     else
