@@ -386,6 +386,7 @@ app.factory('modelService', [
       name: true,
       alias: true,
       body: true,
+      doi: true,
       creation: true,
       citation: false,
       links: false,

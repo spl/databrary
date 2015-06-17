@@ -6,7 +6,8 @@ app.directive('citeVolume', [
     var link = function ($scope) {
       var authors = '';
       var ai = 0;
-      var access = $scope.volume.access && $scope.volume.access[ai];
+      var volume = $scope.volume;
+      var access = volume.access && volume.access[ai];
 
       function initial(p) {
         if (p)
@@ -14,7 +15,7 @@ app.directive('citeVolume', [
       }
 
       while (access) {
-        var next = $scope.volume.access[++ai];
+        var next = volume.access[++ai];
         if (next && (next.individual || 0) < constants.permission.ADMIN)
           next = undefined;
 
@@ -37,7 +38,7 @@ app.directive('citeVolume', [
 
       $scope.authors = authors;
       $scope.today = new Date();
-      $scope.permalink = $location.absUrl();
+      $scope.permalink = (volume.doi ? 'doi:' + volume.doi : $location.absUrl());
     };
 
     return {

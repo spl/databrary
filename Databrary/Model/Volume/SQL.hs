@@ -26,7 +26,7 @@ setPermission = defaulting PermissionNONE
 
 volumeRow :: Selector -- ^ @'Permission' -> 'Volume'@
 volumeRow = addSelects 'setCreation
-  (selectColumns 'Volume "volume" ["id", "name", "alias", "body"])
+  (selectColumns 'Volume "volume" ["id", "name", "alias", "body", "doi"])
   ["volume_creation(volume.id)"]
 
 selectVolume :: TH.Name -- ^ @'Identity'@

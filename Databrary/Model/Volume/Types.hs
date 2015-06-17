@@ -5,6 +5,7 @@ module Databrary.Model.Volume.Types
   , blankVolume
   ) where
 
+import qualified Data.ByteString as BS
 import qualified Data.Text as T
 import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
 import Language.Haskell.TH.Lift (deriveLift)
@@ -22,6 +23,7 @@ data Volume = Volume
   , volumeName :: T.Text
   , volumeAlias :: Maybe T.Text
   , volumeBody :: Maybe T.Text
+  , volumeDOI :: Maybe BS.ByteString
   , volumeCreation :: Timestamp
   , volumePermission :: Permission
   }
@@ -38,6 +40,7 @@ blankVolume = Volume
   , volumeName = ""
   , volumeAlias = Nothing
   , volumeBody = Nothing
+  , volumeDOI = Nothing
   , volumeCreation = posixSecondsToUTCTime 1357900000
   , volumePermission = PermissionNONE
   }

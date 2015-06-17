@@ -69,6 +69,7 @@ volumeJSON v@Volume{..} = JSON.record volumeId $ catMaybes
   [ Just $ "name" JSON..= volumeName
   , ("alias" JSON..=) <$> getVolumeAlias v
   , Just $ "body" JSON..= volumeBody
+  , ("doi" JSON..=) <$> volumeDOI
   , Just $ "creation" JSON..= volumeCreation
   , Just $ "permission" JSON..= volumePermission
   ]
