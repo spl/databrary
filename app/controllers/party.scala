@@ -116,7 +116,7 @@ sealed abstract class PartyController extends ObjectController[SiteParty] {
   }
 
   def remove(id : Party.Id) =
-    SiteAction.rootAccess().andThen(adminAction(id, false)).async { implicit request =>
+    SiteAction.rootAccess().andThen(adminAction(id, true)).async { implicit request =>
       request.obj.party.remove.map { ok =>
         Ok(request.obj.party.name + (if (ok) "" else " not") + " deleted")
       }
@@ -377,7 +377,7 @@ object PartyHtml extends PartyController with HtmlController {
   }
 
   def preRemove(id : Party.Id) =
-    SiteAction.rootAccess().andThen(adminAction(id, false)) { implicit request =>
+    SiteAction.rootAccess().andThen(adminAction(id, true)) { implicit request =>
       Ok(views.html.party.remove(request.obj))
     }
 
