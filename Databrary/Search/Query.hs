@@ -1,6 +1,9 @@
 module Databrary.Search.Query (
 createQuery,
-queryToString
+queryToString,
+queryLimit,
+queryStart,
+Query
 ) where
 
 import System.Environment
@@ -14,9 +17,7 @@ import qualified Data.Text as T
 import Control.Applicative
 import Control.Monad
 import qualified Data.ByteString.Lazy as B
-import Network.HTTP.Conduit (simpleHttp)
 import GHC.Generics
-import Databrary.Search.Solr
 
 
 -- Some consts
@@ -39,11 +40,14 @@ data DocType = Container | Record | Volume | AssetSegment | TagSegment | Segment
 {-data QueryJoin = QueryJoin {queryJoin :: String}-}
 {-data QueryArg = QueryArg {queryArg :: String}-}
 {-data QuerySearchTerm = QuerySearchTerm {querySearchTerm :: String}-}
-data QueryPart = QueryArg String String | QueryJoin String String | QuerySearchTerm String deriving Show
+data QueryPart = QueryArg String String | QueryJoin String String
+                    | QuerySearchTerm String | QueryLimit Int | QueryStart Int deriving Show
 
 data Query = Query {qJoin :: Maybe QueryPart,
                     qArguments :: Maybe [QueryPart],
-                    qSearchTerms :: Maybe [QueryPart]} deriving Show
+                    qSearchTerms :: Maybe [QueryPart],
+                    qLimit :: Maybe QueryPart,
+                    qStart :: Maybe QueryPart} deriving Show
 
 instance Show DocType where
         show Container = containerType
@@ -87,12 +91,16 @@ createQuery :: String -> Query
 createQuery x = formQuery $ parseQuery x
 
 formQuery :: [QueryPart] -> Query
-formQuery qs = Query j a t
+formQuery qs = Query j a t limit start
    where
       joinTest =  mapMaybe filterJoin qs
+      limitTest = mapMaybe filterLimit qs
+      startTest = mapMaybe filterStart qs
       j = if length joinTest >= 1 then Just $ head joinTest else Nothing
       a = Just $ mapMaybe filterArg qs
       t = Just $ concat $ mapMaybe filterTerm qs
+      limit = if length limitTest >= 1 then Just $ head limitTest else Nothing
+      start = if length startTest >= 1 then Just $ head startTest else Nothing
 
 filterArg :: QueryPart -> Maybe QueryPart
 filterArg (QueryArg x y) = Just $ QueryArg x y
@@ -108,18 +116,28 @@ filterTerm :: QueryPart -> Maybe [QueryPart]
 filterTerm (QuerySearchTerm x) = Just $ map QuerySearchTerm $ splitOn " " x
 filterTerm _ = Nothing
 
+filterLimit :: QueryPart -> Maybe QueryPart
+filterLimit (QueryLimit x) = Just $ QueryLimit x
+filterLimit _ = Nothing
+
+filterStart :: QueryPart -> Maybe QueryPart
+filterStart (QueryStart x) = Just $ QueryStart x
+filterStart _ = Nothing
+
 -- parseQueryString: We're given a query string from somewhere, figure out
 -- what to do with it.
 -- The format looks like "joinstuff,argstuff,free text stuff"
 parseQuery :: String -> [QueryPart]
 parseQuery q = map parseQueryPart x
       where
-         x = splitOn "|" q
+         x = splitOn "&" q
 
 parseQueryPart :: String -> QueryPart
 parseQueryPart x
    | isInfixOf "join=" x = parseQueryJoin x
    | isInfixOf "arg=" x = parseQueryArg x
+   | isInfixOf "start=" x = parseQueryStart x
+   | isInfixOf "rows=" x = parseQueryLimit x
    | otherwise = parseTerm x
 
 -- Joins look like join=type,type and we just want the types
@@ -136,8 +154,21 @@ parseQueryArg x = QueryArg argName argVal
                         args = splitOn ":" $ concat $ drop 1 $ splitOn "=" x
                         [argName,argVal] = args
 
+-- For passing in start/rows parameters to the query
+parseQueryLimit :: String -> QueryPart
+parseQueryLimit q = QueryLimit (read limit :: Int)
+                     where
+                        args = splitOn "=" q
+                        [_, limit] = args
+
+parseQueryStart :: String -> QueryPart
+parseQueryStart q = QueryStart (read limit :: Int)
+                     where
+                        args = splitOn "=" q
+                        [_, limit] = args
+
 -- Terms just look like terms=what,ever,this,is
--- TODO add support for "s
+-- TODO add support for quoted strings
 parseTerm :: String -> QueryPart
 parseTerm x =  QuerySearchTerm x
 
@@ -148,30 +179,43 @@ joinToString :: Maybe QueryPart -> String
 joinToString qp = do
       case qp of
          Nothing -> ""
-         Just qp -> joinToString' qp
+         Just q -> joinToString' q
 
 joinToString' :: QueryPart -> String
 joinToString' (QueryJoin j1 j2) = "{!join from=" ++ j1 ++ " to=" ++  j2 ++ "} "
+joinToString' _ = ""
 
 argsToString :: Maybe [QueryPart] -> String
 {-argsToString qp = map argsToString <$> qp-}
 argsToString qp = do
       case qp of
          Nothing -> ""
-         Just qp -> intercalate " " (map argsToString' qp)
+         Just q -> intercalate " " (map argsToString' q)
 
 argsToString' :: QueryPart -> String
 argsToString' (QueryArg a1 a2) = a1 ++ ":" ++ a2 ++ " "
+argsToString' _ = ""
 
 termsToString :: Maybe [QueryPart] -> String
 termsToString qp = do
       case qp of
          Nothing -> ""
-         Just qp -> intercalate " AND " (map termsToString' qp)
+         Just q -> intercalate " AND " (map termsToString' q)
 
 termsToString' :: QueryPart -> String
 termsToString' (QuerySearchTerm t1) = t1
+termsToString' _ = ""
 
 queryToString :: Query -> String
 queryToString q = joinToString (qJoin q) ++ argsToString (qArguments q) ++ termsToString (qSearchTerms q)
 
+queryLimit :: Query -> Int
+queryLimit q = queryPartInt' $ fromMaybe (QueryLimit 10) (qLimit q)
+
+queryPartInt' :: QueryPart -> Int
+queryPartInt' (QueryLimit l) = l
+queryPartInt' (QueryStart s) = s
+queryPartInt' _ = 0
+
+queryStart :: Query -> Int
+queryStart q = queryPartInt' $ fromMaybe (QueryStart 0) (qStart q)

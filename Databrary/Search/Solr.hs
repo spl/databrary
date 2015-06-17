@@ -5,6 +5,7 @@ module Databrary.Search.Solr
   SolrResponse
 ) where
 
+import Data.Int (Int32)
 import Data.Aeson
 import Data.Map
 import Control.Applicative
@@ -14,17 +15,14 @@ import Network.HTTP.Types (hAccept, hContentType, ok200)
 import System.Environment
 import Databrary.HTTP.Client
 
-{-import Network.HTTP.Conduit -- the main module-}
 import qualified Network.HTTP.Client as HC
 import qualified Data.Attoparsec.ByteString as P
 import qualified Data.ByteString as BS
 
--- The streaming interface uses conduits
-{-import Data.Conduit-}
---import Data.Conduit.Binary (sinkFile)
-
 import qualified Data.ByteString.Lazy.Char8 as L
 import Control.Monad.IO.Class (liftIO)
+
+import qualified Databrary.Search.Query as Q
 
 
 solrServer = "http://localhost/solr/Databrary/query"
@@ -103,14 +101,18 @@ instance FromJSON SolrResponse where
   parseJSON _ = mzero
 
 data SolrQuery = SolrQuery {
-   solrQuery :: String
+   solrQuery :: String,
+   solrLimit :: Int32,
+   solrStart :: Int32
 } deriving (Show)
 instance ToJSON SolrQuery where
-      toJSON ( SolrQuery query ) =
-         object [ "query" .= query ]
+      toJSON ( SolrQuery sQquery sQlimit sQstart ) =
+         object [ "query" .= sQquery,
+                  "limit" .= sQlimit,
+                  "offset" .= sQstart ]
 
-formQuery :: String -> SolrQuery
-formQuery q = SolrQuery q
+-- formQuery :: String -> SolrQuery
+-- formQuery q = SolrQuery q
 
 submitQuery :: HTTPClientM c m => HC.Request -> m (Maybe Value)
 submitQuery q = httpRequestJSONSolr q
@@ -131,8 +133,11 @@ httpRequestJSONSolr :: HTTPClientM c m => HC.Request -> m (Maybe Value)
 httpRequestJSONSolr req = httpRequest req "text/plain" $ \rb ->
   P.maybeResult <$> P.parseWith rb json BS.empty
 
-search :: HTTPClientM c m => String -> m (Maybe Value)
-search q = do
-      let query = formQuery q
-      request <- liftIO $ generatePostReq query
+search :: HTTPClientM c m => String -> Int32 -> Int32 -> m (Maybe Value)
+search q offset limit = do
+      let query = Q.createQuery q
+      let sQuery = SolrQuery (Q.queryToString query) limit offset
+      request <- liftIO $ generatePostReq sQuery
+      liftIO $ print sQuery -- TODO REMOVE THIS
+      liftIO $ print q
       (submitQuery request)

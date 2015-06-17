@@ -7,6 +7,8 @@
           <!--<select class="search-select" ng-model="type" ng-options="t as d for (t, d) in ::types"/>-->
           <input class="search-input" type="search" ng-model="query" key-enter="search()"/>
         </ng-form>
+        <p>Number of results found: {{results.numFound}}</p>
+        <p>Showing results {{results.start + 1}} to {{results.start + results.docs.length}}</p>
         <ul>
           <li ng-repeat="result in results.docs">
             <!-- This is where we return what we want-->

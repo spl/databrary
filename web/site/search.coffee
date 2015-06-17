@@ -3,7 +3,7 @@
 app.controller 'site/search', [
   '$scope', '$location', 'displayService', 'results',
   ($scope, $location, display, results) ->
-    limit = 12 # server-side default
+    limit = 10 # server-side default
     offset = parseInt($location.search().offset, 10) || 0
     display.title = 'Search'
     $scope.results = results?.response
@@ -11,13 +11,16 @@ app.controller 'site/search', [
 
     params = $location.search()
     $scope.query = params.query
+    $scope.offset = offset
+    $scope.limit = 10
+    console.log($scope, $location)
     $scope.search = ->
-      $location.search('query', $scope.query)
+      $location.search('query', $scope.query, 'offset', offset)
 
 
-    if parseInt(results?.numFound) > limit
+    if parseInt($scope.results.numFound) > (offset + limit)
       $scope.next = -> $location.search('offset', offset + limit)
-      $scope.results.docs.pop()
+#      $scope.results.docs.pop()
     if offset > 0
       $scope.prev = -> $location.search('offset', Math.max(0, offset - limit))
     return

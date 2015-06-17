@@ -111,7 +111,8 @@ Executable databrary
     http-client,
     mime-mail,
     fast-logger,
-    digest
+    digest,
+    split
 
   if flag(tls)
     Build-depends: warp-tls
