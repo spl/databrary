@@ -190,13 +190,15 @@ CREATE TABLE "volume" (
 	"id" serial NOT NULL Primary Key,
 	"name" text NOT NULL,
 	"body" text,
-	"alias" varchar(64)
+	"alias" varchar(64),
+	"doi" varchar(20) Unique
 );
 ALTER TABLE "volume"
 	ALTER "name" SET STORAGE EXTERNAL,
 	ALTER "alias" SET STORAGE EXTERNAL;
 COMMENT ON TABLE "volume" IS 'Basic organizational unit for data.';
 COMMENT ON COLUMN "volume"."alias" IS 'Short, internal, code name for this volume, for contributors to reference their own data.';
+COMMENT ON COLUMN "volume"."doi" IS 'DOIs issued for volumes (currently via EZID).';
 
 SELECT audit.CREATE_TABLE ('volume');
 ALTER TABLE audit."volume" ALTER "name" DROP NOT NULL;
@@ -230,12 +232,6 @@ CREATE FUNCTION "volume_access_check" ("volume" integer, "party" integer) RETURN
 	SELECT access FROM volume_access_view WHERE volume = $1 AND party = $2 LIMIT 1
 $$;
 COMMENT ON FUNCTION "volume_access_check" (integer, integer) IS 'Permission level the party has on the given volume, either directly, delegated, or inherited.';
-
-CREATE TABLE "volume_doi" (
-	"volume" integer NOT NULL Unique References "volume",
-	"doi" varchar(16) NOT NULL Unique
-);
-COMMENT ON TABLE "volume_doi" IS 'DOIs issued for volumes (currently via EZID).';
 
 CREATE TABLE "volume_link" (
 	"volume" integer NOT NULL References "volume",
@@ -1004,11 +1000,10 @@ INSERT INTO account (id, email) VALUES (3, 'lisa@databrary.org');
 INSERT INTO authorize (child, parent, site, member) VALUES (1, 0, 'ADMIN', 'ADMIN');
 INSERT INTO authorize (child, parent, site, member) VALUES (3, 0, 'ADMIN', 'ADMIN');
 
-INSERT INTO volume (id, name, body) VALUES (1, 'Databrary', 'Databrary is an open data library for developmental science. Share video, audio, and related metadata. Discover more, faster.
+INSERT INTO volume (id, name, body, doi) VALUES (1, 'Databrary', 'Databrary is an open data library for developmental science. Share video, audio, and related metadata. Discover more, faster.
 Most developmental scientists rely on video recordings to capture the complexity and richness of behavior. However, researchers rarely share video data, and this has impeded scientific progress. By creating the cyber-infrastructure and community to enable open video sharing, the Databrary project aims to facilitate deeper, richer, and broader understanding of behavior.
-The Databrary project is dedicated to transforming the culture of developmental science by building a community of researchers committed to open video data sharing, training a new generation of developmental scientists and empowering them with an unprecedented set of tools for discovery, and raising the profile of behavioral science by bolstering interest in and support for scientific research among the general public.');
+The Databrary project is dedicated to transforming the culture of developmental science by building a community of researchers committed to open video data sharing, training a new generation of developmental scientists and empowering them with an unprecedented set of tools for discovery, and raising the profile of behavioral science by bolstering interest in and support for scientific research among the general public.', '10.17910/B7159Q');
 SELECT setval('volume_id_seq', 1);
-INSERT INTO "volume_doi" VALUES (1, '10.17910/B7159Q');
 
 INSERT INTO volume_access (volume, party, individual, children) VALUES (1, 1, 'ADMIN', 'NONE');
 INSERT INTO volume_access (volume, party, individual, children) VALUES (1, 3, 'ADMIN', 'NONE');

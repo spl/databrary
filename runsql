@@ -75,7 +75,11 @@ EOF
 INSERT INTO schema (name) VALUES ('$1');
 EOF
 		fi
-		runsql $schema/$1.sql
+		if [[ $1 = *_root ]] ; then
+			runsql $schema/$1.sql -U ${db[super]:-postgres}
+		else
+			runsql $schema/$1.sql
+		fi
 	fi
 }
 

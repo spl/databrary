@@ -70,6 +70,12 @@ CREATE VIEW "volume_access_view" ("volume", "party", "access") AS
 	  FROM volume_access JOIN authorize_view ON party = parent GROUP BY volume, child;
 COMMENT ON VIEW "volume_access_view" IS 'Expanded list of effective volume access.';
 
+ALTER TABLE "volume" ADD "doi" varchar(20) Unique;
+COMMENT ON COLUMN "volume"."doi" IS 'DOIs issued for volumes (currently via EZID).';
+ALTER TABLE audit."volume" ADD "doi" varchar(20);
+UPDATE volume SET doi = volume_doi.doi FROM volume_doi WHERE volume.id = volume_doi.volume;
+DROP TABLE "volume_doi";
+
 DROP FUNCTION "volume_creation" (integer);
 CREATE FUNCTION "volume_creation" ("volume" integer) RETURNS timestamptz LANGUAGE sql STABLE STRICT AS
 	$$ SELECT max("audit_time") FROM audit."volume" WHERE "id" = $1 AND "audit_action" = 'add' $$;
