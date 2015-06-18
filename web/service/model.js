@@ -481,7 +481,9 @@ app.factory('modelService', [
     };
 
     Volume.create = function (data, owner) {
-      return router.http(router.controllers.createVolume, owner, data)
+      if (owner !== undefined)
+        data.owner = owner;
+      return router.http(router.controllers.createVolume, data)
         .then(function (res) {
           if ((owner = (owner === undefined ? Login.user : partyPeek(owner))))
             owner.clear('volumes');
