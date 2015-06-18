@@ -1,11 +1,14 @@
 {-# LANGUAGE RecordWildCards, OverloadedStrings #-}
 module Databrary.Store.Transcode
-  ( startTranscode
+  ( forkTranscode
   , collectTranscode
+  , transcodeEnabled
   ) where
 
+import Control.Concurrent (ThreadId, forkFinally)
 import Control.Monad (guard, unless, void)
 import Control.Monad.IO.Class (liftIO)
+import Control.Monad.Trans.Reader (ReaderT(..))
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Char8 as BSC
@@ -16,17 +19,14 @@ import System.Exit (ExitCode(..))
 import Text.Read (readMaybe)
 
 import Databrary.Ops
-import Databrary.Has (peek, peeks)
-import Databrary.Service.DB
-import Databrary.Service.Types
-import Databrary.Service.ResourceT
-import Databrary.HTTP.Request
+import Databrary.Has (view, peek, peeks, focusIO)
+import Databrary.Service.Log
 import Databrary.HTTP.Route (routeURL)
-import Databrary.Model.Audit
 import Databrary.Model.Segment
 import Databrary.Model.Asset
 import Databrary.Model.Transcode
 import Databrary.Files
+import Databrary.Action.Auth
 import Databrary.Store.Types
 import Databrary.Store.Temp
 import Databrary.Store.Asset
@@ -34,12 +34,18 @@ import Databrary.Store.Transcoder
 
 import {-# SOURCE #-} Databrary.Controller.Transcode
 
-ctlTranscode :: MonadStorage c m => Transcode -> TranscodeArgs -> m (ExitCode, String, String)
-ctlTranscode tc args = do
-  Just ctl <- peeks storageTranscoder
-  liftIO $ runTranscoder ctl ("-i" : show (transcodeId tc) : args)
+type TranscodeM a = AuthActionM a
 
-transcodeArgs :: (MonadStorage c m, MonadHasRequest c m, MonadHasService c m) => Transcode -> m TranscodeArgs
+ctlTranscode :: Transcode -> TranscodeArgs -> TranscodeM (ExitCode, String, String)
+ctlTranscode tc args = do
+  t <- peek
+  Just ctl <- peeks storageTranscoder
+  let args' = "-i" : show (transcodeId tc) : args
+  r@(c, o, e) <- liftIO $ runTranscoder ctl args'
+  focusIO $ logMsg t ("transcode " ++ unwords args' ++ ": " ++ case c of { ExitSuccess -> "" ; ExitFailure i -> ": exit " ++ show i ++ "\n" } ++ o ++ e)
+  return r
+
+transcodeArgs :: Transcode -> TranscodeM TranscodeArgs
 transcodeArgs t@Transcode{..} = do
   Just f <- getAssetFile transcodeOrig
   req <- peek
@@ -55,7 +61,7 @@ transcodeArgs t@Transcode{..} = do
   rng = segmentRange transcodeSegment
   lb = lowerBound rng
 
-startTranscode :: (MonadStorage c m, MonadDB m, MonadHasRequest c m, MonadHasService c m) => Transcode -> m (Maybe TranscodePID)
+startTranscode :: Transcode -> TranscodeM (Maybe TranscodePID)
 startTranscode tc = do
   tc' <- updateTranscode tc lock Nothing
   unless (transcodeProcess tc' == lock) $ fail $ "startTranscode " ++ show (transcodeId tc)
@@ -66,7 +72,15 @@ startTranscode tc = do
   return pid
   where lock = Just (-1)
 
-collectTranscode :: (MonadResourceT c m, MonadStorage c m, MonadAudit c m) => Transcode -> Int -> Maybe BS.ByteString -> String -> m ()
+forkTranscode :: Transcode -> TranscodeM ThreadId
+forkTranscode tc = focusIO $ \app ->
+  forkFinally -- violates InternalState, could use forkResourceT, but we don't need it
+    (runReaderT (startTranscode tc) app)
+    (either
+      (\e -> logMsg (view app) ("forkTranscode: " ++ show e) (view app))
+      (const $ return ()))
+
+collectTranscode :: Transcode -> Int -> Maybe BS.ByteString -> String -> TranscodeM ()
 collectTranscode tc 0 sha1 logs = do
   tc' <- updateTranscode tc (Just (-2)) (Just logs)
   f <- makeTempFile (const $ return ())

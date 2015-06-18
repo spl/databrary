@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Databrary.Service.Log
   ( Logs
+  , MonadLog
   , initLogs
   , finiLogs
   , toLogStr
@@ -10,6 +11,7 @@ module Databrary.Service.Log
   ) where
 
 import Control.Applicative ((<$>), (<*>))
+import Control.Monad.IO.Class (MonadIO)
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.Configurator as C
 import qualified Data.Configurator.Types as C
@@ -26,11 +28,14 @@ import qualified Network.Wai as Wai
 import System.Locale (defaultTimeLocale)
 import System.Log.FastLogger
 
+import Databrary.Has (MonadHas)
 import Databrary.Model.Time
 
 data Logs = Logs
   { loggerMessages, loggerAccess :: Maybe LoggerSet
   }
+
+type MonadLog c m = (MonadHas Logs c m, MonadIO m)
 
 initLog :: C.Config -> IO (Maybe LoggerSet)
 initLog conf = do

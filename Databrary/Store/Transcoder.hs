@@ -1,9 +1,11 @@
 module Databrary.Store.Transcoder
   ( runTranscoder
   , initTranscoder
+  , transcodeEnabled
   ) where
 
 import Control.Applicative ((<$>))
+import Data.Maybe (isJust)
 import Data.Version (showVersion)
 import System.Process (readProcessWithExitCode)
 import System.Exit (ExitCode(..))
@@ -28,3 +30,6 @@ initTranscoder host dir = Just <$> do
   args = [ "-v", showVersion version ]
     ++ maybe [] (\d -> ["-d", d]) dir
     ++ maybe [] (\h -> ["-h", h]) host
+
+transcodeEnabled :: Storage -> Bool
+transcodeEnabled = isJust . storageTranscoder

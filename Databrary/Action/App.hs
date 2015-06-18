@@ -7,7 +7,6 @@ module Databrary.Action.App
   , runApp
   ) where
 
-import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Reader (ReaderT(..), asks, runReaderT)
 import Control.Monad.Trans.Resource (InternalState, runResourceT, withInternalState)
 import Data.Time (getCurrentTime)
@@ -39,7 +38,7 @@ type MonadAppAction q m = (MonadHasAppRequest q m, ActionData q)
 
 runApp :: Service -> AppAction -> Wai.Application
 runApp rc act req send = do
-  ts <- liftIO getCurrentTime
+  ts <- getCurrentTime
   runResourceT $ withInternalState $ \is -> do
     r <- runResult (runReaderT act (AppRequest rc is ts req))
     logAccess ts req r (serviceLogs rc)

@@ -16,10 +16,11 @@ module Databrary.Controller.Asset
 
 import Control.Applicative ((<|>))
 import Control.Exception (try)
-import Control.Monad ((<=<), when, void)
+import Control.Monad ((<=<), when, void, guard)
 import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.Trans.Class (lift)
 import qualified Data.ByteString as BS
+import Data.Foldable as Fold
 import Data.Maybe (fromMaybe, isNothing, isJust, catMaybes, maybeToList)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -55,6 +56,7 @@ import Databrary.Store.Asset
 import Databrary.Store.Upload
 import Databrary.Store.Temp
 import Databrary.Store.AV
+import Databrary.Store.Transcode
 import Databrary.HTTP.Request
 import Databrary.HTTP.Form.Errors
 import Databrary.HTTP.Form.Deform
@@ -193,8 +195,9 @@ processAsset api target = do
     case target of
       AssetTargetAsset _ -> supersedeAsset a a'
       _ -> return ()
-    t <- Trav.mapM (addTranscode a' fullSegment defaultTranscodeOptions) (fileUploadProbe up)
-    -- TODO startTranscode
+    te <- peeks transcodeEnabled
+    t <- Trav.mapM (addTranscode a' fullSegment defaultTranscodeOptions) (guard te >> fileUploadProbe up)
+    Fold.mapM_ forkTranscode t
     return as'
       { slotAsset = (maybe a' transcodeAsset t)
         { assetName = assetName (slotAsset as')

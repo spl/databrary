@@ -28,7 +28,7 @@ import Databrary.Model.Volume.SQL
 import Databrary.Model.AssetSlot.Types
 
 slotAssetRow :: Selector -- ^ @'Segment'@
-slotAssetRow = selector "slot_asset" "slot_asset.segment"
+slotAssetRow = selector "slot_asset" $ SelectColumn "slot_asset" "segment"
 
 makeSlotAsset :: Asset -> Container -> Segment -> AssetSlot
 makeSlotAsset a c s = AssetSlot a (Just (Slot c s))

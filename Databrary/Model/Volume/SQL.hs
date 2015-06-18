@@ -27,7 +27,7 @@ setPermission = defaulting PermissionNONE
 volumeRow :: Selector -- ^ @'Permission' -> 'Volume'@
 volumeRow = addSelects 'setCreation
   (selectColumns 'Volume "volume" ["id", "name", "alias", "body", "doi"])
-  ["volume_creation(volume.id)"]
+  [SelectExpr "volume_creation(volume.id)"] -- XXX explicit table references (throughout)
 
 selectVolume :: TH.Name -- ^ @'Identity'@
   -> Selector -- ^ @'Volume'@
@@ -35,7 +35,7 @@ selectVolume i = selectJoin 'setPermission
   [ volumeRow
   , joinOn "volume_permission.permission >= 'PUBLIC'::permission"
     $ selector ("LATERAL (VALUES (CASE WHEN ${identitySuperuser " ++ is ++ "} THEN enum_last(NULL::permission) ELSE volume_access_check(volume.id, ${view " ++ is ++ " :: Id Party}) END)) AS volume_permission (permission)")
-    "volume_permission.permission"
+    $ SelectColumn "volume_permission" "permission"
   ]
   where is = nameRef i
 

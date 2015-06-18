@@ -27,7 +27,7 @@ import Databrary.Model.Volume.SQL
 import Databrary.Model.RecordSlot.Types
 
 slotRecordRow :: Selector -- ^ @'Segment'@
-slotRecordRow = selector "slot_record" "slot_record.segment"
+slotRecordRow = selector "slot_record" $ SelectColumn "slot_record" "segment"
 
 makeSlotRecord :: Segment -> Record -> Container -> RecordSlot
 makeSlotRecord seg r c = RecordSlot r (Slot c seg)

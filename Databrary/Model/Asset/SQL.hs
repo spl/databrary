@@ -62,7 +62,7 @@ insertAsset :: TH.Name -- ^ @'AuditIdentity'@
   -> TH.ExpQ -- ^ @'Asset'@
 insertAsset ident a = auditInsert ident "asset"
   (assetSets (nameRef a))
-  (Just $ selectOutput $ selectMap ((TH.VarE 'setAssetId `TH.AppE` TH.VarE a) `TH.AppE`) $ selector "asset" "id")
+  (Just $ selectOutput $ selectMap ((TH.VarE 'setAssetId `TH.AppE` TH.VarE a) `TH.AppE`) $ selector "asset" $ SelectColumn "asset" "id")
 
 updateAsset :: TH.Name -- ^ @'AuditIdentity'@
   -> TH.Name -- ^ @'Asset'@

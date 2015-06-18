@@ -53,7 +53,7 @@ selectTagGroup :: String -- ^ table name
 selectTagGroup name q make cols = selector
   ("(SELECT tag," ++ intercalate "," (map (\(a, s) -> s ++ " AS " ++ a) cols)
     ++ " FROM tag_use " ++ q ++ " GROUP BY tag) AS " ++ name)
-  $ OutputJoin False make $ map (OutputExpr . (name ++) . ('.' :) . fst) cols
+  $ OutputJoin False make $ map (SelectColumn name . fst) cols
 
 tagWeightColumns :: [(String, String)]
 tagWeightColumns =

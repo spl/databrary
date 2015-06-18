@@ -7,6 +7,7 @@ module Databrary.Model.SQL.Select
   , selectColumns
   , addSelects
   , fromMap
+  , fromAlias
   , crossJoin
   , joinOn
   , joinUsing
@@ -25,22 +26,16 @@ import Control.Monad.State (StateT(..))
 import Control.Monad.Trans.Class (lift)
 import Data.Char (isLetter, toLower)
 import Data.List (intercalate, unfoldr)
-import Data.String (IsString(..))
 import Database.PostgreSQL.Typed.Query (QueryFlags, parseQueryFlags, makePGQuery)
 import qualified Language.Haskell.TH as TH
 
 import Databrary.Service.DB (useTPG)
 
 data SelectOutput
-  = OutputExpr String
-  | OutputJoin !Bool TH.Name [SelectOutput]
-  | OutputMap !Bool (TH.Exp -> TH.Exp) SelectOutput
-
-instance IsString SelectOutput where
-  fromString = OutputExpr
-
-selectColumn :: String -> String -> SelectOutput
-selectColumn t c = OutputExpr $ t ++ '.' : c
+  = SelectColumn { selectTable, selectColumn :: String }
+  | SelectExpr String
+  | OutputJoin { outputNullable :: !Bool, outputJoiner :: TH.Name, outputJoin :: [SelectOutput] }
+  | OutputMap { outputNullable :: !Bool, outputMapper :: TH.Exp -> TH.Exp, outputMap :: SelectOutput }
 
 _outputTuple :: [SelectOutput] -> SelectOutput
 _outputTuple l = OutputJoin False (TH.tupleDataName $ length l) l
@@ -51,14 +46,12 @@ outputMaybe (OutputMap False f l) = OutputMap True f l
 outputMaybe s = s
 
 outputColumns :: SelectOutput -> [String]
-outputColumns (OutputExpr s) = [s]
+outputColumns (SelectColumn t c) = [t ++ '.' : c]
+outputColumns (SelectExpr s) = [s]
 outputColumns (OutputJoin _ _ o) = concatMap outputColumns o
 outputColumns (OutputMap _ _ o) = outputColumns o
 
 outputParser :: SelectOutput -> StateT [TH.Name] TH.Q TH.Exp
-outputParser (OutputExpr _) = StateT st where
-  st (i:l) = return (TH.VarE i, l)
-  st [] = fail "outputParser: insufficient values"
 outputParser (OutputJoin mb f ol) = do
   fi <- lift $ TH.reify f
   (fe, ft) <- case fi of
@@ -92,6 +85,9 @@ outputParser (OutputMap False f o) =
   f <$> outputParser o
 outputParser (OutputMap True f o) =
   f <$> outputParser (outputMaybe o) -- might want to lift f over the maybe
+outputParser _ = StateT st where
+  st (i:l) = return (TH.VarE i, l)
+  st [] = fail "outputParser: insufficient values"
 
 data Selector = Selector
   { selectOutput :: SelectOutput
@@ -104,7 +100,7 @@ selector t o = Selector o t (',':t)
 
 selectColumns :: TH.Name -> String -> [String] -> Selector
 selectColumns f t c =
-  selector t $ OutputJoin False f $ map (selectColumn t) c
+  selector t $ OutputJoin False f $ map (SelectColumn t) c
 
 addSelects :: TH.Name -> Selector -> [SelectOutput] -> Selector
 addSelects f s c = s
@@ -115,6 +111,16 @@ fromMap f sel = sel
   { selectSource = f $ selectSource sel
   , selectJoined = f $ selectJoined sel
   }
+
+outputFromAlias :: String -> SelectOutput -> SelectOutput
+outputFromAlias t (SelectColumn _ c) = SelectColumn t c
+outputFromAlias _ (SelectExpr e) = error $ "fromAlias (SelectExpr " ++ show e ++ ")"
+outputFromAlias t o@OutputJoin{ outputJoin = l } = o{ outputJoin = map (outputFromAlias t) l }
+outputFromAlias t o@OutputMap{ outputMap = l } = o{ outputMap = outputFromAlias t l }
+
+fromAlias :: Selector -> String -> Selector
+fromAlias sel as = fromMap (++ " AS " ++ as) sel
+  { selectOutput = outputFromAlias as $ selectOutput sel }
 
 joinWith :: (String -> String) -> Selector -> Selector
 joinWith j sel = sel{ selectJoined = j (selectSource sel) }

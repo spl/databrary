@@ -72,7 +72,7 @@ elif [[ -n $host ]] ; then
 elif [[ -n $kill ]] ; then
 	"$cmd" "$@"
 else
-	ln -sfT "$src" "$dir/$id"
+	ln -fT "$src" "$dir/$id"
 	"$cmd" "$@" &
 	echo $!
 fi

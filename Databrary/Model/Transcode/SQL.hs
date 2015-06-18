@@ -31,7 +31,7 @@ selectTranscode = selectJoin 'id
   , joinOn "transcode.asset = asset.id"
     selectVolumeAsset
   , joinOn "transcode.orig = orig.id"
-    $ fromMap (++ " AS orig") selectVolumeAsset
+    $ selectVolumeAsset `fromAlias` "orig"
   , joinOn "asset.volume = volume.id AND orig.volume = volume.id"
     volumeRow
   ]
