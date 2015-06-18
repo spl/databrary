@@ -13,7 +13,6 @@ app.controller 'site/search', [
     $scope.query = params.query
     $scope.offset = offset
     $scope.limit = 10
-    console.log($scope, $location)
     $scope.search = ->
       $location.search('query', $scope.query, 'offset', offset)
 
@@ -25,7 +24,6 @@ app.controller 'site/search', [
       pageRange.push(i)
 
     $scope.pageRange = pageRange
-    console.log(pageRange)
 
     $scope.goToPage = (page) -> $location.search('offset', limit * page)
 
