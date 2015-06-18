@@ -1,13 +1,14 @@
 'use strict';
 
 app.directive('validator', [
-  'pageService', function (page) {
+  '$sce', 'constantService',
+  function ($sce, constants) {
     var pre = function ($scope, $element, $attrs) {
       $scope.validator = {};
-      $scope.validator.label = $attrs.label && page.constants.message($attrs.label);
+      $scope.validator.label = $attrs.label && constants.message($attrs.label);
       if ('required' in $attrs)
-        $scope.validator.label += ' ' + page.constants.message('required');
-      $scope.validator.prefix = $scope.validator.label ? '<strong>' + page.$sce.getTrustedHtml($scope.validator.label) + ':</strong> ' : '';
+        $scope.validator.label += ' ' + constants.message('required');
+      $scope.validator.prefix = $scope.validator.label ? '<strong>' + $sce.getTrustedHtml($scope.validator.label) + ':</strong> ' : '';
     };
 
     var post = function ($scope, $element, $attrs, form) {
@@ -87,7 +88,7 @@ app.directive('validator', [
       };
 
       function addPrefix(msg) {
-        return page.$sce.trustAsHtml(validator.prefix + page.$sce.getTrustedHtml(msg));
+        return $sce.trustAsHtml(validator.prefix + $sce.getTrustedHtml(msg));
       }
 
       validator.server = function (data, replace) {

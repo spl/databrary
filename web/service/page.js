@@ -1,7 +1,8 @@
 'use strict';
 
 app.factory('pageService', [
-  '$injector', function ($injector) {
+  '$injector', '$rootScope',
+  function ($injector, $rootScope) {
     var page = {
       auth: $injector.get('authService'),
       constants: $injector.get('constantService'),
@@ -22,12 +23,8 @@ app.factory('pageService', [
     _.each([
       '$filter',
       '$location',
-      '$parse',
       '$q',
-      '$rootScope',
       '$route',
-      '$sce',
-      '$timeout',
     ], function (dependency) {
       page[dependency] = $injector.get(dependency);
     });
@@ -38,7 +35,7 @@ app.factory('pageService', [
 
     //
 
-    page.$rootScope.page = page;
+    $rootScope.page = page;
 
     return page;
   }

@@ -1,10 +1,11 @@
 'use strict';
 
 app.directive('focus', [
-  'pageService', function (page) {
+  '$timeout',
+  function ($timeout) {
     var link = function ($scope, $element, $attrs) {
       if ($attrs.focus === '' || $scope.$eval($attrs.focus))
-        page.$timeout(function(){
+        $timeout(function(){
          $element[0].focus();
         } ,0);
     };
