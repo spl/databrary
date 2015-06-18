@@ -84,22 +84,19 @@ app.directive('ngForm', [
             return;
           }
 
+          var errors = messages.foreachError(res.data);
           var name;
           for (name in form.validators) {
-            form.validators[name].server(res.data[name] || {}, replace);
+            form.validators[name].server(errors[name] || [], replace);
+            delete errors[name];
           }
 
-          for (name in res.data) {
-            if (form.validators[name]) {
-              form.validators[name].server(res.data[name], replace);
-            } else {
-              messages.add({
-                type: 'red',
-                body: Array.isArray(res.data[name]) ? res.data[name].join(', ') : res.data[name],
-                owner: form
-              });
-            }
-          }
+          for (name in errors)
+            messages.add({
+              type: 'red',
+              body: errors[name].join('; '),
+              owner: form
+            });
         },
 
         clearServer: function () {
