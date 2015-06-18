@@ -2,14 +2,17 @@
   <ng-include src="'party/overview.html'"></ng-include>
   <panel id="panel_browser" panel-title="volumes.title" fold ng-if="::party.volumes || page.models.Login.isAuthorized()">
     
-    <div>
-      <div ng-repeat="user in users">
-        <span ng-click="clickUser(user)">{{user.first_name}} {{user.last_name}}</span>
-      </div>
-    </div>
+    
     <div>
       <div ng-repeat="volume in party.volumes">
         <span ng-click="clickVolumes(volume)">{{volume.title}}</span>
+      </div>
+    </div>
+
+
+    <div>
+      <div ng-repeat="user in users">
+        <span ng-click="clickUser(user)">{{user.first_name}} {{user.last_name}}</span>
       </div>
     </div>
     <section id="related-people" class="col-desktop-7 col-tablet-3 col-mobile-6">
