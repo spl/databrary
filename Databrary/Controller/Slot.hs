@@ -23,6 +23,7 @@ import Databrary.Model.Container
 import Databrary.Model.Slot
 import Databrary.Model.AssetSlot
 import Databrary.Model.Excerpt
+import Databrary.Model.Record
 import Databrary.Model.RecordSlot
 import Databrary.Model.Tag
 import Databrary.Model.Comment
@@ -41,7 +42,7 @@ slotJSONField :: (MonadDB m, MonadHasIdentity c m) => Slot -> BS.ByteString -> M
 slotJSONField o "assets" _ =
   Just . JSON.toJSON . map assetSlotJSON <$> lookupSlotAssets o
 slotJSONField o "records" _ =
-  Just . JSON.toJSON . map recordSlotJSON <$> lookupSlotRecords o
+  Just . JSON.toJSON . map (\r -> recordSlotJSON r JSON..+ ("record" JSON..= recordJSON (slotRecord r))) <$> lookupSlotRecords o
 slotJSONField o "tags" n = do
   tc <- lookupSlotTagCoverage o (maybe 64 fst $ BSC.readInt =<< n)
   return $ Just $ JSON.toJSON $ map tagCoverageJSON tc

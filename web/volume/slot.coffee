@@ -517,10 +517,10 @@ app.controller('volume/slot', [
 
       setAsset: (@asset) ->
         @fillData()
-        if asset
-          @init(asset.segment)
-          @choose() if `asset.id == target.asset`
-          $scope.asset = asset if $scope.current == this
+        if @asset
+          @init(@asset.segment)
+          @choose() if `this.asset.id == target.asset`
+          $scope.asset = @asset if $scope.current == this
           @updateExcerpt()
         else
           @init(undefined)

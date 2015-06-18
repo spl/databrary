@@ -34,7 +34,7 @@ checksumDigit i = intToDigit i
 
 instance Show ORCID where
   show (ORCID s) = group $ BSC.unpack s where
-    group (a:b:c:d:r@(e:_)) = a:b:c:d:'-':group r
+    group (a:b:c:d:r@(_:_)) = a:b:c:d:'-':group r
     group r = r
 
 instance Read ORCID where
