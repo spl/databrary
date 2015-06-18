@@ -1,8 +1,8 @@
 'use strict';
 
 app.directive('fileModel', [
-  'pageService',
-  function (page) { return {
+  '$parse',
+  function ($parse) { return {
     restrict: 'A',
     controller: [function () {
       this.$setPristine = function () {
@@ -14,7 +14,7 @@ app.directive('fileModel', [
     require: ['fileModel', '^form'],
     link: function ($scope, $element, $attrs, ctrls) {
       var file = ctrls[0], form = ctrls[1];
-      var model = page.$parse($attrs.fileModel);
+      var model = $parse($attrs.fileModel);
 
       form.$addControl(file);
       $scope.$on('$destroy', function() {

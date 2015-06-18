@@ -1,8 +1,8 @@
 'use strict';
 
 app.directive('partyNetwork', [
-  'pageService',
-  function (page) {
+  '$rootScope', '$sce', '$location', 'constantService', 'messageService', 'modelService',
+  function ($rootScope, $sce, $location, constants, messages, models) {
     return {
     restrict: 'E',
     templateUrl: 'party/network.html',
@@ -16,7 +16,7 @@ app.directive('partyNetwork', [
         });
       });
 
-      $scope.isAdmin = $scope.party.checkPermission(page.permission.ADMIN);
+      $scope.isAdmin = $scope.party.checkPermission(constants.permission.ADMIN);
 
       if ($scope.isAdmin)
       _.each($scope.party.children, function (party) {
@@ -24,10 +24,10 @@ app.directive('partyNetwork', [
           if (!actionMessages[party.id]) {
             actionMessages[party.id] = {
               party: party,
-              message: page.messages.add({
+              message: messages.add({
                 type: 'yellow',
                 persist: true,
-                body: page.$sce.trustAsHtml('<span>' + page.constants.message('auth.pending.notice', {sce:page.$sce.HTML}, party.party.name) + ' <a href="' + $scope.party.editRoute('grant') + '#auth-' + party.party.id + '">Manage</a>.</span>')
+                body: $sce.trustAsHtml('<span>' + constants.message('auth.pending.notice', {sce:$sce.HTML}, party.party.name) + ' <a href="' + $scope.party.editRoute('grant') + '#auth-' + party.party.id + '">Manage</a>.</span>')
               })
             };
           }
@@ -39,7 +39,7 @@ app.directive('partyNetwork', [
 
       //
 
-      var user = page.models.Login.user.id;
+      var user = models.Login.user.id;
       function isUser(a) {
         return a.party.id === user;
       }
@@ -52,16 +52,16 @@ app.directive('partyNetwork', [
         $scope.party.children.some(isUser);
 
       $scope.grant = function () {
-        page.$location.url(page.models.Login.user.editRoute('grant'));
-        var remove = page.$rootScope.$on('partyEditGrantForm-init', function (event, form) {
+        $location.url(models.Login.user.editRoute('grant'));
+        var remove = $rootScope.$on('partyEditGrantForm-init', function (event, form) {
           form.preSelect($scope.party);
           remove();
         });
       };
 
       $scope.apply = function () {
-        page.$location.url(page.models.Login.user.editRoute('apply'));
-        var remove = page.$rootScope.$on('partyEditApplyForm-init', function (event, form) {
+        $location.url(models.Login.user.editRoute('apply'));
+        var remove = $rootScope.$on('partyEditApplyForm-init', function (event, form) {
           form.preSelect($scope.party);
           remove();
         });
