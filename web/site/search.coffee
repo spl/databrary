@@ -16,6 +16,12 @@ app.controller 'site/search', [
     $scope.search = ->
       $location.search('query', $scope.query, 'offset', offset)
 
+#      We want the query to look something like this:
+#    facet=true&facet.field=content_type&facet.mincount=1&group=true&group.field=content_type&group.limit=10
+
+    # group.offset is offset
+    # group.limit is limit
+    
 #    $scope.containersForVoume = (volume_id) ->
 #      $location.search('query', $scope.query, 'offset', offset)
 
