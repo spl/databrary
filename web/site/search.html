@@ -18,13 +18,17 @@
         </ul>
         <div class="search-pages">
           <span ng-if="::prev">
-            <a ng-if="::prev" ng-click="prev()">&lt; {{::number-1}}</a>
-            |
+            <a ng-if="::prev" ng-click="prev()">&lt; </a>
           </span>
-          <b ng-bind="::number"></b>
+          <b ng-repeat="i in pageRange">
+            <b ng-if="::number == i">| {{i}} </b>
+            <span ng-if="::number != i">
+              <a ng-click="goToPage(i-1)">| {{::i}} </a>
+            </span>
+          </b>
+          |
           <span ng-if="::next">
-            |
-            <a ng-click="next()">{{::number+1}} &gt;</a>
+            <a ng-click="next()"> &gt;</a>
           </span>
         </div>
       </div>

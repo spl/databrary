@@ -18,6 +18,17 @@ app.controller 'site/search', [
       $location.search('query', $scope.query, 'offset', offset)
 
 
+    $scope.minPage = 1
+    $scope.maxPage = 1 + ($scope.results.numFound / limit)
+    pageRange = []
+    for i in [$scope.minPage .. $scope.maxPage] by 1
+      pageRange.push(i)
+
+    $scope.pageRange = pageRange
+    console.log(pageRange)
+
+    $scope.goToPage = (page) -> $location.search('offset', limit * page)
+
     if parseInt($scope.results.numFound) > (offset + limit)
       $scope.next = -> $location.search('offset', offset + limit)
 #      $scope.results.docs.pop()
