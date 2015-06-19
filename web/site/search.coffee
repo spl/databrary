@@ -32,21 +32,21 @@ app.controller 'site/search', [
 
     $scope.partyVolBoxClick = ->
       if "Volumes" in $scope.selectedType
-        $scope.display = (doc.title_t for doc in volumeResults.docs)
+        $scope.display = (doc.title_t for doc in $scope.volumeResults.docs)
       if "People" in $scope.selectedType
-        $scope.display = (doc.party_name_s for doc in partyResults.docs)
+        $scope.display = (doc.party_name_s for doc in $scope.partyResults.docs)
       console.log($scope.selectedType, $scope.display)
 
 
-    partyResults = $scope.getResults("party")
-    volumeResults = $scope.getResults("volume")
+    $scope.partyResults = $scope.getResults("party")
+    $scope.volumeResults = $scope.getResults("volume")
 
-    partyCount = $scope.getTypeCounts("party")
-    volumeCount = $scope.getTypeCounts("volume")
+    $scope.partyCount = $scope.getTypeCounts("party")
+    $scope.volumeCount = $scope.getTypeCounts("volume")
 
-    totalCount = partyCount + volumeCount
+    $scope.totalCount = $scope.partyCount + $scope.volumeCount
 
-    console.log(partyResults, partyCount)
+#    console.log(partyResults, partyCount)
     limit = 10 # server-side default
     offset = parseInt($location.search().offset, 10) || 0
     display.title = 'Search'
@@ -76,7 +76,7 @@ app.controller 'site/search', [
 
 
     $scope.minPage = 1
-    $scope.maxPage = 1 + (totalCount / limit)
+    $scope.maxPage = 1 + ($scope.totalCount / limit)
     pageRange = []
     for i in [$scope.minPage .. $scope.maxPage] by 1
       pageRange.push(i)
@@ -85,7 +85,7 @@ app.controller 'site/search', [
 
     $scope.goToPage = (page) -> $location.search('offset', limit * (page-1))
 
-    if parseInt(totalCount) > (offset + limit)
+    if parseInt($scope.totalCount) > (offset + limit)
       $scope.next = -> $location.search('offset', offset + limit)
     if offset > 0
       $scope.prev = -> $location.search('offset', Math.max(0, offset - limit))
