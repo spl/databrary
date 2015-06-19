@@ -4,11 +4,10 @@ app.controller('party/profile', [
   '$scope', 'displayService', 'party', 'pageService',
   function ($scope, display, party, page) {
 
-    var getusers = function(volumes){
-      var tempusers = _(volumes).pluck('access').flatten().value();
-      console.log(tempusers);
+    var getUsers = function(volumes){
+      var tempUsers = _(volumes).pluck('access').flatten().value();
       var users = {
-        sponsors: _.filter(tempusers, function(u){
+        sponsors: _.filter(tempUsers, function(u){
           //placeholder value. 
           return u.party.institution === true;
         }),
@@ -32,6 +31,7 @@ app.controller('party/profile', [
       }
     };
 
+    // This should take in a user, then select volumes on each thing. 
     $scope.clickUser = function(user){
       for(var i = 0; i < $scope.volumes.length; i += 1) {
         $scope.volumes[i].isSelected = "";
@@ -47,9 +47,6 @@ app.controller('party/profile', [
     $scope.volumes = party.volumes;
     $scope.users = getUsers($scope.volumes);  
 
-    console.log("party:", $scope.party);
-    console.log("volume", $scope.volumes);
-    console.log("users: ", $scope.users);
     $scope.page = page;
     $scope.profile = page.$location.path() === '/profile';
     display.title = party.name;
