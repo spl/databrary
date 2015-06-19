@@ -34,10 +34,15 @@ app.controller('party/profile', [
       }
     };
 
+    // This is a basic helper function to extract out the 
+    // users from the volumes.  The basic logic is 
+    // "take a list of volumes in, extract out the 
+    // users, then flatten. "
     var getUsers = function(volumes){
-      return _(volumes).map(function(volume){
-        return volume.access;
-      }).flatten().value();
+      return _(volumes)
+              .pluck('access')
+              .flatten()
+              .value();
     };
 
     $scope.party = party;
