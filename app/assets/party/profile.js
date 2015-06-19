@@ -44,12 +44,12 @@ app.controller('party/profile', [
       console.log(tempUsers);
       users.sponsors = _.filter(tempUsers, function(u){
         //Placeholder value. 
-        return u.party.institution == true;
+        return u.party.institution === true;
       });
 
       users.owners = _.filter(tempUsers, function(u){
         //placeholder value
-        return u.party.permission == 5
+        return u.party.permission === 5;
       });
        
       return users;
