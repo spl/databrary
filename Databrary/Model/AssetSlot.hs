@@ -5,6 +5,7 @@ module Databrary.Model.AssetSlot
   , lookupAssetAssetSlot
   , lookupSlotAssets
   , lookupContainerAssets
+  , lookupVolumeAssetSlots
   , changeAssetSlot
   , findAssetContainerEnd
   , assetSlotJSON
@@ -49,6 +50,10 @@ lookupSlotAssets (Slot c s) =
 
 lookupContainerAssets :: (MonadDB m) => Container -> m [AssetSlot]
 lookupContainerAssets = lookupSlotAssets . containerSlot
+
+lookupVolumeAssetSlots :: (MonadDB m) => Volume -> m [AssetSlot]
+lookupVolumeAssetSlots v =
+  dbQuery $ ($ v) <$> $(selectQuery selectVolumeSlotAsset "$WHERE asset.volume = ${volumeId v} ORDER BY container.id")
 
 changeAssetSlot :: (MonadAudit c m) => AssetSlot -> m Bool
 changeAssetSlot as = do

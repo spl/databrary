@@ -4,6 +4,7 @@ module Databrary.Model.AssetSlot.SQL
   , makeSlotAsset
   , selectContainerSlotAsset
   , selectAssetSlotAsset
+  , selectVolumeSlotAsset
   , selectSlotAsset
   , selectAssetSlot
   , insertSlotAsset

@@ -67,13 +67,27 @@ getVolume p i =
   checkPermission p =<< maybeAction =<< lookupVolume i
 
 data VolumeCache = VolumeCache
-  { volumeCacheRecords :: Maybe (HML.HashMap (Id Record) Record)
+  { volumeCacheAccess :: Maybe [VolumeAccess]
   , volumeCacheTopContainer :: Maybe Container
+  , volumeCacheRecords :: Maybe (HML.HashMap (Id Record) Record)
   }
 
 instance Monoid VolumeCache where
-  mempty = VolumeCache mempty Nothing
-  mappend (VolumeCache r1 t1) (VolumeCache r2 t2) = VolumeCache (r1 <> r2) (t1 <|> t2)
+  mempty = VolumeCache Nothing Nothing Nothing
+  mappend (VolumeCache a1 t1 r1) (VolumeCache a2 t2 r2) = VolumeCache (a1 <|> a2) (t1 <|> t2) (r1 <> r2)
+
+runVolumeCache :: Monad m => StateT VolumeCache m a -> m a
+runVolumeCache f = evalStateT f mempty
+
+cacheVolumeAccess :: (MonadDB m, MonadHasIdentity c m) => Volume -> Permission -> StateT VolumeCache m [VolumeAccess]
+cacheVolumeAccess vol perm = do
+  vc <- get
+  takeWhile ((perm <=) . volumeAccessIndividual) <$>
+    fromMaybeM (do
+      a <- lookupVolumeAccess vol PermissionNONE
+      put vc{ volumeCacheAccess = Just a }
+      return a)
+      (volumeCacheAccess vc)
 
 cacheVolumeRecords :: MonadDB m => Volume -> StateT VolumeCache m ([Record], HML.HashMap (Id Record) Record)
 cacheVolumeRecords vol = do
@@ -84,7 +98,7 @@ cacheVolumeRecords vol = do
     put vc{ volumeCacheRecords = Just m }
     return (l, m))
     (return . (HML.elems &&& id))
-    $ volumeCacheRecords vc
+    (volumeCacheRecords vc)
 
 cacheVolumeTopContainer :: MonadDB m => Volume -> StateT VolumeCache m Container
 cacheVolumeTopContainer vol = do
@@ -93,13 +107,13 @@ cacheVolumeTopContainer vol = do
     t <- lookupVolumeTopContainer vol
     put vc{ volumeCacheTopContainer = Just t }
     return t)
-    $ volumeCacheTopContainer vc
+    (volumeCacheTopContainer vc)
 
 volumeJSONField :: (MonadDB m, MonadHasIdentity c m) => Volume -> BS.ByteString -> Maybe BS.ByteString -> StateT VolumeCache m (Maybe JSON.Value)
 volumeJSONField vol "access" ma = do
   Just . JSON.toJSON . map (\va -> 
     volumeAccessJSON va JSON..+ ("party" JSON..= partyJSON (volumeAccessParty va)))
-    <$> lookupVolumeAccess vol (fromMaybe PermissionNONE $ readDBEnum . BSC.unpack =<< ma)
+    <$> cacheVolumeAccess vol (fromMaybe PermissionNONE $ readDBEnum . BSC.unpack =<< ma)
 volumeJSONField vol "citation" _ =
   Just . JSON.toJSON <$> lookupVolumeCitation vol
 volumeJSONField vol "links" _ =
@@ -127,17 +141,22 @@ volumeJSONField o "comments" n = do
   t <- cacheVolumeTopContainer o
   tc <- lookupSlotComments (containerSlot t) (maybe 64 fst $ BSC.readInt =<< n)
   return $ Just $ JSON.toJSON $ map commentJSON tc
+volumeJSONField o "filename" _ =
+  Just . JSON.toJSON <$> cacheVolumeDownloadName o
 volumeJSONField _ _ _ = return Nothing
 
-volumeJSONQuery :: (MonadDB m, MonadHasIdentity c m) => Volume -> JSON.Query -> m JSON.Object
-volumeJSONQuery vol q = evalStateT (JSON.jsonQuery (volumeJSON vol) (volumeJSONField vol) q) mempty
+volumeJSONQuery :: Volume -> JSON.Query -> AuthActionM JSON.Object
+volumeJSONQuery vol = runVolumeCache . JSON.jsonQuery (volumeJSON vol) (volumeJSONField vol)
 
-volumeDownloadName :: (MonadDB m, MonadHasIdentity c m) => Volume -> m [T.Text]
-volumeDownloadName v = do
-  owns <- lookupVolumeAccess v PermissionADMIN
+cacheVolumeDownloadName :: (MonadDB m, MonadHasIdentity c m) => Volume -> StateT VolumeCache m [T.Text]
+cacheVolumeDownloadName v = do
+  owns <- cacheVolumeAccess v PermissionADMIN
   return $ (T.pack $ "databrary" ++ show (volumeId v))
     : map (partySortName . volumeAccessParty) owns
     ++ [fromMaybe (volumeName v) (getVolumeAlias v)]
+
+volumeDownloadName :: (MonadDB m, MonadHasIdentity c m) => Volume -> m [T.Text]
+volumeDownloadName = runVolumeCache . cacheVolumeDownloadName
 
 viewVolume :: AppRoute (API, Id Volume)
 viewVolume = action GET (pathAPI </> pathId) $ \(api, vi) -> withAuth $ do
