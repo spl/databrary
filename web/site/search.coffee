@@ -3,11 +3,16 @@
 app.controller 'site/search', [
   '$scope', '$location', 'displayService', 'results',
   ($scope, $location, display, results) ->
+    console.log("results")
+    console.log(results)
+
     limit = 10 # server-side default
     offset = parseInt($location.search().offset, 10) || 0
     display.title = 'Search'
     $scope.results = results?.response
     $scope.number = 1 + (offset / limit)
+
+    console.log(results)
 
     params = $location.search()
     $scope.query = params.query
@@ -21,7 +26,7 @@ app.controller 'site/search', [
 
     # group.offset is offset
     # group.limit is limit
-    
+
 #    $scope.containersForVoume = (volume_id) ->
 #      $location.search('query', $scope.query, 'offset', offset)
 

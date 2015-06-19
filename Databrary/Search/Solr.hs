@@ -109,7 +109,19 @@ instance ToJSON SolrQuery where
       toJSON ( SolrQuery sQquery sQlimit sQstart ) =
          object [ "query" .= sQquery,
                   "limit" .= sQlimit,
-                  "offset" .= sQstart ]
+                  "offset" .= sQstart,
+                  "filter" .= [("content_type:volume" :: String), ("content_type:party" :: String)],
+                  "facet" .= object [
+                    "content_type" .= object [
+                        "type" .= ("enum" :: String),
+                        "field" .= ("content_type" :: String),
+                        "limit" .= (10 :: Int)
+                    ]
+                  ]
+--                   "params" .= object [
+--                         "q" .= ("facet=true&facet.field=content_type&facet.mincount=1&group=true&group.field=content_type&group.limit=10" :: String)
+--                   ]
+                ]
 
 -- formQuery :: String -> SolrQuery
 -- formQuery q = SolrQuery q
@@ -138,6 +150,8 @@ search q offset limit = do
       let query = Q.createQuery q
       let sQuery = SolrQuery (Q.queryToString query) limit offset
       request <- liftIO $ generatePostReq sQuery
+      liftIO $ print $ encode sQuery
       liftIO $ print sQuery -- TODO REMOVE THIS
       liftIO $ print q
+      liftIO $ print request
       (submitQuery request)
