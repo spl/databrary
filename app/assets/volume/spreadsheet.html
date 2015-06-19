@@ -15,7 +15,7 @@
 </div>
 
 <div class="spreadsheet-options">
-  <a ng-if="::!editing && !top" href="" ng-href="{{::volume.csvRoute()}}" target="_self">export data</a>
+  <a ng-if="::!editing && !top" ng-href="{{::volume.csvRoute()}}">export data</a>
 </div>
 
 <div class="spreadsheet" ng-class="::{'edit': editing, 'view': !editing}">
