@@ -1,9 +1,10 @@
  'use strict';
 
 app.controller('party/profile', [
-  '$scope', 'displayService', 'party', 'pageService',
-  function ($scope, display, party, page) {
+  '$scope', 'displayService', 'party', 'pageService','constantService',
+  function ($scope, display, party, page, constants) {
 
+    console.log(constants);
     var getUsers = function(volumes){
       var tempUsers = _(volumes).pluck('access').flatten().value();
       var users = {
@@ -11,12 +12,12 @@ app.controller('party/profile', [
           //placeholder value. 
           return u.party.institution === true;
         }),
-        labgroupMembers: _.filter(tempUsers, function(u){
+        labGroupMembers: _.filter(tempUsers, function(u){
           //placeholder value
           return u.party.permission === 3;
         }), 
 
-        nongroupAffiliates: _.filter(tempUsers, function(u){
+        nonGroupAffiliates: _.filter(tempUsers, function(u){
           // placeholder value 
           return u.party.permission === 3; 
         }),
