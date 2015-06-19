@@ -39,10 +39,20 @@ app.controller('party/profile', [
     // "take a list of volumes in, extract out the 
     // users, then flatten. "
     var getUsers = function(volumes){
-      return _(volumes)
-              .pluck('access')
-              .flatten()
-              .value();
+      var users = {};
+      var tempUsers = _(volumes).pluck('access').flatten().value();
+      console.log(tempUsers);
+      users.sponsors = _.filter(tempUsers, function(u){
+        //Placeholder value. 
+        return u.party.institution == true;
+      });
+
+      users.owners = _.filter(tempUsers, function(u){
+        //placeholder value
+        return u.party.permission == 5
+      });
+       
+      return users;
     };
 
     $scope.party = party;
