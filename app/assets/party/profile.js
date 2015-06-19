@@ -13,13 +13,18 @@ app.controller('party/profile', [
         }),
         labgroupMembers: _.filter(tempUsers, function(u){
           //placeholder value
-          return u.party.permission === 5;
+          return u.party.permission === 3;
         }), 
 
         nongroupAffiliates: _.filter(tempUsers, function(u){
           // placeholder value 
           return u.party.permission === 3; 
-        })
+        }),
+        
+        dataOwnerVolumes: _.filter(tempUsers, function(u){
+          // placeholder value 
+          return u.party.permission === 5; 
+        }),
         
       };
        
