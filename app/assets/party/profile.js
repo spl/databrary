@@ -11,9 +11,9 @@ app.controller('party/profile', [
       for(var i = 0; i < $scope.volumes; i += 1){
         for(var j = 0; j < $scope.volumes[i].users.length; j += 1 ){
           if($scope.volumes[i].users[j].id === user.id){
-            $scope.volumes[i].selectedClass = 'volumeSelected'
+            $scope.volumes[i].selectedClass = 'volumeSelected';
           } else {
-            $scope.volumes[i].selectedClass = ''
+            $scope.volumes[i].selectedClass = '';
           }
         }
       }
@@ -26,20 +26,27 @@ app.controller('party/profile', [
       for(var i = 0; i < $scope.users; i +=1){
         for(var j = 0; j < $scope.users[i].volumes.length; i += 1){
           if($scope.users[i].volumes[j].id === volume.id){
-           $scope.users[i].selectedClass = 'userSelected'
+           $scope.users[i].selectedClass = 'userSelected';
           } else {
-           $scope.users[i].selectedClass = ''
+           $scope.users[i].selectedClass = '';
           }
         }
       }
     };
 
+    var getUsers = function(volumes){
+      return _(volumes).map(function(volume){
+        return volume.access;
+      }).flatten().value();
+    };
+
     $scope.party = party;
     $scope.volumes = party.volumes;
+    $scope.users = getUsers($scope.volumes);  
 
     console.log("party:", $scope.party);
     console.log("volume", $scope.volumes);
-
+    console.log("users: ", $scope.users);
     $scope.page = page;
     $scope.profile = page.$location.path() === '/profile';
     display.title = party.name;
