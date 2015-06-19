@@ -868,7 +868,7 @@ app.factory('modelService', [
 
     Volume.prototype.createRecord = function (c) {
       var v = this;
-      return router.http(router.controllers.createRecord, this.id, c)
+      return router.http(router.controllers.createRecord, this.id, {category: c})
         .then(function (res) {
           return new Record(v, res.data);
         });
