@@ -110,12 +110,14 @@ instance ToJSON SolrQuery where
          object [ "query" .= sQquery,
                   "limit" .= sQlimit,
                   "offset" .= sQstart,
-                  "filter" .= [("content_type:volume" :: String), ("content_type:party" :: String)],
+                  "filter" .= [("content_type:(volume OR party)" :: String)],
                   "facet" .= object [
                     "content_type" .= object [
-                        "type" .= ("enum" :: String),
-                        "field" .= ("content_type" :: String),
-                        "limit" .= (10 :: Int)
+                        "terms" .= object [
+    --                         "type" .= ("terms" :: String),
+                            "field" .= ("content_type" :: String),
+                            "limit" .= (10 :: Int)
+                        ]
                     ]
                   ]
 --                   "params" .= object [
