@@ -39,18 +39,20 @@ app.controller('party/profile', [
     // "take a list of volumes in, extract out the 
     // users, then flatten. "
     var getUsers = function(volumes){
-      var users = {};
+      
       var tempUsers = _(volumes).pluck('access').flatten().value();
       console.log(tempUsers);
-      users.sponsors = _.filter(tempUsers, function(u){
-        //Placeholder value. 
-        return u.party.institution === true;
-      });
+      var users = {
+        sponsors: _.filter(tempUsers, function(u){
+          //Placeholder value. 
+          return u.party.institution === true;
+        }),
 
-      users.owners = _.filter(tempUsers, function(u){
-        //placeholder value
-        return u.party.permission === 5;
-      });
+        owners: _.filter(tempUsers, function(u){
+          //placeholder value
+          return u.party.permission === 5;
+        })
+      };
        
       return users;
     };
