@@ -11,10 +11,16 @@ app.controller('party/profile', [
           //placeholder value. 
           return u.party.institution === true;
         }),
-        owners: _.filter(tempUsers, function(u){
+        labgroupMembers: _.filter(tempUsers, function(u){
           //placeholder value
           return u.party.permission === 5;
+        }), 
+
+        nongroupAffiliates: _.filter(tempUsers, function(u){
+          // placeholder value 
+          return u.party.permission === 3; 
         })
+        
       };
        
       return users;
