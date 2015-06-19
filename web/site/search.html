@@ -10,6 +10,8 @@
         <p>Number of results found: {{results.numFound}}</p>
         <p>Showing results {{results.start + 1}} to {{results.start + results.docs.length}}</p>
 
+        <select multiple="multiple" size="10" ng-model="selectedType" ng-options="t for t in ['People', 'Volumes']" ng-click="partyVolBoxClick()"></select>
+        <select multiple="multiple" size="10" ng-model="selectedVolume" ng-options="s for s in display"></select>
         <select multiple="multiple" size="10" ng-model="selectedVolume" ng-options="result.title_t for result in results.docs"></select>
 
         <ul>

@@ -119,10 +119,18 @@ instance ToJSON SolrQuery where
                             "limit" .= (10 :: Int)
                         ]
                     ]
-                  ]
---                   "params" .= object [
---                         "q" .= ("facet=true&facet.field=content_type&facet.mincount=1&group=true&group.field=content_type&group.limit=10" :: String)
+                  ],
+--                   "group" .= object [
+--                     "field" .= ("content_type" :: String),
+--                     "limit" .= (10 :: Int)
 --                   ]
+                  "params" .= object [
+                        "group" .= ("true" :: String),
+                        "group.field" .= ("content_type" :: String),
+                        "group.limit" .= (10 :: Int)
+
+--                         ("facet=true&facet.field=content_type&facet.mincount=1&group=true&group.field=content_type&group.limit=10" :: String)
+                  ]
                 ]
 
 -- formQuery :: String -> SolrQuery

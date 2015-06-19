@@ -219,7 +219,8 @@ app.provider('routerService', [
               });
           }
         ]
-      }
+      },
+      reloadOnSearch: false,
     });
 
     var partyView = {
