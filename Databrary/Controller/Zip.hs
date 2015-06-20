@@ -12,12 +12,11 @@ import Data.Function (on)
 import Data.List (groupBy)
 import Data.Monoid ((<>))
 import qualified Data.Text.Encoding as TE
-import qualified Data.Traversable as Trav
 import Network.HTTP.Types (hContentType, hCacheControl)
 import System.Posix.FilePath ((<.>))
 
 import Databrary.Ops
-import Databrary.Has (peek)
+import Databrary.Has (view, peek)
 import Databrary.Store.Asset
 import Databrary.Store.Filename
 import Databrary.Store.Zip
@@ -39,9 +38,9 @@ import Databrary.Controller.Container
 import Databrary.Controller.Volume
 import Databrary.Controller.Party
 
-assetZipEntry :: AssetSlot -> AuthActionM (Maybe ZipEntry)
-assetZipEntry (dataPermission -> PermissionNONE) = return Nothing
-assetZipEntry AssetSlot{ slotAsset = a } = getAssetFile a >>= Trav.mapM (\f -> do
+assetZipEntry :: AssetSlot -> AuthActionM ZipEntry
+assetZipEntry AssetSlot{ slotAsset = a } = do
+  Just f <- getAssetFile a
   req <- peek
   -- (t, _) <- assetCreation a
   -- Just (t, s) <- fileInfo f
@@ -52,12 +51,12 @@ assetZipEntry AssetSlot{ slotAsset = a } = getAssetFile a >>= Trav.mapM (\f -> d
     , zipEntrySize = fromIntegral <$> assetSize a
     , zipEntryComment = BSL.toStrict $ BSB.toLazyByteString $ actionURL (Just req) viewAsset (HTML, assetId a) []
     , zipEntryContent = ZipEntryFile f
-    })
+    }
 
 containerZipEntry :: Container -> [AssetSlot] -> AuthActionM ZipEntry
 containerZipEntry c l = do
   req <- peek
-  a <- mapMaybeM assetZipEntry l
+  a <- mapM assetZipEntry l
   return ZipEntry
     { zipEntryName = makeFilename (containerDownloadName c)
     , zipEntryTime = Nothing
@@ -71,7 +70,7 @@ volumeZipEntry :: Volume -> [AssetSlot] -> AuthActionM ZipEntry
 volumeZipEntry v al = do
   req <- peek
   n <- volumeDownloadName v
-  c <- mapMaybeM ent $ groupBy (me `on` fmap (containerId . slotContainer) . assetSlot) al
+  c <- mapM ent $ groupBy (me `on` fmap (containerId . slotContainer) . assetSlot) al
   return ZipEntry
     { zipEntryName = makeFilename n
     , zipEntryTime = Nothing
@@ -84,7 +83,7 @@ volumeZipEntry v al = do
   me (Just x) (Just y) = x == y
   me _ _ = False
   ent [a@AssetSlot{ assetSlot = Nothing }] = assetZipEntry a
-  ent l@(AssetSlot{ assetSlot = Just s } : _) = Just <$> containerZipEntry (slotContainer s) l
+  ent l@(AssetSlot{ assetSlot = Just s } : _) = containerZipEntry (slotContainer s) l
   ent _ = fail "volumeZipEntry"
 
 zipResponse :: BS.ByteString -> [ZipEntry] -> AuthAction
@@ -112,7 +111,7 @@ zipContainer = action GET (pathSlotId </< "zip") $ \ci -> withAuth $ do
 zipVolume :: AppRoute (Id Volume)
 zipVolume = action GET (pathId </< "zip") $ \vi -> withAuth $ do
   v <- getVolume PermissionPUBLIC vi
-  a <- lookupVolumeAssetSlots v
+  a <- filter (\a -> dataPermission a > PermissionNONE && assetBacked (view a)) <$> lookupVolumeAssetSlots v False
   z <- volumeZipEntry v a
   auditVolumeDownload (not $ zipEmpty z) v
   zipResponse ("databrary-" <> BSC.pack (show (volumeId v))) [z]

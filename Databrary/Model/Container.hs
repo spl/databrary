@@ -56,7 +56,7 @@ lookupVolumeContainer vol ci =
 
 lookupVolumeContainers :: MonadDB m => Volume -> m [Container]
 lookupVolumeContainers vol =
-  dbQuery $ fmap ($ vol) $(selectQuery selectVolumeContainer "$WHERE container.volume = ${volumeId vol}")
+  dbQuery $ fmap ($ vol) $(selectQuery selectVolumeContainer "$WHERE container.volume = ${volumeId vol} ORDER BY container.id")
 
 lookupVolumeTopContainer :: MonadDB m => Volume -> m Container
 lookupVolumeTopContainer vol =

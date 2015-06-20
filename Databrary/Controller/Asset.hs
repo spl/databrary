@@ -76,6 +76,8 @@ getAsset p i =
   checkPermission p =<< maybeAction =<< lookupAssetSlot i
 
 assetJSONField :: (MonadDB m, MonadHasIdentity c m) => AssetSlot -> BS.ByteString -> Maybe BS.ByteString -> m (Maybe JSON.Value)
+assetJSONField a "container" _ =
+  return $ JSON.toJSON . containerJSON . slotContainer <$> assetSlot a
 assetJSONField a "creation" _ | view a >= PermissionEDIT = do
   (t, n) <- assetCreation $ slotAsset a
   return $ Just $ JSON.toJSON $ JSON.object $ catMaybes

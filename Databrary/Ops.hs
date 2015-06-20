@@ -131,9 +131,11 @@ mapMaybeM f l = catMaybes <$> mapM f l
 liftK :: Monad m => (Kleisli m a b -> Kleisli m c d) -> (a -> m b) -> (c -> m d)
 liftK f = runKleisli . f . Kleisli
 
+-- |Merge two ordered lists using the given predicate
 mergeBy :: (a -> a -> Ordering) -> [a] -> [a] -> [a]
 mergeBy _ [] l = l
 mergeBy _ l [] = l
-mergeBy p al@(a:ar) bl@(b:br)
-  | p a b == GT = b : mergeBy p al br
-  | otherwise = a : mergeBy p ar bl
+mergeBy p al@(a:ar) bl@(b:br) = case p a b of
+  LT -> a : mergeBy p ar bl
+  EQ -> a : mergeBy p ar bl -- mergeBy p al br -- removing EQ "duplicates" (left-biased)
+  GT -> b : mergeBy p al br

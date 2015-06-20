@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, TupleSections #-}
 module Databrary.Controller.Volume
   ( getVolume
   , viewVolume
@@ -15,13 +15,15 @@ module Databrary.Controller.Volume
   ) where
 
 import Control.Applicative (Applicative, (<*>), (<|>), optional)
-import Control.Arrow ((&&&))
+import Control.Arrow ((&&&), (***))
 import Control.Monad (mfilter, guard, void, when, liftM2)
 import Control.Monad.Trans.Class (lift)
 import Control.Monad.Trans.State.Lazy (StateT(..), evalStateT, get, put)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.HashMap.Lazy as HML
+import qualified Data.Foldable as Fold
+import Data.Function (on)
 import Data.Maybe (fromMaybe, isNothing)
 import Data.Monoid (Monoid(..), (<>), mempty)
 import qualified Data.Text as T
@@ -47,6 +49,7 @@ import Databrary.Model.Record
 import Databrary.Model.RecordSlot
 import Databrary.Model.Slot
 import Databrary.Model.Asset
+import Databrary.Model.AssetSlot
 import Databrary.Model.Excerpt
 import Databrary.Model.Tag
 import Databrary.Model.Comment
@@ -109,6 +112,11 @@ cacheVolumeTopContainer vol = do
     return t)
     (volumeCacheTopContainer vc)
 
+leftJoin :: (a -> b -> Bool) -> [a] -> [b] -> [(a, [b])]
+leftJoin _ [] [] = []
+leftJoin _ [] _ = error "leftJoin: leftovers"
+leftJoin p (a:al) b = uncurry (:) $ ((a, ) *** leftJoin p al) $ span (p a) b
+
 volumeJSONField :: (MonadDB m, MonadHasIdentity c m) => Volume -> BS.ByteString -> Maybe BS.ByteString -> StateT VolumeCache m (Maybe JSON.Value)
 volumeJSONField vol "access" ma = do
   Just . JSON.toJSON . map (\va -> 
@@ -124,6 +132,11 @@ volumeJSONField vol "containers" (Just "records") = do
   (_, rm) <- cacheVolumeRecords vol
   let rjs c (s, r) = recordSlotJSON $ RecordSlot (HML.lookupDefault (Record r vol Nothing Nothing []) r rm) (Slot c s)
   Just . JSON.toJSON . map (\(c, rl) -> containerJSON c JSON..+ "records" JSON..= map (rjs c) rl) <$> lookupVolumeContainersRecordIds vol
+volumeJSONField vol "containers" (Just "assets") = do
+  al <- lookupVolumeAssetSlots vol False
+  cl <- lookupVolumeContainers vol
+  return $ Just $ JSON.toJSON $ map (\(c, a) -> containerJSON c JSON..+ "assets" JSON..= map assetSlotJSON a)
+    $ leftJoin (\c -> Fold.any (on (==) containerId c . slotContainer) . assetSlot) cl al
 volumeJSONField vol "containers" _ =
   Just . JSON.toJSON . map containerJSON <$> lookupVolumeContainers vol
 volumeJSONField vol "top" _ =

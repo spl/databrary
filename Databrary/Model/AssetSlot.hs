@@ -13,7 +13,7 @@ module Databrary.Model.AssetSlot
 
 import Control.Applicative ((<*>))
 import Control.Monad (when)
-import Data.Maybe (catMaybes, fromMaybe, isNothing)
+import Data.Maybe (fromMaybe, isNothing)
 import Database.PostgreSQL.Typed (pgSQL)
 
 import Databrary.Ops
@@ -51,9 +51,9 @@ lookupSlotAssets (Slot c s) =
 lookupContainerAssets :: (MonadDB m) => Container -> m [AssetSlot]
 lookupContainerAssets = lookupSlotAssets . containerSlot
 
-lookupVolumeAssetSlots :: (MonadDB m) => Volume -> m [AssetSlot]
-lookupVolumeAssetSlots v =
-  dbQuery $ ($ v) <$> $(selectQuery selectVolumeSlotAsset "$WHERE asset.volume = ${volumeId v} ORDER BY container.id")
+lookupVolumeAssetSlots :: (MonadDB m) => Volume -> Bool -> m [AssetSlot]
+lookupVolumeAssetSlots v top =
+  dbQuery $ ($ v) <$> $(selectQuery selectVolumeSlotAsset "$WHERE asset.volume = ${volumeId v} AND (container.top OR ${not top}) ORDER BY container.id")
 
 changeAssetSlot :: (MonadAudit c m) => AssetSlot -> m Bool
 changeAssetSlot as = do
@@ -72,7 +72,6 @@ findAssetContainerEnd c =
   dbQuery1' [pgSQL|SELECT max(upper(segment)) FROM slot_asset WHERE container = ${containerId c}|]
 
 assetSlotJSON :: AssetSlot -> JSON.Object
-assetSlotJSON AssetSlot{..} = assetJSON slotAsset JSON..++ catMaybes
-  [ ("container" JSON..=) . containerId . slotContainer <$> assetSlot
-  , segmentJSON . slotSegment =<< assetSlot
-  ]
+assetSlotJSON AssetSlot{..} = assetJSON slotAsset JSON..+?
+  ( segmentJSON . slotSegment =<< assetSlot
+  )

@@ -2,6 +2,7 @@
 module Databrary.Model.Asset
   ( module Databrary.Model.Asset.Types
   , blankAsset
+  , assetBacked
   , lookupAsset
   , addAsset
   , changeAsset
@@ -12,7 +13,7 @@ module Databrary.Model.Asset
   ) where
 
 import Control.Arrow (first)
-import Data.Maybe (catMaybes, isNothing)
+import Data.Maybe (catMaybes, isNothing, isJust)
 import qualified Data.Text as T
 import Database.PostgreSQL.Typed (pgSQL)
 
@@ -47,6 +48,9 @@ blankAsset vol = Asset
   , assetSize = Nothing
   , assetVolume = vol
   }
+
+assetBacked :: Asset -> Bool
+assetBacked = isJust . assetSHA1
 
 lookupAsset :: (MonadHasIdentity c m, MonadDB m) => Id Asset -> m (Maybe Asset)
 lookupAsset ai = do
