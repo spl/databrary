@@ -309,19 +309,11 @@ app.provider('routerService', [
       resolve: {
         volume: [
           'pageService', function (page) {
-            return page.models.Volume.get(page.$route.current.params.id);
+            return page.models.Volume.get(page.$route.current.params.id, {containers:'assets'});
           }
         ],
-        slot: function(){
+        slot: function() {
         },
-        fileList: [
-          'pageService', function (page) {
-            return page.router.http(page.router.controllers.VolumeApi.zipList, page.$route.current.params.id)
-              .then(function (res) {
-                return res.data;
-              });
-          }
-        ],
       }
     });
 
@@ -360,28 +352,19 @@ app.provider('routerService', [
     routes.slotEdit = makeRoute(controllers.viewSlotEdit, ['vid', 'id'], slotRoute(true));
     routes.slot = makeRoute(controllers.viewSlot, ['vid', 'id', 'segment'], slotRoute(false));
 
-    routes.slotZip = makeRoute(controllers.zipSlot, ['vid', 'id', 'segment'], {
+    routes.slotZip = makeRoute(controllers.zipSlot, ['vid', 'id'], {
       controller: 'volume/zip',
       templateUrl: 'volume/zip.html', 
       resolve: {
         slot: [
           'pageService', function (page) {
             return page.models.Volume.get(page.$route.current.params.vid).then(function(v) {
-              return v.getSlot(page.$route.current.params.id, page.$route.current.params.segment);
+              return v.getSlot(page.$route.current.params.id, page.$route.current.params.segment, ['assets']);
             }); 
           }
         ],
         volume: function () {
         },
-        fileList: [
-          'pageService', 'Segment', function (page, Segment) {
-            return page.router.http(page.router.controllers.SlotApi.zipList, page.$route.current.params.vid,
-              page.$route.current.params.id, Segment.format(page.$route.current.params.segment))
-              .then(function (res) {
-                return res.data;
-              });
-          }
-        ],
       }
     });
 

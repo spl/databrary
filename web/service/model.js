@@ -818,7 +818,7 @@ app.factory('modelService', [
     };
 
     Slot.prototype.zipRoute = function () {
-      return router.slotZip([this.volume.id, this.container.id, this.segment.format()]);
+      return router.slotZip([this.volume.id, this.container.id]);
     };
 
     ///////////////////////////////// Record
@@ -1037,6 +1037,7 @@ app.factory('modelService', [
       duration: true,
       pending: true,
       creation: false,
+      size: false,
     }, Asset.prototype.fields);
 
     Asset.prototype.init = function (init) {

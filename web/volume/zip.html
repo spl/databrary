@@ -12,12 +12,22 @@
     </h4>
   </div>
 
-  <p ng-if="::assetCount" message="download.zip.prompt.partial"></p>
-  <p ng-if="::!assetCount" message="download.zip.prompt.empty"></p>
-  <ul class="download-list">
-    <li ng-repeat="(filename,asset) in assets">
-      <span class="icon release" ng-class="::page.constants.release[asset.release]"></span>
-      <span ng-bind="::filename"></span>
+  <p ng-if="::assetDownload && assetTotal > assetDownload" message="download.zip.prompt.partial"></p>
+  <p ng-if="::!assetDownload" message="download.zip.prompt.empty"></p>
+  <p ng-if="assetSize">{{::assetSize}} MB</p>
+  <ul>
+    <li ng-repeat="c in ::containers">
+      <span class="icon release" ng-class="::page.constants.release[c.release]"></span>
+      <span ng-bind="::c.id"></span>: 
+      <span ng-bind="::c.name"></span>
+      <ul class="download-list">
+        <li ng-repeat="a in ::c.assets" ng-class="{'download-no-permission': !a.checkPermission(page.constants.permission.VIEW)}">
+          <span class="icon release" ng-class="::page.constants.release[a.classification]"></span>
+          <img class="icon" ng-src="{{::a.icon}}" hint="format-{{::a.format.extension}}">
+          <span ng-bind="::a.id"></span>: 
+          <span ng-bind="::a.name"></span>
+        </li>
+      </ul>
     </li>
   </ul>
   <div class="popup-cite" ng-if="::volume">
@@ -33,7 +43,7 @@
       </li>
     </ul>
   </div>
-  <a ng-href="{{::slot.zipRoute()}}" class="button green" target="_self">
+  <a ng-if="::assetDownload" ng-href="{{::slot ? slot.zipRoute() : volume.zipRoute()}}" class="button green" target="_self">
     <span class="download icon"></span><span>Download</span>
   </a>  
 </div>

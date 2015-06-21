@@ -34,6 +34,7 @@
 /site/tooltip.js
 /volume/accessSearch.js
 /volume/comments.js
+/volume/csv.js
 /volume/editLinks.js
 /volume/excerpts.js
 /volume/fundingSearch.js
@@ -42,3 +43,4 @@
 /volume/showInvestigators.js
 /volume/slot.js
 /volume/spreadsheet.js
+/volume/zip.js

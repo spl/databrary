@@ -22,6 +22,7 @@ import Control.Monad.Trans.State.Lazy (StateT(..), evalStateT, get, put)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.HashMap.Lazy as HML
+import qualified Data.HashMap.Strict as HM
 import qualified Data.Foldable as Fold
 import Data.Function (on)
 import Data.Maybe (fromMaybe, isNothing)
@@ -135,7 +136,8 @@ volumeJSONField vol "containers" (Just "records") = do
 volumeJSONField vol "containers" (Just "assets") = do
   al <- lookupVolumeAssetSlots vol False
   cl <- lookupVolumeContainers vol
-  return $ Just $ JSON.toJSON $ map (\(c, a) -> containerJSON c JSON..+ "assets" JSON..= map assetSlotJSON a)
+  return $ Just $ JSON.toJSON $ map (\(c, ca) -> containerJSON c
+    JSON..+ "assets" JSON..= map assetSlotJSON ca)
     $ leftJoin (\c -> Fold.any (on (==) containerId c . slotContainer) . assetSlot) cl al
 volumeJSONField vol "containers" _ =
   Just . JSON.toJSON . map containerJSON <$> lookupVolumeContainers vol
@@ -145,7 +147,12 @@ volumeJSONField vol "records" _ = do
   (l, _) <- cacheVolumeRecords vol
   return $ Just $ JSON.toJSON $ map recordJSON l
 volumeJSONField o "excerpts" _ =
-  Just . JSON.toJSON . map excerptJSON <$> lookupVolumeExcerpts o
+  Just . JSON.toJSON . map (\e -> sc (view e) $ excerptJSON e) <$> lookupVolumeExcerpts o
+  where
+  sc :: Id Container -> JSON.Object -> JSON.Object
+  sc c a
+    | HM.member "asset" a = HM.adjust (\(JSON.Object j) -> JSON.Object (sc c j)) "asset" a
+    | otherwise = a JSON..+ "container" JSON..= c
 volumeJSONField o "tags" n = do
   t <- cacheVolumeTopContainer o
   tc <- lookupSlotTagCoverage (containerSlot t) (maybe 64 fst $ BSC.readInt =<< n)
