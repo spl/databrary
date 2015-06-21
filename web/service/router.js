@@ -325,6 +325,18 @@ app.provider('routerService', [
       }
     });
 
+    routes.volumeCSV = makeRoute(controllers.csvVolume, ['id'],{
+      controller: 'volume/csv',
+      templateUrl: 'volume/csv.html',
+      resolve: {
+        volume: [
+          'pageService', function(page) {
+            return page.models.Volume.get(page.$route.current.params.id);
+          }
+        ],
+      }
+    });
+
     function slotRoute(edit) { return {
       controller: 'volume/slot',
       templateUrl: 'volume/slot.html',
@@ -397,7 +409,6 @@ app.provider('routerService', [
 
     routes.partyAvatar = makeRoute(controllers.partyAvatar, ['id', 'size']);
     routes.volumeThumb = makeRoute(controllers.thumbVolume, ['id', 'size']);
-    routes.volumeCSV = makeRoute(controllers.csvVolume, ['id']);
     routes.assetThumb = makeRoute(controllers.thumbAssetSegment, ['cid', 'segment', 'id', 'size']);
     routes.assetDownload = makeRoute(controllers.downloadAssetSegment, ['cid', 'segment', 'id', 'inline']);
     routes.assetEdit = makeRoute(controllers.viewAssetEdit, ['id']);
