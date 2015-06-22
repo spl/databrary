@@ -65,6 +65,12 @@ object Indexer {
         else None)
     }
 
+    object SQLExcerpt extends SQLSyntaxSupport[SQLRecord] {
+      def apply(rs: WrappedResultSet): SQLExcerpt = new SQLExcerpt(
+        rs.long("asset"), rs.string("segment"), rs.stringOpt("release")
+      )
+    }
+
     object ResultsContainer extends SQLSyntaxSupport[Sentence] {
       def apply(rs: WrappedResultSet): ResultsContainer = new ResultsContainer(
         rs.long("volumeId"), rs.long("containerId"), rs.long("recordId"), rs.string("volumeName"), rs.string("body"), rs.string("alias"),
@@ -164,7 +170,7 @@ object Indexer {
     }
 
     val sQLSegmentAssets = sql"""
-         SELECT container, segment, asset.id AS asset, asset.name AS name, asset.duration AS duration, release, volume FROM slot_asset, asset WHERE slot_asset.asset = asset.id
+         SELECT container, segment, asset.id AS asset, asset.name AS name, asset.duration AS duration, release, volume, excerpt.segment FROM slot_asset, asset LEFT JOIN excerpt ON slot_asset.asset = excerpt.asset WHERE slot_asset.asset = asset.id
        """.map(x => SQLSegmentAsset(x)).list().apply()
 
     val sQLSegmentReleases = sql"""
@@ -172,6 +178,12 @@ object Indexer {
        """.map(x => SQLSegmentRelease(x)).list().apply()
 
     //    sQLSegmentRecords.map(x => println(x.volumeId, x.containerId, x.record, x.segment, x.metric, x.date, x.num, x.text))
+
+    // We want to now get a list of the excerpts that are in the DB and then figure out which containers those assets belong to
+    // these are out highlights
+    val sQLExcerpts = sql"""
+        SELECT asset, segment, release FROM excerpt LEFT JOIN
+        """.map(x => SQLExcerpt(x)).list().apply()
 
 
     /*
@@ -252,13 +264,16 @@ object Indexer {
 
   case class Volume(volumeId:Long, title:String, abs:String, alias:String, containers:Seq[Container])
 
-  case class SQLContainer(containerId:Long, volumeId:Long, name:String, date:Option[DateTime], var age:Option[Double]=None)
+  case class SQLContainer(containerId:Long, volumeId:Long, name:String, date:Option[DateTime], var age:Option[Double]=None, var hasExcerpt:Boolean=false)
 
-  case class Container(containerId:Long, volumeId:Long, name:String, date:Option[DateTime], records:Seq[Record])
+  case class Container(containerId:Long, volumeId:Long, name:String, date:Option[DateTime], records:Seq[Record], hasExcerpt=Boolean)
 
   case class SQLRecord(recordId:Long, containerId:Long, date:Option[DateTime], age:Option[Duration])
-
   case class Record(recordId:Long, containerId:Long, date:Option[DateTime], age:Option[Duration])
+
+  case class SQLExcerpt(assetId:Long, segment:String, release:Option[String])
+  case class Excerpt(assetId:Long, segment:String, release:Option[String])
+
 
   case class SQLSegmentTag(volumeId:Long, containerId:Long, segment:String, tags:Option[String])
 
