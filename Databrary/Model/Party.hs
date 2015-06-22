@@ -166,8 +166,8 @@ partyFilter PartyFilter{..} ident = BS.concat
   withq v f = maybe "" f v
   wordPat = intercalate "%" . ("":) . (++[""]) . words
   queryVal
-    | showEmail ident = "(name || COALESCE(' ' || email, ''))"
-    | otherwise = "name"
+    | showEmail ident = "(COALESCE(prename || ' ', '') || name || COALESCE(' ' || email, ''))"
+    | otherwise = "(COALESCE(prename || ' ', '') || name)"
 
 findParties :: (MonadHasIdentity c m, MonadDB m) => PartyFilter -> Int32 -> Int32 -> m [Party]
 findParties pf limit offset = do
