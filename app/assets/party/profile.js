@@ -19,7 +19,7 @@ app.controller('party/profile', [
         } else if(v.parents && v.parents.length > 0 && v.party.members && v.party.members.length > 0) {
           users.labGroupMembers.push(v);
         } else if(v.parents && v.parents.length > 0){
-         users.nonGroupAffiliates.push(v);  
+          users.nonGroupAffiliates.push(v);
         } else {
           users.otherCollaborators.push(v);
         }
@@ -37,8 +37,12 @@ app.controller('party/profile', [
 
       for(var i = 0; i < $scope.users.sponsors.length; i += 1){
         $scope.users.sponsors[i].isSelected = '';
+        $scope.users.labGroupMembers[i].isSelected = '';
         for(var j = 0; j < volume.access.length; j += 1){
           if($scope.users.sponsors[i].id === volume.access[j].party.id){
+            $scope.users.sponsors[i].isSelected = 'userSelected';
+            return; 
+          } else if($scope.users.labGroupMembers[i].id === volume.access[j].party.id){
             $scope.users.sponsors[i].isSelected = 'userSelected';
           }
         }
