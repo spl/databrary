@@ -14,6 +14,8 @@ app.controller 'volume/zip', [
       display.title = volume.name + ".zip"
       $scope.volume = volume
       $scope.containers = volume.containers
+      $scope.contCount = volume.containers.length
+      console.log volume.containers.length
 
     t = 0
     d = 0
