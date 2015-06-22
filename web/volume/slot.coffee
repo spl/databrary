@@ -882,35 +882,6 @@ app.controller('volume/slot', [
         ident = constants.category[@record.category]?.ident || [constants.metricName.ID.id]
         (constants.metric[m] for m of @record.measures when !(+m in ident)).sort(byId)
 
-      addMetric = {id:'',name:'Add new value...'}
-      addOptions: ->
-        metrics = (metric for m, metric of constants.metric when !(m of @data.measures)).sort(byId)
-        metrics.unshift addMetric
-        metrics
-
-      add: ->
-        @data.measures[@data.add] = '' if @data.add
-        @data.add = ''
-        @sortMetrics()
-        return
-
-      save: ->
-        messages.clear(this)
-        @record.save({measures:@data.measures}).then () =>
-            @fillData()
-            delete @dirty
-            if this == $scope.current
-              $scope.form.edit.$setPristine()
-              $scope.form.measures.$setPristine()
-            return
-          , (res) =>
-            messages.addError
-              type: 'red'
-              body: 'Error saving record'
-              report: res
-              owner: this
-            return
-
       rePosition: () ->
         $scope.editing = 'position'
         return
