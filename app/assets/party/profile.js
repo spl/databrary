@@ -35,7 +35,7 @@ app.controller('party/profile', [
       $scope.volumes = _.map($scope.volumes, function(v){
         v.isSelected = '';
         return v; 
-      })
+      });
       for(var i = 0; i < $scope.users.sponsors.length; i += 1){
         $scope.users.sponsors[i].isSelected = '';
         for(var j = 0; j < volume.access.length; j += 1){
