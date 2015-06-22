@@ -5,29 +5,27 @@ app.controller('party/profile', [
   function ($scope, display, party, page, constants) {
 
     var getUsers = function(volumes){
-      var tempUsers = _(volumes).pluck('access').flatten().value();
-      var users = {
-        sponsors: _.filter(tempUsers, function(u){
-          //placeholder value. 
-          return u.party.institution === true;
-        }),
-        labGroupMembers: _.filter(tempUsers, function(u){
-          //placeholder value
-          return u.party.permission === 3;
-        }), 
 
-        nonGroupAffiliates: _.filter(tempUsers, function(u){
-          // placeholder value 
-          return u.party.permission === 3; 
-        }),
-        
-        dataOwnerVolumes: _.filter(tempUsers, function(u){
-          // placeholder value 
-          return u.party.permission === 5; 
-        }),
-        
-      };
-       
+      var users = {};
+      
+      users.sponsors = [];
+      users.labGroupMembers = [];
+      users.nonGroupAffiliates = [];
+      users.otherCollaborators = [];
+
+      _(volumes).pluck('access').flatten().each(function(v){
+        if(v.children > 0 ){
+          users.sponsors.push(v);
+        } else if(v.parents && v.parents.length > 0 && v.party.members && v.party.members.length > 0) {
+          users.labGroupMembers.push(v);
+        } else if(v.parents && v.parents.length > 0){
+         users.nonGroupAffiliates.push(v);  
+        } else {
+          users.otherCollaborators.push(v);
+        }
+
+      }).value();
+
       return users;
     };
     
@@ -57,6 +55,11 @@ app.controller('party/profile', [
           }
         }
       }
+    };
+
+    var getVolumes = function(v) {
+
+      return v;
     };
 
     $scope.party = party;
