@@ -37,6 +37,23 @@ app.controller 'site/search', [
         $scope.display = (doc.party_name_s for doc in $scope.partyResults.docs)
       console.log($scope.selectedType, $scope.display)
 
+    $scope.getVolumeFeatureBox = ->
+      opts = ["Volumes w/ Sessions", "Volumes w/ Highlights"]
+      funcs = {"session" : filterBySession, "highlight" : $scope.filterByHighlight}
+
+    # Now we want to rerun the search but only return vols w/ highlights
+    $scope.filterByHighlight = ->
+      # We can send this parameter along with the search in order to filter it... which is less flexible
+      # or just amend the search query here.
+      $scope.requireHighlight = true
+      $scope.search()
+
+    $scope.filterBySession = ->
+      $scope.requireSession = true
+      $scope.search()
+
+
+
 
     $scope.partyResults = $scope.getResults("party")
     $scope.volumeResults = $scope.getResults("volume")

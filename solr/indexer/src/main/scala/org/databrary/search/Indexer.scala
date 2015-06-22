@@ -128,7 +128,7 @@ object Indexer {
     object SQLSegmentAsset extends SQLSyntaxSupport[SQLSegmentTag] {
       // We need a lookup function for getting the other information that we need out of this thing
       def apply(rs: WrappedResultSet): SQLSegmentAsset = new SQLSegmentAsset(
-        rs.long("volume"), rs.long("container"), rs.string("segment"), rs.long("asset"), rs.string("name"), rs.string("duration")
+        rs.long("volume"), rs.long("container"), rs.string("segment"), rs.long("asset"), rs.string("name"), rs.string("duration"), rs.stringOpt("excerpt").isDefined
       )
     }
 
@@ -169,8 +169,11 @@ object Indexer {
       else None
     }
 
+
     val sQLSegmentAssets = sql"""
-         SELECT container, segment, asset.id AS asset, asset.name AS name, asset.duration AS duration, release, volume, excerpt.segment FROM slot_asset, asset LEFT JOIN excerpt ON slot_asset.asset = excerpt.asset WHERE slot_asset.asset = asset.id
+        SELECT container, slot_asset.segment, asset.id AS asset, asset.name AS name, asset.duration AS duration, asset.release AS release, volume, excerpt.segment AS excerpt
+                  FROM slot_asset, asset LEFT JOIN excerpt ON asset.id = excerpt.asset
+                  WHERE slot_asset.asset = asset.id
        """.map(x => SQLSegmentAsset(x)).list().apply()
 
     val sQLSegmentReleases = sql"""
@@ -178,12 +181,6 @@ object Indexer {
        """.map(x => SQLSegmentRelease(x)).list().apply()
 
     //    sQLSegmentRecords.map(x => println(x.volumeId, x.containerId, x.record, x.segment, x.metric, x.date, x.num, x.text))
-
-    // We want to now get a list of the excerpts that are in the DB and then figure out which containers those assets belong to
-    // these are out highlights
-    val sQLExcerpts = sql"""
-        SELECT asset, segment, release FROM excerpt LEFT JOIN
-        """.map(x => SQLExcerpt(x)).list().apply()
 
 
     /*
@@ -266,7 +263,7 @@ object Indexer {
 
   case class SQLContainer(containerId:Long, volumeId:Long, name:String, date:Option[DateTime], var age:Option[Double]=None, var hasExcerpt:Boolean=false)
 
-  case class Container(containerId:Long, volumeId:Long, name:String, date:Option[DateTime], records:Seq[Record], hasExcerpt=Boolean)
+  case class Container(containerId: Long, volumeId: Long, name: String, date: Option[DateTime], records: Seq[Record], hasExcerpt: Boolean)
 
   case class SQLRecord(recordId:Long, containerId:Long, date:Option[DateTime], age:Option[Duration])
   case class Record(recordId:Long, containerId:Long, date:Option[DateTime], age:Option[Duration])
@@ -285,6 +282,14 @@ object Indexer {
     Methods for converting case classes into JSONDocuments
    */
 
+  /* TODO
+  We need to be able to easily extract excerpts. There are a few ways to do this:
+  1 create excerpt objects that we can query
+  2 attach excerpt info to each asset, set in container appropriately
+
+  We probably want to just mark a volume as having an excerpt and then let the system handle it rather than try
+  to store it ourselves
+   */
   case class SQLSegmentAsset(volumeId: Long, containerId: Long, segment: String, asset: Long, assetName: String, duration: String)
 
   case class SQLParty(partyId: Long, name: String, preName: String, affiliation: String)
