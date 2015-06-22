@@ -167,7 +167,7 @@ jsRoutes = mconcat
   , jsRoute "downloadAssetSegment" downloadAssetSegment (slot, asset)
   , jsRoute "thumbAssetSegment" thumbAssetSegment (slot, asset)
 
-  , jsRoute "zipSlot" zipContainer (container)
+  , jsRoute "zipSlot" zipContainer (Just volume, container)
   , jsRoute "zipVolume" zipVolume (volume)
 
   , jsRoute "get" viewRoot (JSON)

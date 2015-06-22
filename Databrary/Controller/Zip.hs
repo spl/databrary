@@ -101,9 +101,9 @@ zipEmpty :: ZipEntry -> Bool
 zipEmpty ZipEntry{ zipEntryContent = ZipDirectory l } = any zipEmpty l
 zipEmpty _ = True
 
-zipContainer :: AppRoute (Id Slot)
-zipContainer = action GET (pathSlotId </< "zip") $ \ci -> withAuth $ do
-  c <- getContainer PermissionPUBLIC Nothing ci
+zipContainer :: AppRoute (Maybe (Id Volume), Id Slot)
+zipContainer = action GET (pathMaybe pathId </> pathSlotId </< "zip") $ \(vi, ci) -> withAuth $ do
+  c <- getContainer PermissionPUBLIC vi ci
   z <- containerZipEntry c =<< lookupContainerAssets c
   auditSlotDownload (not $ zipEmpty z) (containerSlot c)
   zipResponse ("databrary-" <> BSC.pack (show (volumeId (containerVolume c))) <> "-" <> BSC.pack (show (containerId c))) [z]
