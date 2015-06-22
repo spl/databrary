@@ -16,7 +16,6 @@
         </div>
 
         <div class="volume-list-investigators" ng-if="::volume.access">
-          <span class="profile" ng-if="profile">Investigators: </span>
           <ul class="inline-block comma">
             <li ng-repeat="access in ::accessList(volume,page.permission.ADMIN,page.permission.ADMIN)">
               <a ng-href="{{::access.party.route()}}" ng-bind="::access.party.name"></a>
@@ -25,14 +24,14 @@
           <span class="year" ng-if="::volume.citation && volume.citation.year && !profile" ng-bind="::' (' + volume.citation.year + ')'"></span>
         </div>
 
-        <div class="volume-list-investigators" ng-if="::volume.access && profile && accessList(volume,page.permission.READ,page.permission.EDIT).length">
+<!--         <div class="volume-list-investigators" ng-if="::volume.access && profile && accessList(volume,page.permission.READ,page.permission.EDIT).length">
           <span class="profile">Collaborators: </span>
           <ul class="inline-block comma">
             <li ng-repeat="access in ::accessList(volume,page.permission.READ,page.permission.EDIT)">
               <a ng-href="{{::access.party.route()}}" ng-bind="::access.party.name"></a>
             </li>
           </ul>
-        </div>
+        </div> -->
 
         <div class="volume-list-body" ng-bind="::volume.body.replace('\n', ' ') | truncate:200" ng-if="::!profile"></div>
 
