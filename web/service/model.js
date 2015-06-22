@@ -1118,7 +1118,7 @@ app.factory('modelService', [
       return router.http(router.controllers.createAsset, this.volume.id, data)
         .then(function (res) {
           s.clear('assets');
-          return assetMake(s.volume, res.data);
+          return assetMake(s.container, res.data);
         });
     };
 
@@ -1128,7 +1128,7 @@ app.factory('modelService', [
         .then(function (res) {
           if (a.container)
             a.container.clear('assets');
-          return assetMake(a.volume, res.data);
+          return assetMake(a.container || a.volume, res.data);
         });
     };
 
