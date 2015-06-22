@@ -305,7 +305,7 @@ app.provider('routerService', [
 
     routes.volumeZip = makeRoute(controllers.zipVolume, ['id'], {
       controller: 'volume/zip',
-      templateUrl: 'volume/zip.html', 
+      templateUrl: 'volume/zip.html',
       resolve: {
         volume: [
           'pageService', function (page) {
@@ -317,7 +317,7 @@ app.provider('routerService', [
       }
     });
 
-    routes.volumeCSV = makeRoute(controllers.csvVolume, ['id'],{
+    routes.volumeCSV = makeRoute(controllers.csvVolume, ['id'], {
       controller: 'volume/csv',
       templateUrl: 'volume/csv.html',
       resolve: {
@@ -326,6 +326,22 @@ app.provider('routerService', [
             return page.models.Volume.get(page.$route.current.params.id);
           }
         ],
+      }
+    });
+
+    routes.slotZip = makeRoute(controllers.zipSlot, ['vid', 'id'], {
+      controller: 'volume/zip',
+      templateUrl: 'volume/zip.html',
+      resolve: {
+        slot: [
+          'pageService', function (page) {
+            return page.models.Volume.get(page.$route.current.params.vid).then(function(v) {
+              return v.getSlot(page.$route.current.params.id, page.$route.current.params.segment, ['assets']);
+            });
+          }
+        ],
+        volume: function () {
+        },
       }
     });
 
@@ -351,22 +367,6 @@ app.provider('routerService', [
     }; }
     routes.slotEdit = makeRoute(controllers.viewSlotEdit, ['vid', 'id'], slotRoute(true));
     routes.slot = makeRoute(controllers.viewSlot, ['vid', 'id', 'segment'], slotRoute(false));
-
-    routes.slotZip = makeRoute(controllers.zipSlot, ['vid', 'id'], {
-      controller: 'volume/zip',
-      templateUrl: 'volume/zip.html', 
-      resolve: {
-        slot: [
-          'pageService', function (page) {
-            return page.models.Volume.get(page.$route.current.params.vid).then(function(v) {
-              return v.getSlot(page.$route.current.params.id, page.$route.current.params.segment, ['assets']);
-            }); 
-          }
-        ],
-        volume: function () {
-        },
-      }
-    });
 
     routes.slotAsset = makeRoute(controllers.viewAssetSegment, ['vid', 'cid', 'segment', 'id'], {
       controller: 'asset/view',
