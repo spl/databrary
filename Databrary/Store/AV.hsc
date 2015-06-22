@@ -212,9 +212,9 @@ data ErrorFile
 errorFile :: ErrorFile -> IO (Maybe RawFilePath)
 errorFile NoFile = return Nothing
 errorFile (FileName f) = return $ Just f
-errorFile (FileContext a) = do
-  n <- #{peek AVFormatContext, filename} a
+errorFile (FileContext a) =
   n /= nullPtr ?$> BS.packCString n
+  where n = #{ptr AVFormatContext, filename} a
 
 throwAVError :: CInt -> String -> ErrorFile -> IO a
 throwAVError e c f = throwIO . AVError e c =<< errorFile f
