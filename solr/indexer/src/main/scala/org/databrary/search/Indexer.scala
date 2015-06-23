@@ -86,7 +86,10 @@ object Indexer {
     val sQLVolumes = sql"""
          SELECT id, name, body, alias, volume_citation.head AS citation, volume_citation.url AS url,
          volume_citation.year AS year
-         FROM volume LEFT JOIN volume_citation ON volume.id = volume_citation.volume
+         FROM volume
+         LEFT JOIN volume_citation ON volume.id = volume_citation.volume
+         LEFT JOIN volume_access ON volume.id = volume_access.volume
+         WHERE volume_access.children = 'NONE' AND volume_access.party = -1
     """.map(x => SQLVolume(x)).list().apply().map(x => x.volumeId -> x).toMap
 
 
@@ -101,10 +104,18 @@ object Indexer {
     Get all of the containers from the DB and create a container->volume lookup table
      */
     val sQLContainers = sql"""
-        SELECT id, volume, name, date, release FROM container LEFT JOIN slot_release ON id = slot_release.container
+        SELECT id, container.volume AS volume, name, date, release FROM container
+        LEFT JOIN slot_release ON id = slot_release.container
+        LEFT JOIN volume_access ON container.volume = volume_access.volume
+        WHERE volume_access.children = 'NONE' AND volume_access.party = -1
     """.map(x => SQLContainer(x)).list().apply().map(x => x.containerId -> x).toMap
 
-    val sQLContainerVolumeLookup = sQLContainers.values.map(x => x.containerId -> sQLVolumes(x.volumeId)).toMap
+
+    val sQLContainerVolumeLookup = sQLContainers.values.map(x => x.containerId -> sQLVolumes(x.volumeId))
+      .toMap.withDefaultValue(new SQLVolume(volumeId = -1))
+
+    val containerIdList = sQLContainers.values.map(x => x.containerId)
+    val volumeIdList = sQLVolumes.values.map(x => x.volumeId)
 
     /*
     Set whether or not this volume actually contains sessions... going to make this public sessions
@@ -130,7 +141,6 @@ object Indexer {
       Ditto for segment records
      */
     object SQLSegmentRecord extends SQLSyntaxSupport[SQLSegmentTag] {
-      // We need a lookup function for getting the other information that we need out of this thing
       def apply(rs: WrappedResultSet): SQLSegmentRecord = new SQLSegmentRecord(
         sQLContainerVolumeLookup(rs.long("container").toInt).volumeId, rs.long("container"), rs.string("segment"),
         rs.long("record"), rs.string("metric"), rs.stringOpt("datum")
@@ -138,14 +148,12 @@ object Indexer {
     }
 
     object SQLSegmentAsset extends SQLSyntaxSupport[SQLSegmentTag] {
-      // We need a lookup function for getting the other information that we need out of this thing
       def apply(rs: WrappedResultSet): SQLSegmentAsset = new SQLSegmentAsset(
         rs.long("volume"), rs.long("container"), rs.string("segment"), rs.long("asset"), rs.string("name"), rs.string("duration"), rs.stringOpt("excerpt").isDefined
       )
     }
 
     object SQLSegmentRelease extends SQLSyntaxSupport[SQLSegmentTag] {
-      // We need a lookup function for getting the other information that we need out of this thing
       def apply(rs: WrappedResultSet): SQLSegmentRelease = new SQLSegmentRelease(
         sQLContainerVolumeLookup(rs.long("container").toInt).volumeId, rs.long("container"), rs.string("segment"), rs.string("release")
       )
@@ -156,29 +164,34 @@ object Indexer {
         SELECT container.id AS container, record.id AS record, container.date AS containerDate, measure_date.datum AS measureDate FROM container, slot_record, record, measure_date
               WHERE container.id = slot_record.container AND record.id = slot_record.record
               AND measure_date.record = record.id
-    """.map(x => SQLRecord(x)).list().apply().groupBy(x => x.containerId).map(x => x._1 -> x._2)
+              """.map(x => SQLRecord(x)).list().apply().filter(x => sQLContainerVolumeLookup(x.containerId).volumeId > 0)
+              .groupBy(x => x.containerId).map(x => x._1 -> x._2)
     //
     //    // We now want to go a step further and get all of the segments, i.e., all of the records/measures
 
     val sQLSegmentTags = sql"""
       SELECT container, segment, tag.name AS tag FROM tag_use, tag WHERE tag = id
-    """.map(x => SQLSegmentTag(x)).list().apply()
+      """.map(x => SQLSegmentTag(x)).list().apply().filter(x => x.volumeId > 0)
 
     // This will get all of the public measures
     val sQLSegmentRecords = sql"""
          SELECT container, segment, slot_record.record AS record, metric.name AS metric, datum
          FROM slot_record, measure as measure_all, metric
          WHERE measure_all.record = slot_record.record AND measure_all.metric = metric.id AND metric.release >= 'EXCERPTS'
-       """.map(x => SQLSegmentRecord(x)).list().apply()
+         """.map(x => SQLSegmentRecord(x)).list().apply().filter(x => x.volumeId > 0)
 
 
     sql"""
          SELECT container, segment, slot_record.record AS record, metric.name AS metric, datum
-         FROM slot_record, measure as measure_all, metric WHERE measure_all.record = slot_record.record AND measure_all.metric = metric.id AND metric.name = 'birthdate'
+         FROM slot_record, measure as measure_all, metric
+         WHERE measure_all.record = slot_record.record AND measure_all.metric = metric.id AND metric.name = 'birthdate'
        """.map(x => SQLSegmentRecord(x)).list().apply().map { x =>
-      sQLContainers(x.containerId).age = if (sQLContainers(x.containerId).date.isDefined && x.datum.isDefined && x.metric == "birthdate")
-        Some(new Duration(new DateTime(x.datum.get), sQLContainers(x.containerId).date.get).getStandardDays)
-      else None
+      if(sQLContainers.contains(x.containerId)) {
+        sQLContainers(x.containerId).age =
+          if (sQLContainers(x.containerId).date.isDefined && x.datum.isDefined && x.metric == "birthdate")
+            Some(new Duration(new DateTime(x.datum.get), sQLContainers(x.containerId).date.get).getStandardDays)
+          else None
+      }
     }
 
 
@@ -186,18 +199,18 @@ object Indexer {
         SELECT container, slot_asset.segment, asset.id AS asset, asset.name AS name, asset.duration AS duration, asset.release AS release, volume, excerpt.segment AS excerpt
                   FROM slot_asset, asset LEFT JOIN excerpt ON asset.id = excerpt.asset
                   WHERE slot_asset.asset = asset.id
-       """.map(x => SQLSegmentAsset(x)).list().apply()
+                  """.map(x => SQLSegmentAsset(x)).list().apply().filter(x => x.volumeId > 0)
 
     val sQLSegmentReleases = sql"""
          SELECT container, segment, release FROM slot_release
-       """.map(x => SQLSegmentRelease(x)).list().apply()
+         """.map(x => SQLSegmentRelease(x)).list().apply().filter(x => x.volumeId > 0)
 
     /*
       Go through and mark containers and volumes that have excerpts as having them
     */
     sQLSegmentAssets.map{
       x =>
-        if(x.isExcerpt) {
+        if(x.isExcerpt && sQLContainers.contains(x.containerId)) {
           val c = sQLContainers(x.containerId.toInt)
           c.hasExcerpt = true // Gross :(
           sQLContainerVolumeLookup(x.containerId.toInt).hasExcerpt = true
@@ -282,12 +295,12 @@ object Indexer {
 
   case class Sentence(volId: Long, text: Option[String])
 
-  case class SQLVolume(volumeId:Long, title:String, abs:String, alias:String, cite:Option[String]=None,
+  case class SQLVolume(volumeId:Long, title:String="", abs:String="", alias:String="", cite:Option[String]=None,
                        citeYear:Option[Int]=None, citeUrl:Option[String]=None, var hasExcerpt:Boolean=false, var hasSessions:Boolean=false)
 
   case class Volume(volumeId:Long, title:String, abs:String, alias:String, containers:Seq[Container], var hasExcerpt:Boolean=false, var hasSessions:Boolean=false)
 
-  case class SQLContainer(containerId:Long, volumeId:Long, name:String, date:Option[DateTime], release:Option[String], var age:Option[Double]=None, var hasExcerpt:Boolean=false)
+  case class SQLContainer(containerId:Long, volumeId:Long, name:String, date:Option[DateTime]=None, release:Option[String]=None, var age:Option[Double]=None, var hasExcerpt:Boolean=false)
 
   case class Container(containerId: Long, volumeId: Long, name: String, date: Option[DateTime], release:Option[String], records: Seq[Record], hasExcerpt: Boolean)
 
