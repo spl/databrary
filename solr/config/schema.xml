@@ -131,6 +131,8 @@
     <field name="citation_url_s" type="string" indexed="true" stored="true" />
     <field name="citation_t" type="text_general" indexed="true" stored="true" />
     <field name="citation_year_i" type="int" indexed="true" stored="true" />
+    <field name="volume_has_excerpt_b" type="boolean" indexed="true" stored="true" />
+    <field name="volume_has_sessions_b" type="boolean" indexed="true" stored="true" />
 
     <!-- CONTAINER FIELDS -->
     <field name="container_id_i" type="int" indexed="true" stored="true"/>
@@ -138,6 +140,7 @@
     <field name="container_name_t" type="text_general" indexed="true" stored="true"/>
     <field name="container_age_td" type="tdouble" indexed="true" stored="true"/>
     <field name="container_keywords_ss" type="string" indexed="true" stored="true" multiValued="true" />
+    <field name="container_has_excerpt_b" type="boolean" indexed="true" stored="true" />
 
     <!-- RECORD FIELDS -->
     <field name="record_id_i" type="int" indexed="true" stored="true"/>

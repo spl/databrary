@@ -188,8 +188,11 @@ object Indexer {
     */
     sQLSegmentAssets.map{
       x =>
-        if(x.isExcerpt)
-          sQLContainers(x.containerId.toInt).hasExcerpt = true
+        if(x.isExcerpt) {
+          val c = sQLContainers(x.containerId.toInt)
+          c.hasExcerpt = true // Gross :(
+          sQLContainerVolumeLookup(x.containerId.toInt).hasExcerpt = true
+        }
     }
 
     //    sQLSegmentRecords.map(x => println(x.volumeId, x.containerId, x.record, x.segment, x.metric, x.date, x.num, x.text))
@@ -221,7 +224,8 @@ object Indexer {
   def createVolumeDocument(vol: SQLVolume) = {
     new JsonDocument(content_type = ContentTypes.VOLUME, volume_id_i = Some(vol.volumeId.toInt),
       abs_t = Some(vol.abs), title_t = Some(vol.title), alias_s = Some(vol.alias), citation_t = vol.cite,
-      citation_url_s = vol.citeUrl, citation_year_i = vol.citeYear
+      citation_url_s = vol.citeUrl, citation_year_i = vol.citeYear, volume_has_excerpt_b = Some(vol.hasExcerpt),
+      volume_has_sessions_b = Some(vol.hasSessions)
     )
   }
 
@@ -229,7 +233,8 @@ object Indexer {
     new JsonDocument(content_type = ContentTypes.CONTAINER, container_volume_id_i = Some(container.volumeId.toInt),
       container_id_i = Some(container.containerId.toInt),
       container_date_tdt = None, // This should never be set for privacy reasons
-      container_name_t = Some(container.name), container_age_td = container.age
+      container_name_t = Some(container.name), container_age_td = container.age,
+      container_has_excerpt_b = Some(container.hasExcerpt)
     )
   }
 
@@ -269,9 +274,9 @@ object Indexer {
   case class Sentence(volId: Long, text: Option[String])
 
   case class SQLVolume(volumeId:Long, title:String, abs:String, alias:String, cite:Option[String]=None,
-                       citeYear:Option[Int]=None, citeUrl:Option[String]=None)
+                       citeYear:Option[Int]=None, citeUrl:Option[String]=None, var hasExcerpt:Boolean=false, var hasSessions:Boolean=false)
 
-  case class Volume(volumeId:Long, title:String, abs:String, alias:String, containers:Seq[Container])
+  case class Volume(volumeId:Long, title:String, abs:String, alias:String, containers:Seq[Container], var hasExcerpt:Boolean=false, var hasSessions:Boolean=false)
 
   case class SQLContainer(containerId:Long, volumeId:Long, name:String, date:Option[DateTime], var age:Option[Double]=None, var hasExcerpt:Boolean=false)
 
@@ -331,6 +336,8 @@ object Indexer {
   // Named in an ugly way for automatic identification by Solr's naming schema
   case class JsonDocument(content_type: String,
                           volume_id_i: Option[Int] = None,
+                          volume_has_excerpt_b: Option[Boolean] = None,
+                          volume_has_sessions_b: Option[Boolean] = None,
                           alias_s: Option[String] = None,
                           title_t: Option[String] = None,
                           abs_t: Option[String] = None,
@@ -342,6 +349,7 @@ object Indexer {
                           container_date_tdt: Option[String] = None,
                           container_name_t: Option[String] = None,
                           container_age_td: Option[Double] = None,
+                          container_has_excerpt_b: Option[Boolean] = None,
                           container_keywords_ss: Option[Seq[String]] = None,
                           record_id_i: Option[Int] = None, record_volume_id_i: Option[Int] = None,
                           record_container_i: Option[Int] = None, record_date_tdt: Option[String] = None,
