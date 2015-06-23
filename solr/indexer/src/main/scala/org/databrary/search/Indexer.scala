@@ -49,7 +49,7 @@ object Indexer {
 
     object SQLContainer extends SQLSyntaxSupport[SQLContainer] {
       def apply(rs: WrappedResultSet): SQLContainer = new SQLContainer(
-        rs.long("id"), rs.long("volume"), rs.string("name"), if (rs.dateOpt("date").isDefined) Some(rs.date("date").toJodaDateTime) else None)
+        rs.long("id"), rs.long("volume"), rs.string("name"), if (rs.dateOpt("date").isDefined) Some(rs.date("date").toJodaDateTime) else None, rs.stringOpt("release"))
     }
 
     object SQLVolume extends SQLSyntaxSupport[SQLVolume] {
@@ -101,7 +101,7 @@ object Indexer {
     Get all of the containers from the DB and create a container->volume lookup table
      */
     val sQLContainers = sql"""
-        SELECT id, volume, name, date FROM container
+        SELECT id, volume, name, date, release FROM container LEFT JOIN slot_release ON id = slot_release.container
     """.map(x => SQLContainer(x)).list().apply().map(x => x.containerId -> x).toMap
 
     val sQLContainerVolumeLookup = sQLContainers.values.map(x => x.containerId -> sQLVolumes(x.volumeId)).toMap
@@ -109,7 +109,11 @@ object Indexer {
     /*
     Set whether or not this volume actually contains sessions... going to make this public sessions
     */
-    sQLContainers.values.map(x => sQLVolumes(x.volumeId).hasSessions = true)
+    sQLContainers.values.map{
+      x =>
+        if(x.release == "EXCERPT")
+          sQLVolumes(x.volumeId).hasSessions = true
+    }
 
 
     /*
@@ -283,9 +287,9 @@ object Indexer {
 
   case class Volume(volumeId:Long, title:String, abs:String, alias:String, containers:Seq[Container], var hasExcerpt:Boolean=false, var hasSessions:Boolean=false)
 
-  case class SQLContainer(containerId:Long, volumeId:Long, name:String, date:Option[DateTime], var age:Option[Double]=None, var hasExcerpt:Boolean=false)
+  case class SQLContainer(containerId:Long, volumeId:Long, name:String, date:Option[DateTime], release:Option[String], var age:Option[Double]=None, var hasExcerpt:Boolean=false)
 
-  case class Container(containerId: Long, volumeId: Long, name: String, date: Option[DateTime], records: Seq[Record], hasExcerpt: Boolean)
+  case class Container(containerId: Long, volumeId: Long, name: String, date: Option[DateTime], release:Option[String], records: Seq[Record], hasExcerpt: Boolean)
 
   case class SQLRecord(recordId:Long, containerId:Long, date:Option[DateTime], age:Option[Duration])
   case class Record(recordId:Long, containerId:Long, date:Option[DateTime], age:Option[Duration])
