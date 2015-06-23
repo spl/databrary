@@ -3,7 +3,8 @@ module Databrary.Model.RecordSlot.SQL
   ( selectContainerSlotRecord
   , selectRecordSlotRecord
   , selectVolumeSlotRecord
-  , selectVolumeSlotRecordId
+  , selectVolumeSlotMaybeRecord
+  , selectVolumeSlotMaybeRecordId
   , selectSlotRecord
   , insertSlotRecord
   , updateSlotRecord
@@ -67,15 +68,25 @@ selectVolumeSlotRecord = selectJoin 'makeVolumeSlotRecord
     selectVolumeContainer
   ]
 
+makeVolumeSlotMaybeRecord :: (Volume -> Container) -> Maybe (Container -> RecordSlot) -> Volume -> (Container, Maybe RecordSlot)
+makeVolumeSlotMaybeRecord cf Nothing v = (cf v, Nothing)
+makeVolumeSlotMaybeRecord cf (Just rf) v = (c, Just (rf c)) where c = cf v
+
+selectVolumeSlotMaybeRecord :: Selector -- ^ @'Volume' -> ('Container, Maybe 'RecordSlot)@
+selectVolumeSlotMaybeRecord = selectJoin 'makeVolumeSlotMaybeRecord
+  [ selectVolumeContainer
+  , maybeJoinOn "container.id = slot_record.container AND container.volume = record.volume"
+    selectContainerSlotRecord
+  ]
+
 segmentRecordIdTuple :: Segment -> Id Record -> (Segment, Id Record)
 segmentRecordIdTuple = (,)
 
-makeVolumeSlotRecordId :: (Volume -> Container) -> Maybe (Segment, Id Record) -> Volume -> (Slot, Maybe (Id Record))
-makeVolumeSlotRecordId cf Nothing v = (containerSlot (cf v), Nothing)
-makeVolumeSlotRecordId cf (Just (s, r)) v = (Slot (cf v) s, Just r)
+makeVolumeContainerTuple :: (Volume -> Container) -> a -> Volume -> (Container, a)
+makeVolumeContainerTuple cf a v = (cf v, a)
 
-selectVolumeSlotRecordId :: Selector -- ^ @'Volume' -> '(Slot, Maybe (Id Record))'@
-selectVolumeSlotRecordId = selectJoin 'makeVolumeSlotRecordId
+selectVolumeSlotMaybeRecordId :: Selector -- ^ @'Volume' -> ('Container', Maybe ('Segment', 'Id' 'Record'))@
+selectVolumeSlotMaybeRecordId = selectJoin 'makeVolumeContainerTuple
   [ selectVolumeContainer
   , maybeJoinOn "container.id = slot_record.container"
     $ selectColumns 'segmentRecordIdTuple "slot_record" ["segment", "record"]

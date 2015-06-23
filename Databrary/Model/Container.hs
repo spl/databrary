@@ -9,6 +9,7 @@ module Databrary.Model.Container
   , addContainer
   , changeContainer
   , removeContainer
+  , formatContainerDate
   , containerJSON
   ) where
 
