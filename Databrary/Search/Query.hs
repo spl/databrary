@@ -172,9 +172,6 @@ parseQueryStart q = QueryStart (read limit :: Int)
 parseTerm :: String -> QueryPart
 parseTerm x =  QuerySearchTerm x
 
-{-queryToString :: Query -> String-}
-{-queryToString q = intercalate " " $ qJoin q-}
-
 joinToString :: Maybe QueryPart -> String
 joinToString qp = do
       case qp of
@@ -206,8 +203,15 @@ termsToString' :: QueryPart -> String
 termsToString' (QuerySearchTerm t1) = t1
 termsToString' _ = ""
 
-queryToString :: Query -> String
-queryToString q = joinToString (qJoin q) ++ argsToString (qArguments q) ++ termsToString (qSearchTerms q)
+queryToString :: Query -> (String, String, String)
+queryToString q = (query, args, join) where
+   join = joinToString (qJoin q)
+   args = argsToString (qArguments q)
+   query = termsToString (qSearchTerms q)
+
+-- TODO Break query to string up into a function where the joins and args
+-- are separated into their own strings, so it is Query ->
+-- String,String,String
 
 queryLimit :: Query -> Int
 queryLimit q = queryPartInt' $ fromMaybe (QueryLimit 10) (qLimit q)

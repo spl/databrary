@@ -8,7 +8,15 @@ app.controller 'site/search', [
 
     $scope.selectedType = ""
     $scope.selectedVolume = ""
+    $scope.selectedFilter = ""
     $scope.display = []
+
+    # Put an ng-key enter here so it does what we offset
+    $scope.search = ->
+      $location.search('query', $scope.query, 'offset', offset)
+
+    $scope.selectSessionStr = "Volumes w/ Sessions"
+    $scope.selectHighlightStr = "Volumes w/ Highlights"
 
     $scope.findFacet = (typeName) ->
       facets = (facet.val for facet in results.facets.content_type.buckets)
@@ -30,26 +38,37 @@ app.controller 'site/search', [
         return null
       return results.grouped.content_type.groups[idx].doclist
 
+    $scope.getVolumeFeatureBoxOpts = ->
+      opts = [$scope.selectSessionStr, $scope.selectHighlightStr]
+      return opts
+
     $scope.partyVolBoxClick = ->
       if "Volumes" in $scope.selectedType
-        $scope.display = (doc.title_t for doc in $scope.volumeResults.docs)
+        # $scope.display = (doc.title_t for doc in $scope.volumeResults.docs)
+        $scope.display = (s for s in $scope.getVolumeFeatureBoxOpts())
       if "People" in $scope.selectedType
         $scope.display = (doc.party_name_s for doc in $scope.partyResults.docs)
       console.log($scope.selectedType, $scope.display)
 
-    $scope.getVolumeFeatureBox = ->
-      opts = ["Volumes w/ Sessions", "Volumes w/ Highlights"]
-      funcs = {"session" : filterBySession, "highlight" : $scope.filterByHighlight}
+    $scope.filterBoxClick = ->
+      if $scope.selectSessionStr == $scope.selectedFilter
+         $scope.filterBySession()
+      else if $scope.selectHighlightStr == $scope.selectedFilter
+         $scope.filterByHighlight()
+
+      # funcs = {"session" : filterBySession, "highlight" : $scope.filterByHighlight}
 
     # Now we want to rerun the search but only return vols w/ highlights
     $scope.filterByHighlight = ->
       # We can send this parameter along with the search in order to filter it... which is less flexible
       # or just amend the search query here.
       $scope.requireHighlight = true
+      $scope.query = $scope.query + "arg=volume_has_excerpt_b=true"
       $scope.search()
 
     $scope.filterBySession = ->
       $scope.requireSession = true
+      $scope.query = $scope.query + "arg=volume_has_sessions_b=true"
       $scope.search()
 
 
@@ -77,9 +96,6 @@ app.controller 'site/search', [
     $scope.offset = offset
     $scope.limit = 10
 
-    # Put an ng-key enter here so it does what we offset
-    $scope.search = ->
-      $location.search('query', $scope.query, 'offset', offset)
 
 #      We want the query to look something like this:
 #    facet=true&facet.field=content_type&facet.mincount=1&group=true&group.field=content_type&group.limit=10

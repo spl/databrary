@@ -102,15 +102,17 @@ instance FromJSON SolrResponse where
 
 data SolrQuery = SolrQuery {
    solrQuery :: String,
+   solrArgs :: String,
+   solrJoin :: String,
    solrLimit :: Int32,
    solrStart :: Int32
 } deriving (Show)
 instance ToJSON SolrQuery where
-      toJSON ( SolrQuery sQquery sQlimit sQstart ) =
+      toJSON ( SolrQuery sQquery sArgs sJoin sQlimit sQstart ) =
          object [ "query" .= sQquery,
                   "limit" .= sQlimit,
                   "offset" .= sQstart,
-                  "filter" .= [("content_type:(volume OR party)" :: String)],
+                  "filter" .= [("content_type:(volume OR party)" :: String), sArgs],
                   "facet" .= object [
                     "content_type" .= object [
                         "terms" .= object [
@@ -128,8 +130,6 @@ instance ToJSON SolrQuery where
                         "group" .= ("true" :: String),
                         "group.field" .= ("content_type" :: String),
                         "group.limit" .= (10 :: Int)
-
---                         ("facet=true&facet.field=content_type&facet.mincount=1&group=true&group.field=content_type&group.limit=10" :: String)
                   ]
                 ]
 
@@ -158,7 +158,8 @@ httpRequestJSONSolr req = httpRequest req "text/plain" $ \rb ->
 search :: HTTPClientM c m => String -> Int32 -> Int32 -> m (Maybe Value)
 search q offset limit = do
       let query = Q.createQuery q
-      let sQuery = SolrQuery (Q.queryToString query) limit offset
+      let (queryStr, args, join) = Q.queryToString query
+      let sQuery = SolrQuery queryStr args join limit offset
       request <- liftIO $ generatePostReq sQuery
       liftIO $ print $ encode sQuery
       liftIO $ print sQuery -- TODO REMOVE THIS
