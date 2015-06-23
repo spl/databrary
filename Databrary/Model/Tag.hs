@@ -52,9 +52,9 @@ addTagUse t =
       then $(insertTagUse True 't)
       else $(insertTagUse False 't))
 
-removeTagUse :: MonadDB m => TagUse -> m Bool
+removeTagUse :: MonadDB m => TagUse -> m Int
 removeTagUse t =
-  dbExecute1
+  dbExecute
     (if tagKeyword t 
       then $(deleteTagUse True 't)
       else $(deleteTagUse False 't))

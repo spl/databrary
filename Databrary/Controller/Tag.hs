@@ -30,7 +30,7 @@ queryTags = action GET (pathJSON >/> "tags" >/> PathDynamic) $ \t ->
   okResponse [] . toJSON . map tagName =<< findTags t
 
 tagResponse :: API -> TagUse -> AuthAction
-tagResponse JSON t = okResponse [] . tagCoverageJSON =<< lookupTagCoverage (useTag t) (tagSlot t)
+tagResponse JSON t = okResponse [] . tagCoverageJSON =<< lookupTagCoverage (useTag t) (containerSlot $ slotContainer $ tagSlot t)
 tagResponse HTML t = redirectRouteResponse [] viewSlot (HTML, (Just (view t), slotId (tagSlot t))) []
 
 postTag :: AppRoute (API, Id Slot, TagId)

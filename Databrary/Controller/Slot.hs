@@ -45,7 +45,7 @@ slotJSONField o "records" _ =
   Just . JSON.toJSON . map (\r -> recordSlotJSON r JSON..+ ("record" JSON..= recordJSON (slotRecord r))) <$> lookupSlotRecords o
 slotJSONField o "tags" n = do
   tc <- lookupSlotTagCoverage o (maybe 64 fst $ BSC.readInt =<< n)
-  return $ Just $ JSON.toJSON $ map tagCoverageJSON tc
+  return $ Just $ JSON.recordMap $ map tagCoverageJSON tc
 slotJSONField o "comments" n = do
   c <- lookupSlotComments o (maybe 64 fst $ BSC.readInt =<< n)
   return $ Just $ JSON.toJSON $ map commentJSON c

@@ -36,7 +36,6 @@ import Databrary.Service.Types
 import Databrary.Service.ResourceT
 import qualified Databrary.JSON as JSON
 import Databrary.Service.DB
-import Databrary.Model.Offset
 import Databrary.Model.Segment
 import Databrary.Model.Permission
 import Databrary.Model.Id
@@ -208,7 +207,7 @@ processAsset api target = do
         }
       })
     up'
-  changeAsset (slotAsset as'') Nothing
+  _ <- changeAsset (slotAsset as'') Nothing
   _ <- changeAssetSlot as''
   case api of
     JSON -> okResponse [] $ assetSlotJSON as''

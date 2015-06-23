@@ -41,7 +41,7 @@ deleteTagUse :: Bool -- ^ keyword
   -> TH.Name -- ^ @'TagUse'@
   -> TH.ExpQ
 deleteTagUse keyword o = makePGQuery simpleQueryFlags $
-  "DELETE FROM " ++ tagUseTable keyword ++ " WHERE tag = ${tagId $ useTag " ++ os ++ "} AND container = ${containerId $ slotContainer $ tagSlot " ++ os ++ "} AND segment <@ ${slotSegment $ tagSlot " ++ os ++ "}"
+  "DELETE FROM ONLY " ++ tagUseTable keyword ++ " WHERE tag = ${tagId $ useTag " ++ os ++ "} AND container = ${containerId $ slotContainer $ tagSlot " ++ os ++ "} AND segment <@ ${slotSegment $ tagSlot " ++ os ++ "}"
   ++ (if keyword then "" else " AND who = ${partyId $ accountParty $ tagWho " ++ os ++ "}")
   where os = nameRef o
 
