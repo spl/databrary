@@ -63,11 +63,12 @@ addAsset ba fp = do
   ba' <- maybe (return ba) (storeAssetFile ba) fp
   dbQuery1' $(insertAsset 'ident 'ba')
 
-changeAsset :: (MonadAudit c m, MonadStorage c m) => Asset -> Maybe RawFilePath -> m ()
+changeAsset :: (MonadAudit c m, MonadStorage c m) => Asset -> Maybe RawFilePath -> m Asset
 changeAsset a fp = do
   ident <- getAuditIdentity
   a2 <- maybe (return a) (storeAssetFile a) fp
   dbExecute1' $(updateAsset 'ident 'a2)
+  return a2
 
 supersedeAsset :: MonadDB m => Asset -> Asset -> m ()
 supersedeAsset old new =

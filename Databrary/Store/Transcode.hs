@@ -24,6 +24,7 @@ import Databrary.Service.Log
 import Databrary.HTTP.Route (routeURL)
 import Databrary.Model.Segment
 import Databrary.Model.Asset
+import Databrary.Model.AssetSlot
 import Databrary.Model.Transcode
 import Databrary.Files
 import Databrary.Action.Auth
@@ -31,6 +32,7 @@ import Databrary.Store.Types
 import Databrary.Store.Temp
 import Databrary.Store.Asset
 import Databrary.Store.Transcoder
+import Databrary.Store.AV
 
 import {-# SOURCE #-} Databrary.Controller.Transcode
 
@@ -89,9 +91,13 @@ collectTranscode tc 0 sha1 logs = do
   if r /= ExitSuccess
     then fail $ "collectTranscode " ++ show (transcodeId tc) ++ ": " ++ show r ++ "\n" ++ out ++ err
     else do
-      -- TODO: probe
-      changeAsset (transcodeAsset tc)
+      av <- focusIO $ avProbe (tempFilePath f)
+      guard (avProbeIsVideo av)
+      let dur = avProbeLength av
+      a <- changeAsset (transcodeAsset tc)
         { assetSHA1 = sha1
+        , assetDuration = dur
         } (Just $ tempFilePath f)
+      void $ changeAssetSlotDuration a
 collectTranscode tc e _ logs =
   void $ updateTranscode tc Nothing (Just $ "exit " ++ show e ++ '\n' : logs)

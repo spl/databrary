@@ -7,6 +7,8 @@ module Databrary.Model.AssetSlot
   , lookupContainerAssets
   , lookupVolumeAssetSlots
   , changeAssetSlot
+  , changeAssetSlotDuration
+  , fixAssetSlotDuration
   , findAssetContainerEnd
   , assetSlotJSON
   ) where
@@ -67,6 +69,17 @@ changeAssetSlot as = do
         $(insertSlotAsset 'ident 'as)
       when (r /= 1) $ fail $ "changeAssetSlot: " ++ show r ++ " rows"
       return True
+
+changeAssetSlotDuration :: MonadDB m => Asset -> m Bool
+changeAssetSlotDuration a
+  | Just dur <- assetDuration a =
+    dbExecute1 [pgSQL|UPDATE slot_asset SET segment = segment(lower(segment), lower(segment) + ${dur}) WHERE asset = ${assetId a}|]
+  | otherwise = return False
+
+fixAssetSlotDuration :: AssetSlot -> AssetSlot
+fixAssetSlotDuration as 
+  | Just dur <- assetDuration (slotAsset as) = as{ assetSlot = (\s -> s{ slotSegment = segmentSetDuration dur (slotSegment s) }) <$> assetSlot as }
+  | otherwise = as
 
 findAssetContainerEnd :: MonadDB m => Container -> m (Maybe Offset)
 findAssetContainerEnd c = 

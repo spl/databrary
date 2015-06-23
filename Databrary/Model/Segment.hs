@@ -14,6 +14,7 @@ module Databrary.Model.Segment
   , segmentIntersect
   , segmentInterp
   , segmentJSON
+  , segmentSetDuration
   ) where
 
 import Control.Applicative ((<|>), optional)
@@ -130,3 +131,8 @@ segmentInterp f (Segment r)
 
 segmentJSON :: Segment -> Maybe JSON.Pair
 segmentJSON s = segmentFull s ?!> "segment" JSON..= s
+
+segmentSetDuration :: Offset -> Segment -> Segment
+segmentSetDuration o (Segment (Range.Range lb@(Range.Lower (Range.Bounded _ l)) (Range.Upper ub))) =
+  Segment (Range.Range lb (Range.Upper (Range.Bounded (Range.boundClosed ub) (l + o))))
+segmentSetDuration _ s = s

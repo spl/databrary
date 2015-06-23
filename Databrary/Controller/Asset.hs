@@ -36,6 +36,7 @@ import Databrary.Service.Types
 import Databrary.Service.ResourceT
 import qualified Databrary.JSON as JSON
 import Databrary.Service.DB
+import Databrary.Model.Offset
 import Databrary.Model.Segment
 import Databrary.Model.Permission
 import Databrary.Model.Id
@@ -171,10 +172,11 @@ processAsset api target = do
       "container" .:> (<|> slotContainer <$> s) <$> deformLookup "Container not found." (lookupVolumeContainer (assetVolume a))
       >>= Trav.mapM (\c -> "position" .:> do
         let seg = slotSegment <$> s
+            dur = maybe (assetDuration a) (avProbeLength <=< fileUploadProbe) up
         p <- (<|> (lowerBound . segmentRange =<< seg)) <$> deformNonEmpty deform
         Slot c . maybe fullSegment
-          (\l -> Segment $ Range.bounded l (l + fromMaybe 0 ((segmentLength =<< seg) <|> assetDuration a)))
-          <$> orElseM p (flatMapM (lift . findAssetContainerEnd) (isNothing s && isJust (assetDuration a) ?> c)))
+          (\l -> Segment $ Range.bounded l (l + fromMaybe 0 ((segmentLength =<< seg) <|> dur)))
+          <$> orElseM p (flatMapM (lift . findAssetContainerEnd) (isNothing s && isJust dur ?> c)))
     return
       ( as
         { slotAsset = a
@@ -200,7 +202,7 @@ processAsset api target = do
     te <- peeks transcodeEnabled
     t <- Trav.mapM (addTranscode a' fullSegment defaultTranscodeOptions) (guard te >> fileUploadProbe up)
     Fold.mapM_ forkTranscode t
-    return as'
+    return $ fixAssetSlotDuration as'
       { slotAsset = (maybe a' transcodeAsset t)
         { assetName = assetName (slotAsset as')
         }
