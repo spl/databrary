@@ -4,12 +4,13 @@ module Databrary.Controller.CSV
   ) where
 
 import Control.Arrow (second)
+import qualified Data.ByteString as BS
+import qualified Data.ByteString.Char8 as BSC
 import Data.Function (on)
 import Data.List (foldl', nubBy, groupBy)
 import Data.Monoid ((<>))
 import qualified Data.Text as T
-import qualified Data.Text.Lazy.Builder as TB
-import qualified Data.Text.Lazy.Encoding as TLE
+import qualified Data.Text.Encoding as TE
 import Network.HTTP.Types (hContentType)
 
 import Databrary.Ops
@@ -35,11 +36,14 @@ type Metrics = [[Metric]]
 type Header = (Maybe RecordCategory, Metrics)
 type Headers = [Header]
 
-tshow :: Show a => a -> T.Text
-tshow = T.pack . show
+tshow :: Show a => a -> BS.ByteString
+tshow = BSC.pack . show
 
-tmaybe :: (a -> T.Text) -> Maybe a -> T.Text
-tmaybe = maybe T.empty
+tmaybe :: (a -> BS.ByteString) -> Maybe a -> BS.ByteString
+tmaybe = maybe BS.empty
+
+tenc :: T.Text -> BS.ByteString
+tenc = TE.encodeUtf8
 
 recordMetrics :: Record -> [Metric]
 recordMetrics = map measureMetric . recordMeasures
@@ -61,31 +65,35 @@ updateHeaders hl@(cm@(c,m):hl') rll@(~rl@(r:_):rll') = case compare c rc of
   GT -> (rc, recordsMetrics rl) : updateHeaders hl rll'
   where rc = recordCategory r
 
-metricHeader :: [Metric] -> [T.Text]
-metricHeader = map metricName
+metricHeader :: [Metric] -> [BS.ByteString]
+metricHeader = map (tenc . metricName)
 
-metricsHeader :: T.Text -> Metrics -> [T.Text]
-metricsHeader p [m] = map (T.snoc p '-' <>) $ metricHeader m
+metricsHeader :: BS.ByteString -> Metrics -> [BS.ByteString]
+metricsHeader p [m] = map (BSC.snoc p '-' <>) $ metricHeader m
 metricsHeader p ml = mh 0 ml where
   mh _ [] = []
   mh i (m:l) = map (p' <>) (metricHeader m) ++ mh i' l where
-    p' = p <> T.snoc (tshow i') '-'
+    p' = p <> BSC.snoc (tshow i') '-'
     i' = succ i :: Integer
 
-headerRow :: Headers -> [T.Text]
-headerRow = concatMap $ uncurry $ metricsHeader . maybe "record" recordCategoryName
+headerRow :: Headers -> [BS.ByteString]
+headerRow = concatMap $ uncurry $ metricsHeader . maybe "record" (tenc . recordCategoryName)
 
-metricsRow :: [Metric] -> [Measure] -> [T.Text]
-metricsRow m [] = map (const T.empty) m
-metricsRow (_:h) (m:l) = measureDatum m : metricsRow h l
+metricsRow :: [Metric] -> [Measure] -> [BS.ByteString]
+metricsRow m [] = map (const BS.empty) m
+metricsRow ~mh@(m:h) (d:l) = case compare m dm of
+  LT -> BS.empty : metricsRow h l
+  EQ -> measureDatum d : metricsRow h l
+  GT -> error "csvMetricsRow" : metricsRow mh l
+  where dm = measureMetric d
 
-recordsRow :: Metrics -> [Record] -> [T.Text]
+recordsRow :: Metrics -> [Record] -> [BS.ByteString]
 recordsRow h [] = concatMap (`metricsRow` []) h
-recordsRow (h:hl) (r:rl) = metricsRow h r ++ recordsRow hl rl
+recordsRow ~(h:hl) (r:rl) = metricsRow h (recordMeasures r) ++ recordsRow hl rl
 
-dataRow :: Headers -> Records -> [T.Text]
+dataRow :: Headers -> Records -> [BS.ByteString]
 dataRow _ [] = []
-dataRow hl@(~cm@(c,m):hl') rll@(~rl@(r:_):rll') = case compare c rc of
+dataRow ~hl@((c,m):hl') rll@(~rl@(r:_):rll') = case compare c rc of
   LT -> recordsRow m [] ++ dataRow hl' rll
   EQ -> recordsRow m rl ++ dataRow hl' rll'
   GT -> error "csvDataRow" ++ dataRow hl rll'
@@ -99,11 +107,11 @@ csvVolume = action GET (pathId </< "csv") $ \vi -> withAuth $ do
   let grm r = r{ recordMeasures = getRecordMeasures r }
       crl = map (second (map (nubBy ((==) `on` recordId)) . groupBy ((==) `on` recordCategory) . map (grm . slotRecord))) crsl
       hl = foldl' updateHeaders [] $ map snd crl
-      cr c r = tshow (containerId c) : tmaybe id (containerName c) : tmaybe T.pack (formatContainerDate c) : tmaybe tshow (containerRelease c) : dataRow hl r
+      cr c r = tshow (containerId c) : tmaybe tenc (containerName c) : tmaybe BSC.pack (formatContainerDate c) : tmaybe tshow (containerRelease c) : dataRow hl r
       hr = "session-id" : "session-name" : "session-date" : "session-release" : headerRow hl
       csv = hr : map (uncurry cr) crl
   okResponse 
     [ (hContentType, "text/csv;charset=utf-8")
     , ("content-disposition", "attachment; filename=" <> quoteHTTP (makeFilename name <> ".csv"))
     ]
-    $ TLE.encodeUtf8Builder $ TB.toLazyText $ buildCSV csv
+    $ buildCSV csv
