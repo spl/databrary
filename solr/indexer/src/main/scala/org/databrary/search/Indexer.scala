@@ -90,6 +90,9 @@ object Indexer {
     """.map(x => SQLVolume(x)).list().apply().map(x => x.volumeId -> x).toMap
 
 
+    /*
+    Extract all of the parties from the DB
+    */
     val sQLParties = sql"""
       SELECT id, name, prename, affiliation FROM party
     """.map(x => SQLParty(x)).list().apply()
@@ -179,6 +182,15 @@ object Indexer {
     val sQLSegmentReleases = sql"""
          SELECT container, segment, release FROM slot_release
        """.map(x => SQLSegmentRelease(x)).list().apply()
+
+    /*
+      Go through and mark containers and volumes that have excerpts as having them
+    */
+    sQLSegmentAssets.map{
+      x =>
+        if(x.isExcerpt)
+          sQLContainers(x.containerId.toInt).hasExcerpt = true
+    }
 
     //    sQLSegmentRecords.map(x => println(x.volumeId, x.containerId, x.record, x.segment, x.metric, x.date, x.num, x.text))
 
@@ -290,7 +302,7 @@ object Indexer {
   We probably want to just mark a volume as having an excerpt and then let the system handle it rather than try
   to store it ourselves
    */
-  case class SQLSegmentAsset(volumeId: Long, containerId: Long, segment: String, asset: Long, assetName: String, duration: String)
+  case class SQLSegmentAsset(volumeId: Long, containerId: Long, segment: String, asset: Long, assetName: String, duration: String, isExcerpt: Boolean)
 
   case class SQLParty(partyId: Long, name: String, preName: String, affiliation: String)
 

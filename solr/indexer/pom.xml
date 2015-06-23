@@ -28,7 +28,7 @@
                     <launchers>
                         <launcher>
                             <id>indexer</id>
-                            <mainClass>Indexer</mainClass>
+                            <mainClass>org.databrary.search.Indexer</mainClass>
                         </launcher>
                     </launchers>
                 </configuration>
