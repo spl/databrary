@@ -106,6 +106,11 @@ object Indexer {
 
     val sQLContainerVolumeLookup = sQLContainers.values.map(x => x.containerId -> sQLVolumes(x.volumeId)).toMap
 
+    /*
+    Set whether or not this volume actually contains sessions... going to make this public sessions
+    */
+    sQLContainers.values.map(x => sQLVolumes(x.volumeId).hasSessions = true)
+
 
     /*
     These are methods that extract each type of segment into scala objects.
@@ -369,7 +374,6 @@ object Indexer {
                           party_affiliation_s: Option[String] = None,
                           party_id_i: Option[Int] = None
                            )
-
 
   /*
   Names of the different types of content we have inside of Solr
