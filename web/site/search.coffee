@@ -1,8 +1,8 @@
 'use strict'
 
 app.controller 'site/search', [
-  '$scope', '$location', 'displayService', 'results',
-  ($scope, $location, display, results) ->
+   '$scope', '$location', 'displayService', 'results', 'pageService'
+  ($scope, $location, display, results, page) ->
     console.log("results")
     console.log(results)
 
@@ -13,7 +13,25 @@ app.controller 'site/search', [
 
     # Put an ng-key enter here so it does what we offset
     $scope.search = ->
-      $location.search('query', $scope.query, 'offset', offset).then -- TODO THIS IS WHERE THE MAGIC HAPPENS
+      # return page.router.http(page.router.controllers.postSearch, page.$route.current.params)
+      console.log("prev results", results)
+      console.log("query", $scope.query)
+      promise = page.router.http(page.router.controllers.postSearch, page.$route.current.params) # TODO how to get the new query into here?
+      console.log(promise)
+      test = undefined
+      test = promise.then (res) -> return res.data
+      console.log("new results", test)
+      $scope.partyResults = $scope.getResults("party")
+      $scope.volumeResults = $scope.getResults("volume")
+
+      $scope.partyCount = $scope.getTypeCounts("party")
+      $scope.volumeCount = $scope.getTypeCounts("volume")
+
+      $scope.totalCount = $scope.partyCount + $scope.volumeCount
+      # return res.data
+         # $scope.results = res.data
+      # })
+      # $location.search('query', $scope.query, 'offset', offset) # TODO THIS IS WHERE THE MAGIC HAPPENS
 
     $scope.selectSessionStr = "Volumes w/ Sessions"
     $scope.selectHighlightStr = "Volumes w/ Highlights"
@@ -25,7 +43,7 @@ app.controller 'site/search', [
     $scope.getTypeCounts = (type) ->
       idx = $scope.findFacet(type)
       if idx < 0
-        return null
+         return null
       return results.facets.content_type.buckets[idx].count
 
     $scope.findResult = (typeName) ->
@@ -35,7 +53,7 @@ app.controller 'site/search', [
     $scope.getResults = (type) ->
       idx = $scope.findResult(type)
       if idx < 0
-        return null
+         return null
       return results.grouped.content_type.groups[idx].doclist
 
     $scope.getVolumeFeatureBoxOpts = ->
@@ -44,10 +62,10 @@ app.controller 'site/search', [
 
     $scope.partyVolBoxClick = ->
       if "Volumes" in $scope.selectedType
-        # $scope.display = (doc.title_t for doc in $scope.volumeResults.docs)
+         # $scope.display = (doc.title_t for doc in $scope.volumeResults.docs)
         $scope.display = (s for s in $scope.getVolumeFeatureBoxOpts())
       if "People" in $scope.selectedType
-        $scope.display = (doc.party_name_s for doc in $scope.partyResults.docs)
+         $scope.display = (doc.party_name_s for doc in $scope.partyResults.docs)
       console.log($scope.selectedType, $scope.display)
 
     $scope.filterBoxClick = ->
@@ -68,12 +86,12 @@ app.controller 'site/search', [
       # We can send this parameter along with the search in order to filter it... which is less flexible
       # or just amend the search query here.
       $scope.requireHighlight = true
-      $scope.query = $scope.query + "&arg=volume_has_excerpt_b=true"
+      $scope.query = $scope.query + "|arg=volume_has_excerpt_b:true"
       console.log("SEARCHING AGAIN WITH QUERY", $scope.query)
 
     $scope.filterBySession = ->
       $scope.requireSession = true
-      $scope.query = $scope.query + "&arg=volume_has_sessions_b=true"
+      $scope.query = $scope.query + "|arg=volume_has_sessions_b:true"
 
 
 
@@ -104,8 +122,8 @@ app.controller 'site/search', [
 #      We want the query to look something like this:
 #    facet=true&facet.field=content_type&facet.mincount=1&group=true&group.field=content_type&group.limit=10
 
-    # group.offset is offset
-    # group.limit is limit
+# group.offset is offset
+# group.limit is limit
 
 #    $scope.containersForVoume = (volume_id) ->
 #      $location.search('query', $scope.query, 'offset', offset)
@@ -116,15 +134,15 @@ app.controller 'site/search', [
     $scope.maxPage = 1 + ($scope.totalCount / limit)
     pageRange = []
     for i in [$scope.minPage .. $scope.maxPage] by 1
-      pageRange.push(i)
+       pageRange.push(i)
 
     $scope.pageRange = pageRange
 
     $scope.goToPage = (page) -> $location.search('offset', limit * (page-1))
 
     if parseInt($scope.totalCount) > (offset + limit)
-      $scope.next = -> $location.search('offset', offset + limit)
+       $scope.next = -> $location.search('offset', offset + limit)
     if offset > 0
-      $scope.prev = -> $location.search('offset', Math.max(0, offset - limit))
+       $scope.prev = -> $location.search('offset', Math.max(0, offset - limit))
     return
 ]

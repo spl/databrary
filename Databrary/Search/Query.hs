@@ -130,7 +130,7 @@ filterStart _ = Nothing
 parseQuery :: String -> [QueryPart]
 parseQuery q = map parseQueryPart x
       where
-         x = splitOn "&" q
+         x = splitOn "|" q
 
 parseQueryPart :: String -> QueryPart
 parseQueryPart x
