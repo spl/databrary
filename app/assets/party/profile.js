@@ -42,7 +42,6 @@ app.controller('party/profile', [
       $scope.volumes.collaborator = _.map($scope.volumes.collaborator, unSetSelected);
       $scope.volumes.inherited = _.map($scope.volumes.inherited, unSetSelected);
 
-
       for(var i = 0; i < volume.access.length; i += 1 ){
         for (var j = 0; j < $scope.users.sponsors.length; j += 1){
           if($scope.users.sponsors[j].id === volume.access[i].party.id){
@@ -68,24 +67,6 @@ app.controller('party/profile', [
             return; 
           }
         }        
-      }
-
-      
-      for(var i = 0; i < $scope.users.sponsors.length; i += 1){
-        $scope.users.sponsors[i].isSelected = '';
-        $scope.users.labGroupMembers[i].isSelected = '';
-        $scope.users.nonGroupAffiliates[i] = '';
-        $scope.users.otherCollaborators[i] = ''; 
-        for(var j = 0; j < volume.access.length; j += 1){
-          if($scope.users.sponsors[i].id === volume.access[j].party.id){
-            $scope.users.sponsors[i].isSelected = 'userSelected';
-            return; 
-          }
-        }
-
-        for(var j = 0; j < volume.access.length; j += 1){
-          
-        }
       }
     };
 
