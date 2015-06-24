@@ -79,7 +79,7 @@ app.controller('party/profile', [
       $scope.volumes.individual = _.map($scope.volumes.individual, unSetSelected);
       $scope.volumes.collaborator = _.map($scope.volumes.collaborator, unSetSelected);
       $scope.volumes.inherited = _.map($scope.volumes.inherited, unSetSelected);
-      var iterrateVolume = function(item, i, volumeArray){
+      var iterrateVolume = function(_item, i, volumeArray){
         for(var j = 0; j < volumeArray[i].access.length; j += 1){
           if(volumeArray[i].access[j] == user){
             volumeArray[i].access[j].isSelected = 'volumeSelected';
