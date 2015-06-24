@@ -63,10 +63,14 @@ app.controller 'site/search', [
         $scope.next = ->
           $scope.offset = $scope.offset + $scope.limit
           $scope.search()
+      else
+        $scope.next = undefined
       if $scope.offset > 0
         $scope.prev = ->
           $scope.offset = Math.max(0, $scope.offset - $scope.limit)
           $scope.search()
+      else
+        $scope.prev = undefined
 
       $scope.number = 1 + ($scope.offset / $scope.limit)
       console.log("NUMBER: ", $scope.number, $scope.offset, $scope.limit)
