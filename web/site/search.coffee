@@ -13,6 +13,7 @@ app.controller 'site/search', [
     $scope.selectSessionStr = "Volumes w/ Sessions"
     $scope.selectHighlightStr = "Volumes w/ Highlights"
     $scope.limit = 10
+    display.title = 'Search'
 
     # Put an ng-key enter here so it does what we offset
     $scope.search = ->
@@ -68,6 +69,7 @@ app.controller 'site/search', [
           $scope.search()
 
       $scope.number = 1 + ($scope.offset / $scope.limit)
+      console.log("NUMBER: ", $scope.number, $scope.offset, $scope.limit)
 
 
     $scope.findFacet = (typeName) ->
@@ -125,11 +127,8 @@ app.controller 'site/search', [
 
 
     console.log(results)
-    $scope.parseResults(results)
-
     $scope.offset = parseInt($location.search().offset, 10) || 0
-    display.title = 'Search'
-    $scope.results = results?.response
+    $scope.parseResults(results)
 
     console.log(results)
 

@@ -36,17 +36,17 @@
           </ul>
         </span>
         <div class="search-pages">
-          <span ng-if="::prev">
-            <a ng-if="::prev" ng-click="prev()">&lt; </a>
+          <span ng-if="prev">
+            <a ng-if="prev" ng-click="prev()">&lt; </a>
           </span>
           <b ng-repeat="i in pageRange">
-            <b ng-if="::number == i">| {{i}} </b>
-            <span ng-if="::number != i">
-              <a ng-click="goToPage(i)">| {{::i}} </a>
+            <b ng-if="number == i">| {{i}} </b>
+            <span ng-if="number != i">
+              <a ng-click="goToPage(i)">| {{i}} </a>
             </span>
           </b>
           |
-          <span ng-if="::next">
+          <span ng-if="next">
             <a ng-click="next()"> &gt;</a>
           </span>
         </div>
