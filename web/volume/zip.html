@@ -16,16 +16,17 @@
   <p ng-if="::!assetDownload" message="download.zip.prompt.empty"></p>
 
   <div class="popup-file-info" ng-if="assetSize">
+    <span ng-if="contCount > 1" ng-bind="::{{contCount}} + ' sessions |'"></span>
     <span>Download size: &#126;{{::assetSize}} MB | {{::assetDownload}} out of {{::assetTotal}} files available for download.</span>
   </div>
 
   <ul class="download-sessions">
     <li ng-repeat="c in ::containers">
       <span ng-if="contCount > 1" ng-bind="::' [ID ' + c.id + '] '"></span>
-      <span ng-if="contCount > 1" ng-bind="::'Session ' + c.date + ' ' + c.name + ': '"></span> 
+      <span ng-if="contCount > 1" ng-bind="::(c.top ? 'Materials ' : 'Session ') + c.date + ' ' + c.name + ': '"></span> 
       
       <ul class="download-files">
-        <li ng-if="filesInSession[c.id] === 0"><i>No files in this session</i></li>
+        <li ng-if="filesInSession[c.id] === 0"><i>No files</i></li>
         <li ng-repeat="a in ::c.assets" ng-class="{'download-no-permission': !a.checkPermission(page.constants.permission.VIEW)}">
           <span class="icon release" ng-class="::page.constants.release[a.classification === undefined ? c.release : a.classification]"></span>
           <img class="icon" ng-src="{{::a.icon}}" hint="format-{{::a.format.extension}}">

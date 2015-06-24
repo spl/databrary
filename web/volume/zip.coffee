@@ -22,6 +22,7 @@ app.controller 'volume/zip', [
     $scope.filesInSession = {}
     for ci, c of $scope.containers
       $scope.filesInSession[ci] = Object.keys(c.assets).length
+      console.log c
       for ai, a of c.assets
         t++
         if a.checkPermission(constants.permission.VIEW)
