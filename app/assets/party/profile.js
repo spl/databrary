@@ -1,4 +1,4 @@
- 'use strict';
+'use strict';
 
 app.controller('party/profile', [
   '$scope', 'displayService', 'party', 'pageService','constantService',
@@ -30,14 +30,23 @@ app.controller('party/profile', [
     };
     
     $scope.clickVolume = function(volume) {
-      $scope.volumes = _.map($scope.volumes, function(v){
+
+      // This is a quick helper function to make sure that the isSelected
+      // class is set to empty and to avoid repeating code. 
+      var unSetSelected = function(v){
         v.isSelected = '';
         return v; 
-      });
-
+      };
+      
+      $scope.volumes.individual = _.map($scope.volumes.individual, unSetSelected);
+      $scope.volumes.collaborator = _.map($scope.volumes.collaborator, unSetSelected);
+      $scope.volumes.inherited = _.map($scope.volumes.inherited, unSetSelected);
+      
       for(var i = 0; i < $scope.users.sponsors.length; i += 1){
         $scope.users.sponsors[i].isSelected = '';
         $scope.users.labGroupMembers[i].isSelected = '';
+        $scope.users.nonGroupAffiliates[i] = '';
+        $scope.users.otherCollaborators[i] = ''; 
         for(var j = 0; j < volume.access.length; j += 1){
           if($scope.users.sponsors[i].id === volume.access[j].party.id){
             $scope.users.sponsors[i].isSelected = 'userSelected';
@@ -61,14 +70,28 @@ app.controller('party/profile', [
       }
     };
 
-    var getVolumes = function(v) {
+    var getVolumes = function(volumes) {
+      var tempVolumes = {};
+      tempVolumes.individual = [];
+      tempVolumes.collaborator = [];
+      tempVolumes.inherited = [];
 
-      return v;
+      _.each(volumes, function(v){
+        if(v.isIndividual){
+          tempVolumes.individual.push(v); 
+	} else if(tempVolumes.isCollaborator){
+          tempVolumes.collaborator.push(v); 
+	} else{
+          tempVolumes.inherited.push(v); 
+	}
+      });
+      return tempVolumes;
     };
 
     $scope.party = party;
-    $scope.volumes = party.volumes;
-    $scope.users = getUsers($scope.volumes);  
+    $scope.volumes = getVolumes(party.volumes);
+    console.log(party.volumes);
+    $scope.users = getUsers(party.volumes);  
     console.log($scope.users);
     $scope.page = page;
     $scope.profile = page.$location.path() === '/profile';
