@@ -125,5 +125,6 @@ htmlTemplate req title body = H.docTypeHtml $ do
                 $ "logout")
           $ authIdentity req
     Fold.mapM_ (H.h1 . H.toHtml) title
-    body
+    r <- body
     htmlFooter
+    return r
