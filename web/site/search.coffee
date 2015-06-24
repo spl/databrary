@@ -13,7 +13,7 @@ app.controller 'site/search', [
 
     # Put an ng-key enter here so it does what we offset
     $scope.search = ->
-      $location.search('query', $scope.query, 'offset', offset)
+      $location.search('query', $scope.query, 'offset', offset).then -- TODO THIS IS WHERE THE MAGIC HAPPENS
 
     $scope.selectSessionStr = "Volumes w/ Sessions"
     $scope.selectHighlightStr = "Volumes w/ Highlights"
@@ -51,10 +51,15 @@ app.controller 'site/search', [
       console.log($scope.selectedType, $scope.display)
 
     $scope.filterBoxClick = ->
-      if $scope.selectSessionStr == $scope.selectedFilter
+      console.log("FILTER BOX CLICKED", $scope.selectedFilter)
+      if $scope.selectSessionStr in $scope.selectedFilter
+         console.log("FILTER BY SESSION")
          $scope.filterBySession()
-      else if $scope.selectHighlightStr == $scope.selectedFilter
+      if $scope.selectHighlightStr in $scope.selectedFilter
          $scope.filterByHighlight()
+      $scope.search()
+      console.log(results)
+      # $scope.$timeout(angular.noop)
 
       # funcs = {"session" : filterBySession, "highlight" : $scope.filterByHighlight}
 
@@ -63,13 +68,12 @@ app.controller 'site/search', [
       # We can send this parameter along with the search in order to filter it... which is less flexible
       # or just amend the search query here.
       $scope.requireHighlight = true
-      $scope.query = $scope.query + "arg=volume_has_excerpt_b=true"
-      $scope.search()
+      $scope.query = $scope.query + "&arg=volume_has_excerpt_b=true"
+      console.log("SEARCHING AGAIN WITH QUERY", $scope.query)
 
     $scope.filterBySession = ->
       $scope.requireSession = true
-      $scope.query = $scope.query + "arg=volume_has_sessions_b=true"
-      $scope.search()
+      $scope.query = $scope.query + "&arg=volume_has_sessions_b=true"
 
 
 
