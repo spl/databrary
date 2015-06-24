@@ -25,6 +25,8 @@
     text-align justify
   p
     margin b1 b2
+  li:before
+    content none
 
 .popup-thumb
   box-shadow box-shadow-def
@@ -38,8 +40,10 @@
     color green
   h3
     word-break break-all
-  h3,h4,span
+  h3,h4
     margin-top 3
+  span 
+    line-height b2*3
   ul
     padding 0
   li
@@ -68,16 +72,15 @@
     text-align center
     font-size b2
     
-.download-list
+.download-sessions, .download-files
   position relative
   margin b2
   padding-left 0
   text-align justify
-  li
+  
+.download-sessions > li
     border-top 1px solid neutral51
     padding-top b8
     padding-bottom b8
-  li:last-of-type
+.download-sessions > li:last-of-type
     border-bottom 1px solid neutral51
-  li:before
-    content none

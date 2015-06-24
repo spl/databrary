@@ -14,13 +14,14 @@ app.controller 'volume/zip', [
       display.title = volume.name + ".zip"
       $scope.volume = volume
       $scope.containers = volume.containers
-      $scope.contCount = volume.containers.length
-      console.log volume.containers.length
+      $scope.contCount = Object.keys(volume.containers).length
 
     t = 0
     d = 0
     z = 0
+    $scope.filesInSession = {}
     for ci, c of $scope.containers
+      $scope.filesInSession[ci] = Object.keys(c.assets).length
       for ai, a of c.assets
         t++
         if a.checkPermission(constants.permission.VIEW)

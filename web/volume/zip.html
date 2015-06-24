@@ -14,17 +14,23 @@
 
   <p ng-if="::assetDownload && assetTotal > assetDownload" message="download.zip.prompt.partial"></p>
   <p ng-if="::!assetDownload" message="download.zip.prompt.empty"></p>
-  <p ng-if="assetSize">Download size: &#126;{{::assetSize}} MB</p>
-  <ul>
+
+  <div class="popup-file-info" ng-if="assetSize">
+    <span>Download size: &#126;{{::assetSize}} MB | {{::assetDownload}} out of {{::assetTotal}} files total.</span>
+  </div>
+
+  <ul class="download-sessions">
     <li ng-repeat="c in ::containers">
-      <span ng-bind="::c.id" ng-if="contCount > 1"></span>: 
-      <span ng-bind="::c.name" ng-if="contCount > 1"></span>
-      <ul class="download-list">
+      <span ng-if="contCount > 1" ng-bind="::' [ID ' + c.id + '] '"></span>
+      <span ng-if="contCount > 1" ng-bind="::'Session ' + c.date + ' ' + c.name + ': '"></span> 
+      
+      <ul class="download-files">
+        <li ng-if="filesInSession[c.id] === 0"><i>No files in this session</i></li>
         <li ng-repeat="a in ::c.assets" ng-class="{'download-no-permission': !a.checkPermission(page.constants.permission.VIEW)}">
           <span class="icon release" ng-class="::page.constants.release[a.classification === undefined ? c.release : a.classification]"></span>
           <img class="icon" ng-src="{{::a.icon}}" hint="format-{{::a.format.extension}}">
-          <span ng-bind="::a.id"></span>: 
-          <span ng-bind="::a.name"></span>
+          <span ng-bind="::a.id"></span>
+          <span ng-if="::!!a.name" ng-bind="'-' + a.name"></span>
         </li>
       </ul>
     </li>
