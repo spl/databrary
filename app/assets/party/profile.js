@@ -41,6 +41,35 @@ app.controller('party/profile', [
       $scope.volumes.individual = _.map($scope.volumes.individual, unSetSelected);
       $scope.volumes.collaborator = _.map($scope.volumes.collaborator, unSetSelected);
       $scope.volumes.inherited = _.map($scope.volumes.inherited, unSetSelected);
+
+
+      for(var i = 0; i < volume.access.length; i += 1 ){
+        for (var j = 0; j < $scope.users.sponsors.length; j += 1){
+          if($scope.users.sponsors[j].id === volume.access[i].party.id){
+            $scope.users.sponsors[j].isSelected = 'userSelected';
+            return; 
+          }
+        }
+        for (var j = 0; j < $scope.users.labGroupMembers.length; j += 1){
+          if($scope.users.labGroupMembers[j].id === volume.access[i].party.id){
+            $scope.users.labGroupMembers[j].isSelected = 'userSelected';
+            return; 
+          }
+        }
+        for (var j = 0; j < $scope.users.nonGroupAffiliates.length; j += 1){
+          if($scope.users.nonGroupAffiliates[j].id === volume.access[i].party.id){
+            $scope.users.nonGroupAffiliates[j].isSelected = 'userSelected';
+            return; 
+          }
+        }
+        for (var j = 0; j < $scope.users.otherCollaborators.length; j += 1){
+          if($scope.users.otherCollaborators[j].id === volume.access[i].party.id){
+            $scope.users.otherCollaborators[j].isSelected = 'userSelected';
+            return; 
+          }
+        }        
+      }
+
       
       for(var i = 0; i < $scope.users.sponsors.length; i += 1){
         $scope.users.sponsors[i].isSelected = '';
@@ -51,9 +80,11 @@ app.controller('party/profile', [
           if($scope.users.sponsors[i].id === volume.access[j].party.id){
             $scope.users.sponsors[i].isSelected = 'userSelected';
             return; 
-          } else if($scope.users.labGroupMembers[i].id === volume.access[j].party.id){
-            $scope.users.sponsors[i].isSelected = 'userSelected';
           }
+        }
+
+        for(var j = 0; j < volume.access.length; j += 1){
+          
         }
       }
     };
