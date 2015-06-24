@@ -12,15 +12,23 @@ app.controller 'site/search', [
     $scope.display = []
     $scope.selectSessionStr = "Volumes w/ Sessions"
     $scope.selectHighlightStr = "Volumes w/ Highlights"
+    $scope.selectAffiliationStr = "Volumes w/ Sessions"
+    $scope.affiliations = []
+    # $scope.selectHighlightStr = "Volumes w/ Highlights"
     $scope.limit = 10
     display.title = 'Search'
+
+    $scope.searchBox = ->
+      $scope.query = $scope.originalQuery
+      $scope.offset = 0
+      console.log("NEW SEARCH:", $scope.query)
+      $scope.search()
 
     # Put an ng-key enter here so it does what we offset
     $scope.search = ->
       # return page.router.http(page.router.controllers.postSearch, page.$route.current.params)
       console.log("prev results", results)
       console.log("query", $scope.query)
-      console.log("page params", page.$route.current.params)
       # page.$route.current.params.query = $scope.query
       promise = page.router.http(page.router.controllers.postSearch,
         {"query" : $scope.query, "offset" : $scope.offset, "limit" : $scope.limit})
@@ -33,17 +41,18 @@ app.controller 'site/search', [
     # Parse results, the main workhorse function
     # ##############################
     $scope.parseResults = (res) ->
-      params = $location.search()
-      $scope.query = params.query
-      $scope.originalQuery = params.query
-
-      # console.log("VOLUME RESULTS BEFORE", $scope.volumeResults)
+      console.log("RES:", res)
       $scope.partyResults = $scope.getResults("party", res)
       $scope.volumeResults = $scope.getResults("volume", res)
-      # console.log("VOLUME RESULTS AFTER", $scope.volumeResults)
 
       $scope.partyCount = $scope.getTypeCounts("party", res)
       $scope.volumeCount = $scope.getTypeCounts("volume", res)
+      console.log("PARTY RESULTS", $scope.partyResults)
+
+      if $scope.partyCount
+        $scope.affiliations = (c.party_affiliation_s for c in $scope.partyResults.docs)
+      else
+        $scope.affiliations = ["No people found"]
 
       $scope.totalCount = $scope.partyCount + $scope.volumeCount
 
@@ -72,16 +81,19 @@ app.controller 'site/search', [
       else
         $scope.prev = undefined
 
+      $scope.updateFilterBoxOptions()
+
       $scope.number = 1 + ($scope.offset / $scope.limit)
       console.log("NUMBER: ", $scope.number, $scope.offset, $scope.limit)
 
 
-    $scope.findFacet = (typeName) ->
-      facets = (facet.val for facet in results.facets.content_type.buckets)
+    $scope.findFacet = (typeName, res) ->
+      facets = (facet.val for facet in res.facets.content_type.buckets)
       facets.indexOf(typeName)
 
     $scope.getTypeCounts = (type, res) ->
-      idx = $scope.findFacet(type)
+      idx = $scope.findFacet(type, res)
+      console.log(idx)
       if idx < 0
         return null
       return res?.facets?.content_type?.buckets[idx].count ? 0
@@ -100,23 +112,43 @@ app.controller 'site/search', [
       opts = [$scope.selectSessionStr, $scope.selectHighlightStr]
       return opts
 
-    $scope.partyVolBoxClick = ->
+    $scope.getPartyFeatureBoxOpts = ->
+      opts = [$scope.selectSessionStr, $scope.selectHighlightStr]
+      return opts
+
+    $scope.updateFilterBoxOptions = ->
       if "Volumes" in $scope.selectedType
         $scope.display = (s for s in $scope.getVolumeFeatureBoxOpts())
       if "People" in $scope.selectedType
-        $scope.display = (doc.party_name_s for doc in $scope.partyResults.docs)
+        console.log("AFFILIATIONS:", $scope.affiliations)
+        $scope.display = (a for a in $scope.affiliations)
+
+    $scope.partyVolBoxClick = ->
+      if "Volumes" in $scope.selectedType
+        $scope.query = $scope.originalQuery
+        $scope.search()
+      if "People" in $scope.selectedType
+        $scope.query = $scope.originalQuery
+        $scope.search()
       console.log($scope.selectedType, $scope.display)
 
     $scope.filterBoxClick = ->
       console.log("FILTER BOX CLICKED", $scope.selectedFilter)
-      if $scope.selectSessionStr in $scope.selectedFilter
-        console.log("FILTER BY SESSION")
-        $scope.filterBySession()
-      if $scope.selectHighlightStr in $scope.selectedFilter
-        $scope.filterByHighlight()
+      if "Volumes" in $scope.selectedType
+        if $scope.selectSessionStr in $scope.selectedFilter
+          $scope.filterBySession()
+        if $scope.selectHighlightStr in $scope.selectedFilter
+          $scope.filterByHighlight()
+      if "People" in $scope.selectedType
+        $scope.partyFilterBoxClick()
+        console.log("FILTERING BY PARTY")
       $scope.search()
-      console.log(results)
-      # $scope.$timeout(angular.noop)
+
+    $scope.partyFilterBoxClick = ->
+      $scope.filterByAffiliation()
+
+    $scope.filterByAffiliation = ->
+      $scope.query = $scope.originalQuery + "|arg=party_affiliation_s:\"" + $scope.selectedFilter + "\""
 
       # funcs = {"session" : filterBySession, "highlight" : $scope.filterByHighlight}
 
@@ -130,6 +162,9 @@ app.controller 'site/search', [
       $scope.query = $scope.originalQuery + "|arg=volume_has_sessions_b:true"
 
 
+    params = $location.search()
+    $scope.query = params.query
+    $scope.originalQuery = params.query
     console.log(results)
     $scope.offset = parseInt($location.search().offset, 10) || 0
     $scope.parseResults(results)
