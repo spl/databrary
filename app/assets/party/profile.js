@@ -74,38 +74,24 @@ app.controller('party/profile', [
 
     // This should take in a user, then select volumes on each thing. 
     $scope.clickUser = function(user){
-      
+
+      // Make sure that all the selections have been cleared out. 
       $scope.volumes.individual = _.map($scope.volumes.individual, unSetSelected);
       $scope.volumes.collaborator = _.map($scope.volumes.collaborator, unSetSelected);
       $scope.volumes.inherited = _.map($scope.volumes.inherited, unSetSelected);
-      
-      
-      for(var i = 0; i < $scope.volumes.individual.length; i += 1){
-        for(var j = 0; j < $scope.volumes.individual[i].access.length; j += 1){
-          if($scope.volumes.individual[i].access[j] === user){
-            $scope.volumes.individual[i].access[j].isSelected = "volumeSelected";
-            return;
+      var iterrateVolume = function(item, i, volumeArray){
+        for(var j = 0; j < volumeArray[i].access.length; j += 1){
+          if(volumeArray[i].access[j] == user){
+            volumeArray[i].access[j].isSelected = 'volumeSelected';
+            return false; 
           }
         }
-      }
+      };
 
-      for(var i = 0; i < $scope.volumes.collaborator.length; i += 1){
-        for(var j = 0; j < $scope.volumes.collaborator[i].access.length; j += 1){
-          if($scope.volumes.collaborator[i].access[j] === user){
-            $scope.volumes.collaborator[i].access[j].isSelected = "volumeSelected";
-            return;
-          }
-        }
-      }
+      _.each($scope.volumes.individual, iterrateVolume);
+      _.each($scope.volumes.collaborator, iterrateVolume);
+      _.each($scope.volumes.inherited, iterrateVolume);
 
-      for(var i = 0; i < $scope.volumes.inherited.length; i += 1){
-        for(var j = 0; j < $scope.volumes.inherited[i].access.length; j += 1){
-          if($scope.volumes.inherited[i].access[j] === user){
-            $scope.volumes.inherited[i].access[j].isSelected = "volumeSelected";
-            return;
-          }
-        }
-      }
     };
 
     var getVolumes = function(volumes) {
