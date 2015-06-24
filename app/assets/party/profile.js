@@ -28,16 +28,18 @@ app.controller('party/profile', [
 
       return users;
     };
+
+    // This is a quick helper function to make sure that the isSelected
+    // class is set to empty and to avoid repeating code. 
+    var unSetSelected = function(v){
+      v.isSelected = '';
+      return v; 
+    };
+      
+    
     
     $scope.clickVolume = function(volume) {
 
-      // This is a quick helper function to make sure that the isSelected
-      // class is set to empty and to avoid repeating code. 
-      var unSetSelected = function(v){
-        v.isSelected = '';
-        return v; 
-      };
-      
       $scope.volumes.individual = _.map($scope.volumes.individual, unSetSelected);
       $scope.volumes.collaborator = _.map($scope.volumes.collaborator, unSetSelected);
       $scope.volumes.inherited = _.map($scope.volumes.inherited, unSetSelected);
@@ -72,11 +74,35 @@ app.controller('party/profile', [
 
     // This should take in a user, then select volumes on each thing. 
     $scope.clickUser = function(user){
-      for(var i = 0; i < $scope.volumes.length; i += 1) {
-        $scope.volumes[i].isSelected = '';
-        for(var j = 0; j < $scope.volumes[i].access.length; j += 1){
-          if($scope.volumes[i].access[j].id == user.party.id){
-            $scope.volumes[i].isSelected = 'volumeSelected';
+      
+      $scope.volumes.individual = _.map($scope.volumes.individual, unSetSelected);
+      $scope.volumes.collaborator = _.map($scope.volumes.collaborator, unSetSelected);
+      $scope.volumes.inherited = _.map($scope.volumes.inherited, unSetSelected);
+      
+      
+      for(var i = 0; i < $scope.volumes.individual.length; i += 1){
+        for(var j = 0; j < $scope.volumes.individual[i].access.length; j += 1){
+          if($scope.volumes.individual[i].access[j] === user){
+            $scope.volumes.individual[i].access[j].isSelected = "volumeSelected";
+            return;
+          }
+        }
+      }
+
+      for(var i = 0; i < $scope.volumes.collaborator.length; i += 1){
+        for(var j = 0; j < $scope.volumes.collaborator[i].access.length; j += 1){
+          if($scope.volumes.collaborator[i].access[j] === user){
+            $scope.volumes.collaborator[i].access[j].isSelected = "volumeSelected";
+            return;
+          }
+        }
+      }
+
+      for(var i = 0; i < $scope.volumes.inherited.length; i += 1){
+        for(var j = 0; j < $scope.volumes.inherited[i].access.length; j += 1){
+          if($scope.volumes.inherited[i].access[j] === user){
+            $scope.volumes.inherited[i].access[j].isSelected = "volumeSelected";
+            return;
           }
         }
       }
