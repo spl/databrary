@@ -122,7 +122,7 @@ object Indexer {
     */
     sQLContainers.values.map{
       x =>
-        if(x.release == "EXCERPT")
+        if(x.release.getOrElse("") == "EXCERPTS")
           sQLVolumes(x.volumeId).hasSessions = true
     }
 

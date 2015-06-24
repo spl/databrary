@@ -183,14 +183,14 @@ joinToString' (QueryJoin j1 j2) = "{!join from=" ++ j1 ++ " to=" ++  j2 ++ "} "
 joinToString' _ = ""
 
 argsToString :: Maybe [QueryPart] -> String
-{-argsToString qp = map argsToString <$> qp-}
+{-argsToString qp = intercalate " " map argsToString <$> qp-}
 argsToString qp = do
       case qp of
          Nothing -> ""
-         Just q -> intercalate " " (map argsToString' q)
+         Just q -> intercalate " AND " (map argsToString' q)
 
 argsToString' :: QueryPart -> String
-argsToString' (QueryArg a1 a2) = a1 ++ ":" ++ a2 ++ " "
+argsToString' (QueryArg a1 a2) = a1 ++ ":" ++ a2
 argsToString' _ = ""
 
 termsToString :: Maybe [QueryPart] -> String

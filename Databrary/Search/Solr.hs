@@ -111,8 +111,7 @@ instance ToJSON SolrQuery where
       toJSON ( SolrQuery sQquery sArgs sJoin sQlimit sQstart ) =
          object [ "query" .= sQquery,
                   "limit" .= sQlimit,
-                  "offset" .= sQstart,
-                  "filter" .= [("content_type:(volume OR party)" :: String), sArgs],
+                  "filter" .= sArgs,
                   "facet" .= object [
                     "content_type" .= object [
                         "terms" .= object [
@@ -129,7 +128,8 @@ instance ToJSON SolrQuery where
                   "params" .= object [
                         "group" .= ("true" :: String),
                         "group.field" .= ("content_type" :: String),
-                        "group.limit" .= (10 :: Int)
+                        "group.limit" .= (10 :: Int),
+                        "group.offset" .= sQstart
                   ]
                 ]
 
@@ -159,7 +159,7 @@ search :: HTTPClientM c m => String -> Int32 -> Int32 -> m (Maybe Value)
 search q offset limit = do
       let query = Q.createQuery q
       let (queryStr, args, join) = Q.queryToString query
-      let sQuery = SolrQuery queryStr args join limit offset
+      let sQuery = SolrQuery queryStr ("content_type:(volume OR party)" ++ (if(length args > 0) then " AND " else " ") ++ args) join limit offset
       request <- liftIO $ generatePostReq sQuery
       liftIO $ print $ encode sQuery
       liftIO $ print sQuery -- TODO REMOVE THIS
