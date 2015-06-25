@@ -69,16 +69,19 @@ readP :: Read a => RP.ReadP a
 readP = RP.readPrec_to_P readPrec RP.minPrec
 
 instance Read Segment where
-  readPrec = RP.lift $ Segment <$> re RP.+++ rr where
+  readPrec = RP.lift $ Segment <$> re RP.+++ rf RP.+++ rr where
     re = do
       RP.optional (RP.string "empty")
       return Range.Empty
+    rf = do
+      RP.char '-'
+      return Range.full
     rr :: RP.ReadP (Range.Range Offset)
     rr = do
       lb <- optional $ ('[' ==) <$> RP.satisfy (`elem` "([")
       l <- optional readP
       (guard (isNothing lb) >> Range.point <$> maybeA l) RP.+++ do
-        _ <- RP.satisfy (`elem` ",-")
+        _ <- if isNothing lb && isNothing l then RP.char ',' else RP.satisfy (`elem` ",-")
         u <- optional readP
         ub <- optional $ ('[' ==) <$> RP.satisfy (`elem` ")]")
         return $ Range.range (mb True lb l) (mb False ub u)
