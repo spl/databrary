@@ -41,7 +41,7 @@ getContainer p mv (Id (SlotId i s))
   | otherwise = result =<< notFoundResponse
 
 containerDownloadName :: Container -> [T.Text]
-containerDownloadName c = maybeToList $ containerName c
+containerDownloadName c = T.pack (show (containerId c)) : maybeToList (containerName c)
 
 viewContainer :: AppRoute (API, (Maybe (Id Volume), Id Container))
 viewContainer = I.second (I.second $ slotContainerId . unId I.:<->: containerSlotId) I.<$> viewSlot
