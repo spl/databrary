@@ -39,11 +39,10 @@ app.controller('party/profile', [
     
     
     $scope.clickVolume = function(volume) {
-
       $scope.volumes.individual = _.map($scope.volumes.individual, unSetSelected);
       $scope.volumes.collaborator = _.map($scope.volumes.collaborator, unSetSelected);
       $scope.volumes.inherited = _.map($scope.volumes.inherited, unSetSelected);
-
+      var ite
       for(var i = 0; i < volume.access.length; i += 1 ){
         for (var j = 0; j < $scope.users.sponsors.length; j += 1){
           if($scope.users.sponsors[j].id === volume.access[i].party.id){
@@ -79,7 +78,7 @@ app.controller('party/profile', [
       $scope.volumes.individual = _.map($scope.volumes.individual, unSetSelected);
       $scope.volumes.collaborator = _.map($scope.volumes.collaborator, unSetSelected);
       $scope.volumes.inherited = _.map($scope.volumes.inherited, unSetSelected);
-      var iterrateVolume = function(_item, i, volumeArray){
+      var iterateVolume = function(_item, i, volumeArray){
         for(var j = 0; j < volumeArray[i].access.length; j += 1){
           if(volumeArray[i].access[j] == user){
             volumeArray[i].access[j].isSelected = 'volumeSelected';
@@ -88,9 +87,9 @@ app.controller('party/profile', [
         }
       };
 
-      _.each($scope.volumes.individual, iterrateVolume);
-      _.each($scope.volumes.collaborator, iterrateVolume);
-      _.each($scope.volumes.inherited, iterrateVolume);
+      _.each($scope.volumes.individual, iterateVolume);
+      _.each($scope.volumes.collaborator, iterateVolume);
+      _.each($scope.volumes.inherited, iterateVolume);
 
     };
 
