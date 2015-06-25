@@ -6,6 +6,9 @@ app.controller 'site/search', [
     console.log("results")
     console.log(results)
 
+  ###########################
+  # Some constants
+  ###########################
     $scope.selectedType = ""
     $scope.selectedVolume = ""
     $scope.selectedFilter = ""
@@ -20,6 +23,10 @@ app.controller 'site/search', [
     $scope.limit = 10
     display.title = 'Search'
 
+
+  ###########################
+  # Functions for transforming a document into strings
+  ###########################
     $scope.formPartyLink = (doc) ->
       return partyLinkPrefix + doc.party_id_i
 
@@ -28,12 +35,19 @@ app.controller 'site/search', [
 
     $scope.formVolumeResult = (doc) ->
       # Form everything except the title, which we'll do in HTML so we can make it the link
-      res = ""
+      res = []
+      if doc.abs_t
+         if doc.abs_t.length > 150
+            doc.abs_t = doc.abs_t[0..150] + "..."
+         res.push doc.abs_t
       if doc.citation_t
-        res += doc.citation_t
+        res.push doc.citation_t
       # Add more stuff here if we want it
-      return res
+      return res.join("\n")
 
+  ###########################
+  # Search handlers
+  ###########################
     $scope.searchBox = ->
       $scope.query = $scope.originalQuery
       $scope.offset = 0
