@@ -20,8 +20,8 @@
           <ul>
             <li ng-repeat="result in partyResults.docs">
               <!-- This is where we return what we want-->
-              <a ng-href="volume/{{result.volume_id_i}}">{{result.title_t}}</a>
-              <span ng-bind="[result.party_name_s, result.content_type].join(' ')"></span>
+              <a ng-href="party/{{result.party_id_i}}">{{result.party_pre_name_s + " " + result.party_name_s}}</a><br>
+              <span ng-bind="result.party_affiliation_s"</span>
             </li>
           </ul>
         </span>
@@ -30,8 +30,8 @@
           <ul>
             <li ng-repeat="result in volumeResults.docs">
               <!-- This is where we return what we want-->
-              <a ng-href="volume/{{result.volume_id_i}}">{{result.title_t}}</a>
-              <span ng-bind="[result.title_t, result.content_type].join(' ')"></span>
+              <a ng-href="volume/{{result.volume_id_i}}">{{result.title_t}}</a><br>
+              <span ng-bind="formVolumeResult(result)"></span>
             </li>
           </ul>
         </span>

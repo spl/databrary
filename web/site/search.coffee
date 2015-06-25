@@ -13,10 +13,26 @@ app.controller 'site/search', [
     $scope.selectSessionStr = "Volumes w/ Sessions"
     $scope.selectHighlightStr = "Volumes w/ Highlights"
     $scope.selectAffiliationStr = "Volumes w/ Sessions"
+    $scope.partyLinkPrefix = "party/"
+    $scope.volumeLinkPrefix = "volume/"
     $scope.affiliations = []
     # $scope.selectHighlightStr = "Volumes w/ Highlights"
     $scope.limit = 10
     display.title = 'Search'
+
+    $scope.formPartyLink = (doc) ->
+      return partyLinkPrefix + doc.party_id_i
+
+    $scope.formVolumeLink = (doc) ->
+      return volumeLinkPrefix + doc.volume_id_i
+
+    $scope.formVolumeResult = (doc) ->
+      # Form everything except the title, which we'll do in HTML so we can make it the link
+      res = ""
+      if doc.citation_t
+        res += doc.citation_t
+      # Add more stuff here if we want it
+      return res
 
     $scope.searchBox = ->
       $scope.query = $scope.originalQuery
