@@ -44,7 +44,7 @@ app.controller('party/profile', [
       $scope.users.sponsors = _.map($scope.users.nonGroupAffiliates, unSetSelected);
       $scope.users.sponsors = _.map($scope.users.labGroupMembers, unSetSelected);
       $scope.users.sponsors = _.map($scope.users.otherCollaborators, unSetSelected);
-    }
+    }; 
     
     $scope.clickVolume = function(volume) {
       unselectAll();
