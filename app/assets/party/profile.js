@@ -36,36 +36,37 @@ app.controller('party/profile', [
       return v; 
     };
       
-    
-    
-    $scope.clickVolume = function(volume) {
+    var unselectAll = function(){
       $scope.volumes.individual = _.map($scope.volumes.individual, unSetSelected);
       $scope.volumes.collaborator = _.map($scope.volumes.collaborator, unSetSelected);
       $scope.volumes.inherited = _.map($scope.volumes.inherited, unSetSelected);
-      var ite
+      $scope.users.sponsors = _.map($scope.users.sponsors, unSetSelected);
+      $scope.users.sponsors = _.map($scope.users.nonGroupAffiliates, unSetSelected);
+      $scope.users.sponsors = _.map($scope.users.labGroupMembers, unSetSelected);
+      $scope.users.sponsors = _.map($scope.users.otherCollaborators, unSetSelected);
+    }
+    
+    $scope.clickVolume = function(volume) {
+      unselectAll();
       for(var i = 0; i < volume.access.length; i += 1 ){
         for (var j = 0; j < $scope.users.sponsors.length; j += 1){
           if($scope.users.sponsors[j].id === volume.access[i].party.id){
             $scope.users.sponsors[j].isSelected = 'userSelected';
-            return; 
           }
         }
         for (var j = 0; j < $scope.users.labGroupMembers.length; j += 1){
           if($scope.users.labGroupMembers[j].id === volume.access[i].party.id){
             $scope.users.labGroupMembers[j].isSelected = 'userSelected';
-            return; 
           }
         }
         for (var j = 0; j < $scope.users.nonGroupAffiliates.length; j += 1){
           if($scope.users.nonGroupAffiliates[j].id === volume.access[i].party.id){
             $scope.users.nonGroupAffiliates[j].isSelected = 'userSelected';
-            return; 
           }
         }
         for (var j = 0; j < $scope.users.otherCollaborators.length; j += 1){
           if($scope.users.otherCollaborators[j].id === volume.access[i].party.id){
             $scope.users.otherCollaborators[j].isSelected = 'userSelected';
-            return; 
           }
         }        
       }
@@ -73,11 +74,7 @@ app.controller('party/profile', [
 
     // This should take in a user, then select volumes on each thing. 
     $scope.clickUser = function(user){
-
-      // Make sure that all the selections have been cleared out. 
-      $scope.volumes.individual = _.map($scope.volumes.individual, unSetSelected);
-      $scope.volumes.collaborator = _.map($scope.volumes.collaborator, unSetSelected);
-      $scope.volumes.inherited = _.map($scope.volumes.inherited, unSetSelected);
+      unselectAll();
       var iterateVolume = function(_item, i, volumeArray){
         for(var j = 0; j < volumeArray[i].access.length; j += 1){
           if(volumeArray[i].access[j] == user){
