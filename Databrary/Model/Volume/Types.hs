@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings, TemplateHaskell, TypeFamilies #-}
 module Databrary.Model.Volume.Types
   ( Volume(..)
+  , VolumeOwner
   , MonadHasVolume
   , blankVolume
   ) where
@@ -15,8 +16,11 @@ import Databrary.Model.Time
 import Databrary.Model.Kind
 import Databrary.Model.Permission.Types
 import Databrary.Model.Id.Types
+import Databrary.Model.Party.Types
 
 type instance IdType Volume = Int32
+
+type VolumeOwner = (Id Party, T.Text)
 
 data Volume = Volume
   { volumeId :: Id Volume
@@ -25,6 +29,7 @@ data Volume = Volume
   , volumeBody :: Maybe T.Text
   , volumeDOI :: Maybe BS.ByteString
   , volumeCreation :: Timestamp
+  , volumeOwners :: [VolumeOwner]
   , volumePermission :: Permission
   }
 
@@ -42,5 +47,6 @@ blankVolume = Volume
   , volumeBody = Nothing
   , volumeDOI = Nothing
   , volumeCreation = posixSecondsToUTCTime 1357900000
+  , volumeOwners = []
   , volumePermission = PermissionNONE
   }

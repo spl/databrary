@@ -54,6 +54,7 @@ import Databrary.Model.AssetSlot
 import Databrary.Model.Excerpt
 import Databrary.Model.Tag
 import Databrary.Model.Comment
+import Databrary.Store.Filename
 import Databrary.HTTP.Form.Deform
 import Databrary.HTTP.Path.Parser
 import Databrary.Action.Route
@@ -162,21 +163,17 @@ volumeJSONField o "comments" n = do
   tc <- lookupSlotComments (containerSlot t) (maybe 64 fst $ BSC.readInt =<< n)
   return $ Just $ JSON.toJSON $ map commentJSON tc
 volumeJSONField o "filename" _ =
-  Just . JSON.toJSON <$> cacheVolumeDownloadName o
+  return $ Just $ JSON.toJSON $ makeFilename $ volumeDownloadName o
 volumeJSONField _ _ _ = return Nothing
 
 volumeJSONQuery :: Volume -> JSON.Query -> AuthActionM JSON.Object
 volumeJSONQuery vol = runVolumeCache . JSON.jsonQuery (volumeJSON vol) (volumeJSONField vol)
 
-cacheVolumeDownloadName :: (MonadDB m, MonadHasIdentity c m) => Volume -> StateT VolumeCache m [T.Text]
-cacheVolumeDownloadName v = do
-  owns <- cacheVolumeAccess v PermissionADMIN
-  return $ (T.pack $ "databrary" ++ show (volumeId v))
-    : map (partySortName . volumeAccessParty) owns
+volumeDownloadName :: Volume -> [T.Text]
+volumeDownloadName v =
+  (T.pack $ "databrary" ++ show (volumeId v))
+    : map (T.takeWhile (',' /=) . snd) (volumeOwners v)
     ++ [fromMaybe (volumeName v) (getVolumeAlias v)]
-
-volumeDownloadName :: (MonadDB m, MonadHasIdentity c m) => Volume -> m [T.Text]
-volumeDownloadName = runVolumeCache . cacheVolumeDownloadName
 
 viewVolume :: AppRoute (API, Id Volume)
 viewVolume = action GET (pathAPI </> pathId) $ \(api, vi) -> withAuth $ do

@@ -6,6 +6,7 @@ module Databrary.Model.Transcode.SQL
 import qualified Data.ByteString as BS
 import Data.Int (Int32)
 import Data.Maybe (fromMaybe)
+import qualified Language.Haskell.TH as TH
 
 import Databrary.Model.SQL.Select
 import Databrary.Model.Permission.Types
@@ -32,6 +33,7 @@ selectTranscode = selectJoin 'id
     selectVolumeAsset
   , joinOn "transcode.orig = orig.id"
     $ selectVolumeAsset `fromAlias` "orig"
-  , joinOn "asset.volume = volume.id AND orig.volume = volume.id"
-    volumeRow
+  , selectMap (`TH.AppE` TH.ListE [])
+    $ joinOn "asset.volume = volume.id AND orig.volume = volume.id"
+      volumeRow
   ]

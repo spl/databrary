@@ -27,6 +27,7 @@ import Databrary.Model.Record
 import Databrary.Model.RecordSlot
 import Databrary.Model.Tag
 import Databrary.Model.Comment
+import Databrary.Store.Filename
 import Databrary.HTTP.Path.Parser
 import Databrary.Action
 import Databrary.Controller.Paths
@@ -51,14 +52,16 @@ slotJSONField o "comments" n = do
   return $ Just $ JSON.toJSON $ map commentJSON c
 slotJSONField o "excerpts" _ =
   Just . JSON.toJSON . map excerptJSON <$> lookupSlotExcerpts o
+slotJSONField o "filename" _ =
+  return $ Just $ JSON.toJSON $ makeFilename $ slotDownloadName o
 slotJSONField _ _ _ = return Nothing
 
 slotJSONQuery :: (MonadDB m, MonadHasIdentity c m) => Slot -> JSON.Query -> m JSON.Object
 slotJSONQuery o = JSON.jsonQuery (slotJSON o) (slotJSONField o)
 
-slotDownloadName :: (MonadDB m) => Slot -> m [T.Text]
-slotDownloadName s = do
-  return $ containerDownloadName (slotContainer s)
+slotDownloadName :: Slot -> [T.Text]
+slotDownloadName s =
+  containerDownloadName (slotContainer s)
 
 viewSlot :: AppRoute (API, (Maybe (Id Volume), Id Slot))
 viewSlot = action GET (pathAPI </> pathMaybe pathId </> pathSlotId) $ \(api, (vi, i)) -> withAuth $ do

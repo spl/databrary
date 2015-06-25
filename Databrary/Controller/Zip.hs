@@ -69,10 +69,9 @@ containerZipEntry c l = do
 volumeZipEntry :: Volume -> [AssetSlot] -> AuthActionM ZipEntry
 volumeZipEntry v al = do
   req <- peek
-  n <- volumeDownloadName v
   c <- mapM ent $ groupBy (me `on` fmap (containerId . slotContainer) . assetSlot) al
   return ZipEntry
-    { zipEntryName = makeFilename n
+    { zipEntryName = makeFilename (volumeDownloadName v)
     , zipEntryTime = Nothing
     , zipEntryCRC32 = Nothing
     , zipEntrySize = Nothing

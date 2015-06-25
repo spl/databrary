@@ -56,11 +56,9 @@ assetSegmentJSONField _ _ _ = return Nothing
 assetSegmentJSONQuery :: (MonadDB m, MonadHasIdentity c m) => AssetSegment -> JSON.Query -> m JSON.Object
 assetSegmentJSONQuery vol = JSON.jsonQuery (assetSegmentJSON vol) (assetSegmentJSONField vol)
 
-assetSegmentDownloadName :: (MonadDB m, MonadHasIdentity c m) => AssetSegment -> m [T.Text]
-assetSegmentDownloadName a = do
-  v <- volumeDownloadName (view a)
-  s <- slotDownloadName (view a)
-  return $ v ++ s ++ assetDownloadName (view a)
+assetSegmentDownloadName :: AssetSegment -> [T.Text]
+assetSegmentDownloadName a =
+  volumeDownloadName (view a) ++ slotDownloadName (view a) ++ assetDownloadName (view a)
 
 viewAssetSegment :: AppRoute (API, Maybe (Id Volume), Id Slot, Id Asset)
 viewAssetSegment = action GET (pathAPI </>>> pathMaybe pathId </>> pathSlotId </> pathId) $ \(api, vi, si, ai) -> withAuth $ do
@@ -75,9 +73,8 @@ serveAssetSegment dl as = do
   _ <- checkDataPermission as
   sz <- peeks $ readMaybe . BSC.unpack <=< join . listToMaybe . lookupQueryParameters "size"
   when dl $ auditAssetSegmentDownload True as
-  dlname <- dl ?$> makeFilename <$> assetSegmentDownloadName as
   store <- maybeAction =<< getAssetFile a
-  (hd, part) <- fileResponse store (view as) dlname (BSL.toStrict $ BSB.toLazyByteString $
+  (hd, part) <- fileResponse store (view as) (dl ?> makeFilename (assetSegmentDownloadName as)) (BSL.toStrict $ BSB.toLazyByteString $
     BSB.byteStringHex (fromJust (assetSHA1 a)) <> BSB.string7 (assetSegmentTag as sz))
   either
     (okResponse hd)

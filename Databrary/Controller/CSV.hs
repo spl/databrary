@@ -102,7 +102,6 @@ dataRow ~hl@((c,m):hl') rll@(~rl@(r:_):rll') = case compare c rc of
 csvVolume :: AppRoute (Id Volume)
 csvVolume = action GET (pathId </< "csv") $ \vi -> withAuth $ do
   vol <- getVolume PermissionPUBLIC vi
-  name <- volumeDownloadName vol
   crsl <- lookupVolumeContainersRecords vol
   let grm r = r{ recordMeasures = getRecordMeasures r }
       crl = map (second (map (nubBy ((==) `on` recordId)) . groupBy ((==) `on` recordCategory) . map (grm . slotRecord))) crsl
@@ -112,6 +111,6 @@ csvVolume = action GET (pathId </< "csv") $ \vi -> withAuth $ do
       csv = hr : map (uncurry cr) crl
   okResponse 
     [ (hContentType, "text/csv;charset=utf-8")
-    , ("content-disposition", "attachment; filename=" <> quoteHTTP (makeFilename name <> ".csv"))
+    , ("content-disposition", "attachment; filename=" <> quoteHTTP (makeFilename (volumeDownloadName vol) <> ".csv"))
     ]
     $ buildCSV csv
