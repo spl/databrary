@@ -88,8 +88,11 @@ app.controller 'site/search', [
 
 
     $scope.findFacet = (typeName, res) ->
-      facets = (facet.val for facet in res.facets.content_type.buckets)
-      facets.indexOf(typeName)
+      if res.facets.content_type
+         facets = (facet.val for facet in res.facets.content_type.buckets)
+         return facets.indexOf(typeName)
+      else
+         return -1
 
     $scope.getTypeCounts = (type, res) ->
       idx = $scope.findFacet(type, res)
@@ -121,7 +124,7 @@ app.controller 'site/search', [
         $scope.display = (s for s in $scope.getVolumeFeatureBoxOpts())
       if "People" in $scope.selectedType
         console.log("AFFILIATIONS:", $scope.affiliations)
-        $scope.display = (a for a in $scope.affiliations)
+        $scope.display = _.sortBy(_.uniq(a for a in $scope.affiliations))
 
     $scope.partyVolBoxClick = ->
       if "Volumes" in $scope.selectedType
