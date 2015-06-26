@@ -35,7 +35,7 @@ Now we have to checkout one of the depencenies that is not in hackage
 And finally we build databrary!
 
     cd ../databrary
-    mkdir -p dist/build/databrary
+    mkdir -p dist/build/databrary tmp upload cache/tmp
     echo 'secret = "secretWordHere!"' >> local.conf
     cabal install --only-dependencies
     ./dev
