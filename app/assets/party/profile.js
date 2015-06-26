@@ -99,11 +99,11 @@ app.controller('party/profile', [
       _.each(volumes, function(v){
         if(v.isIndividual){
           tempVolumes.individual.push(v); 
-	} else if(tempVolumes.isCollaborator){
+        } else if(tempVolumes.isCollaborator){
           tempVolumes.collaborator.push(v); 
-	} else{
+        } else{
           tempVolumes.inherited.push(v); 
-	}
+        }
       });
       return tempVolumes;
     };
