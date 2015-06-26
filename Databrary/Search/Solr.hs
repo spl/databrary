@@ -109,7 +109,7 @@ data SolrQuery = SolrQuery {
 } deriving (Show)
 instance ToJSON SolrQuery where
       toJSON ( SolrQuery sQquery sArgs sJoin sQlimit sQstart ) =
-         object [ "query" .= sQquery,
+         object [
                   "limit" .= sQlimit,
                   "filter" .= sArgs,
                   "facet" .= object [
@@ -126,6 +126,12 @@ instance ToJSON SolrQuery where
 --                     "limit" .= (10 :: Int)
 --                   ]
                   "params" .= object [
+                        "defType" .= ("edismax" :: String),
+                        "q" .= sQquery,
+                        "qf" .= ("text_en^0.6 text_exact^1.5 volume_keywords_ss^10.0 volume_tags_ss^5.0 party_name^5.0" :: String),
+                        "pf" .= ("volume_keywords_ss^10.0 volume_tags_ss^5.0 party_name^5.0" :: String),
+                        "ps" .= (3 :: Int),
+                        "tie" .= (0.1 :: Float),
                         "group" .= ("true" :: String),
                         "group.field" .= ("content_type" :: String),
                         "group.limit" .= (10 :: Int),

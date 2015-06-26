@@ -134,7 +134,7 @@
     <field name="volume_has_excerpt_b" type="boolean" indexed="true" stored="true" />
     <field name="volume_has_sessions_b" type="boolean" indexed="true" stored="true" />
     <field name="volume_tags_ss" type="string" indexed="true" stored="true" multiValued="true" omitNorms="false" />
-    <field name="volume_keywords_ss" type="string" indexed="true" stored="true" multiValued="true" omitNorms="false" />
+    <field name="volume_keywords_ss" type="text_en_splitting" indexed="true" stored="true" multiValued="true" omitNorms="false" />
     <field name="volume_all_text_t" type="text_en_splitting" indexed="true" stored="true" />
 
 
@@ -199,6 +199,7 @@
    <!-- catchall field, containing all other searchable text fields (implemented
         via copyField further on in this schema  -->
    <field name="text" type="text_en_splitting" indexed="true" stored="false" multiValued="true"/>
+   <field name="text_exact" type="text_general" indexed="true" stored="false" multiValued="true"/>
 
    <!-- catchall text field that indexes tokens both normally and in reverse for efficient
         leading wildcard queries. -->
