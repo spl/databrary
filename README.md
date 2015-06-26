@@ -29,13 +29,18 @@ Now we have to checkout one of the depencenies that is not in hackage
 
     cd ..
     git clone https://github.com/dylex/postgresql-typed
+    cd postresql-typed
+    cabal install
 
 And finally we build databrary!
 
-    cd databrary
-    cabal sandbox init
-    cabal sandbox add-source ../postresql-typed
-    cabal install
+    cd ../databrary
+    mkdir -p dist/build/databrary
+    echo 'secret = "secretWordHere!"' >> local.conf
+    cabal install --only-dependencies
+    ./dev
+
+The first time you run it'll but the DB indexes. Once it is finished with those run ./dev again.
 
 If schemabrary fails to build change db.host in databrary.conf to "localhost".
 
