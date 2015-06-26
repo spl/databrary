@@ -195,15 +195,15 @@ object Indexer {
     // This will get all of the public measures
     val sQLSegmentRecords = sql"""
          SELECT container, segment, slot_record.record AS record, metric.name AS metric, datum
-         FROM slot_record, measure as measure_all, metric
-         WHERE measure_all.record = slot_record.record AND measure_all.metric = metric.id AND metric.release >= 'EXCERPTS'
+         FROM slot_record, measure_text as measure, metric
+         WHERE measure.record = slot_record.record AND measure.metric = metric.id AND metric.release >= 'EXCERPTS'
          """.map(x => SQLSegmentRecord(x)).list().apply().filter(x => x.volumeId > 0)
 
 
     sql"""
          SELECT container, segment, slot_record.record AS record, metric.name AS metric, datum
-         FROM slot_record, measure as measure_all, metric
-         WHERE measure_all.record = slot_record.record AND measure_all.metric = metric.id AND metric.name = 'birthdate'
+         FROM slot_record, measure_date as measure, metric
+         WHERE measure.record = slot_record.record AND measure.metric = metric.id AND metric.name = 'birthdate'
        """.map(x => SQLSegmentRecord(x)).list().apply().map { x =>
       if (sQLContainers.contains(x.containerId)) {
         sQLContainers(x.containerId).age =
