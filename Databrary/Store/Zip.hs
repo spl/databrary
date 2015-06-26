@@ -83,7 +83,7 @@ if64 :: Word64 -> a -> a -> a
 if64 s t e = if s >= zip64Size then t else e
 
 zip64Ext :: B.Builder
-zip64Ext = B.word16LE 1 <> B.word16LE 16
+zip64Ext = B.word16LE 1
 
 zipSize :: Word64 -> B.Builder
 zipSize = B.word32LE . fromIntegral . min zip64Size
@@ -181,7 +181,7 @@ streamZip entries comment write = do
       <> B.word16LE (fromIntegral $ BS.length path)
       <> B.word16LE el
       <> B.byteString path
-      <> (if64 size (zip64Ext <> twice (B.word64LE size)) mempty)
+      <> (if64 size (zip64Ext <> B.word16LE 16 <> twice (B.word64LE size)) mempty)
     case zipEntryContent of
       ZipDirectory l -> do
         central (fromJust crc) size
@@ -221,7 +221,8 @@ streamZip entries comment write = do
           central c s
   streamZipCEntry ZipCEntry{..} = do
     let z64 = zipCEntrySize >= zip64Size || zipCEntryOffset >= zip64Size
-        el = if z64 then 4 + if64 zipCEntrySize 16 0 + if64 zipCEntryOffset 8 0 else 0
+        e64 = if64 zipCEntrySize 16 0 + if64 zipCEntryOffset 8 0
+        el = if z64 then 4 + e64 else 0
     send (46 + BS.length zipCEntryPath + fromIntegral el + BS.length (zipEntryComment zipCEntry))
       $ B.word32LE 0x02014b50
       <> B.word16LE 63 -- version
@@ -240,7 +241,7 @@ streamZip entries comment write = do
       <> zipSize zipCEntryOffset
       <> B.byteString zipCEntryPath
       <> (if z64
-        then zip64Ext <> if64 zipCEntrySize (twice (B.word64LE zipCEntrySize)) mempty <> if64 zipCEntryOffset (B.word64LE zipCEntryOffset) mempty
+        then zip64Ext <> B.word16LE e64 <> if64 zipCEntrySize (twice (B.word64LE zipCEntrySize)) mempty <> if64 zipCEntryOffset (B.word64LE zipCEntryOffset) mempty
         else mempty)
       <> B.byteString (zipEntryComment zipCEntry)
     return z64
