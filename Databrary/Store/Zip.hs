@@ -17,6 +17,7 @@ import Data.Bits (bit, shiftL, (.|.))
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as B
 import qualified Data.ByteString.Builder.Extra as B (defaultChunkSize)
+import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy as BSL
 import Data.Digest.CRC32 (crc32, crc32Update)
 import Data.Maybe (isJust, fromMaybe, fromJust)
@@ -144,7 +145,7 @@ streamZip entries comment write = do
     <> B.byteString comment
   where
   slash (ZipDirectory _) p = BSC.snoc p '/'
-  slash _ = id
+  slash _ p = p
   send :: (MonadState Word64 m, MonadIO m) => Int -> B.Builder -> m ()
   send l b = do
     modify' (fromIntegral l +)
