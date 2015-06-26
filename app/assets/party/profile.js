@@ -41,9 +41,9 @@ app.controller('party/profile', [
       $scope.volumes.collaborator = _.map($scope.volumes.collaborator, unSetSelected);
       $scope.volumes.inherited = _.map($scope.volumes.inherited, unSetSelected);
       $scope.users.sponsors = _.map($scope.users.sponsors, unSetSelected);
-      $scope.users.sponsors = _.map($scope.users.nonGroupAffiliates, unSetSelected);
-      $scope.users.sponsors = _.map($scope.users.labGroupMembers, unSetSelected);
-      $scope.users.sponsors = _.map($scope.users.otherCollaborators, unSetSelected);
+      $scope.users.nonGroupAffiliates = _.map($scope.users.nonGroupAffiliates, unSetSelected);
+      $scope.users.labGroupMembers = _.map($scope.users.labGroupMembers, unSetSelected);
+      $scope.users.otherCollaborators = _.map($scope.users.otherCollaborators, unSetSelected);
     }; 
     
     $scope.clickVolume = function(volume) {
