@@ -87,7 +87,7 @@ app.controller 'site/search', [
       $scope.totalCount = $scope.partyCount + $scope.volumeCount
 
       $scope.minPage = 1
-      $scope.maxPage = 1 + ($scope.totalCount / $scope.limit)
+      $scope.maxPage = 1 + ($scope.totalCount / ($scope.limit + 1))
       pageRange = []
       for i in [$scope.minPage .. $scope.maxPage] by 1
         pageRange.push(i)
