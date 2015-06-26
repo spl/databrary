@@ -59,17 +59,6 @@ app.directive 'spreadsheet', [
         name: 'release'
         type: 'release'
         sort: -7000
-      classification: # asset
-        id: 'classification'
-        name: 'classification'
-        type: 'classification'
-        sort: -6000
-        readonly: true
-      excerpt: # asset
-        id: 'excerpt'
-        name: 'excerpt'
-        sort: -5000
-        readonly: true
       age: # record
         id: 'age'
         name: 'age'
@@ -144,7 +133,7 @@ app.directive 'spreadsheet', [
             id: 'asset'
             name: 'file'
             not: 'No files'
-            template: ['name', 'classification', 'excerpt']
+            template: ['name']
             sort: 10000
             fixed: true
         constants.deepFreeze(pseudoCategory)
@@ -280,8 +269,6 @@ app.directive 'spreadsheet', [
         populateAssetData = (i, n, asset) ->
           populateDatum(i, 'asset', n, 'id', asset.id)
           populateDatum(i, 'asset', n, 'name', asset.name)
-          populateDatum(i, 'asset', n, 'classification', asset.release)
-          populateDatum(i, 'asset', n, 'excerpt', asset.excerpt?)
           return
 
         # Fill all Data values for Row i
@@ -434,6 +421,8 @@ app.directive 'spreadsheet', [
           stop = info.slot?.id == volume.top.id
           if info.col.first && info.d?
             if info.c == 'asset'
+              icon = cell.appendChild(document.createElement('span'))
+              icon.className = "icon release " + constants.release[info.asset.release]
               a = cell.appendChild(document.createElement('a'))
               icon = a.appendChild(document.createElement('img'))
               icon.src = info.asset.icon
@@ -460,13 +449,9 @@ app.directive 'spreadsheet', [
                 v ?= constants.message('materials.top')
               else
                 v ?= ''
-            when 'release', 'classification'
+            when 'release'
               cn = constants.release[v || 0]
               cell.className = cn + ' release icon hint-release-' + cn
-              v = ''
-            when 'excerpt'
-              if v
-                cell.className = 'icon bullet'
               v = ''
             when 'id'
               if v?
@@ -474,7 +459,7 @@ app.directive 'spreadsheet', [
                 v = ''
             when 'age'
               v = display.formatAge(v)
-          if info.metric.long 
+          if info.metric.long
             cell.classList.add('white-space-pre')
           if v?
             cell.classList.remove('blank')
