@@ -126,22 +126,22 @@
     <!-- VOLUME FIELDS -->
     <field name="volume_id_i" type="int" indexed="true" stored="true"/>
     <field name="alias_s" type="string" indexed="true" stored="true"/>
-    <field name="title_t" type="text_general" indexed="true" stored="true"/>
-    <field name="abs_t" type="text_general" indexed="true" stored="true"/>
+    <field name="title_t" type="text_en_splitting" indexed="true" stored="true"/>
+    <field name="abs_t" type="text_en_splitting" indexed="true" stored="true"/>
     <field name="citation_url_s" type="string" indexed="true" stored="true" />
-    <field name="citation_t" type="text_general" indexed="true" stored="true" />
+    <field name="citation_t" type="text_en_splitting" indexed="true" stored="true" />
     <field name="citation_year_i" type="int" indexed="true" stored="true" />
     <field name="volume_has_excerpt_b" type="boolean" indexed="true" stored="true" />
     <field name="volume_has_sessions_b" type="boolean" indexed="true" stored="true" />
     <field name="volume_tags_ss" type="string" indexed="true" stored="true" multiValued="true" omitNorms="false" />
     <field name="volume_keywords_ss" type="string" indexed="true" stored="true" multiValued="true" omitNorms="false" />
-    <field name="volume_all_text_t" type="text_general" indexed="true" stored="true" />
+    <field name="volume_all_text_t" type="text_en_splitting" indexed="true" stored="true" />
 
 
     <!-- CONTAINER FIELDS -->
     <field name="container_id_i" type="int" indexed="true" stored="true"/>
     <field name="container_volume_id_i" type="int" indexed="true" stored="true"/>
-    <field name="container_name_t" type="text_general" indexed="true" stored="true"/>
+    <field name="container_name_t" type="text_en_splitting" indexed="true" stored="true"/>
     <field name="container_age_td" type="tdouble" indexed="true" stored="true"/>
     <field name="container_keywords_ss" type="string" indexed="true" stored="true" multiValued="true" />
     <field name="container_has_excerpt_b" type="boolean" indexed="true" stored="true" />
@@ -151,7 +151,7 @@
     <field name="record_volume_id_i" type="int" indexed="true" stored="true"/>
     <field name="record_container_i" type="int" indexed="true" stored="true"/>
     <field name="record_date_tdt" type="tdate" indexed="true" stored="true"/>
-    <field name="record_text_t" type="text_general" indexed="true" stored="true"/>
+    <field name="record_text_t" type="text_en_splitting" indexed="true" stored="true"/>
     <field name="record_num_d" type="double" indexed="true" stored="true"/>
     <field name="record_metric" type="string" indexed="true" stored="true"/>
 
@@ -164,7 +164,7 @@
     <field name="segment_length_tl" type="tlong" indexed="true" stored="true"/>
     <field name="segment_tags_ss" type="string" indexed="true" stored="true" multiValued="true"/>
     <field name="segment_asset_i" type="int" indexed="true" stored="true" />
-    <field name="segment_asset_name_s" type="text_general" indexed="true" stored="true" />
+    <field name="segment_asset_name_s" type="text_en_splitting" indexed="true" stored="true" />
 
     <!-- PARTY FIELDS -->
     <field name="party_pre_name_s" type="string" indexed="true" stored="true"/>
@@ -182,7 +182,7 @@
         "resourcename": From SolrCell request param resource.name
     -->
 
-   <field name="category" type="text_general" indexed="true" stored="true"/>
+   <field name="category" type="text_en_splitting" indexed="true" stored="true"/>
 
    <field name="url" type="string" indexed="true" stored="true"/>
 
@@ -193,12 +193,12 @@
         NOTE: This field is not indexed by default, since it is also copied to "text"
         using copyField below. This is to save space. Use this field for returning and
         highlighting document content. Use the "text" field to search the content. -->
-   <field name="content" type="text_general" indexed="false" stored="true" multiValued="true"/>
+   <field name="content" type="text_en_splitting" indexed="false" stored="true" multiValued="true"/>
 
 
    <!-- catchall field, containing all other searchable text fields (implemented
         via copyField further on in this schema  -->
-   <field name="text" type="text_general" indexed="true" stored="false" multiValued="true"/>
+   <field name="text" type="text_en_splitting" indexed="true" stored="false" multiValued="true"/>
 
    <!-- catchall text field that indexes tokens both normally and in reverse for efficient
         leading wildcard queries. -->
@@ -464,10 +464,10 @@
       <analyzer type="index">
         <tokenizer class="solr.StandardTokenizerFactory"/>
         <!-- in this example, we will only use synonyms at query time
-        <filter class="solr.SynonymFilterFactory" synonyms="index_synonyms.txt" ignoreCase="true" expand="false"/>
         -->
         <!-- Case insensitive stop word removal.
         -->
+        <filter class="solr.SynonymFilterFactory" synonyms="index_synonyms.txt" ignoreCase="true" expand="true"/>
         <filter class="solr.StopFilterFactory"
                 ignoreCase="true"
                 words="lang/stopwords_en.txt"
