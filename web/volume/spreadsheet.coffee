@@ -466,6 +466,8 @@ app.directive 'spreadsheet', [
                 v = ''
             when 'age'
               v = display.formatAge(v)
+          if info.metric.long 
+            cell.classList.add('white-space-pre')
           if v?
             cell.classList.remove('blank')
           else
