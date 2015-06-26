@@ -1,6 +1,6 @@
 #!/bin/bash
 echo "Loading config"
-source "../../load_configs.sh"
+source "`pwd`/`git rev-parse --show-cdup`/load_configs.sh"
 
 #
 PGHOST=${db[host]}

@@ -133,6 +133,10 @@
     <field name="citation_year_i" type="int" indexed="true" stored="true" />
     <field name="volume_has_excerpt_b" type="boolean" indexed="true" stored="true" />
     <field name="volume_has_sessions_b" type="boolean" indexed="true" stored="true" />
+    <field name="volume_tags_ss" type="string" indexed="true" stored="true" multiValued="true" omitNorms="false" />
+    <field name="volume_keywords_ss" type="string" indexed="true" stored="true" multiValued="true" omitNorms="false" />
+    <field name="volume_all_text_t" type="text_general" indexed="true" stored="true" />
+
 
     <!-- CONTAINER FIELDS -->
     <field name="container_id_i" type="int" indexed="true" stored="true"/>
