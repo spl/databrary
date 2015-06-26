@@ -104,7 +104,7 @@ object Indexer {
     Extract all of the parties from the DB
     */
     val sQLParties = sql"""
-      SELECT id, name, prename, affiliation FROM party
+      SELECT id, sortname AS name, prename, affiliation FROM party
     """.map(x => SQLParty(x)).list().apply()
 
     /*
