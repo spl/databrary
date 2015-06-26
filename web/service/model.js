@@ -875,14 +875,6 @@ app.factory('modelService', [
         });
     };
 
-    Record.prototype.save = function (data) {
-      var r = this;
-      return router.http(router.controllers.RecordApi.update, this.id, data)
-        .then(function (res) {
-          return r.update(res.data);
-        });
-    };
-
     Record.prototype.remove = function () {
       var r = this;
       return router.http(router.controllers.deleteRecord, this.id)
