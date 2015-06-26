@@ -388,6 +388,7 @@ app.factory('modelService', [
       body: true,
       doi: true,
       creation: true,
+      owners: true,
       citation: false,
       links: false,
       funding: false,

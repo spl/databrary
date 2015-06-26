@@ -113,7 +113,7 @@ app.provider('routerService', [
           'modelService', 'constantService',
           function (models, constants) {
             if (constants.sandbox) return; else
-            return models.Volume.get(9, ['access'])
+            return models.Volume.get(9)
               .catch(function() {
                 return {};
               });

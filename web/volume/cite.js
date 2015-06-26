@@ -4,39 +4,28 @@ app.directive('citeVolume', [
   'constantService', 'routerService', '$location',
   function (constants, router, $location) {
     var link = function ($scope) {
-      var authors = '';
-      var ai = 0;
       var volume = $scope.volume;
-      var access = volume.access && volume.access[ai];
 
-      function initial(p) {
-        if (p)
-          authors += p.charAt(0) + '.';
-      }
+      var authors = _.map(volume.owners, function (owner) {
+        var author;
 
-      while (access) {
-        var next = volume.access[++ai];
-        if (next && (next.individual || 0) < constants.permission.ADMIN)
-          next = undefined;
-
-        if (authors !== '') {
-          authors += ', ';
-          if (!next)
-            authors += ' & ';
+        var i = owner.lastIndexOf(', '); // could equally incorrectly be indexOf
+        if (i < 0)
+          author = owner;
+        else {
+          i += 2;
+          author = owner.substr(0, i);
+          do {
+            while (owner.charAt(i) == ' ')
+              i++;
+            author += owner.charAt(i) + '.';
+          } while ((i = owner.indexOf(' ', i)+1) > 0);
         }
+        return author;
+      });
 
-        var parts = access.party.name.split(' ');
-        authors += parts.pop();
-
-        if (parts.length) {
-          authors += ', ';
-          parts.forEach(initial);
-        }
-
-        access = next;
-      }
-
-      $scope.authors = authors;
+      authors.push(authors.splice(-2, 2).join(' & '));
+      $scope.authors = authors.join(', ');
       $scope.today = new Date();
       $scope.permalink = (volume.doi ? 'doi:' + volume.doi : $location.absUrl());
     };
