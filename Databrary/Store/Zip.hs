@@ -30,7 +30,6 @@ import System.IO (withBinaryFile, IOMode(ReadMode, WriteMode))
 import System.IO.Error (mkIOError, eofErrorType)
 import System.Posix.Directory.Foreign (dtDir, dtReg)
 import System.Posix.Directory.Traversals (getDirectoryContents)
-import System.Posix.FilePath (addTrailingPathSeparator)
 import System.Posix.Files.ByteString (isDirectory, modificationTimeHiRes, fileSize)
 
 import Databrary.Ops
@@ -144,7 +143,7 @@ streamZip entries comment write = do
     <> B.word16LE (fromIntegral $ BS.length comment)
     <> B.byteString comment
   where
-  slash (ZipDirectory _) = addTrailingPathSeparator
+  slash (ZipDirectory _) p = BSC.snoc p '/'
   slash _ = id
   send :: (MonadState Word64 m, MonadIO m) => Int -> B.Builder -> m ()
   send l b = do
@@ -172,7 +171,7 @@ streamZip entries comment write = do
     let el = if64 size 20 0
     send (30 + BS.length path + fromIntegral el)
       $ B.word32LE 0x04034b50
-      <> zipVersion (size >= zip64Size)
+      <> zipVersion (size >= zip64Size || off >= zip64Size)
       <> zipFlags known
       <> B.word16LE 0 -- compression
       <> zipTime time
