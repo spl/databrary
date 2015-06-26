@@ -3,15 +3,17 @@ package org.databrary.search
 import java.io.{File, PrintWriter}
 
 import org.joda.time.{DateTimeZone, Duration, DateTime}
-import org.json4s.NoTypeHints
+import org.json4s.{JsonAST, NoTypeHints}
 import org.json4s.native.Serialization
 import org.json4s.native.Serialization.{read, write}
+import org.json4s.JsonDSL._
 
 
 /**
  * Converts the databrary postgresql database into a JSON file that can be indexed by solr using our schema.xml.
  */
 object Indexer {
+
   import scalikejdbc._
 
 
@@ -55,6 +57,11 @@ object Indexer {
     object SQLVolume extends SQLSyntaxSupport[SQLVolume] {
       def apply(rs: WrappedResultSet): SQLVolume = new SQLVolume(
         rs.long("id"), rs.string("name"), rs.string("body"), rs.string("alias"), rs.stringOpt("citation"), rs.intOpt("year"), rs.stringOpt("url"))
+    }
+
+    object SQLVolumeText extends SQLSyntaxSupport[SQLVolumeText] {
+      def apply(rs: WrappedResultSet): SQLVolumeText = new SQLVolumeText(
+        rs.long("volume"), rs.string("text"))
     }
 
     object SQLRecord extends SQLSyntaxSupport[SQLRecord] {
@@ -120,9 +127,9 @@ object Indexer {
     /*
     Set whether or not this volume actually contains sessions... going to make this public sessions
     */
-    sQLContainers.values.map{
+    sQLContainers.values.map {
       x =>
-        if(x.release.getOrElse("") == "EXCERPTS")
+        if (x.release.getOrElse("") == "EXCERPTS")
           sQLVolumes(x.volumeId).hasSessions = true
     }
 
@@ -165,13 +172,25 @@ object Indexer {
               WHERE container.id = slot_record.container AND record.id = slot_record.record
               AND measure_date.record = record.id
               """.map(x => SQLRecord(x)).list().apply().filter(x => sQLContainerVolumeLookup(x.containerId).volumeId > 0)
-              .groupBy(x => x.containerId).map(x => x._1 -> x._2)
+      .groupBy(x => x.containerId).map(x => x._1 -> x._2)
     //
     //    // We now want to go a step further and get all of the segments, i.e., all of the records/measures
 
     val sQLSegmentTags = sql"""
       SELECT container, segment, tag.name AS tag FROM tag_use, tag WHERE tag = id
       """.map(x => SQLSegmentTag(x)).list().apply().filter(x => x.volumeId > 0)
+    sQLSegmentTags.groupBy(x => x.volumeId).map(x => x._1 -> x._2.map(y => y.tags.getOrElse(""))).map(x => sQLVolumes(x._1).tags = x._2)
+
+    val sQLSegmentKeywords = sql"""
+      SELECT container, segment, tag.name AS tag FROM keyword_use, tag WHERE tag = id
+      """.map(x => SQLSegmentTag(x)).list().apply().filter(x => x.volumeId > 0)
+    sQLSegmentKeywords.groupBy(x => x.volumeId).map(x => x._1 -> x._2.map(y => y.tags.getOrElse(""))).map(x => sQLVolumes(x._1).keywords = x._2)
+
+    val sQLVolumeText = sql"""
+      SELECT volume, text FROM volume_text
+      """.map(x => SQLVolumeText(x)).list().apply().groupBy(x => x.volumeId).map(x => x._1 -> x._2.map(y => y.Text).mkString(" "))
+
+    sQLVolumeText.map(x => if(sQLVolumes.keySet contains x._1) sQLVolumes(x._1).allText = x._2)
 
     // This will get all of the public measures
     val sQLSegmentRecords = sql"""
@@ -186,7 +205,7 @@ object Indexer {
          FROM slot_record, measure as measure_all, metric
          WHERE measure_all.record = slot_record.record AND measure_all.metric = metric.id AND metric.name = 'birthdate'
        """.map(x => SQLSegmentRecord(x)).list().apply().map { x =>
-      if(sQLContainers.contains(x.containerId)) {
+      if (sQLContainers.contains(x.containerId)) {
         sQLContainers(x.containerId).age =
           if (sQLContainers(x.containerId).date.isDefined && x.datum.isDefined && x.metric == "birthdate")
             Some(new Duration(new DateTime(x.datum.get), sQLContainers(x.containerId).date.get).getStandardDays)
@@ -208,9 +227,9 @@ object Indexer {
     /*
       Go through and mark containers and volumes that have excerpts as having them
     */
-    sQLSegmentAssets.map{
+    sQLSegmentAssets.map {
       x =>
-        if(x.isExcerpt && sQLContainers.contains(x.containerId)) {
+        if (x.isExcerpt && sQLContainers.contains(x.containerId)) {
           val c = sQLContainers(x.containerId.toInt)
           c.hasExcerpt = true // Gross :(
           sQLContainerVolumeLookup(x.containerId.toInt).hasExcerpt = true
@@ -247,7 +266,11 @@ object Indexer {
     new JsonDocument(content_type = ContentTypes.VOLUME, volume_id_i = Some(vol.volumeId.toInt),
       abs_t = Some(vol.abs), title_t = Some(vol.title), alias_s = Some(vol.alias), citation_t = vol.cite,
       citation_url_s = vol.citeUrl, citation_year_i = vol.citeYear, volume_has_excerpt_b = Some(vol.hasExcerpt),
-      volume_has_sessions_b = Some(vol.hasSessions)
+      volume_has_sessions_b = Some(vol.hasSessions),
+      volume_keywords_ss = if(vol.keywords != null) Some(("boost" -> 3.0 ) ~ ("value" -> Option(vol.keywords))) else None,
+      volume_tags_ss = if(vol.tags != null) Some(("boost" -> 2.0 ) ~ ("value" -> Option(vol.tags))) else None,
+      volume_all_text_t = Option(vol.allText)
+
     )
   }
 
@@ -295,25 +318,33 @@ object Indexer {
 
   case class Sentence(volId: Long, text: Option[String])
 
-  case class SQLVolume(volumeId:Long, title:String="", abs:String="", alias:String="", cite:Option[String]=None,
-                       citeYear:Option[Int]=None, citeUrl:Option[String]=None, var hasExcerpt:Boolean=false, var hasSessions:Boolean=false)
+  case class SQLVolume(volumeId: Long, title: String = "", abs: String = "", alias: String = "", cite: Option[String] = None,
+                       citeYear: Option[Int] = None, citeUrl: Option[String] = None,
+                       var hasExcerpt: Boolean = false,
+                       var hasSessions: Boolean = false,
+                       var tags: Seq[String] = null,
+                       var keywords: Seq[String] = null,
+                       var allText: String = "")
 
-  case class Volume(volumeId:Long, title:String, abs:String, alias:String, containers:Seq[Container], var hasExcerpt:Boolean=false, var hasSessions:Boolean=false)
+  case class Volume(volumeId: Long, title: String, abs: String, alias: String, containers: Seq[Container], var hasExcerpt: Boolean = false, var hasSessions: Boolean = false)
 
-  case class SQLContainer(containerId:Long, volumeId:Long, name:String, date:Option[DateTime]=None, release:Option[String]=None, var age:Option[Double]=None, var hasExcerpt:Boolean=false)
+  case class SQLContainer(containerId: Long, volumeId: Long, name: String, date: Option[DateTime] = None, release: Option[String] = None, var age: Option[Double] = None, var hasExcerpt: Boolean = false)
 
-  case class Container(containerId: Long, volumeId: Long, name: String, date: Option[DateTime], release:Option[String], records: Seq[Record], hasExcerpt: Boolean)
+  case class Container(containerId: Long, volumeId: Long, name: String, date: Option[DateTime], release: Option[String], records: Seq[Record], hasExcerpt: Boolean)
 
-  case class SQLRecord(recordId:Long, containerId:Long, date:Option[DateTime], age:Option[Duration])
-  case class Record(recordId:Long, containerId:Long, date:Option[DateTime], age:Option[Duration])
+  case class SQLRecord(recordId: Long, containerId: Long, date: Option[DateTime], age: Option[Duration])
 
-  case class SQLExcerpt(assetId:Long, segment:String, release:Option[String])
-  case class Excerpt(assetId:Long, segment:String, release:Option[String])
+  case class Record(recordId: Long, containerId: Long, date: Option[DateTime], age: Option[Duration])
 
+  case class SQLExcerpt(assetId: Long, segment: String, release: Option[String])
 
-  case class SQLSegmentTag(volumeId:Long, containerId:Long, segment:String, tags:Option[String])
+  case class Excerpt(assetId: Long, segment: String, release: Option[String])
 
-  case class SQLSegmentRecord(volumeId:Long, containerId:Long, segment:String, record:Long, metric:String, datum:Option[String])
+  case class SQLVolumeText(volumeId: Long, Text: String)
+
+  case class SQLSegmentTag(volumeId: Long, containerId: Long, segment: String, tags: Option[String])
+
+  case class SQLSegmentRecord(volumeId: Long, containerId: Long, segment: String, record: Long, metric: String, datum: Option[String])
 
   case class SQLSegmentRelease(volumeId: Long, containerId: Long, segment: String, release: String)
 
@@ -360,6 +391,9 @@ object Indexer {
                           volume_id_i: Option[Int] = None,
                           volume_has_excerpt_b: Option[Boolean] = None,
                           volume_has_sessions_b: Option[Boolean] = None,
+                          volume_keywords_ss: Option[JsonAST.JObject] = None,
+                          volume_tags_ss: Option[JsonAST.JObject] = None,
+                          volume_all_text_t: Option[String] = None,
                           alias_s: Option[String] = None,
                           title_t: Option[String] = None,
                           abs_t: Option[String] = None,
@@ -405,4 +439,5 @@ object Indexer {
     val SEGMENT_RELEASE = "segment_release"
     val PARTY = "party"
   }
+
 }
