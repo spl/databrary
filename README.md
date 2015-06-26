@@ -41,8 +41,15 @@ And finally we build databrary!
     ./dev
 
 The first time you run it'll but the DB indexes. Once it is finished with those run ./dev again.
-
 If schemabrary fails to build change db.host in databrary.conf to "localhost".
+Now we have to load the DB image into the database.
+
+    ./runsql restore $DBFILE
+
+Once the database is populated we need to build the solr index and load that.
+
+    bash solr/scripts/setup_solr.sh
+
 
 ### Postgres
 

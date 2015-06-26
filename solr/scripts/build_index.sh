@@ -1,5 +1,6 @@
 #!/bin/bash
 echo "Loading config"
+indexer_dir="`pwd`/`git rev-parse --show-cdup`/solr/indexer"
 source "`pwd`/`git rev-parse --show-cdup`/load_configs.sh"
 
 #
@@ -15,7 +16,7 @@ PGPW=${db[pass]}
 SOLRHOST=${solr[host]}
 SOLRPORT=${solr[port]}
 
-cd ../indexer/
+cd $indexer_dir
 
 # Run the actual indexer
 echo "Compiling and running indexer with host:$PGHOST:$PGPORT using $PGUSER@$PGDB"
