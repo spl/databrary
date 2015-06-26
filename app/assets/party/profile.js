@@ -90,31 +90,54 @@ app.controller('party/profile', [
 
     };
 
+    var getParents = function(parents) {
+      var tempParents = [];
+      _.each(parents, function(p){
+        if(p.member){
+          var v = [];
+          var thing = {
+            p: p,
+            v: v
+          };
+          tempParents.push(thing);
+        }
+      });
+      return tempParents;
+    };
+
     var getVolumes = function(volumes) {
       var tempVolumes = {};
       tempVolumes.individual = [];
       tempVolumes.collaborator = [];
-      tempVolumes.inherited = [];
+
+      tempVolumes.inherited = getParents(party.parents);
 
       _.each(volumes, function(v){
         if(v.isIndividual){
           tempVolumes.individual.push(v); 
-	} else if(tempVolumes.isCollaborator){
+        } else if(tempVolumes.isCollaborator){
           tempVolumes.collaborator.push(v); 
-	} else{
-          tempVolumes.inherited.push(v); 
-	}
+        } else{
+          for (var i=0;i<v.access.length;i++){
+            for (var j=0;j<tempVolumes.inherited.length;j++){
+              if (v.access[i].children && v.access[i].party.id === tempVolumes.inherited[j].p.party.id){
+                tempVolumes.inherited[j].v.push(v);
+                break;
+              }
+            }
+          }
+        }
       });
       return tempVolumes;
     };
 
     $scope.party = party;
     $scope.volumes = getVolumes(party.volumes);
-    console.log(party.volumes);
     $scope.users = getUsers(party.volumes);  
-    console.log($scope.users);
     $scope.page = page;
     $scope.profile = page.$location.path() === '/profile';
     display.title = party.name;
+
+    console.log($scope.volumes.inherited);
   }
 ]);

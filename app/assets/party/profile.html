@@ -16,13 +16,28 @@
     </div>
 
     <section id="related-volumes" class="col-desktop-8 col-tablet-6 col-mobile-6">
-      <h3>Data owner volumes</h3>
-      <h3>Collaborator volumes</h3>
-      <h3>
-        <span>Inherited volumes from </span>
-        <span>_YOURPI_</span>
-        <span> (read-write access)</span>
-      </h3>
+      <div ng-if="::volumes.individual.length > 0">
+        <h3>Data owner volumes</h3>
+        <ul>
+          <li ng-repeat="vi in volumes.individual" ng-bind="vi.alias"></li>
+        </ul>
+      </div>
+      <div ng-if="::volumes.collaborator.length > 0">
+        <h3>Collaborator volumes</h3>
+        <ul>
+          <li ng-repeat="vc in volumes.collaborator" ng-bind="vc.alias"></li>
+        </ul>  
+      </div>
+      <div ng-repeat="vin in volumes.inherited">    
+        <h3>
+          <span>Inherited volumes from </span>
+          <span ng-bind="::vin['p'].party.name"></span>
+          <span ng-bind="'('+ page.constants.permission[vin['p'].party.member] + ')'"></span>
+        </h3>
+        <ul>
+          <li ng-repeat="vin_ in vin['v']" ng-bind="vin_.alias"></li>
+        </ul>
+      </div>         
     </section>
 
     <section id="related-people" class="col-desktop-7 col-tablet-3 col-mobile-6">
