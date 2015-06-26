@@ -31,7 +31,8 @@
             <li ng-repeat="result in volumeResults.docs">
               <!-- This is where we return what we want-->
               <a ng-href="volume/{{result.volume_id_i}}">{{result.title_t}}</a><br>
-              <span ng-bind="formVolumeResult(result)"></span>
+              <span ng-bind="formVolumeResult(result)"></span><br>
+              Keywords: <span ng-repeat="k in result.volume_keywords_ss">{{k + ", "}}</span>
             </li>
           </ul>
         </span>
