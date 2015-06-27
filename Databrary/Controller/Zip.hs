@@ -10,6 +10,7 @@ import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy as BSL
 import Data.Function (on)
 import Data.List (groupBy)
+import Data.Maybe (fromJust)
 import Data.Monoid ((<>))
 import qualified Data.Text.Encoding as TE
 import Network.HTTP.Types (hContentType, hCacheControl)
@@ -47,10 +48,8 @@ assetZipEntry AssetSlot{ slotAsset = a } = do
   return ZipEntry
     { zipEntryName = makeFilename (assetDownloadName a) `addFormatExtension` assetFormat a
     , zipEntryTime = Nothing
-    , zipEntryCRC32 = Nothing
-    , zipEntrySize = fromIntegral <$> assetSize a
     , zipEntryComment = BSL.toStrict $ BSB.toLazyByteString $ actionURL (Just req) viewAsset (HTML, assetId a) []
-    , zipEntryContent = ZipEntryFile f
+    , zipEntryContent = ZipEntryFile (fromIntegral $ fromJust $ assetSize a) f
     }
 
 containerZipEntry :: Container -> [AssetSlot] -> AuthActionM ZipEntry
@@ -60,8 +59,6 @@ containerZipEntry c l = do
   return ZipEntry
     { zipEntryName = makeFilename (containerDownloadName c)
     , zipEntryTime = Nothing
-    , zipEntryCRC32 = Nothing
-    , zipEntrySize = Nothing
     , zipEntryComment = BSL.toStrict $ BSB.toLazyByteString $ actionURL (Just req) viewContainer (HTML, (Nothing, containerId c)) []
     , zipEntryContent = ZipDirectory a
     }
@@ -73,8 +70,6 @@ volumeZipEntry v al = do
   return ZipEntry
     { zipEntryName = makeFilename (volumeDownloadName v)
     , zipEntryTime = Nothing
-    , zipEntryCRC32 = Nothing
-    , zipEntrySize = Nothing
     , zipEntryComment = BSL.toStrict $ BSB.toLazyByteString $ actionURL (Just req) viewVolume (HTML, volumeId v) []
     , zipEntryContent = ZipDirectory c
     }
