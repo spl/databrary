@@ -1,6 +1,6 @@
 <p ng-if="::page.$location.path() === page.router.profile()">
   <span>Showing volumes by internal short name.</span>&nbsp;
-  <a ng-href="{{::page.router.party(party.id)}}">(See full titles and descriptions instead)</a>
+  <a ng-href="{{::page.router.party(party.id)}}">(See full titles and descriptions instead)</a><br>
 </p>
 <p ng-if="::page.$location.path() === page.router.party(page.models.Login.user.id)">
   <span>Showing volumes by full title and description.</span>&nbsp;

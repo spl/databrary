@@ -147,7 +147,10 @@ app.factory('modelService', [
     Party.prototype.init = function (init) {
       Model.prototype.init.call(this, init);
       if ('volumes' in init)
-        this.volumes = volumeMakeSubArray(init.volumes);
+        this.volumes = // profile only returns volumes, not access...
+          (init.volumes.length && 'volume' in init.volumes[0]) ?
+          volumeMakeSubArray(init.volumes) :
+          volumeMakeArray(init.volumes);
       if ('parents' in init)
         this.parents = partyMakeSubArray(init.parents);
       if ('children' in init)
@@ -438,6 +441,12 @@ app.factory('modelService', [
     function volumeMake(init) {
       var v = Volume.cache.get(init.id);
       return v ? v.update(init) : Volume.poke(new Volume(init));
+    }
+
+    function volumeMakeArray(l) {
+      for (var i = 0; i < l.length; i ++)
+        l[i] = volumeMake(l[i]);
+      return l;
     }
 
     function volumeMakeSubArray(l) {
