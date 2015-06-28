@@ -13,7 +13,7 @@ import Data.List (groupBy)
 import Data.Maybe (fromJust)
 import Data.Monoid ((<>))
 import qualified Data.Text.Encoding as TE
-import Network.HTTP.Types (hContentType, hCacheControl)
+import Network.HTTP.Types (hContentType, hCacheControl, hContentLength)
 import System.Posix.FilePath ((<.>))
 
 import Databrary.Ops
@@ -84,16 +84,18 @@ zipResponse :: BS.ByteString -> [ZipEntry] -> AuthAction
 zipResponse n z = do
   req <- peek
   u <- peek
-  okResponse 
+  let comment = BSL.toStrict $ BSB.toLazyByteString
+        $ BSB.string7 "Downloaded by " <> TE.encodeUtf8Builder (partyName u) <> BSB.string7 " <" <> actionURL (Just req) viewParty (HTML, TargetParty $ partyId u) [] <> BSB.char7 '>'
+  okResponse
     [ (hContentType, "application/zip")
     , ("content-disposition", "attachment; filename=" <> quoteHTTP (n <.> "zip"))
     , (hCacheControl, "max-age=31556926, private")
-    ] (streamZip z $ BSL.toStrict $ BSB.toLazyByteString
-      $ BSB.string7 "Downloaded by " <> TE.encodeUtf8Builder (partyName u) <> BSB.string7 " <" <> actionURL (Just req) viewParty (HTML, TargetParty $ partyId u) [] <> BSB.char7 '>')
+    , (hContentLength, BSC.pack $ show $ sizeZip z + fromIntegral (BS.length comment))
+    ] (streamZip z comment)
 
 zipEmpty :: ZipEntry -> Bool
-zipEmpty ZipEntry{ zipEntryContent = ZipDirectory l } = any zipEmpty l
-zipEmpty _ = True
+zipEmpty ZipEntry{ zipEntryContent = ZipDirectory l } = all zipEmpty l
+zipEmpty _ = False
 
 zipContainer :: AppRoute (Maybe (Id Volume), Id Slot)
 zipContainer = action GET (pathMaybe pathId </> pathSlotId </< "zip") $ \(vi, ci) -> withAuth $ do

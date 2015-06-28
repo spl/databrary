@@ -3,6 +3,7 @@ module Databrary.Store.Zip
   ( ZipEntryContent(..)
   , ZipEntry(..)
   , blankZipEntry
+  , sizeZip
   , streamZip
   , writeZipFile
   , fileZipEntry
@@ -10,9 +11,9 @@ module Databrary.Store.Zip
 
 import Control.Monad (when)
 import Control.Monad.IO.Class (MonadIO, liftIO)
-import Control.Monad.RWS.Strict (RWST, runRWST, ask, local, tell)
+import Control.Monad.RWS.Strict (RWST, execRWST, ask, local, tell)
 import Control.Monad.State.Class (MonadState, get, modify')
-import Control.Monad.State.Strict (runStateT)
+import Control.Monad.State.Strict (execStateT)
 import Data.Bits (bit, shiftL, (.|.))
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as B
@@ -21,8 +22,9 @@ import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy as BSL
 import Data.Digest.CRC32 (crc32, crc32Update)
 import qualified Data.Foldable as Fold
+import Data.List (foldl')
 import Data.Maybe (isJust, fromMaybe)
-import Data.Monoid (Monoid, mempty, (<>))
+import Data.Monoid (Monoid(..), (<>))
 import Data.Time.Calendar (toGregorian)
 import Data.Time.Clock (UTCTime(..), getCurrentTime)
 import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
@@ -66,8 +68,10 @@ blankZipEntry = ZipEntry
 zip64Size :: Word64
 zip64Size = 0xffffffff
 
-if64 :: Word64 -> a -> a -> a
-if64 s t e = if s >= zip64Size then t else e
+infixr 1 ?=
+(?=) :: Num a => Bool -> a -> a
+True ?= x = x
+False ?= _ = 0
 
 zip64Ext :: B.Builder
 zip64Ext = B.word16LE 1
@@ -103,29 +107,65 @@ data ZipCEntry = ZipCEntry
   , zipCEntry :: !ZipEntry
   }
 
+data ZipSize = ZipSize
+  { zipSizeCount :: !Int
+  , zipSizeData, zipSizeDirectory :: !Word64
+  }
+
+instance Monoid ZipSize where
+  mempty = ZipSize 0 0 0
+  mappend (ZipSize a1 b1 c1) (ZipSize a2 b2 c2) = ZipSize (a1+a2) (b1+b2) (c1+c2)
+  mconcat l = ZipSize (sum $ map zipSizeCount l) (sum $ map zipSizeData l) (sum $ map zipSizeDirectory l) 
+
+sizeZip :: [ZipEntry] -> Word64
+sizeZip entries = len + (z64 ?= 76) + 22 where
+  zsize = sizeZipEntries 0 mempty entries
+  len = zipSizeData zsize + zipSizeDirectory zsize
+  z64 = len >= zip64Size || zipSizeCount zsize >= 0xffff
+  slash (ZipDirectory _) = succ
+  slash _ = id
+  sizeZipEntries = foldl' . sizeZipEntry
+  sizeZipEntry path' zs ZipEntry{..} =
+    case zipEntryContent of
+      ZipDirectory l ->
+        sizeZipEntries path (header True 0) l
+      ZipEntryPure b ->
+        header True $ fromIntegral (BSL.length b)
+      ZipEntryFile size _ ->
+        header False size
+    where
+    path = slash zipEntryContent $ path' + fromIntegral (BS.length zipEntryName)
+    header known size = zs <> ZipSize 1
+      (30 + path + (if known then size64 ?= 20 else if size64 then 24 else 16) + size)
+      (46 + path + (size64 || off64 ?= 4 + (size64 ?= 16) + (off64 ?= 8)) + fromIntegral (BS.length zipEntryComment))
+      where size64 = size >= zip64Size
+    off64 = zipSizeData zs >= zip64Size
+
 streamZip :: [ZipEntry] -> BS.ByteString -> (B.Builder -> IO ()) -> IO ()
 streamZip entries comment write = do
   t <- getCurrentTime
-  ((), off, centries) <- runRWST (streamZipEntries entries) (BS.empty, t) 0
-  (z64s, csize) <- runStateT (mapM streamZipCEntry centries) 0
-  when (or z64s) $ write
+  (off, centries) <- execRWST (streamZipEntries entries) (BS.empty, t) 0
+  csize <- execStateT (mapM_ streamZipCEntry centries) 0
+  let len = off + csize
+      count = length centries
+  when (len >= zip64Size || count >= 0xffff) $ write
     $ B.word32LE 0x06064b50
     <> B.word64LE 44 -- length of this record
     <> B.word16LE 63
     <> zipVersion True
     <> B.word32LE 0 -- disk
     <> B.word32LE 0 -- central disk
-    <> twice (B.word64LE $ fromIntegral $ length centries)
+    <> twice (B.word64LE $ fromIntegral count)
     <> B.word64LE csize
     <> B.word64LE off
     <> B.word32LE 0x07064b50 -- locator:
     <> B.word32LE 0 -- central disk
-    <> B.word64LE (off + csize)
+    <> B.word64LE len
     <> B.word32LE 1 -- total disks
   write $ B.word32LE 0x06054b50
     <> B.word16LE 0 -- disk
     <> B.word16LE 0 -- central disk
-    <> twice (B.word16LE $ fromIntegral $ min 0xffff $ length centries)
+    <> twice (B.word16LE $ fromIntegral $ min 0xffff count)
     <> zipSize csize
     <> zipSize off
     <> B.word16LE (fromIntegral $ BS.length comment)
@@ -171,7 +211,7 @@ streamZip entries comment write = do
           known = isJust desc
           (c, s) = fromMaybe (0, 0) desc
           z64 = s >= zip64Size
-          el = if z64 then 20 else 0
+          el = z64 ?= 20
     case zipEntryContent of
       ZipDirectory l -> do
         header $ Just (0, 0)
@@ -197,9 +237,9 @@ streamZip entries comment write = do
             then B.word64LE else B.word32LE . fromIntegral) size)
         central False c size
   streamZipCEntry ZipCEntry{..} = do
-    let z64 = zipCEntrySize >= zip64Size || zipCEntryOffset >= zip64Size
-        e64 = if64 zipCEntrySize 16 0 + if64 zipCEntryOffset 8 0
-        el = if z64 then 4 + e64 else 0
+    let z64 = e64 /= 0
+        e64 = (zipCEntrySize >= zip64Size ?= 16) + (zipCEntryOffset >= zip64Size ?= 8)
+        el = z64 ?= 4 + e64
     send (fromIntegral $ 46 + BS.length zipCEntryPath + fromIntegral el + BS.length (zipEntryComment zipCEntry))
       $ B.word32LE 0x02014b50
       <> B.word16LE 63 -- version
@@ -218,10 +258,11 @@ streamZip entries comment write = do
       <> zipSize zipCEntryOffset
       <> B.byteString zipCEntryPath
       <> (if z64
-        then zip64Ext <> B.word16LE e64 <> if64 zipCEntrySize (twice (B.word64LE zipCEntrySize)) mempty <> if64 zipCEntryOffset (B.word64LE zipCEntryOffset) mempty
+        then zip64Ext <> B.word16LE e64
+          <> (if zipCEntrySize >= zip64Size then twice (B.word64LE zipCEntrySize) else mempty)
+          <> (if zipCEntryOffset >= zip64Size then B.word64LE zipCEntryOffset else mempty)
         else mempty)
       <> B.byteString (zipEntryComment zipCEntry)
-    return z64
 
 writeZipFile :: FilePath -> [ZipEntry] -> BS.ByteString -> IO ()
 writeZipFile f e c =
