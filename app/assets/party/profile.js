@@ -116,10 +116,10 @@ app.controller('party/profile', [
 
       _.each(volumes, function(v){
         if(v.isIndividual){
-          var tempObject = {v: v}; 
+          var tempObject = {v: [v]}; 
           tempVolumes.individual.push(tempObject); 
         } else if(tempVolumes.isCollaborator){
-          var tempObject = {v: v}; 
+          var tempObject = {v: [v]}; 
           tempVolumes.individual.push(tempObject); 
         } else{
           for (var i=0;i<v.access.length;i++){
