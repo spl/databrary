@@ -78,7 +78,7 @@ app.controller('party/profile', [
       unselectAll();
       var iterateVolume = function(_item, i, volumeArray){
         for(var j = 0; j < volumeArray[i].access.length; j += 1){
-          if(volumeArray[i].access[j] == user){
+          if (volumeArray[i].access[j] == user){
             volumeArray[i].access[j].isSelected = 'volumeSelected';
           }
         }

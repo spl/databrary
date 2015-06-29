@@ -31,25 +31,25 @@
       <div>
         <h4>Sponsors</h4>
         <ul>
-          <li ng-click="clickUser(sponsor)" ng-repeat="sponsor in users.sponsors" ng-bind="sponsor.party.name"></li>
+          <li ng-click="clickUser(sponsor)" ng-class="sponsor.isSelected" ng-repeat="sponsor in users.sponsors" ng-bind="sponsor.party.name"></li>
         </ul>
       </div>
       <div>
         <h4>Lab/Group members</h4>
         <ul>
-          <li ng-click="clickUser(member)" ng-repeat="member in users.labGroupMembers" ng-bind="member.party.name"></li>
+          <li ng-click="clickUser(member)" ng-class="member.isSelected" ng-repeat="member in users.labGroupMembers" ng-bind="member.party.name"></li>
         </ul>
       </div>
       <div>
         <h4>Non-group affiliates &amp; other collaborators</h4>
         <ul>
-          <li ng-click="clickUser(nonmember)" ng-repeat="nonmember in users.nonGroupAffiliates" ng-bind="nonmember.party.name"></li>
+          <li ng-click="clickUser(nonmember)" ng-class="nonmember.isSelected" ng-repeat="nonmember in users.nonGroupAffiliates" ng-bind="nonmember.party.name"></li>
         </ul>
       </div>
       <div>
         <h4>Other collaborators</h4>
         <ul>
-          <li ng-click="clickUser(collaber)" ng-repeat="collaber in users.otherCollaborators" ng-bind="collaber.party.name"></li>
+          <li ng-click="clickUser(collaber)" ng-class="collaber.isSelected" ng-repeat="collaber in users.otherCollaborators" ng-bind="collaber.party.name"></li>
         </ul>
       </div>
     </section>
