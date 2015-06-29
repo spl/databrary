@@ -80,7 +80,6 @@ app.controller('party/profile', [
         for(var j = 0; j < volumeArray[i].access.length; j += 1){
           if(volumeArray[i].access[j] == user){
             volumeArray[i].access[j].isSelected = 'volumeSelected';
-            return false; 
           }
         }
       };
