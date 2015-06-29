@@ -214,7 +214,7 @@ app.provider('routerService', [
       resolve: {
         party: [
           'modelService', function (models) {
-            return models.Login.user.get(['parents', 'children', 'volumes']);
+            return models.Login.user.get({parents:'', children:'', volumes:'access'});
           }
         ]
       },
@@ -270,7 +270,7 @@ app.provider('routerService', [
         volume: [
           'pageService', function (page) {
             if (!('id' in page.$route.current.params)) {
-              return page.models.Login.user.get({'parents':'authorization'})
+              return page.models.Login.user.get({parents:'authorization'})
                 .then(function () {
                   return undefined;
                 });

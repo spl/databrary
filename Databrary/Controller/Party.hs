@@ -79,12 +79,14 @@ partyJSONField p "children" _ =
     (if admin then authorizeJSON a else mempty) JSON..+ ("party" JSON..= partyJSON ap))
     <$> lookupAuthorizedChildren p admin
   where admin = view p >= PermissionADMIN
-partyJSONField p "volumes" _ = do
-  Just . JSON.toJSON . map volumeJSON
-    <$> lookupPartyVolumes p (succ PermissionNONE)
+partyJSONField p "volumes" o = (?$>) (view p >= PermissionADMIN) $
+  fmap JSON.toJSON . mapM vf =<< lookupPartyVolumes p (succ PermissionNONE)
+  where
+  vf v
+    | o == Just "access" = (volumeJSON v JSON..+) . ("access" JSON..=) . map volumeAccessPartyJSON <$> lookupVolumeAccess v (succ PermissionNONE)
+    | otherwise = return $ volumeJSON v
 partyJSONField p "access" ma = do
-  Just . JSON.toJSON . map (\va -> 
-    volumeAccessJSON va JSON..+ ("volume" JSON..= volumeJSON (volumeAccessVolume va)))
+  Just . JSON.toJSON . map volumeAccessVolumeJSON
     <$> lookupPartyVolumeAccess p (fromMaybe PermissionNONE $ readDBEnum . BSC.unpack =<< ma)
 partyJSONField p "authorization" _ = do
   Just . JSON.toJSON . accessSite <$> lookupAuthorization p rootParty

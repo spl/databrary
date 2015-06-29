@@ -8,6 +8,8 @@ module Databrary.Model.VolumeAccess
   , changeVolumeAccess
   , volumeAccessProvidesADMIN
   , volumeAccessJSON
+  , volumeAccessPartyJSON
+  , volumeAccessVolumeJSON
   , lookupVolumeActivity
   ) where
 
@@ -25,8 +27,8 @@ import Databrary.Model.Id.Types
 import Databrary.Model.Permission.Types
 import Databrary.Model.Identity.Types
 import Databrary.Model.Audit
-import Databrary.Model.Party.Types
-import Databrary.Model.Volume.Types
+import Databrary.Model.Party
+import Databrary.Model.Volume
 import Databrary.Model.Volume.SQL
 import Databrary.Model.VolumeAccess.Types
 import Databrary.Model.VolumeAccess.SQL
@@ -70,6 +72,12 @@ volumeAccessJSON VolumeAccess{..} = JSON.object $ catMaybes
   [ ("individual" JSON..= volumeAccessIndividual) <? (volumeAccessIndividual >= PermissionNONE)
   , ("children"   JSON..= volumeAccessChildren)   <? (volumeAccessChildren   >= PermissionNONE)
   ]
+
+volumeAccessPartyJSON :: VolumeAccess -> JSON.Object
+volumeAccessPartyJSON va@VolumeAccess{..} = volumeAccessJSON va JSON..+ ("party" JSON..= partyJSON volumeAccessParty)
+
+volumeAccessVolumeJSON :: VolumeAccess -> JSON.Object
+volumeAccessVolumeJSON va@VolumeAccess{..} = volumeAccessJSON va JSON..+ ("volume" JSON..= volumeJSON volumeAccessVolume)
 
 lookupVolumeActivity :: (MonadDB m, MonadHasIdentity c m) => Int -> m [(Timestamp, Volume)]
 lookupVolumeActivity limit = do
