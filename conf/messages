@@ -172,6 +172,8 @@ welcome.featured=Featured Volume
 party.overview.title=Overview
 party.contact.title=Contact
 
+profile.dashboard.title = Dashboard
+
 volumes.title=Volumes
 
 network.title=Authorizations
