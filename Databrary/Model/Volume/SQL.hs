@@ -7,35 +7,40 @@ module Databrary.Model.Volume.SQL
   ) where
 
 import Data.Maybe (fromMaybe)
+import qualified Data.Text as T
 import qualified Language.Haskell.TH as TH
 
 import Databrary.Model.Time
 import Databrary.Model.SQL.Select
+import Databrary.Model.Id.Types
 import Databrary.Model.Permission.Types
 import Databrary.Model.Audit.SQL
 import Databrary.Model.Volume.Types
 
-defaulting :: a -> (a -> b) -> Maybe a -> b
-defaulting d f = f . fromMaybe d
+parseOwner :: T.Text -> VolumeOwner
+parseOwner t = (Id $ read $ T.unpack i, T.tail n) where
+  (i, n) = T.breakOn ":" t
 
 setCreation :: (Timestamp -> a) -> Maybe Timestamp -> a
-setCreation = defaulting $ volumeCreation blankVolume
+setCreation = (. fromMaybe (volumeCreation blankVolume))
 
-setPermission :: (Permission -> a) -> Maybe Permission -> a
-setPermission = defaulting PermissionNONE
+makeVolume :: ([VolumeOwner] -> Permission -> a) -> Maybe [Maybe T.Text] -> Maybe Permission -> a
+makeVolume vol own perm = vol (maybe [] (map (parseOwner . fromMaybe (error "NULL volume.owner"))) own) (fromMaybe PermissionNONE perm)
 
 volumeRow :: Selector -- ^ @'Permission' -> 'Volume'@
 volumeRow = addSelects 'setCreation
-  (selectColumns 'Volume "volume" ["id", "name", "alias", "body"])
-  ["volume_creation(volume.id)"]
+  (selectColumns 'Volume "volume" ["id", "name", "alias", "body", "doi"])
+  [SelectExpr "volume_creation(volume.id)"] -- XXX explicit table references (throughout)
 
 selectVolume :: TH.Name -- ^ @'Identity'@
   -> Selector -- ^ @'Volume'@
-selectVolume i = selectJoin 'setPermission
+selectVolume i = selectJoin 'makeVolume
   [ volumeRow
+  , maybeJoinOn "volume.id = volume_owners.volume"
+    $ selector "volume_owners" $ SelectColumn "volume_owners" "owners"
   , joinOn "volume_permission.permission >= 'PUBLIC'::permission"
     $ selector ("LATERAL (VALUES (CASE WHEN ${identitySuperuser " ++ is ++ "} THEN enum_last(NULL::permission) ELSE volume_access_check(volume.id, ${view " ++ is ++ " :: Id Party}) END)) AS volume_permission (permission)")
-    "volume_permission.permission"
+    $ SelectColumn "volume_permission" "permission"
   ]
   where is = nameRef i
 

@@ -4,7 +4,7 @@ app.controller('volume/slot', [
   '$scope', '$location', '$sce', '$timeout', 'constantService', 'displayService', 'messageService', 'tooltipService', 'styleService', 'storageService', 'Offset', 'Segment', 'uploadService', 'routerService', 'slot', 'edit',
   ($scope, $location, $sce, $timeout, constants, display, messages, tooltips, styles, storage, Offset, Segment, uploads, router, slot, editing) ->
     display.title = slot.displayName
-    $scope.flowOptions = uploads.flowOptions
+    $scope.flowOptions = uploads.flowOptions()
     $scope.slot = slot
     $scope.volume = slot.volume
     $scope.editing = editing # $scope.editing (but not editing) is also a modal (toolbar) indicator
@@ -318,10 +318,8 @@ app.controller('volume/slot', [
     playerMinHeight = 200
     viewportMinHeight = 120
     playerHeight = parseInt(storage.get('player-height'), 10) || 400
-    ### jshint ignore:start ###
     unless playerHeight >= playerMinHeight
       playerHeight = playerMinHeight
-    ### jshint ignore:end ###
 
     playerImgHeightStyle = undefined
     playerVideoHeightStyle = undefined
@@ -411,14 +409,12 @@ app.controller('volume/slot', [
         # First, let's make a giant array of all the items we want to compare
         # times against.  Then let's extract all the times for the objects into
         # an even bigger array.
-        ### jshint ignore:start ###
         for i in $scope.assets.concat(records, $scope.consents) when i isnt this
           # We don't want to have the item snap to itself.
 
           # We want to have all the times that are finite in our array to compare against
           listOfAllPlacements.push i.lt if i.lt.defined
           listOfAllPlacements.push i.ut if i.ut.defined
-        ### jshint ignore:end ###
 
         # If there aren't any items in the timeline that we can snap to, let's just break
         # out and return the original time sent in.
@@ -521,10 +517,10 @@ app.controller('volume/slot', [
 
       setAsset: (@asset) ->
         @fillData()
-        if asset
-          @init(asset.segment)
-          @choose() if `asset.id == target.asset`
-          $scope.asset = asset if $scope.current == this
+        if @asset
+          @init(@asset.segment)
+          @choose() if `this.asset.id == target.asset`
+          $scope.asset = @asset if $scope.current == this
           @updateExcerpt()
         else
           @init(undefined)
@@ -581,7 +577,6 @@ app.controller('volume/slot', [
 
       save: ->
         return if @pending # sorry
-        $scope.form.edit.$setSubmitted()
         @pending = 1
         messages.clear(this)
         (if @file
@@ -592,7 +587,6 @@ app.controller('volume/slot', [
         ).then (asset) =>
             delete @pending
 
-            $scope.form.edit.$setUnsubmitted()
             first = !@asset
             @setAsset(asset)
 
@@ -614,7 +608,6 @@ app.controller('volume/slot', [
             return
           , (res) =>
             delete @pending
-            $scope.form.edit.$setUnsubmitted()
             messages.addError
               type: 'red'
               body: constants.message('asset.update.error', @name)
@@ -643,9 +636,7 @@ app.controller('volume/slot', [
           ).then (res) =>
             file.uniqueIdentifier = res.data
             file.resume()
-            ### jshint ignore:start ###
             @data.name ||= file.file.name
-            ### jshint ignore:end ###
             return
           , (res) =>
             messages.addError
@@ -662,7 +653,7 @@ app.controller('volume/slot', [
       error: (message) ->
         messages.addError
           type: 'red'
-          body: 'Error during ' + @name + ' upload: ' + message
+          body: constants.message('asset.upload.error', @name, message || 'unknown error')
           owner: this
         @file.cancel()
         delete @file
@@ -835,8 +826,11 @@ app.controller('volume/slot', [
       (!$scope.current?.file && $scope.current || $scope.addBlank()).upload(file) if editing
       return
 
-    $scope.fileSuccess = uploads.fileSuccess
-    $scope.fileProgress = uploads.fileProgress
+    $scope.fileSuccess = (file) ->
+      file.store.progress = 1
+      file.store.save()
+    $scope.fileProgress = (file) ->
+      file.store.progress = file.progress()
     $scope.fileError = (file, message) ->
       file.store.error(message)
 
@@ -884,40 +878,9 @@ app.controller('volume/slot', [
               owner: this
             return
 
-      ### jshint ignore:start #### fixed in jshint 2.5.7
       metrics: ->
         ident = constants.category[@record.category]?.ident || [constants.metricName.ID.id]
         (constants.metric[m] for m of @record.measures when !(+m in ident)).sort(byId)
-
-      addMetric = {id:'',name:'Add new value...'}
-      addOptions: ->
-        metrics = (metric for m, metric of constants.metric when !(m of @data.measures)).sort(byId)
-        metrics.unshift addMetric
-        metrics
-      ### jshint ignore:end ###
-
-      add: ->
-        @data.measures[@data.add] = '' if @data.add
-        @data.add = ''
-        @sortMetrics()
-        return
-
-      save: ->
-        messages.clear(this)
-        @record.save({measures:@data.measures}).then () =>
-            @fillData()
-            delete @dirty
-            if this == $scope.current
-              $scope.form.edit.$setPristine()
-              $scope.form.measures.$setPristine()
-            return
-          , (res) =>
-            messages.addError
-              type: 'red'
-              body: 'Error saving record'
-              report: res
-              owner: this
-            return
 
       rePosition: () ->
         $scope.editing = 'position'
@@ -1175,11 +1138,9 @@ app.controller('volume/slot', [
 
     ################################### Initialization
 
-    ### jshint ignore:start #### fixed in jshint 2.5.7
     $scope.tags = (new Tag(tag) for tagId, tag of slot.tags when (if editing then tag.keyword?.length else tag.coverage?.length))
     $scope.comments = (new Comment(comment) for comment in slot.comments)
     $scope.assets = (new Asset(asset) for assetId, asset of slot.assets)
-    ### jshint ignore:end ###
     Asset.sort()
     Excerpt.fill()
 

@@ -49,7 +49,7 @@ auditUpdate ident table sets wher =
 
 selectAuditActivity :: String -> Selector -- ^ @'Timestamp'@
 selectAuditActivity table =
-  selector ("audit." ++ table ++ " AS audit") "audit.audit_time"
+  selector ("audit." ++ table ++ " AS audit") (SelectColumn "audit" "audit_time")
 
 pairEq :: (String, String) -> String
 pairEq (c, v) = c ++ "=" ++ v

@@ -1,8 +1,8 @@
 'use strict';
 
 app.directive('ngForm', [
-  'pageService', '$animate',
-  function (page, $animate) {
+  '$route', '$timeout', '$animate', 'constantService', 'messageService',
+  function ($route, $timeout, $animate, constants, messages) {
     var pre = function ($scope, $element, $attrs) {
       var name = $attrs.name || $attrs.ngForm;
       var form = name && $scope.$eval(name);
@@ -72,34 +72,31 @@ app.directive('ngForm', [
       form.validators = {};
       form.validator = {
         server: function (res, replace) {
-          page.messages.clear(form);
+          messages.clear(form);
           if ($.isEmptyObject(res)) {
             res.data = {};
           } else if (!angular.isObject(res.data)) {
-            page.messages.addError({
-              body: page.constants.message('error.generic'),
+            messages.addError({
+              body: constants.message('error.generic'),
               report: res,
               owner: form
             });
             return;
           }
 
+          var errors = messages.foreachError(res.data);
           var name;
           for (name in form.validators) {
-            form.validators[name].server(res.data[name] || {}, replace);
+            form.validators[name].server(errors[name] || [], replace);
+            delete errors[name];
           }
 
-          for (name in res.data) {
-            if (form.validators[name]) {
-              form.validators[name].server(res.data[name], replace);
-            } else {
-              page.messages.add({
-                type: 'red',
-                body: Array.isArray(res.data[name]) ? res.data[name].join(', ') : res.data[name],
-                owner: form
-              });
-            }
-          }
+          for (name in errors)
+            messages.add({
+              type: 'red',
+              body: errors[name].join('; '),
+              owner: form
+            });
         },
 
         clearServer: function () {
@@ -131,14 +128,14 @@ app.directive('ngForm', [
       };
 
       form.resetAll = function (force, check) {
-        if (!(force || form.$pristine || confirm(page.constants.message('navigation.confirmation'))))
+        if (!(force || form.$pristine || confirm(constants.message('navigation.confirmation'))))
           return false;
         if (check)
           return true;
         var x = window.pageXOffset,
             y = window.pageYOffset;
-        page.$route.reload();
-        page.$timeout(function () {
+        $route.reload();
+        $timeout(function () {
           window.scrollTo(x, y);
         });
         return true;

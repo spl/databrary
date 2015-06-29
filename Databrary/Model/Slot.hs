@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, RecordWildCards, TemplateHaskell, QuasiQuotes #-}
+{-# LANGUAGE OverloadedStrings, RecordWildCards, ViewPatterns, TemplateHaskell, QuasiQuotes #-}
 module Databrary.Model.Slot
   ( module Databrary.Model.Slot.Types
   , lookupSlot

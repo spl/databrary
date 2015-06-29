@@ -8,6 +8,8 @@ module Databrary.Model.Metric.Types
   ) where
 
 import qualified Data.ByteString as BS
+import Data.Function (on)
+import Data.Ord (comparing)
 import qualified Data.Text as T
 import Language.Haskell.TH.Lift (deriveLiftMany)
 
@@ -37,6 +39,13 @@ data Metric = Metric
 
 instance Kinded Metric where
   kindOf _ = "metric"
+
+instance Eq Metric where
+  (==) = on (==) metricId
+  (/=) = on (/=) metricId
+
+instance Ord Metric where
+  compare = comparing metricId
 
 makeHasRec ''Metric ['metricId, 'metricRelease, 'metricType]
 deriveLiftMany [''MeasureType, ''Metric]

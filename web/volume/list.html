@@ -10,12 +10,8 @@
           <a ng-href="{{::volume.route()}}" ng-bind="::name(volume)"></a>
         </h1>
 
-        <div class="volume-list-investigators" ng-if="::volume.access && page.$location.path() !== '/profile'">
-          <ul class="inline-block comma">
-            <li ng-repeat="access in ::volume.access | filter:{individual: page.permission.ADMIN}">
-              <a ng-href="{{::access.party.route()}}" ng-bind="::access.party.name"></a>
-            </li>
-          </ul>
+        <div class="volume-list-investigators" ng-if="::page.$location.path() !== '/profile'">
+          <volume-owners></volume-owners>
           <span class="year" ng-if="::volume.citation && volume.citation.year" ng-bind="::' (' + volume.citation.year + ')'"></span>
         </div>
 

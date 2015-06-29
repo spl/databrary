@@ -4,7 +4,9 @@ module Databrary.Model.RecordCategory.Types
   , MonadHasRecordCategory
   ) where
 
+import Data.Function (on)
 import Data.Int (Int16)
+import Data.Ord (comparing)
 import qualified Data.Text as T
 import Language.Haskell.TH.Lift (deriveLift)
 
@@ -23,6 +25,13 @@ data RecordCategory = RecordCategory
 
 instance Kinded RecordCategory where
   kindOf _ = "category"
+
+instance Eq RecordCategory where
+  (==) = on (==) recordCategoryId
+  (/=) = on (/=) recordCategoryId
+
+instance Ord RecordCategory where
+  compare = comparing recordCategoryId
 
 makeHasRec ''RecordCategory ['recordCategoryId]
 deriveLift ''RecordCategory

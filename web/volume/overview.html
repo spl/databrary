@@ -17,13 +17,13 @@
         <a ng-if="::volume.checkPermission(page.permission.ADMIN)" ng-href="{{::volume.editRoute('access')}}"><button class="yellow icon edit"></button></a>
       </div>
 
-      <div ng-if="::!!volume.citation" frame frame-title="volume.citation.title" fold>
+      <div ng-if="::!!volume.citation" frame id="frame-citation" frame-title="volume.citation.title" fold>
         <p class="panel-overview-volume-citation">
           <span ng-bind="::volume.citation.head"></span>&nbsp;<a ng-if="::volume.citation.url" ng-href="{{::volume.citation.url | handle}}" ng-title="::volume.citation.title" target="_blank" message="link.link"></a>
         </p>
       </div>
 
-      <div frame frame-title="volume.body" fold>
+      <div frame id="frame-metadata" frame-title="volume.body" fold>
         <div class="description" ng-bind-html="::volume.body | format"></div>
 
         <div class="metadata">
@@ -51,7 +51,7 @@
         </div>
       </div>
 
-      <div class="panel-overview-volume-ref" ng-if="::volume.links.length" frame frame-title="volume.links" fold>
+      <div class="panel-overview-volume-ref" ng-if="::volume.links.length" frame id="frame-links" frame-title="volume.links" fold>
         <ul>
           <li ng-repeat="link in ::volume.links">
             <span ng-bind="::link.head"></span>
@@ -60,7 +60,7 @@
         </ul>
       </div>
 
-      <div frame frame-title="volume.link.title" fold>
+      <div frame id="frame-link" frame-title="volume.link.title" fold>
         <cite-volume class="panel-overview-volume-citation"></cite-volume>
       </div>
     </div>
@@ -68,20 +68,18 @@
 
   <div class="col-desktop-6 col-tablet-3 col-mobile-6">
     <img class="panel-overview-volume-thumb" ng-src="{{::volume.thumbRoute()}}">
-    <show-investigators title="volume.contributors.title" minlevel="ADMIN"></show-investigators>
+    <show-investigators investigators-title="contributors" minlevel="ADMIN"></show-investigators>
+    <show-investigators investigators-title="private" maxlevel="ADMIN" minlevel="READ"></show-investigators>
+    <show-investigators investigators-title="shared" maxlevel="READ"></show-investigators>
 
-    <show-investigators volume="volume" title="volume.private.title" maxlevel="ADMIN" minlevel="READ"></show-investigators>
-
-    <show-investigators volume="volume" title="volume.shared.title" maxlevel="READ"></show-investigators>
-
-    <div frame frame-title="volume.funding.title" fold>
+    <div frame id="frame-funding" frame-title="volume.funding.title" fold>
       <dl class="panel-overview-volume-funds" ng-repeat="funding in ::volume.funding">
         <dt ng-bind="::funding.funder.name"></dt>
         <dd ng-repeat="award in ::funding.awards" ng-bind="::award"></dd>
       </dl>
     </div>
 
-    <div frame frame-title="volume.reuse.title" fold ng-if="::(volume.consumers.length || volume.providers.length) > 0">
+    <div frame id="frame-reuse" frame-title="volume.reuse.title" fold ng-if="::(volume.consumers.length || volume.providers.length) > 0">
       <div class="row">
         <div class="col-desktop-6 col-tablet-3 col-mobile-6">
           <div ng-if="::volume.consumers.length">

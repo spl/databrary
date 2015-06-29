@@ -5,6 +5,7 @@ app.directive('frame', [
   function (constants) {
     var link =
       function ($scope, $element, $attrs) {
+        $scope.id = $attrs.id;
         $scope.title = constants.message($attrs.frameTitle);
       };
 

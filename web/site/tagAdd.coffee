@@ -1,8 +1,8 @@
 'use strict'
 
 app.directive 'tagAdd', [
-  'pageService',
-  (page) ->
+  '$sce', 'constantService', 'modelService', 'messageService',
+  ($sce, constants, models, messages) ->
     restrict: 'E'
     templateUrl: 'site/tagAdd.html'
     link: ($scope, $element, $attrs) ->
@@ -13,7 +13,8 @@ app.directive 'tagAdd', [
         $scope.vote(tag, true).then () -> ''
 
       form.search = (input) ->
-        page.models.Tag.search(input).then (data) ->
+        return input unless form.$valid
+        models.Tag.search(input).then (data) ->
             l = for tag in data
               text: tag
               select: select(tag)
@@ -24,8 +25,8 @@ app.directive 'tagAdd', [
                 default: true
             l
           , (res) ->
-            page.messages.addError
-              body: page.constants.message('tags.auto.error', {sce: page.$sce.HTML})
+            messages.addError
+              body: constants.message('tags.auto.error', {sce: $sce.HTML})
               report: res
             [
               text: input

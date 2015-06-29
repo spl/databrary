@@ -34,7 +34,7 @@ recordRow = fromMap ("record_measures AS " ++) $
   selectColumns 'makeRecord "record" ["id", "category", "measures"]
 
 selectVolumeRecord :: Selector -- ^ @'Volume' -> 'Record'@
-selectVolumeRecord = addSelects '($) recordRow ["record_release(record.id)"]
+selectVolumeRecord = addSelects '($) recordRow [SelectExpr "record_release(record.id)"] -- XXX explicit table reference (throughout)
 
 selectRecord :: TH.Name -- ^ @'Identity'@
   -> Selector -- ^ @'Record'@
@@ -63,7 +63,7 @@ insertRecord :: TH.Name -- ^ @'AuditIdentity'@
   -> TH.ExpQ -- ^ @'Record'@
 insertRecord ident r = auditInsert ident "record"
   (recordSets (nameRef r))
-  (Just $ selectOutput $ selectMap ((TH.VarE 'setRecordId `TH.AppE` TH.VarE r) `TH.AppE`) $ selector "record" "id")
+  (Just $ selectOutput $ selectMap ((TH.VarE 'setRecordId `TH.AppE` TH.VarE r) `TH.AppE`) $ selector "record" $ SelectColumn "record" "id")
 
 updateRecord :: TH.Name -- ^ @'AuditIdentity'@
   -> TH.Name -- ^ @'Record'@

@@ -41,7 +41,7 @@ deleteTagUse :: Bool -- ^ keyword
   -> TH.Name -- ^ @'TagUse'@
   -> TH.ExpQ
 deleteTagUse keyword o = makePGQuery simpleQueryFlags $
-  "DELETE FROM " ++ tagUseTable keyword ++ " WHERE tag = ${tagId $ useTag " ++ os ++ "} AND container = ${containerId $ slotContainer $ tagSlot " ++ os ++ "} AND segment <@ ${slotSegment $ tagSlot " ++ os ++ "}"
+  "DELETE FROM ONLY " ++ tagUseTable keyword ++ " WHERE tag = ${tagId $ useTag " ++ os ++ "} AND container = ${containerId $ slotContainer $ tagSlot " ++ os ++ "} AND segment <@ ${slotSegment $ tagSlot " ++ os ++ "}"
   ++ (if keyword then "" else " AND who = ${partyId $ accountParty $ tagWho " ++ os ++ "}")
   where os = nameRef o
 
@@ -53,7 +53,7 @@ selectTagGroup :: String -- ^ table name
 selectTagGroup name q make cols = selector
   ("(SELECT tag," ++ intercalate "," (map (\(a, s) -> s ++ " AS " ++ a) cols)
     ++ " FROM tag_use " ++ q ++ " GROUP BY tag) AS " ++ name)
-  $ OutputJoin False make $ map (OutputExpr . (name ++) . ('.' :) . fst) cols
+  $ OutputJoin False make $ map (SelectColumn name . fst) cols
 
 tagWeightColumns :: [(String, String)]
 tagWeightColumns =

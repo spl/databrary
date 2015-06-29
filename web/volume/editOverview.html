@@ -22,7 +22,7 @@
   </fieldset>
   <ng-form name="volumeEditOverviewForm.doi" ng-if="volumeEditOverviewForm.data.published===true"><fieldset>
     <validator name="citation.url" label="volume.edit.autodoi">
-      <input type="text" name="citation.url" ng-model="volumeEditOverviewForm.data.citation.url" placeholder="{{::'volume.edit.autodoi.placeholder' | message}}" ng-pattern="/^((doi:)?10\.[\.0-9]+|ftp:/|http:/|https:/)//">
+      <input type="text" name="citation.url" ng-model="volumeEditOverviewForm.data.citation.url" placeholder="{{::'volume.edit.autodoi.placeholder' | message}}" ng-pattern="/^((doi:|hdl:)?10\.[\.0-9]+|ftp:/|http:/|https:/)//">
     </validator>
     <div message="volume.edit.autodoi.instructions"></div>
     <button class="mini" ng-disabled="!page.constants.regex.doi.test(volumeEditOverviewForm.data.citation.url) || volumeEditOverviewForm.doi.$pristine" ng-click="volumeEditOverviewForm.autoDOI()" message="volume.edit.autodoi.lookup"></button>

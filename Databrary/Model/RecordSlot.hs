@@ -4,12 +4,15 @@ module Databrary.Model.RecordSlot
   , lookupRecordSlots
   , lookupSlotRecords
   , lookupContainerRecords
+  , lookupVolumeContainersRecords
   , lookupVolumeContainersRecordIds
   , moveRecordSlot
   , recordSlotJSON
   ) where
 
+import Control.Arrow (second)
 import Control.Monad (guard, liftM2)
+import Data.Function (on)
 import Data.Maybe (catMaybes)
 import qualified Database.PostgreSQL.Typed.Range as Range
 import Database.PostgreSQL.Typed.Types (PGTypeName(..))
@@ -23,7 +26,7 @@ import Databrary.Model.Permission
 import Databrary.Model.Audit
 import Databrary.Model.Volume.Types
 import Databrary.Model.Container.Types
-import Databrary.Model.Slot.Types
+import Databrary.Model.Slot
 import Databrary.Model.Metric
 import Databrary.Model.Record
 import Databrary.Model.Age
@@ -43,16 +46,15 @@ lookupSlotRecords (Slot c s) =
 lookupContainerRecords :: (MonadDB m) => Container -> m [RecordSlot]
 lookupContainerRecords = lookupSlotRecords . containerSlot
 
-groupSlotRecordIds :: [(Slot, Maybe (Id Record))] -> [(Container, [(Segment, Id Record)])]
-groupSlotRecordIds [] = []
-groupSlotRecordIds ((s, Nothing) : l) = (slotContainer s, []) : groupSlotRecordIds l
-groupSlotRecordIds (sr@(Slot{ slotContainer = c }, _) : (span ((containerId c ==) . containerId . slotContainer . fst) -> (cl, l))) =
-  (c, [ (s, r) | (Slot{ slotSegment = s }, Just r) <- sr : cl ]) : groupSlotRecordIds l
+lookupVolumeContainersRecords :: (MonadDB m) => Volume -> m [(Container, [RecordSlot])]
+lookupVolumeContainersRecords v =
+  map (second catMaybes) . groupTuplesBy ((==) `on` containerId) <$>
+    dbQuery (($ v) <$> $(selectQuery selectVolumeSlotMaybeRecord "WHERE container.volume = ${volumeId v} AND NOT container.top ORDER BY container.id, record.category NULLS FIRST, slot_record.segment"))
 
 lookupVolumeContainersRecordIds :: (MonadDB m) => Volume -> m [(Container, [(Segment, Id Record)])]
 lookupVolumeContainersRecordIds v =
-  groupSlotRecordIds <$>
-    dbQuery (($ v) <$> $(selectQuery selectVolumeSlotRecordId "$WHERE container.volume = ${volumeId v} ORDER BY container.id"))
+  map (second catMaybes) . groupTuplesBy ((==) `on` containerId) <$>
+    dbQuery (($ v) <$> $(selectQuery selectVolumeSlotMaybeRecordId "$WHERE container.volume = ${volumeId v} ORDER BY container.id, slot_record.segment"))
 
 moveRecordSlot :: (MonadAudit c m) => RecordSlot -> Segment -> m Bool
 moveRecordSlot rs@RecordSlot{ recordSlot = s@Slot{ slotSegment = src } } dst = do

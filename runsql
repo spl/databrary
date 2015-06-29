@@ -9,17 +9,14 @@ if [[ ! -f ${schema}.sql ]] ; then
 	exit 1
 fi
 
-if [[ ! -f ${top}local.conf ]] ; then
-	echo "${top}local.conf is missing.  See README."
-	if [[ -f $conf/local.conf ]] ; then
-		echo "Note: local.conf should be moved from $conf to $top."
-	fi
+if [[ ! -f ${top}databrary.conf ]] ; then
+	echo "${top}databrary.conf is missing.  See README."
 	exit 1
 fi
 
 getdbconfig () {
 	# This isn't perfect but hopefully good enough
-	sed -n '/^db\s*{/,/^}/{/^\s*\([a-z]\+\)\s*=\s*/{s//\1 /;s/^\([a-z]\+ \)"\(.*\)"$/\1\2/;s/\$(USER)/'"$USER"'/;p}}' ${top}databrary.conf ${top}local.conf
+	sed -n '/^db\s*{/,/^}/{/^\s*\([a-z]\+\)\s*=\s*/{s//\1 /;s/^\([a-z]\+ \)"\(.*\)"$/\1\2/;s/\$(USER)/'"$USER"'/;p}}' ${top}databrary.conf
 }
 
 declare -A db=([port]=5432)
@@ -78,7 +75,11 @@ EOF
 INSERT INTO schema (name) VALUES ('$1');
 EOF
 		fi
-		runsql $schema/$1.sql
+		if [[ $1 = *_root ]] ; then
+			runsql $schema/$1.sql -U ${db[super]:-postgres}
+		else
+			runsql $schema/$1.sql
+		fi
 	fi
 }
 

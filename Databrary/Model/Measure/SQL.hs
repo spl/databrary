@@ -16,7 +16,7 @@ setMeasureDatum :: Measure -> MeasureDatum -> Measure
 setMeasureDatum m d = m{ measureDatum = d }
 
 measureDatumRow :: Selector -- ^ @'MeasureDatum'@
-measureDatumRow = selector "measure" "measure.datum"
+measureDatumRow = selector "measure" $ SelectColumn "measure" "datum"
 
 measureKeys :: String -- ^ @'Measure'@
   -> [(String, String)]

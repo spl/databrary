@@ -10,12 +10,14 @@ Stability:           Experimental
 Category:            Web
 Tested-with:         GHC == 7.8.4
 Build-type:          Custom
-Cabal-version:       >=1.6
+Cabal-version:       >=1.20
 
 data-files:
   databrary.conf,
   messages.conf,
   schema/*.sql,
+  transctl.sh,
+  transcode,
   web/*.min.css,
   web/*.min.js,
   web/icons/*.ico,
@@ -52,6 +54,20 @@ Flag sandbox
 
 Executable schemabrary
   main-is: Databrary/Setup/DB.hs
+  default-language: Haskell2010
+  Build-depends:
+    base == 4.7.*,
+    bytestring >= 0.10,
+    transformers == 0.4.*,
+    transformers-base,
+    mtl >= 2.2.1,
+    template-haskell,
+    filepath,
+    directory,
+    configurator,
+    resource-pool,
+    network,
+    postgresql-typed == 0.4.0
 
 Executable databrary
   main-is: Databrary/Main.hs
@@ -60,11 +76,11 @@ Executable databrary
 
   Build-depends:
     base == 4.7.*,
-    bytestring,
+    bytestring >= 0.10,
     containers,
-    transformers,
+    transformers == 0.4.*,
     transformers-base,
-    mtl,
+    mtl >= 2.2.1,
     template-haskell,
     th-lift,
     th-lift-instances,
@@ -117,7 +133,8 @@ Executable databrary
   if flag(tls)
     Build-depends: warp-tls
 
-  Extensions: MultiParamTypeClasses, FlexibleContexts, FlexibleInstances, ScopedTypeVariables, ConstraintKinds, PatternGuards
+  default-language: Haskell2010
+  default-extensions: MultiParamTypeClasses, FlexibleContexts, FlexibleInstances, ScopedTypeVariables, ConstraintKinds, PatternGuards
 
   ghc-options: -threaded -Wall -fwarn-tabs -funbox-strict-fields
 

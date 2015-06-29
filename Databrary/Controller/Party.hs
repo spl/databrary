@@ -30,6 +30,7 @@ import Databrary.Model.Permission
 import Databrary.Model.Release
 import Databrary.Model.Identity
 import Databrary.Model.Party
+import Databrary.Model.ORCID
 import Databrary.Model.Authorize
 import Databrary.Model.Volume
 import Databrary.Model.VolumeAccess
@@ -62,14 +63,22 @@ getParty _ mi = do
   return u
 
 partyJSONField :: (MonadDB m, MonadHasIdentity c m) => Party -> BS.ByteString -> Maybe BS.ByteString -> m (Maybe JSON.Value)
-partyJSONField p "parents" _ =
-  Just . JSON.toJSON . map (\a ->
-    authorizeJSON a JSON..+ ("party" JSON..= partyJSON (authorizeParent (authorization a))))
-    <$> lookupAuthorizedParents p (view p >= PermissionADMIN)
+partyJSONField p "parents" o =
+  fmap (Just . JSON.toJSON) . mapM (\a -> do
+    let ap = authorizeParent (authorization a)
+    acc <- if access then Just . accessSite <$> lookupAuthorization ap rootParty else return Nothing
+    return $ (if admin then authorizeJSON a else mempty) JSON..+
+      ("party" JSON..= (partyJSON ap JSON..+? (("access" JSON..=) <$> acc))))
+    =<< lookupAuthorizedParents p admin
+  where
+  admin = view p >= PermissionADMIN
+  access = admin && o == Just "access"
 partyJSONField p "children" _ =
   Just . JSON.toJSON . map (\a ->
-    authorizeJSON a JSON..+ ("party" JSON..= partyJSON (authorizeChild (authorization a))))
-    <$> lookupAuthorizedChildren p (view p >= PermissionADMIN)
+    let ap = authorizeChild (authorization a) in
+    (if admin then authorizeJSON a else mempty) JSON..+ ("party" JSON..= partyJSON ap))
+    <$> lookupAuthorizedChildren p admin
+  where admin = view p >= PermissionADMIN
 partyJSONField p "volumes" ma = do
   Just . JSON.toJSON . map (\va -> 
     volumeAccessJSON va JSON..+ ("volume" JSON..= volumeJSON (volumeAccessVolume va)))
@@ -95,6 +104,7 @@ processParty api p = do
     csrfForm
     name <- "sortname" .:> (deformRequired =<< deform)
     prename <- "prename" .:> deformNonEmpty deform
+    orcid <- "orcid" .:> deformNonEmpty (deformRead blankORCID)
     affiliation <- "affiliation" .:> deformNonEmpty deform
     url <- "url" .:> deformNonEmpty deform
     avatar <- "avatar" .:>
@@ -106,6 +116,7 @@ processParty api p = do
     return ((fromMaybe blankParty p)
       { partySortName = name
       , partyPreName = prename
+      , partyORCID = orcid
       , partyAffiliation = affiliation
       , partyURL = url
       }, avatar)

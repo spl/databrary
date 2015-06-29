@@ -16,10 +16,11 @@ module Databrary.Controller.Asset
 
 import Control.Applicative ((<|>))
 import Control.Exception (try)
-import Control.Monad ((<=<), when, void)
+import Control.Monad ((<=<), when, void, guard)
 import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.Trans.Class (lift)
 import qualified Data.ByteString as BS
+import Data.Foldable as Fold
 import Data.Maybe (fromMaybe, isNothing, isJust, catMaybes, maybeToList)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -55,6 +56,8 @@ import Databrary.Store.Asset
 import Databrary.Store.Upload
 import Databrary.Store.Temp
 import Databrary.Store.AV
+import Databrary.Store.Transcode
+import Databrary.Store.Filename
 import Databrary.HTTP.Request
 import Databrary.HTTP.Form.Errors
 import Databrary.HTTP.Form.Deform
@@ -74,6 +77,8 @@ getAsset p i =
   checkPermission p =<< maybeAction =<< lookupAssetSlot i
 
 assetJSONField :: (MonadDB m, MonadHasIdentity c m) => AssetSlot -> BS.ByteString -> Maybe BS.ByteString -> m (Maybe JSON.Value)
+assetJSONField a "container" _ =
+  return $ JSON.toJSON . containerJSON . slotContainer <$> assetSlot a
 assetJSONField a "creation" _ | view a >= PermissionEDIT = do
   (t, n) <- assetCreation $ slotAsset a
   return $ Just $ JSON.toJSON $ JSON.object $ catMaybes
@@ -82,6 +87,8 @@ assetJSONField a "creation" _ | view a >= PermissionEDIT = do
     ]
 assetJSONField a "excerpts" _ =
   Just . JSON.toJSON . map excerptJSON <$> lookupAssetExcerpts a
+assetJSONField o "filename" _ =
+  return $ Just $ JSON.toJSON $ makeFilename $ assetDownloadName $ slotAsset o
 assetJSONField _ _ _ = return Nothing
 
 assetJSONQuery :: (MonadDB m, MonadHasIdentity c m) => AssetSlot -> JSON.Query -> m JSON.Object
@@ -167,10 +174,11 @@ processAsset api target = do
       "container" .:> (<|> slotContainer <$> s) <$> deformLookup "Container not found." (lookupVolumeContainer (assetVolume a))
       >>= Trav.mapM (\c -> "position" .:> do
         let seg = slotSegment <$> s
+            dur = maybe (assetDuration a) (avProbeLength <=< fileUploadProbe) up
         p <- (<|> (lowerBound . segmentRange =<< seg)) <$> deformNonEmpty deform
         Slot c . maybe fullSegment
-          (\l -> Segment $ Range.bounded l (l + fromMaybe 0 ((segmentLength =<< seg) <|> assetDuration a)))
-          <$> orElseM p (flatMapM (lift . findAssetContainerEnd) (isNothing s && isJust (assetDuration a) ?> c)))
+          (\l -> Segment $ Range.bounded l (l + fromMaybe 0 ((segmentLength =<< seg) <|> dur)))
+          <$> orElseM p (flatMapM (lift . findAssetContainerEnd) (isNothing s && isJust dur ?> c)))
     return
       ( as
         { slotAsset = a
@@ -185,20 +193,24 @@ processAsset api target = do
   as'' <- maybe (return as') (\up@FileUpload{ fileUploadFile = upfile } -> do
     a' <- addAsset (slotAsset as')
       { assetName = Just $ TE.decodeUtf8 $ fileUploadName upfile
+      , assetDuration = Nothing
+      , assetSize = Nothing
+      , assetSHA1 = Nothing
       } . Just =<< peeks (fileUploadPath upfile)
     fileUploadRemove upfile
     case target of
       AssetTargetAsset _ -> supersedeAsset a a'
       _ -> return ()
-    t <- Trav.mapM (addTranscode a' fullSegment defaultTranscodeOptions) (fileUploadProbe up)
-    -- TODO startTranscode
-    return as'
+    te <- peeks transcodeEnabled
+    t <- Trav.mapM (addTranscode a' fullSegment defaultTranscodeOptions) (guard te >> fileUploadProbe up)
+    Fold.mapM_ forkTranscode t
+    return $ fixAssetSlotDuration as'
       { slotAsset = (maybe a' transcodeAsset t)
         { assetName = assetName (slotAsset as')
         }
       })
     up'
-  changeAsset (slotAsset as'') Nothing
+  _ <- changeAsset (slotAsset as'') Nothing
   _ <- changeAssetSlot as''
   case api of
     JSON -> okResponse [] $ assetSlotJSON as''

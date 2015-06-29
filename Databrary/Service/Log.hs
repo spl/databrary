@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Databrary.Service.Log
   ( Logs
+  , MonadLog
   , initLogs
   , finiLogs
   , toLogStr
@@ -10,6 +11,7 @@ module Databrary.Service.Log
   ) where
 
 import Control.Applicative ((<$>), (<*>))
+import Control.Monad.IO.Class (MonadIO)
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.Configurator as C
 import qualified Data.Configurator.Types as C
@@ -18,6 +20,7 @@ import Data.Maybe (fromMaybe, catMaybes)
 import Data.Monoid ((<>))
 import Data.Time.Clock (getCurrentTime, diffUTCTime)
 import Data.Time.Format (formatTime)
+import Data.Time.LocalTime (ZonedTime, utcToLocalZonedTime)
 import qualified Data.Traversable as Trav
 import qualified Network.HTTP.Types as HTTP
 import qualified Network.Socket as Net
@@ -25,11 +28,14 @@ import qualified Network.Wai as Wai
 import System.Locale (defaultTimeLocale)
 import System.Log.FastLogger
 
+import Databrary.Has (MonadHas)
 import Databrary.Model.Time
 
 data Logs = Logs
   { loggerMessages, loggerAccess :: Maybe LoggerSet
   }
+
+type MonadLog c m = (MonadHas Logs c m, MonadIO m)
 
 initLog :: C.Config -> IO (Maybe LoggerSet)
 initLog conf = do
@@ -49,8 +55,8 @@ initLog conf = do
 
 initLogs :: C.Config -> IO Logs
 initLogs conf = Logs
-  <$> initLog (C.subconfig "access" conf)
-  <*> initLog (C.subconfig "messages" conf)
+  <$> initLog (C.subconfig "messages" conf)
+  <*> initLog (C.subconfig "access" conf)
 
 finiLogs :: Logs -> IO ()
 finiLogs (Logs lm la) =
@@ -73,7 +79,7 @@ pad n m
 quote :: Show a => Maybe a -> LogStr
 quote = maybe (char '-') (str . show) -- FIXME, inefficient
 
-time :: Timestamp -> LogStr
+time :: ZonedTime -> LogStr
 time = str . formatTime defaultTimeLocale "%F %X"
 
 infixr 6 &
@@ -81,7 +87,9 @@ infixr 6 &
 x & y = x <> char ' ' <> y
 
 logStr :: LoggerSet -> Timestamp -> LogStr -> IO ()
-logStr l t s = pushLogStr l $ time t & s <> char '\n'
+logStr l t s = do
+  zt <- utcToLocalZonedTime t
+  pushLogStr l $ time zt & s <> char '\n'
 
 requestLog :: Timestamp -> Wai.Request -> Wai.Response -> IO LogStr
 requestLog qt q r = do

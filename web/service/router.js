@@ -113,7 +113,7 @@ app.provider('routerService', [
           'modelService', 'constantService',
           function (models, constants) {
             if (constants.sandbox) return; else
-            return models.Volume.get(9, ['access'])
+            return models.Volume.get(9)
               .catch(function() {
                 return {};
               });
@@ -287,7 +287,7 @@ app.provider('routerService', [
 
             return checkPermission(page.$q,
               page.models.Volume.get(page.$route.current.params.id,
-                {access:'all', citation:'', links:'', top:'', funding:'', records:'', containers:'records', tags:'keyword'}),
+                {access:'', citation:'', links:'', top:'', funding:'', records:'', containers:'records', tags:'keyword'}),
               page.permission.EDIT)
               .then(function (volume) {
                 return volume.top.getSlot(volume.top.segment, ['assets'])
@@ -304,8 +304,6 @@ app.provider('routerService', [
     routes.volumeCreate = makeRoute(controllers.viewVolumeCreate, ['owner'], volumeEdit);
     routes.volumeEdit = makeRoute(controllers.viewVolumeEdit, ['id'], volumeEdit);
 
-    //
-
     routes.volume = makeRoute(controllers.viewVolume, ['id'], {
       controller: 'volume/view',
       templateUrl: 'volume/view.html',
@@ -313,14 +311,54 @@ app.provider('routerService', [
         volume: [
           'pageService', function (page) {
             return page.models.Volume.get(page.$route.current.params.id,
-              {access:'all', citation:'', links:'', funding:'', providers:'', consumers:'', top:'', tags:'', excerpts:'', comments:'', records:'', containers:'records', assets:'top'});
+              {access:'', citation:'', links:'', funding:'', providers:'', consumers:'', top:'', tags:'', excerpts:'', comments:'', records:'', containers:'records', assets:'top'});
           }
         ]
       },
       reloadOnSearch: false,
     });
 
-    //
+    routes.volumeZip = makeRoute(controllers.zipVolume, ['id'], {
+      controller: 'volume/zip',
+      templateUrl: 'volume/zip.html',
+      resolve: {
+        volume: [
+          'pageService', function (page) {
+            return page.models.Volume.get(page.$route.current.params.id, {containers:'assets'});
+          }
+        ],
+        slot: function() {
+        },
+      }
+    });
+
+    routes.volumeCSV = makeRoute(controllers.csvVolume, ['id'], {
+      controller: 'volume/csv',
+      templateUrl: 'volume/csv.html',
+      resolve: {
+        volume: [
+          'pageService', function(page) {
+            return page.models.Volume.get(page.$route.current.params.id);
+          }
+        ],
+      }
+    });
+
+    routes.slotZip = makeRoute(controllers.zipSlot, ['vid', 'id'], {
+      controller: 'volume/zip',
+      templateUrl: 'volume/zip.html',
+      resolve: {
+        slot: [
+          'pageService', function (page) {
+            return page.models.Volume.get(page.$route.current.params.vid).then(function(v) {
+              return v.getSlot(page.$route.current.params.id, page.$route.current.params.segment, ['assets']);
+            });
+          }
+        ],
+        volume: function () {
+        },
+      }
+    });
 
     function slotRoute(edit) { return {
       controller: 'volume/slot',
@@ -344,8 +382,6 @@ app.provider('routerService', [
     }; }
     routes.slotEdit = makeRoute(controllers.viewSlotEdit, ['vid', 'id'], slotRoute(true));
     routes.slot = makeRoute(controllers.viewSlot, ['vid', 'id', 'segment'], slotRoute(false));
-
-    //
 
     routes.slotAsset = makeRoute(controllers.viewAssetSegment, ['vid', 'cid', 'segment', 'id'], {
       controller: 'asset/view',
@@ -371,9 +407,6 @@ app.provider('routerService', [
 
     routes.partyAvatar = makeRoute(controllers.partyAvatar, ['id', 'size']);
     routes.volumeThumb = makeRoute(controllers.thumbVolume, ['id', 'size']);
-    routes.volumeCSV = makeRoute(controllers.csvVolume, ['id']);
-    routes.volumeZip = makeRoute(controllers.zipVolume, ['id']);
-    routes.slotZip = makeRoute(controllers.zipSlot, ['vid', 'id', 'segment']);
     routes.assetThumb = makeRoute(controllers.thumbAssetSegment, ['cid', 'segment', 'id', 'size']);
     routes.assetDownload = makeRoute(controllers.downloadAssetSegment, ['cid', 'segment', 'id', 'inline']);
     routes.assetEdit = makeRoute(controllers.viewAssetEdit, ['id']);

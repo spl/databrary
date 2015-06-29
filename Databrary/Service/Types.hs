@@ -37,4 +37,4 @@ data Service = Service
   , serviceAV :: !AV
   }
 
-makeHasRec ''Service ['serviceDB, 'serviceMessages, 'serviceEntropy, 'serviceSecret, 'serviceHTTPClient, 'serviceStorage, 'serviceWeb, 'servicePasswd, 'serviceAV]
+makeHasRec ''Service ['serviceSecret, 'serviceEntropy, 'servicePasswd, 'serviceLogs, 'serviceMessages, 'serviceDB, 'serviceStorage, 'serviceWeb, 'serviceHTTPClient, 'serviceAV]

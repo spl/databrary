@@ -36,7 +36,7 @@ makeAuthorize a e c p = Authorize
 
 authorizeRow :: Selector -- ^ @'Party' -> 'Party' -> 'Authorize'@
 authorizeRow = addSelects 'makeAuthorize
-  (accessRow "authorize") ["expires"]
+  (accessRow "authorize") [SelectColumn "authorize" "expires"]
 
 selectAuthorizeParent :: TH.Name -- ^ child 'Party'
   -> TH.Name -- ^ 'Identity'

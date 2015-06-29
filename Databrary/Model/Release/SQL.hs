@@ -13,7 +13,7 @@ import Databrary.Model.Audit.SQL
 import Databrary.Model.Slot.SQL
 
 releaseRow :: Selector -- ^ @'Release'@
-releaseRow = selector "slot_release" "slot_release.release"
+releaseRow = selector "slot_release" $ SelectColumn "slot_release" "release"
 
 releaseSets :: String -- ^ @'Release'@
   -> [(String, String)]

@@ -21,6 +21,7 @@ import Databrary.Model.URL (URI)
 import Databrary.Model.Kind
 import Databrary.Model.Id.Types
 import Databrary.Model.Permission.Types
+import Databrary.Model.ORCID
 
 type instance IdType Party = Int32
 
@@ -28,6 +29,7 @@ data Party = Party
   { partyId :: Id Party
   , partySortName :: T.Text
   , partyPreName :: Maybe T.Text
+  , partyORCID :: Maybe ORCID
   , partyAffiliation :: Maybe T.Text
   , partyURL :: Maybe URI
   , partyAccount :: Maybe Account
@@ -74,6 +76,7 @@ nobodySiteAuth = SiteAuth
       { partyId = Id (-1)
       , partySortName = "Nobody"
       , partyPreName = Nothing
+      , partyORCID = Nothing
       , partyAffiliation = Nothing
       , partyURL = Nothing
       , partyAccount = Nothing
@@ -89,6 +92,7 @@ blankParty = Party
   { partyId = error "blankParty"
   , partySortName = ""
   , partyPreName = Nothing
+  , partyORCID = Nothing
   , partyAffiliation = Nothing
   , partyURL = Nothing
   , partyAccount = Nothing

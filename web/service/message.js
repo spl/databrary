@@ -68,9 +68,9 @@ app.factory('messageService', [
         if (message.statusText)
           messageBody += 'Status:\n' + message.statusText + '\n\n';
 
-        _.each(message.errors, function(errorArray, field){
-          moreBody += '<dl class="comma"><dt>' + (field || 'Reason') + '</dt><dd>' + errorArray.map($sanitize).join('</dd><dd>') + '</dd></dl>';
-          messageBody += (field || 'Reason') + ':\n' + errorArray.join('\n') + '\n\n';
+        Message.foreachError(message.errors, function(field, error){
+          moreBody += '<dl class="comma"><dt>' + (field || 'Reason') + '</dt><dd>' + error.map($sanitize).join('</dd><dd>') + '</dd></dl>';
+          messageBody += (field || 'Reason') + ':\n' + error.join('\n') + '\n\n';
         });
 
         if (messageBody)
@@ -89,12 +89,28 @@ app.factory('messageService', [
     };
 
     Message.clear = function (owner) {
-
       _.each(Message.list, function(message){
 	if (owner ? message.owner === owner : !message.persist)
           message.remove();
       });
+    };
 
+    /* convert the nested (json) structure produced by server errors into a flatter object where keys are dot-delimited and values are always arrays, or calling proc on each key, value pair. */
+    Message.foreachError = function (errors, proc) {
+      var out = {};
+      if (!proc)
+        proc = function (key, val) {
+          out[key] = val;
+        };
+      function flatten(obj, prefix) {
+        if (typeof obj === 'object' && (!Array.isArray(obj) || obj.some(function (x) { return typeof x === 'object'; })))
+          for (var key in obj)
+            flatten(obj[key], prefix ? prefix + '.' + key : key);
+        else
+          proc(prefix || '', Array.isArray(obj) ? obj : [obj]);
+      }
+      flatten(errors);
+      return out;
     };
 
     return Message;

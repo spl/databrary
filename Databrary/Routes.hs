@@ -172,7 +172,7 @@ jsRoutes = mconcat
   , jsRoute "viewSearch" postSearch (HTML)
 
 
-  , jsRoute "zipSlot" zipContainer (container)
+  , jsRoute "zipSlot" zipContainer (Just volume, container)
   , jsRoute "zipVolume" zipVolume (volume)
 
   , jsRoute "get" viewRoot (JSON)

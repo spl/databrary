@@ -38,7 +38,7 @@ import Databrary.Model.Volume.Boot
 useTPG
 
 coreVolume :: Volume
-coreVolume = $(loadVolume (Id 0) PermissionSHARED)
+coreVolume = $(loadVolume (Id 0))
 
 lookupVolume :: (MonadDB m, MonadHasIdentity c m) => Id Volume -> m (Maybe Volume)
 lookupVolume vi = do
@@ -53,7 +53,7 @@ changeVolume v = do
 addVolume :: MonadAudit c m => Volume -> m Volume
 addVolume bv = do
   ident <- getAuditIdentity
-  dbQuery1' $ fmap ($ PermissionADMIN) $(insertVolume 'ident 'bv)
+  dbQuery1' $ fmap (\v -> v [] PermissionADMIN) $(insertVolume 'ident 'bv)
 
 getVolumeAlias :: Volume -> Maybe T.Text
 getVolumeAlias v = guard (volumePermission v >= PermissionREAD) >> volumeAlias v
@@ -69,7 +69,9 @@ volumeJSON v@Volume{..} = JSON.record volumeId $ catMaybes
   [ Just $ "name" JSON..= volumeName
   , ("alias" JSON..=) <$> getVolumeAlias v
   , Just $ "body" JSON..= volumeBody
+  , ("doi" JSON..=) <$> volumeDOI
   , Just $ "creation" JSON..= volumeCreation
+  , Just $ "owners" JSON..= JSON.object (map (\(i, n) -> T.pack (show i) JSON..= n) volumeOwners)
   , Just $ "permission" JSON..= volumePermission
   ]
 

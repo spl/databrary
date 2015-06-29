@@ -1,8 +1,8 @@
 'use strict';
 
 app.directive('loginForm', [
-  'pageService',
-  function (page) { return {
+  'modelService', 'routerService', '$timeout',
+  function (models, router, $timeout) { return {
     restrict: 'E',
     templateUrl: 'party/loginForm.html',
     link: function ($scope) {
@@ -12,10 +12,10 @@ app.directive('loginForm', [
 
       form.submit = function () {
         form.$setSubmitted();
-        page.models.Login.login(form.data).then(function () {
+        models.Login.login(form.data).then(function () {
           form.validator.server({});
           form.$setUnsubmitted();
-          page.router.back();
+          router.back();
         }, function (res) {
           form.$setUnsubmitted();
           form.validator.server(res, true);
@@ -24,7 +24,7 @@ app.directive('loginForm', [
 
       form.validator.client({}, true);
 
-      page.$timeout(function(){angular.element('#loginEmail').focus();},300);
+      $timeout(function(){angular.element('#loginEmail').focus();},300);
     }
   }; }
 ]);

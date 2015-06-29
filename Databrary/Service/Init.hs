@@ -8,9 +8,8 @@ import Control.Exception (bracket)
 import qualified Data.Configurator as C
 import qualified Data.Configurator.Types as C
 import Data.Time.Clock (getCurrentTime)
-import System.FilePath.Posix ((</>))
 
-import Paths_databrary (getSysconfDir, getDataFileName)
+import Paths_databrary (getDataFileName)
 import Databrary.Service.DB (initDB, finiDB)
 import Databrary.Service.Entropy (initEntropy, finiEntropy)
 import Databrary.HTTP.Client (initHTTPClient, finiHTTPClient)
@@ -24,9 +23,8 @@ import Databrary.Service.Types
 
 loadConfig :: IO C.Config
 loadConfig = do
-  etc <- getSysconfDir
   msg <- getDataFileName "messages.conf"
-  C.loadGroups [("message.", C.Optional msg), ("", C.Required (etc </> "databrary.conf")), ("", C.Optional "local.conf")]
+  C.loadGroups [("message.", C.Required msg), ("", C.Required "databrary.conf")]
 
 initService :: C.Config -> IO Service
 initService conf = do

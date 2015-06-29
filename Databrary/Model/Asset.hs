@@ -2,6 +2,7 @@
 module Databrary.Model.Asset
   ( module Databrary.Model.Asset.Types
   , blankAsset
+  , assetBacked
   , lookupAsset
   , addAsset
   , changeAsset
@@ -12,7 +13,7 @@ module Databrary.Model.Asset
   ) where
 
 import Control.Arrow (first)
-import Data.Maybe (catMaybes, isNothing)
+import Data.Maybe (catMaybes, isNothing, isJust)
 import qualified Data.Text as T
 import Database.PostgreSQL.Typed (pgSQL)
 
@@ -48,6 +49,9 @@ blankAsset vol = Asset
   , assetVolume = vol
   }
 
+assetBacked :: Asset -> Bool
+assetBacked = isJust . assetSHA1
+
 lookupAsset :: (MonadHasIdentity c m, MonadDB m) => Id Asset -> m (Maybe Asset)
 lookupAsset ai = do
   ident <- peek
@@ -59,11 +63,12 @@ addAsset ba fp = do
   ba' <- maybe (return ba) (storeAssetFile ba) fp
   dbQuery1' $(insertAsset 'ident 'ba')
 
-changeAsset :: (MonadAudit c m, MonadStorage c m) => Asset -> Maybe RawFilePath -> m ()
+changeAsset :: (MonadAudit c m, MonadStorage c m) => Asset -> Maybe RawFilePath -> m Asset
 changeAsset a fp = do
   ident <- getAuditIdentity
   a2 <- maybe (return a) (storeAssetFile a) fp
   dbExecute1' $(updateAsset 'ident 'a2)
+  return a2
 
 supersedeAsset :: MonadDB m => Asset -> Asset -> m ()
 supersedeAsset old new =

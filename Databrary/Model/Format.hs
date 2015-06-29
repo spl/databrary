@@ -91,7 +91,7 @@ getFormatByFilename n = do
 
 dropFormatExtension :: Format -> RawFilePath -> RawFilePath
 dropFormatExtension fmt n
-  | (f,e) <- splitExtension n
+  | (f,BSC.uncons -> Just ('.',e)) <- splitExtension n
   , BSC.map toLower e `elem` formatExtension fmt = f
   | otherwise = n
 

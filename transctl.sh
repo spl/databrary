@@ -1,7 +1,7 @@
 #!/bin/bash -e
 # Control interface for transcode jobs.
 # This is run directly from the application, on the webserver.
-# It calls tools/transcode on transcode.host, which must be in the path.
+# It calls transcode, possibly on transcode.host.
 
 escape() {
 	for a in "$@" ; do
@@ -10,7 +10,6 @@ escape() {
 }
 
 cmd=`dirname $0`/transcode
-chmod +x "$cmd"
 
 if [[ ! -f $cmd ]] ; then
 	echo "$cmd: not found" >&2
@@ -73,7 +72,7 @@ elif [[ -n $host ]] ; then
 elif [[ -n $kill ]] ; then
 	"$cmd" "$@"
 else
-	ln -sfT "$src" "$dir/$id"
+	ln -fT "$src" "$dir/$id"
 	"$cmd" "$@" &
 	echo $!
 fi

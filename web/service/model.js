@@ -386,7 +386,9 @@ app.factory('modelService', [
       name: true,
       alias: true,
       body: true,
+      doi: true,
       creation: true,
+      owners: true,
       citation: false,
       links: false,
       funding: false,
@@ -466,8 +468,6 @@ app.factory('modelService', [
       var v = this;
       return router.http(router.controllers.postVolume, this.id, data)
         .then(function (res) {
-          if ('citation' in data)
-            v.clear('citation');
           return v.update(res.data);
         });
     };
@@ -482,7 +482,9 @@ app.factory('modelService', [
     };
 
     Volume.create = function (data, owner) {
-      return router.http(router.controllers.createVolume, owner, data)
+      if (owner !== undefined)
+        data.owner = owner;
+      return router.http(router.controllers.createVolume, data)
         .then(function (res) {
           if ((owner = (owner === undefined ? Login.user : partyPeek(owner))))
             owner.clear('volumes');
@@ -817,7 +819,7 @@ app.factory('modelService', [
     };
 
     Slot.prototype.zipRoute = function () {
-      return router.slotZip([this.volume.id, this.container.id, this.segment.format()]);
+      return router.slotZip([this.volume.id, this.container.id]);
     };
 
     ///////////////////////////////// Record
@@ -867,17 +869,9 @@ app.factory('modelService', [
 
     Volume.prototype.createRecord = function (c) {
       var v = this;
-      return router.http(router.controllers.createRecord, this.id, c)
+      return router.http(router.controllers.createRecord, this.id, {category: c})
         .then(function (res) {
           return new Record(v, res.data);
-        });
-    };
-
-    Record.prototype.save = function (data) {
-      var r = this;
-      return router.http(router.controllers.RecordApi.update, this.id, data)
-        .then(function (res) {
-          return r.update(res.data);
         });
     };
 
@@ -1036,6 +1030,7 @@ app.factory('modelService', [
       duration: true,
       pending: true,
       creation: false,
+      size: false,
     }, Asset.prototype.fields);
 
     Asset.prototype.init = function (init) {
@@ -1116,17 +1111,17 @@ app.factory('modelService', [
       return router.http(router.controllers.createAsset, this.volume.id, data)
         .then(function (res) {
           s.clear('assets');
-          return assetMake(s.volume, res.data);
+          return assetMake(s.container, res.data);
         });
     };
 
     Asset.prototype.replace = function (data) {
       var a = this;
-      return router.http(router.controllers.AssetApi.replace, this.id, data)
+      return router.http(router.controllers.postAsset, this.id, data)
         .then(function (res) {
           if (a.container)
             a.container.clear('assets');
-          return assetMake(a.volume, res.data);
+          return assetMake(a.container || a.volume, res.data);
         });
     };
 
@@ -1179,7 +1174,9 @@ app.factory('modelService', [
       if (arguments.length < 3 && this instanceof Comment)
         reply = this.id;
       var s = this;
-      return router.http(router.controllers.postComment, this.container.id, segment.format(), reply, data)
+      if (reply != null)
+        data.parent = reply;
+      return router.http(router.controllers.postComment, this.container.id, segment.format(), data)
         .then(function (res) {
           s.volume.clear('comments');
           s.clear('comments');

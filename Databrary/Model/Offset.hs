@@ -13,9 +13,9 @@ import qualified Data.Text as T
 import Data.Time (DiffTime)
 import Data.Typeable (Typeable)
 import Database.PostgreSQL.Typed.Types (PGParameter(..), PGColumn(..))
-import Numeric (showSigned, showFFloat)
+import Numeric (showSigned, showFFloat, readSigned, readDec)
 import qualified Text.ParserCombinators.ReadP as RP
-import qualified Text.ParserCombinators.ReadPrec as RP (lift, readPrec_to_P, minPrec)
+import qualified Text.ParserCombinators.ReadPrec as RP (lift)
 import Text.Read (readMaybe, readPrec)
 
 import qualified Databrary.JSON as JSON
@@ -62,14 +62,11 @@ instance Show Offset where
         | x < 10 = ('0' :)
         | otherwise = id
 
-readP :: Read a => RP.ReadP a
-readP = RP.readPrec_to_P readPrec RP.minPrec
-
 instance Read Offset where
   readPrec = RP.lift $ rm RP.<++ rc where
     -- parse milliseconds:
     rm = do
-      m <- readP
+      m <- RP.readS_to_P (readSigned readDec)
       r <- RP.look
       case r of
         (':':_) -> RP.pfail
@@ -77,7 +74,7 @@ instance Read Offset where
     -- parse seconds with colons:
     rc = do
       pm <- RP.option '+' $ RP.satisfy (`elem` "-+")
-      c <- RP.sepBy1 readP (RP.char ':')
+      c <- RP.sepBy1 (RP.readS_to_P readDec) (RP.char ':')
       Offset . MkFixed . (if pm == '-' then negate else id) <$> case c of
         [s] -> return s
         [m, s] -> return (60*m + s)

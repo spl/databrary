@@ -1,4 +1,4 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving, ViewPatterns #-}
 module Databrary.Ops
   ( (<$>) ,  (<$-)
   , (<$)  ,   ($>)
@@ -16,6 +16,7 @@ module Databrary.Ops
   , mapMaybeM
   , liftK
   , mergeBy
+  , groupTuplesBy
   ) where
 
 import Control.Applicative
@@ -131,9 +132,15 @@ mapMaybeM f l = catMaybes <$> mapM f l
 liftK :: Monad m => (Kleisli m a b -> Kleisli m c d) -> (a -> m b) -> (c -> m d)
 liftK f = runKleisli . f . Kleisli
 
+-- |Merge two ordered lists using the given predicate, removing EQ "duplicates" (left-biased)
 mergeBy :: (a -> a -> Ordering) -> [a] -> [a] -> [a]
 mergeBy _ [] l = l
 mergeBy _ l [] = l
-mergeBy p al@(a:ar) bl@(b:br)
-  | p a b == GT = b : mergeBy p al br
-  | otherwise = a : mergeBy p ar bl
+mergeBy p al@(a:ar) bl@(b:br) = case p a b of
+  LT -> a : mergeBy p ar bl
+  EQ -> mergeBy p al br
+  GT -> b : mergeBy p al br
+
+groupTuplesBy :: (a -> a -> Bool) -> [(a, b)] -> [(a, [b])]
+groupTuplesBy _ [] = []
+groupTuplesBy p ((a,b):(span (p a . fst) -> (al, l))) = (a, b : map snd al) : groupTuplesBy p l
