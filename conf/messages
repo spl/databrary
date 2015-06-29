@@ -128,8 +128,8 @@ reset.request.success=Password reset email sent to {0}. Please follow the instru
 reset.save.success=Your password has been reset.
 
 reset.email.help=Enter the email address you used to register.
-reset.once.help=Enter a secure password.
-reset.again.help=Enter the same password again.
+reset.once.help=Enter a secure password
+reset.again.help=Enter the same password again
 
 # --- Formats
 help.title=Help
