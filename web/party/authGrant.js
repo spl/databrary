@@ -26,8 +26,8 @@ app.directive('authGrantForm', [
         return p == page.permission.NONE ||
           p == page.permission.READ ||
           p > page.permission.READ &&
-          page.models.Login.checkAccess(p + 1) ||
-          page.models.Login.checkAccess(page.permission.ADMIN);
+          page.models.Login.checkAuthorization(p + 1) ||
+          page.models.Login.checkAuthorization(page.permission.ADMIN);
       };
 
       $scope.canGrantMember = function (p) {
@@ -35,7 +35,7 @@ app.directive('authGrantForm', [
           p == page.permission.READ ||
           p == page.permission.EDIT ||
           p == page.permission.ADMIN ||
-          page.models.Login.checkAccess(page.permission.ADMIN);
+          page.models.Login.checkAuthorization(page.permission.ADMIN);
       };
 
       //

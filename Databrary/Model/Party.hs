@@ -140,7 +140,7 @@ recentAccountLogins who = fromMaybe 0 <$>
 
 data PartyFilter = PartyFilter
   { partyFilterQuery :: Maybe String
-  , partyFilterAccess :: Maybe Permission
+  , partyFilterAuthorization :: Maybe Permission
   , partyFilterInstitution :: Maybe Bool
   , partyFilterAuthorize :: Maybe (Id Party)
   , partyFilterVolume :: Maybe Volume
@@ -153,10 +153,10 @@ instance Monoid PartyFilter where
 
 partyFilter :: PartyFilter -> Identity -> BS.ByteString
 partyFilter PartyFilter{..} ident = BS.concat
-  [ withq partyFilterAccess (const " JOIN authorize_view ON party.id = child AND parent = 0")
+  [ withq partyFilterAuthorization (const " JOIN authorize_view ON party.id = child AND parent = 0")
   , " WHERE id > 0"
   , withq partyFilterQuery (\n -> " AND " <> queryVal <> " ILIKE " <> pgLiteralRep (wordPat n))
-  , withq partyFilterAccess (\a -> " AND site = " <> pgSafeLiteral a)
+  , withq partyFilterAuthorization (\a -> " AND site = " <> pgSafeLiteral a)
   , withq partyFilterInstitution (\i -> if i then " AND account.id IS NULL" else " AND account.password IS NOT NULL")
   , withq partyFilterAuthorize (\a -> let i = pgSafeLiteral a in " AND party.id <> " <> i <> " AND id NOT IN (SELECT child FROM authorize WHERE parent = " <> i <> " UNION SELECT parent FROM authorize WHERE child = " <> i <> ")")
   , withq partyFilterVolume (\v -> " AND id NOT IN (SELECT party FROM volume_access WHERE volume = " <> pgSafeLiteral (volumeId v) <> ")")

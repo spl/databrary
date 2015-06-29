@@ -24,7 +24,7 @@ app.directive('accessGrantForm', [
         return p == constants.permission.READ ||
           p == constants.permission.EDIT ||
           p == constants.permission.ADMIN ||
-          models.Login.checkAccess(constants.permission.ADMIN);
+          models.Login.checkAuthorization(constants.permission.ADMIN);
       };
 
       //

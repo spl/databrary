@@ -141,16 +141,15 @@ app.factory('modelService', [
       email: true,
       institution: true,
       url: true,
-      access: false,
+      authorization: false,
     };
 
     Party.prototype.init = function (init) {
       Model.prototype.init.call(this, init);
+      if ('access' in init)
+        this.access = volumeMakeSubArray(init.access);
       if ('volumes' in init)
-        this.volumes = // profile only returns volumes, not access...
-          (init.volumes.length && 'volume' in init.volumes[0]) ?
-          volumeMakeSubArray(init.volumes) :
-          volumeMakeArray(init.volumes);
+        this.volumes = volumeMakeArray(init.volumes);
       if ('parents' in init)
         this.parents = partyMakeSubArray(init.parents);
       if ('children' in init)
@@ -313,8 +312,8 @@ app.factory('modelService', [
       return Login.user.id !== constants.party.NOBODY;
     };
 
-    Login.checkAccess = function (level) {
-      return Login.user.access >= level;
+    Login.checkAuthorization = function (level) {
+      return Login.user.authorization >= level;
     };
 
     Model.prototype.checkPermission = function (level) {
@@ -327,7 +326,7 @@ app.factory('modelService', [
     };
 
     Login.isAuthorized = function () {
-      return Login.isLoggedIn() && Login.checkAccess(constants.permission.PUBLIC);
+      return Login.isLoggedIn() && Login.checkAuthorization(constants.permission.PUBLIC);
     };
 
     Login.prototype.route = function () {
@@ -496,7 +495,7 @@ app.factory('modelService', [
       return router.http(router.controllers.createVolume, data)
         .then(function (res) {
           if ((owner = (owner === undefined ? Login.user : partyPeek(owner))))
-            owner.clear('volumes');
+            owner.clear('access', 'volumes');
           return volumeMake(res.data);
         });
     };

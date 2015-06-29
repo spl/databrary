@@ -66,24 +66,27 @@ partyJSONField :: (MonadDB m, MonadHasIdentity c m) => Party -> BS.ByteString ->
 partyJSONField p "parents" o =
   fmap (Just . JSON.toJSON) . mapM (\a -> do
     let ap = authorizeParent (authorization a)
-    acc <- if access then Just . accessSite <$> lookupAuthorization ap rootParty else return Nothing
+    acc <- if auth then Just . accessSite <$> lookupAuthorization ap rootParty else return Nothing
     return $ (if admin then authorizeJSON a else mempty) JSON..+
-      ("party" JSON..= (partyJSON ap JSON..+? (("access" JSON..=) <$> acc))))
+      ("party" JSON..= (partyJSON ap JSON..+? (("authorization" JSON..=) <$> acc))))
     =<< lookupAuthorizedParents p admin
   where
   admin = view p >= PermissionADMIN
-  access = admin && o == Just "access"
+  auth = admin && o == Just "authorization"
 partyJSONField p "children" _ =
   Just . JSON.toJSON . map (\a ->
     let ap = authorizeChild (authorization a) in
     (if admin then authorizeJSON a else mempty) JSON..+ ("party" JSON..= partyJSON ap))
     <$> lookupAuthorizedChildren p admin
   where admin = view p >= PermissionADMIN
-partyJSONField p "volumes" ma = do
+partyJSONField p "volumes" _ = do
+  Just . JSON.toJSON . map volumeJSON
+    <$> lookupPartyVolumes p (succ PermissionNONE)
+partyJSONField p "access" ma = do
   Just . JSON.toJSON . map (\va -> 
     volumeAccessJSON va JSON..+ ("volume" JSON..= volumeJSON (volumeAccessVolume va)))
     <$> lookupPartyVolumeAccess p (fromMaybe PermissionNONE $ readDBEnum . BSC.unpack =<< ma)
-partyJSONField p "access" _ = do
+partyJSONField p "authorization" _ = do
   Just . JSON.toJSON . accessSite <$> lookupAuthorization p rootParty
 partyJSONField _ _ _ = return Nothing
 
@@ -163,7 +166,7 @@ createParty = multipartAction $ action POST (pathAPI </< "party") $ \api -> with
 partySearchForm :: (Applicative m, Monad m) => DeformT m PartyFilter
 partySearchForm = PartyFilter
   <$> ("query" .:> deformNonEmpty deform)
-  <*> ("access" .:> optional deform)
+  <*> ("authorization" .:> optional deform)
   <*> ("institution" .:> optional deform)
   <*> ("authorize" .:> optional deform)
   <*> pure Nothing

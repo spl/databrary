@@ -32,5 +32,5 @@ htmlPartyForm t req = maybe
 htmlPartySearchForm :: PartyFilter -> AuthRequest -> FormHtml
 htmlPartySearchForm pf req = htmlForm "Search users" queryParties HTML req $ do
   field "query" $ inputText $ partyFilterQuery pf
-  field "access" $ inputEnum $ partyFilterAccess pf
+  field "authorization" $ inputEnum $ partyFilterAuthorization pf
   field "institution" $ inputCheckbox $ fromMaybe False $ partyFilterInstitution pf

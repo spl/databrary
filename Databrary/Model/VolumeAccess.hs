@@ -4,6 +4,7 @@ module Databrary.Model.VolumeAccess
   , lookupVolumeAccess
   , lookupVolumeAccessParty
   , lookupPartyVolumeAccess
+  , lookupPartyVolumes
   , changeVolumeAccess
   , volumeAccessProvidesADMIN
   , volumeAccessJSON
