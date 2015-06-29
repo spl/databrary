@@ -77,9 +77,11 @@ app.controller('party/profile', [
     $scope.clickUser = function(user){
       unselectAll();
       var iterateVolume = function(_item, i, volumeArray){
-        for(var j = 0; j < volumeArray[i].access.length; j += 1){
-          if(volumeArray[i].access[j] == user){
-            volumeArray[i].access[j].isSelected = 'volumeSelected';
+        for(var j = 0; j < volumeArray[i].v.length; j += 1){
+          for (var k = 0; k < volumeArray[i].v[j].access.length; k += 1){
+            if(volumeArray[i].v[j].access[k] == user){
+              volumeArray[i].v[j].access[k].isSelected = 'volumeSelected';
+            }
           }
         }
       };
@@ -114,9 +116,11 @@ app.controller('party/profile', [
 
       _.each(volumes, function(v){
         if(v.isIndividual){
-          tempVolumes.individual.push(v); 
+          var tempObject = {v: v}; 
+          tempVolumes.individual.push(tempObject); 
         } else if(tempVolumes.isCollaborator){
-          tempVolumes.collaborator.push(v); 
+          var tempObject = {v: v}; 
+          tempVolumes.individual.push(tempObject); 
         } else{
           for (var i=0;i<v.access.length;i++){
             for (var j=0;j<tempVolumes.inherited.length;j++){
