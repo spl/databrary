@@ -2,7 +2,7 @@
   <ng-include src="'party/overview.html'"></ng-include>
   <panel id="panel_browser" panel-title="profile.dashboard.title" fold ng-if="::party.volumes || page.models.Login.isAuthorized()">  
 
-    <section id="related-volumes" class="col-desktop-8 col-tablet-6 col-mobile-6">
+    <section id="dashboard-volumes" class="dashboard-volumes col-desktop-8 col-tablet-6 col-mobile-6">
       <div ng-if="::volumes.individual.length > 0">
         <h4>Data owner volumes</h4>
         <ul>
@@ -27,7 +27,7 @@
       </div>         
     </section>
 
-    <section id="related-people" class="col-desktop-7 col-tablet-3 col-mobile-6">
+    <section id="dashboard-people" class="dashboard-people col-desktop-7 col-tablet-3 col-mobile-6">
       <div>
         <h4>Sponsors</h4>
         <ul>
