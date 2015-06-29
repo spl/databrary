@@ -6,13 +6,13 @@
       <div ng-if="::volumes.individual.length > 0">
         <h4>Data owner volumes</h4>
         <ul>
-          <li ng-click="clickVolume(vi)" ng-repeat="vi in volumes.individual" ng-bind="vi.alias? vi.alias : vi.name"></li>
+          <li ng-click="clickVolume(vi)" ng-class="vi.isSelected" ng-repeat="vi in volumes.individual" ng-bind="vi.alias? vi.alias : vi.name"></li>
         </ul>
       </div>
       <div ng-if="::volumes.collaborator.length > 0">
         <h4>Collaborator volumes</h4>
         <ul>
-          <li ng-click="clickVolume(vc)" ng-repeat="vc in volumes.collaborator" ng-bind="vc.alias? vc.alias : vc.name"></li>
+          <li ng-click="clickVolume(vc)" ng-class="vc.isSelected" ng-repeat="vc in volumes.collaborator" ng-bind="vc.alias? vc.alias : vc.name"></li>
         </ul>  
       </div>
       <div ng-repeat="vin in volumes.inherited">    
@@ -22,7 +22,7 @@
           <span ng-bind="::' (' + ('auth.member.'+page.constants.permission[vin['p'].member]+'.title' | message) + ')'"></span>
         </h4>
         <ul>
-          <li ng-click="clickVolume(vin_)" ng-repeat="vin_ in vin['v']" ng-bind="vin_.alias? vin_.alias : vin_.name"></li>
+          <li ng-click="clickVolume(vin_)" ng-class="vin_.isSelected" ng-repeat="vin_ in vin['v']" ng-bind="vin_.alias? vin_.alias : vin_.name"></li>
         </ul>
       </div>         
     </section>
