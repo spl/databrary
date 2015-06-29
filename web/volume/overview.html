@@ -68,9 +68,9 @@
 
   <div class="col-desktop-6 col-tablet-3 col-mobile-6">
     <img class="panel-overview-volume-thumb" ng-src="{{::volume.thumbRoute()}}">
-    <show-investigators title="contributors" minlevel="ADMIN"></show-investigators>
-    <show-investigators title="private" maxlevel="ADMIN" minlevel="READ"></show-investigators>
-    <show-investigators title="shared" maxlevel="READ"></show-investigators>
+    <show-investigators investigators-title="contributors" minlevel="ADMIN"></show-investigators>
+    <show-investigators investigators-title="private" maxlevel="ADMIN" minlevel="READ"></show-investigators>
+    <show-investigators investigators-title="shared" maxlevel="READ"></show-investigators>
 
     <div frame id="frame-funding" frame-title="volume.funding.title" fold>
       <dl class="panel-overview-volume-funds" ng-repeat="funding in ::volume.funding">
