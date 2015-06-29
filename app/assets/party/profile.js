@@ -26,6 +26,7 @@ app.controller('party/profile', [
 
       }).value();
 
+      console.log(users);
       return users;
     };
 
@@ -95,11 +96,11 @@ app.controller('party/profile', [
       _.each(parents, function(p){
         if(p.member){
           var v = [];
-          var thing = {
+          var tempThing = {
             p: p,
             v: v
           };
-          tempParents.push(thing);
+          tempParents.push(tempThing);
         }
       });
       return tempParents;
