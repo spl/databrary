@@ -10,6 +10,7 @@ import Data.Aeson
 import Data.Map
 import Control.Applicative
 import Control.Monad (mzero)
+import Control.Exception (handle)
 import GHC.Generics
 import Network.HTTP.Types (hAccept, hContentType, ok200)
 import System.Environment

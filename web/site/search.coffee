@@ -12,10 +12,13 @@ app.controller 'site/search', [
     $scope.selectedType = ""
     $scope.selectedVolume = ""
     $scope.selectedFilter = ""
-    $scope.display = []
+    $scope.typeDisplay = []
+    $scope.filterDisplay = []
     $scope.selectSessionStr = "Volumes w/ Sessions"
     $scope.selectHighlightStr = "Volumes w/ Highlights"
     $scope.selectAffiliationStr = "Volumes w/ Sessions"
+    $scope.volumeDisplayStr = "Volumes"
+    $scope.partyDisplayStr = "People"
     $scope.partyLinkPrefix = "party/"
     $scope.volumeLinkPrefix = "volume/"
     $scope.affiliations = []
@@ -36,10 +39,13 @@ app.controller 'site/search', [
     $scope.formVolumeResult = (doc) ->
       # Form everything except the title, which we'll do in HTML so we can make it the link
       res = []
+      # If the document is a volume (and has an abstract) push it to the result list
       if doc.abs_t
-         if doc.abs_t.length > 150
-            doc.abs_t = doc.abs_t[0..150] + "..."
-         res.push doc.abs_t
+       # Clip everything after the first 150 characters just for display purposes
+       if doc.abs_t.length > 150
+          doc.abs_t = doc.abs_t[0..150] + "..."
+       res.push doc.abs_t
+      # If the document is a volume (and has a citation) also push it to the result list
       if doc.citation_t
         res.push doc.citation_t
       # Add more stuff here if we want it
@@ -67,6 +73,9 @@ app.controller 'site/search', [
         console.log("GOT RES:", res)
         $scope.parseResults(res.data)
 
+    $scope.maxResults = ->
+      return Math.max([$scope.volumeCount, $scope.partyCount])
+
     #################################
     # Parse results, the main workhorse function
     # ##############################
@@ -77,6 +86,10 @@ app.controller 'site/search', [
 
       $scope.partyCount = $scope.getTypeCounts("party", res)
       $scope.volumeCount = $scope.getTypeCounts("volume", res)
+
+      $scope.typeDisplay = [$scope.partyDisplayStr + " (" + $scope.partyCount + ")",
+        $scope.volumeDisplayStr + " (" + $scope.volumeCount + ")"]
+
       console.log("PARTY RESULTS", $scope.partyResults)
 
       if $scope.partyCount
@@ -87,7 +100,7 @@ app.controller 'site/search', [
       $scope.totalCount = $scope.partyCount + $scope.volumeCount
 
       $scope.minPage = 1
-      $scope.maxPage = 1 + ($scope.totalCount / ($scope.limit + 1))
+      $scope.maxPage = 1 + ($scope.maxResults / ($scope.limit + 1))
       pageRange = []
       for i in [$scope.minPage .. $scope.maxPage] by 1
         pageRange.push(i)
@@ -98,7 +111,7 @@ app.controller 'site/search', [
         $scope.offset = $scope.limit * (page-1)
         $scope.search()
 
-      if parseInt($scope.totalCount) > ($scope.offset + $scope.limit)
+      if parseInt($scope.maxResults) > ($scope.offset + $scope.limit)
         $scope.next = ->
           $scope.offset = $scope.offset + $scope.limit
           $scope.search()
@@ -150,29 +163,40 @@ app.controller 'site/search', [
       return opts
 
     $scope.updateFilterBoxOptions = ->
-      if "Volumes" in $scope.selectedType
-        $scope.display = (s for s in $scope.getVolumeFeatureBoxOpts())
-      if "People" in $scope.selectedType
-        console.log("AFFILIATIONS:", $scope.affiliations)
-        $scope.display = _.sortBy(_.uniq(a for a in $scope.affiliations))
+      console.log("SELTYPE", $scope.selectedType)
+      if $scope.selectedType
+        if $scope.selectedType.join(" ").includes($scope.volumeDisplayStr)
+          $scope.filterDisplay = (s for s in $scope.getVolumeFeatureBoxOpts())
+        if $scope.selectedType.join(" ").includes($scope.partyDisplayStr)
+          console.log("AFFILIATIONS:", $scope.affiliations)
+          $scope.filterDisplay = _.sortBy(_.uniq(a for a in $scope.affiliations))
 
+    $scope.countWithArg = (group, argument, value) ->
+      console.log(group)
+      result = (d for d in group.docs when d[argument] == value).length
+      return result
+
+    # Perform a new search for people or volumes only... NOTE: does not do anything yet
+    # TODO Either make this do something useful or remove the search part of it
     $scope.partyVolBoxClick = ->
-      if "Volumes" in $scope.selectedType
+      console.log($scope.selectedType, $scope.selectedType.join(" "))
+      if $scope.selectedType.join(" ").includes($scope.volumeDisplayStr)
         $scope.query = $scope.originalQuery
         $scope.search()
-      if "People" in $scope.selectedType
+      if $scope.selectedType.join(" ").includes($scope.partyDisplayStr)
         $scope.query = $scope.originalQuery
         $scope.search()
-      console.log($scope.selectedType, $scope.display)
+      console.log($scope.selectedType, $scope.filterDisplay)
 
+    # Action to do something when a filter option is clicked, currently is just enumerating the types
     $scope.filterBoxClick = ->
       console.log("FILTER BOX CLICKED", $scope.selectedFilter)
-      if "Volumes" in $scope.selectedType
+      if $scope.selectedType.join(" ").includes($scope.volumeDisplayStr)
         if $scope.selectSessionStr in $scope.selectedFilter
           $scope.filterBySession()
         if $scope.selectHighlightStr in $scope.selectedFilter
           $scope.filterByHighlight()
-      if "People" in $scope.selectedType
+      if $scope.selectedType.join(" ").includes($scope.partyDisplayStr)
         $scope.partyFilterBoxClick()
         console.log("FILTERING BY PARTY")
       $scope.search()
