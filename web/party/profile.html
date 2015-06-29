@@ -1,49 +1,57 @@
 <article class="view party-view">
   <ng-include src="'party/overview.html'"></ng-include>
-  <panel id="panel_browser" panel-title="volumes.title" fold ng-if="::party.volumes || page.models.Login.isAuthorized()">  
-    
-    <div>
-      <div class="col-desktop-15 col-tablet-9 col-mobile-6" ng-repeat="volume in party.volumes">
-        <span ng-click="clickVolumes(volume)">{{volume.title}}</span>
-      </div>
-    </div>
-
-
-    <div>
-      <div class="col-desktop-15 col-tablet-9 col-mobile-6" ng-repeat="user in users">
-        <span ng-click="clickUser(user)">{{user.first_name}} {{user.last_name}}</span>
-      </div>
-    </div>
+  <panel id="panel_browser" panel-title="profile.dashboard.title" fold ng-if="::party.volumes || page.models.Login.isAuthorized()">  
 
     <section id="related-volumes" class="col-desktop-8 col-tablet-6 col-mobile-6">
       <div ng-if="::volumes.individual.length > 0">
-        <h3>Data owner volumes</h3>
+        <h4>Data owner volumes</h4>
         <ul>
-          <li ng-repeat="vi in volumes.individual" ng-bind="vi.alias"></li>
+          <li ng-click="clickVolume(vi)" ng-class="vi.isSelected" ng-repeat="vi in volumes.individual" ng-bind="vi.alias? vi.alias : vi.name"></li>
         </ul>
       </div>
       <div ng-if="::volumes.collaborator.length > 0">
-        <h3>Collaborator volumes</h3>
+        <h4>Collaborator volumes</h4>
         <ul>
-          <li ng-repeat="vc in volumes.collaborator" ng-bind="vc.alias"></li>
+          <li ng-click="clickVolume(vc)" ng-class="vc.isSelected" ng-repeat="vc in volumes.collaborator" ng-bind="vc.alias? vc.alias : vc.name"></li>
         </ul>  
       </div>
       <div ng-repeat="vin in volumes.inherited">    
-        <h3>
+        <h4>
           <span>Inherited volumes from </span>
           <span ng-bind="::vin['p'].party.name"></span>
-          <span ng-bind="'('+ page.constants.permission[vin['p'].party.member] + ')'"></span>
-        </h3>
+          <span ng-bind="::' (' + ('auth.member.'+page.constants.permission[vin['p'].member]+'.title' | message) + ')'"></span>
+        </h4>
         <ul>
-          <li ng-repeat="vin_ in vin['v']" ng-bind="vin_.alias"></li>
+          <li ng-click="clickVolume(vin_)" ng-class="vin_.isSelected" ng-repeat="vin_ in vin['v']" ng-bind="vin_.alias? vin_.alias : vin_.name"></li>
         </ul>
       </div>         
     </section>
 
     <section id="related-people" class="col-desktop-7 col-tablet-3 col-mobile-6">
-      <h3>Sponsors</h3>
-      <h3>Lab/Group members</h3>
-      <h3>Non-group affiliates &amp; other collaborators</h3>
+      <div>
+        <h4>Sponsors</h4>
+        <ul>
+          <li ng-click="clickUser(sponsor)" ng-class="sponsor.isSelected" ng-repeat="sponsor in users.sponsors" ng-bind="sponsor.party.name"></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Lab/Group members</h4>
+        <ul>
+          <li ng-click="clickUser(member)" ng-class="member.isSelected" ng-repeat="member in users.labGroupMembers" ng-bind="member.party.name"></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Non-group affiliates &amp; other collaborators</h4>
+        <ul>
+          <li ng-click="clickUser(nonmember)" ng-class="nonmember.isSelected" ng-repeat="nonmember in users.nonGroupAffiliates" ng-bind="nonmember.party.name"></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Other collaborators</h4>
+        <ul>
+          <li ng-click="clickUser(collaber)" ng-class="collaber.isSelected" ng-repeat="collaber in users.otherCollaborators" ng-bind="collaber.party.name"></li>
+        </ul>
+      </div>
     </section>
 
 <!--     <party-data></party-data> -->  
