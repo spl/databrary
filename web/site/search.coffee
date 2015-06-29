@@ -74,7 +74,7 @@ app.controller 'site/search', [
         $scope.parseResults(res.data)
 
     $scope.maxResults = ->
-      return Math.max([$scope.volumeCount, $scope.partyCount])
+      return Math.max($scope.volumeCount, $scope.partyCount)
 
     #################################
     # Parse results, the main workhorse function
@@ -87,8 +87,8 @@ app.controller 'site/search', [
       $scope.partyCount = $scope.getTypeCounts("party", res)
       $scope.volumeCount = $scope.getTypeCounts("volume", res)
 
-      $scope.typeDisplay = [$scope.partyDisplayStr + " (" + $scope.partyCount + ")",
-        $scope.volumeDisplayStr + " (" + $scope.volumeCount + ")"]
+      $scope.typeDisplay = [$scope.partyDisplayStr + " (" + ($scope.partyCount || 0) + ")",
+        $scope.volumeDisplayStr + " (" + ($scope.volumeCount || 0) + ")"]
 
       console.log("PARTY RESULTS", $scope.partyResults)
 
@@ -100,7 +100,7 @@ app.controller 'site/search', [
       $scope.totalCount = $scope.partyCount + $scope.volumeCount
 
       $scope.minPage = 1
-      $scope.maxPage = 1 + ($scope.maxResults / ($scope.limit + 1))
+      $scope.maxPage = 1 + ($scope.maxResults() / ($scope.limit + 1))
       pageRange = []
       for i in [$scope.minPage .. $scope.maxPage] by 1
         pageRange.push(i)
@@ -111,7 +111,10 @@ app.controller 'site/search', [
         $scope.offset = $scope.limit * (page-1)
         $scope.search()
 
-      if parseInt($scope.maxResults) > ($scope.offset + $scope.limit)
+
+      console.log("MAX RESULTS", $scope.maxResults())
+
+      if parseInt($scope.maxResults()) > ($scope.offset + $scope.limit)
         $scope.next = ->
           $scope.offset = $scope.offset + $scope.limit
           $scope.search()
@@ -164,7 +167,7 @@ app.controller 'site/search', [
 
     $scope.updateFilterBoxOptions = ->
       console.log("SELTYPE", $scope.selectedType)
-      if $scope.selectedType
+      if $scope.selectedType and $scope.filterDisplay.length == 0
         if $scope.selectedType.join(" ").includes($scope.volumeDisplayStr)
           $scope.filterDisplay = (s for s in $scope.getVolumeFeatureBoxOpts())
         if $scope.selectedType.join(" ").includes($scope.partyDisplayStr)
@@ -173,7 +176,7 @@ app.controller 'site/search', [
 
     $scope.countWithArg = (group, argument, value) ->
       console.log(group)
-      result = (d for d in group.docs when d[argument] == value).length
+      result = (d for d in group.docs when d[argument] == value).length || 0
       return result
 
     # Perform a new search for people or volumes only... NOTE: does not do anything yet
