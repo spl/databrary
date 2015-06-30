@@ -55,7 +55,6 @@ app.controller('party/profile', [
         for (j = 0; j < $scope.users.sponsors.length; j += 1){
           if($scope.users.sponsors[j].id === volume.access[i].party.id){
             $scope.users.sponsors[j].isSelected = 'userSelected';
-            console.log($scope.users.sponsors[j]);
           }
         }
         for (j = 0; j < $scope.users.labGroupMembers.length; j += 1){
