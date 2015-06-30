@@ -24,6 +24,7 @@ app.directive('authApplyForm', [
 
           form.successFn(auth);
         }, function (res) {
+          form.$setUnsubmitted();
           form.validator.server(res);
           page.display.scrollTo(form.$element);
         });
