@@ -81,8 +81,8 @@ fixAssetSlotDuration as
   | Just dur <- assetDuration (slotAsset as) = as{ assetSlot = (\s -> s{ slotSegment = segmentSetDuration dur (slotSegment s) }) <$> assetSlot as }
   | otherwise = as
 
-findAssetContainerEnd :: MonadDB m => Container -> m (Maybe Offset)
-findAssetContainerEnd c = 
+findAssetContainerEnd :: MonadDB m => Container -> m Offset
+findAssetContainerEnd c = fromMaybe 0 <$>
   dbQuery1' [pgSQL|SELECT max(upper(segment)) FROM slot_asset WHERE container = ${containerId c}|]
 
 assetSlotJSON :: AssetSlot -> JSON.Object

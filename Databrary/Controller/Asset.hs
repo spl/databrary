@@ -178,7 +178,7 @@ processAsset api target = do
         p <- (<|> (lowerBound . segmentRange =<< seg)) <$> deformNonEmpty deform
         Slot c . maybe fullSegment
           (\l -> Segment $ Range.bounded l (l + fromMaybe 0 ((segmentLength =<< seg) <|> dur)))
-          <$> orElseM p (flatMapM (lift . findAssetContainerEnd) (isNothing s && isJust dur ?> c)))
+          <$> orElseM p (Trav.mapM (lift . findAssetContainerEnd) (isNothing s && isJust dur ?> c)))
     return
       ( as
         { slotAsset = a
