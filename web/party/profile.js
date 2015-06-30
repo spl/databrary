@@ -78,20 +78,38 @@ app.controller('party/profile', [
     // This should take in a user, then select volumes on each thing. 
     $scope.clickUser = function(user){
       unselectAll();
-      var iterateVolume = function(_item, i, volumeArray){
-        for(var j = 0; j < volumeArray[i].v.length; j += 1){
-          for (var k = 0; k < volumeArray[i].v[j].access.length; k += 1){
-            if(volumeArray[i].v[j].access[k].party.id == user.party.id){
-              volumeArray[i].v[j].access[k].isSelected = 'volumeSelected';
+
+      for(var i = 0; i < $scope.volumes.individual.length; i += 1){
+        for(var j = 0; j < $scope.volumes.individual[i].v.length; j += 1){
+          for(var k = 0; k < $scope.volumes.individual[i].v[j].access.length; k += 1) {
+            if($scope.volumes.individual[i].v[j].access[k].party.id == user.party.id){
+              $scope.volumes.individual[i].isSelected = 'volumeSelected';
             }
           }
         }
-      };
+      }
 
-      _.each($scope.volumes.individual, iterateVolume);
-      _.each($scope.volumes.collaborator, iterateVolume);
-      _.each($scope.volumes.inherited, iterateVolume);
+      
+      for(var i = 0; i < $scope.volumes.collaborator.length; i += 1){
+        for(var j = 0; j < $scope.volumes.collaborator[i].v.length; j += 1){
+          for(var k = 0; k < $scope.volumes.collaborator[i].v[j].access.length; k += 1) {
+            if($scope.volumes.collaborator[i].v[j].access[k].party.id == user.party.id){
+              $scope.volumes.collaborator[i].isSelected = 'volumeSelected';
+            }
+          }
+        }
+      }
 
+      
+      for(var i = 0; i < $scope.volumes.inherited.length; i += 1){
+        for(var j = 0; j < $scope.volumes.inherited[i].v.length; j += 1){
+          for(var k = 0; k < $scope.volumes.inherited[i].v[j].access.length; k += 1) {
+            if($scope.volumes.inherited[i].v[j].access[k].party.id == user.party.id){
+              $scope.volumes.inherited[i].isSelected = 'volumeSelected';
+            }
+          }
+        }
+      }
     };
 
     var getParents = function(parents) {
