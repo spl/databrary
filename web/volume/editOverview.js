@@ -58,6 +58,7 @@ app.directive('volumeEditOverviewForm', [
             if (!volume)
               $location.url(vol.editRoute());
           }, function (res) {
+            form.$setUnsubmitted();
             form.validator.server(res);
           });
       };
