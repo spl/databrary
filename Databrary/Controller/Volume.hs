@@ -206,7 +206,7 @@ volumeCitationForm v = do
   look <- flatMapM (lift . lookupCitation) $
     guard (T.null (volumeName vol) || T.null (citationHead cite) || isNothing (citationYear cite)) >> citationURL cite
   let fill = maybe cite (cite <>) look
-      empty = isNothing (citationURL fill) && isNothing (citationYear fill)
+      empty = T.null (citationHead fill) && isNothing (citationURL fill) && isNothing (citationYear fill)
       name 
         | Just title <- citationTitle fill
         , T.null (volumeName vol) = title
