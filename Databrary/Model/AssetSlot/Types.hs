@@ -1,9 +1,11 @@
+{-# LANGUAGE TypeFamilies #-}
 module Databrary.Model.AssetSlot.Types
   ( AssetSlot(..)
+  , assetSlotId
   , assetNoSlot
   ) where
 
-import Control.Applicative ((<|>))
+import Control.Applicative ((<$>), (<|>))
 
 import Databrary.Has (Has(..))
 import Databrary.Model.Id.Types
@@ -16,11 +18,21 @@ import Databrary.Model.Format.Types
 import Databrary.Model.Asset.Types
 import Databrary.Model.Slot.Types
 
+data AssetSlotId = AssetSlotId
+  { _slotAssetId :: !(Id Asset)
+  , _assetSlotId :: !(Maybe (Id Slot))
+  }
+
+type instance IdType AssetSlot = AssetSlotId
+
 -- | An entire asset in its assigned position.
 data AssetSlot = AssetSlot
   { slotAsset :: Asset
   , assetSlot :: Maybe Slot
   }
+
+assetSlotId :: AssetSlot -> Id AssetSlot
+assetSlotId (AssetSlot a s) = Id $ AssetSlotId (assetId a) (slotId <$> s)
 
 assetNoSlot :: Asset -> AssetSlot
 assetNoSlot a = AssetSlot a Nothing

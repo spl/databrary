@@ -88,7 +88,6 @@ app.directive 'spreadsheet', [
 
         Editing = $scope.editing = $attrs.edit != undefined
         Top = $scope.top = 'top' of $attrs
-        Assets = 'assets' of $attrs
         ID = $scope.id = $attrs.id ? if Top then 'sst' else 'ss'
         Limit = $attrs.limit
         Key = undefined
@@ -298,11 +297,10 @@ app.directive 'spreadsheet', [
 
             Depends[record.id][i] = n
 
-          if Assets
-            count.asset = 0
-            for assetId, asset of slot.assets
-              n = count.asset++
-              populateAssetData(i, n, asset)
+          count.asset = 0
+          for assetId, asset of slot.assets
+            n = count.asset++
+            populateAssetData(i, n, asset)
 
           return
 
@@ -394,7 +392,7 @@ app.directive 'spreadsheet', [
           Depends = {}
           Counts = []
           if Key.id == 'slot'
-            Data.asset = {id:[]} if Assets
+            Data.asset = {id:[]}
             n = populateSlots()
           else
             n = populateRecords()

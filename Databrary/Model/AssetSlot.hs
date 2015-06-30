@@ -6,6 +6,7 @@ module Databrary.Model.AssetSlot
   , lookupSlotAssets
   , lookupContainerAssets
   , lookupVolumeAssetSlots
+  , lookupVolumeAssetSlotIds
   , changeAssetSlot
   , changeAssetSlotDuration
   , fixAssetSlotDuration
@@ -57,6 +58,10 @@ lookupContainerAssets = lookupSlotAssets . containerSlot
 lookupVolumeAssetSlots :: (MonadDB m) => Volume -> Bool -> m [AssetSlot]
 lookupVolumeAssetSlots v top =
   dbQuery $ ($ v) <$> $(selectQuery selectVolumeSlotAsset "$WHERE asset.volume = ${volumeId v} AND (container.top OR ${not top}) ORDER BY container.id")
+
+lookupVolumeAssetSlotIds :: (MonadDB m) => Volume -> m [(Asset, SlotId)]
+lookupVolumeAssetSlotIds v =
+  dbQuery $ ($ v) <$> $(selectQuery selectVolumeSlotIdAsset "$WHERE asset.volume = ${volumeId v} ORDER BY container")
 
 changeAssetSlot :: (MonadAudit c m) => AssetSlot -> m Bool
 changeAssetSlot as = do
