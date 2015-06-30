@@ -188,6 +188,8 @@ app.controller 'site/search', [
     $scope.updateFilterBoxOptions = ->
       console.log("SELTYPE", $scope.selectedType)
       if $scope.selectedType and currentFilter != $scope.selectedType
+        # We have to reset offset
+        $scope.offset = 0
         if $scope.selectedType.join(" ").includes($scope.volumeDisplayStr)
           $scope.filterDisplay = (s for s in $scope.getVolumeFeatureBoxOpts())
         if $scope.selectedType.join(" ").includes($scope.partyDisplayStr)
