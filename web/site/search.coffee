@@ -64,7 +64,8 @@ app.controller 'site/search', [
     $scope.search = ->
       # return page.router.http(page.router.controllers.postSearch, page.$route.current.params)
       console.log("prev results", results)
-      console.log("query", $scope.query)
+      # $scope.query = $scope.query.replace /;/g, "\%3B"
+      console.log("query:", $scope.query)
       # page.$route.current.params.query = $scope.query
       promise = page.router.http(page.router.controllers.postSearch,
         {"query" : $scope.query, "offset" : $scope.offset, "limit" : $scope.limit})
@@ -111,8 +112,9 @@ app.controller 'site/search', [
         $scope.offset = $scope.limit * (page-1)
         $scope.search()
 
-
-      console.log("MAX RESULTS", $scope.maxResults())
+      ##########################
+      # Set up pagination
+      # ########################
 
       if parseInt($scope.maxResults()) > ($scope.offset + $scope.limit)
         $scope.next = ->
@@ -131,6 +133,10 @@ app.controller 'site/search', [
 
       $scope.number = 1 + ($scope.offset / $scope.limit)
       console.log("NUMBER: ", $scope.number, $scope.offset, $scope.limit)
+
+################################
+# End parse results
+# ##############################
 
 
     $scope.findFacet = (typeName, res) ->
@@ -167,7 +173,7 @@ app.controller 'site/search', [
 
     $scope.updateFilterBoxOptions = ->
       console.log("SELTYPE", $scope.selectedType)
-      if $scope.selectedType and $scope.filterDisplay.length == 0
+      if $scope.selectedType
         if $scope.selectedType.join(" ").includes($scope.volumeDisplayStr)
           $scope.filterDisplay = (s for s in $scope.getVolumeFeatureBoxOpts())
         if $scope.selectedType.join(" ").includes($scope.partyDisplayStr)

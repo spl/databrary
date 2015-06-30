@@ -446,7 +446,7 @@ app.provider('routerService', [
             if (r.method === 'POST' || r.method === 'PUT')
               r.data = arguments[i];
             else
-              r.params = arguments[i];
+              r.url = urlParams(r.url, arguments[i]); // Workaround for ; escaping
             if (++i < arguments.length)
               angular.extend(r, arguments[i]);
           }
