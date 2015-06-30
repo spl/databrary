@@ -79,11 +79,11 @@ app.controller('party/profile', [
     $scope.clickUser = function(user){
       unselectAll();
 
-      for(var i = 0; i < $scope.volumes.individual.length; i += 1){
-        for(var j = 0; j < $scope.volumes.individual[i].v.length; j += 1){
-          for(var k = 0; k < $scope.volumes.individual[i].v[j].access.length; k += 1) {
-            if($scope.volumes.individual[i].v[j].access[k].party.id == user.party.id){
-              $scope.volumes.individual[i].isSelected = 'volumeSelected';
+      for(var a = 0; a < $scope.volumes.individual.length; a += 1){
+        for(var s = 0; s < $scope.volumes.individual[a].v.length; s += 1){
+          for(var d = 0; d < $scope.volumes.individual[a].v[s].access.length; d += 1) {
+            if($scope.volumes.individual[a].v[s].access[d].party.id == user.party.id){
+              $scope.volumes.individual[a].isSelected = 'volumeSelected';
             }
           }
         }
@@ -99,13 +99,12 @@ app.controller('party/profile', [
           }
         }
       }
-
       
-      for(var i = 0; i < $scope.volumes.inherited.length; i += 1){
-        for(var j = 0; j < $scope.volumes.inherited[i].v.length; j += 1){
-          for(var k = 0; k < $scope.volumes.inherited[i].v[j].access.length; k += 1) {
-            if($scope.volumes.inherited[i].v[j].access[k].party.id == user.party.id){
-              $scope.volumes.inherited[i].isSelected = 'volumeSelected';
+      for(var e = 0; e < $scope.volumes.inherited.length; e += 1){
+        for(var r = 0; r < $scope.volumes.inherited[e].v.length; r += 1){
+          for(var t = 0; t < $scope.volumes.inherited[e].v[r].access.length; t += 1) {
+            if($scope.volumes.inherited[e].v[r].access[t].party.id == user.party.id){
+              $scope.volumes.inherited[e].isSelected = 'volumeSelected';
             }
           }
         }
@@ -138,7 +137,7 @@ app.controller('party/profile', [
         if(v.isIndividual){
           tempVolumes.individual.push({v: [v]});
         } else if(tempVolumes.isCollaborator){
-          tempVolumes.individual.push({v: [v]});
+          tempVolumes.collaborator.push({v: [v]});
         } else{
           for (var i=0;i<v.access.length;i++){
             for (var j=0;j<tempVolumes.inherited.length;j++){
