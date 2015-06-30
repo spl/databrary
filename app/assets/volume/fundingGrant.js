@@ -23,6 +23,7 @@ app.directive('fundingGrantForm', [
         page.messages.clear(form);
         form.data.awards = _.filter(form.data.awards, keep);
 
+        form.$setSubmitted();
         volume.fundingSave(funding.funder.id, form.data).then(function () {
           page.messages.add({
             body: page.constants.message('funding.save.success'),
@@ -33,7 +34,9 @@ app.directive('fundingGrantForm', [
           delete funding.new;
           form.data.awards.push('');
           form.$setPristine();
+          form.$setUnsubmitted();
         }, function (res) {
+          form.$setUnsubmitted();
           page.messages.addError({
             body: page.constants.message('funding.save.error'),
             report: res,
@@ -46,6 +49,7 @@ app.directive('fundingGrantForm', [
 
       form.remove = function () {
         page.messages.clear(form);
+        form.$setSubmitted();
         volume.fundingRemove(funding.funder.id).then(function () {
           page.messages.add({
             body: page.constants.message('funding.remove.success'),
@@ -54,8 +58,10 @@ app.directive('fundingGrantForm', [
           });
 
           form.$setPristine();
+          form.$setUnsubmitted();
           form.removeSuccessFn(funding);
         }, function (res) {
+          form.$setUnsubmitted();
           page.messages.addError({
             body: page.constants.message('funding.remove.error'),
             report: res,

@@ -30,6 +30,7 @@ app.directive 'volumeEditLinksForm', [
       form.save = () ->
         page.messages.clear(form)
         data = _.filter form.data, (ref) -> !ref.removed
+        form.$setSubmitted()
         volume.save({links: data}).then(() ->
             form.validator.server {}
             form.data = data.filter (ref) -> ref.head != '' || ref.url != ''
@@ -41,7 +42,9 @@ app.directive 'volumeEditLinksForm', [
               owner: form
 
             form.$setPristine()
+            form.$setUnsubmitted()
           , (res) ->
+            form.$setUnsubmitted()
             form.validator.server res
           )
 
