@@ -121,7 +121,7 @@ leftJoin p (a:al) b = uncurry (:) $ ((a, ) *** leftJoin p al) $ span (p a) b
 
 volumeJSONField :: (MonadDB m, MonadHasIdentity c m) => Volume -> BS.ByteString -> Maybe BS.ByteString -> StateT VolumeCache m (Maybe JSON.Value)
 volumeJSONField vol "access" ma = do
-  Just . JSON.toJSON . map (\va -> 
+  Just . JSON.toJSON . map (\va ->
     volumeAccessJSON va JSON..+ ("party" JSON..= partyJSON (volumeAccessParty va)))
     <$> cacheVolumeAccess vol (fromMaybe PermissionNONE $ readDBEnum . BSC.unpack =<< ma)
 volumeJSONField vol "citation" _ =
@@ -246,7 +246,7 @@ createVolume = action POST (pathAPI </< "volume") $ \api -> withAuth $ do
     (bv, cite) <- volumeCitationForm blankVolume
     own <- "owner" .:> do
       oi <- deformOptional deform
-      own <- maybe (return $ Just $ selfAuthorize u) (lift . lookupAuthorizeParent u) oi
+      own <- maybe (return $ Just $ selfAuthorize u) (lift . lookupAuthorizeParent u) $ mfilter (peek u /=) oi
       deformMaybe' "You are not authorized to create volumes for that owner." $
         authorizeParent . authorization <$> mfilter ((PermissionADMIN <=) . accessMember) own
     auth <- lift $ lookupAuthorization own rootParty
@@ -255,7 +255,7 @@ createVolume = action POST (pathAPI </< "volume") $ \api -> withAuth $ do
     return (bv, cite, own)
   v <- addVolume bv
   _ <- changeVolumeCitation v cite
-  _ <- changeVolumeAccess $ VolumeAccess PermissionADMIN PermissionEDIT owner v
+  _ <- changeVolumeAccess $ VolumeAccess PermissionADMIN PermissionADMIN owner v
   case api of
     JSON -> okResponse [] $ volumeJSON v
     HTML -> redirectRouteResponse [] viewVolume (api, volumeId v) []
