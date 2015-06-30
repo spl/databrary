@@ -14,6 +14,7 @@ app.controller('party/profile', [
       users.otherCollaborators = [];
 
       _(volumes).pluck('access').flatten().each(function(v){
+        console.log("V: ", v); 
         if(v.children > 0 ){
           users.sponsors.push(v);
         } else if(v.parents && v.parents.length > 0 && v.party.members && v.party.members.length > 0) {
@@ -81,7 +82,7 @@ app.controller('party/profile', [
       var iterateVolume = function(_item, i, volumeArray){
         for(var j = 0; j < volumeArray[i].v.length; j += 1){
           for (var k = 0; k < volumeArray[i].v[j].access.length; k += 1){
-            if(volumeArray[i].v[j].access[k] == user){
+            if(volumeArray[i].v[j].access[k].party.id == user.id){
               volumeArray[i].v[j].access[k].isSelected = 'volumeSelected';
             }
           }
