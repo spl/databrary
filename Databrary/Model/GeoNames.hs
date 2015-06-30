@@ -25,8 +25,8 @@ import Databrary.Model.Id.Types
 type instance IdType GeoName = Int64
 
 data GeoName = GeoName
-  { geoNameId :: Id GeoName
-  , geoName :: T.Text
+  { geoNameId :: !(Id GeoName)
+  , geoName :: !T.Text
   }
 
 makeHasRec ''GeoName ['geoNameId]
