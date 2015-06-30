@@ -69,6 +69,7 @@ app.controller 'site/search', [
       # $scope.query = $scope.query.replace /;/g, "\%3B"
       console.log("query:", $scope.query)
       # page.$route.current.params.query = $scope.query
+      console.log("THE QUERY IS", $scope.query)
       promise = page.router.http(page.router.controllers.postSearch,
         {"query" : $scope.query, "offset" : $scope.offset, "limit" : $scope.limit})
       console.log(promise)
@@ -83,6 +84,10 @@ app.controller 'site/search', [
     # Parse results, the main workhorse function
     # ##############################
     $scope.parseResults = (res) ->
+      if res == "null"
+        $scope.query = "*"
+        $scope.search()
+        return
       console.log("RES:", res)
       $scope.partyResults = $scope.getResults("party", res)
       $scope.volumeResults = $scope.getResults("volume", res)
@@ -140,9 +145,12 @@ app.controller 'site/search', [
 # End parse results
 # ##############################
 
+################################
+# Helper functions
+################################
 
     $scope.findFacet = (typeName, res) ->
-      if res.facets.content_type
+      if res != null and res.facets.content_type
          facets = (facet.val for facet in res.facets.content_type.buckets)
          return facets.indexOf(typeName)
       else
@@ -156,8 +164,12 @@ app.controller 'site/search', [
       return res?.facets?.content_type?.buckets[idx].count ? 0
 
     $scope.findResult = (typeName, res) ->
-      groups = (group.groupValue for group in res.grouped.content_type.groups)
-      groups.indexOf(typeName)
+      console.log("RESULT IS", res)
+      if res != null
+        groups = (group.groupValue for group in res.grouped.content_type.groups)
+        return groups.indexOf(typeName)
+      else
+        return -1
 
     $scope.getResults = (type, res) ->
       idx = $scope.findResult(type, res)
@@ -183,6 +195,8 @@ app.controller 'site/search', [
           $scope.filterDisplay = _.sortBy(_.uniq(a for a in $scope.affiliations))
         currentFilter = $scope.selectedType
 
+    # Takes a group of documents, an argument name, and a value, then counts
+    # how many documents in the set have that value
     $scope.countWithArg = (group, argument, value) ->
       console.log(group)
       result = (d for d in group.docs when d[argument] == value).length || 0
@@ -211,6 +225,7 @@ app.controller 'site/search', [
       if $scope.selectedType.join(" ").includes($scope.partyDisplayStr)
         $scope.partyFilterBoxClick()
         console.log("FILTERING BY PARTY")
+      $scope.offset = 0 # Reset the offset
       $scope.search()
 
     $scope.partyFilterBoxClick = ->
@@ -231,8 +246,10 @@ app.controller 'site/search', [
       $scope.query = $scope.originalQuery + "|arg=volume_has_sessions_b:true"
 
 
+    # Code for the initial load
     params = $location.search()
     $scope.query = params.query
+    console.log("INITIAL QUERY:", $scope.query)
     $scope.originalQuery = params.query
     console.log(results)
     $scope.offset = parseInt($location.search().offset, 10) || 0

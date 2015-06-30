@@ -164,12 +164,12 @@ httpRequestJSONSolr req = httpRequest req "text/plain" $ \rb ->
 
 search :: HTTPClientM c m => String -> Int32 -> Int32 -> m (Maybe Value)
 search q offset limit = do
+      liftIO $ print q
       let query = Q.createQuery q
       let (queryStr, args, join) = Q.queryToString query
-      let sQuery = SolrQuery queryStr ("content_type:(volume OR party)" ++ (if(length args > 0) then " AND " else " ") ++ args) join limit offset
+      let sQuery = SolrQuery (if(length queryStr > 0) then queryStr else "*") ("content_type:(volume OR party)" ++ (if(length args > 0) then " AND " else " ") ++ args) join limit offset
       request <- liftIO $ generatePostReq sQuery
       liftIO $ print $ encode sQuery
       liftIO $ print sQuery -- TODO REMOVE THIS
-      liftIO $ print q
       liftIO $ print request
       (submitQuery request)

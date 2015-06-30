@@ -7,14 +7,6 @@ set -o pipefail
 top=`git rev-parse --show-cdup || echo "Assuming $PWD is top." >&2`
 schema=${top}schema
 
-if [[ ! -f ${top}local.conf ]] ; then
-	echo "${top}local.conf is missing.  See README."
-	if [[ -f $conf/local.conf ]] ; then
-		echo "Note: local.conf should be moved from $conf to $top."
-	fi
-	exit 1
-fi
-
 getdbconfig () {
 	# This isn't perfect but hopefully good enough
 	sed -n '/^db\s*{/,/^}/{/^\s*\([a-z]\+\)\s*=\s*/{s//\1 /;s/^\([a-z]\+ \)"\(.*\)"$/\1\2/;s/\$(USER)/'"$USER"'/;p}}' ${top}databrary.conf ${top}local.conf
