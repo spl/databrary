@@ -1,6 +1,6 @@
 <article class="view party-view">
   <ng-include src="'party/overview.html'"></ng-include>
-  <panel id="panel_browser" panel-title="profile.dashboard.title" fold ng-if="::party.volumes || page.models.Login.isAuthorized()">  
+  <panel id="panel_browser" panel-title="profile.dashboard.title" fold ng-if="::party.volumes || page.models.Login.isAuthorized()" class="dashboard">  
 
     <section id="dashboard-volumes" class="dashboard-volumes col-desktop-10 col-tablet-6 col-mobile-6">
       <div ng-if="::volumes.individual.length > 0">
@@ -29,32 +29,34 @@
 
     <section id="dashboard-people" class="dashboard-people col-desktop-5 col-tablet-3 col-mobile-6">
       <div ng-if="users.sponsors.length > 0">
-        <span>Sponsors</span>
+        <span>Sponsors </span>
+        <span class="icon info"></span>
         <ul>
           <li ng-click="clickUser(sponsor)" ng-class="sponsor.isSelected" ng-repeat="sponsor in users.sponsors" ng-bind="sponsor.party.name"></li>
         </ul>
       </div>
       <div ng-if="users.labGroupMembers.length > 0">
-        <span>Lab/Group members</span>
+        <span>Lab/Group members </span>
+        <span class="icon info"></span>
         <ul>
           <li ng-click="clickUser(member)" ng-class="member.isSelected" ng-repeat="member in users.labGroupMembers" ng-bind="member.party.name"></li>
         </ul>
       </div>
       <div ng-if="users.nonGroupAffiliates.length > 0">
-        <span>Non-group affiliates</span>
+        <span>Non-group affiliates </span>
+        <span class="icon info"></span>
         <ul>
           <li ng-click="clickUser(nonmember)" ng-class="nonmember.isSelected" ng-repeat="nonmember in users.nonGroupAffiliates" ng-bind="nonmember.party.name"></li>
         </ul>
       </div>
       <div ng-if="users.otherCollaborators.length > 0">
-        <span>Volume collaborators</span>
+        <span>Volume collaborators </span>
+        <span class="icon info"></span>
         <ul>
           <li ng-click="clickUser(collaber)" ng-class="collaber.isSelected" ng-repeat="collaber in users.otherCollaborators" ng-bind="collaber.party.name"></li>
         </ul>
       </div>
     </section>
-
-    <party-data></party-data>  
   </panel>
   <panel id="panel-network" edit-link="{{::party.editRoute('apply')}}" panel-title="network.title" fold>
     <party-network></party-network>
