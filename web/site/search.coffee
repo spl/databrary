@@ -26,6 +26,8 @@ app.controller 'site/search', [
     $scope.limit = 10
     display.title = 'Search'
 
+    currentFilter = ""
+
 
   ###########################
   # Functions for transforming a document into strings
@@ -173,12 +175,13 @@ app.controller 'site/search', [
 
     $scope.updateFilterBoxOptions = ->
       console.log("SELTYPE", $scope.selectedType)
-      if $scope.selectedType
+      if $scope.selectedType and currentFilter != $scope.selectedType
         if $scope.selectedType.join(" ").includes($scope.volumeDisplayStr)
           $scope.filterDisplay = (s for s in $scope.getVolumeFeatureBoxOpts())
         if $scope.selectedType.join(" ").includes($scope.partyDisplayStr)
           console.log("AFFILIATIONS:", $scope.affiliations)
           $scope.filterDisplay = _.sortBy(_.uniq(a for a in $scope.affiliations))
+        currentFilter = $scope.selectedType
 
     $scope.countWithArg = (group, argument, value) ->
       console.log(group)
