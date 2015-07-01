@@ -96,7 +96,7 @@ object Indexer {
          FROM volume
          LEFT JOIN volume_citation ON volume.id = volume_citation.volume
          LEFT JOIN volume_access ON volume.id = volume_access.volume
-         WHERE volume_access.children > 'NONE' AND volume_access.party = -1 AND id > 0
+         WHERE volume_access.children > 'NONE' AND volume_access.party = -1 AND volume.id > 0
     """.map(x => SQLVolume(x)).list().apply().map(x => x.volumeId -> x).toMap
 
 
@@ -114,7 +114,7 @@ object Indexer {
         SELECT id, container.volume AS volume, name, date, release FROM container
         LEFT JOIN slot_release ON id = slot_release.container
         LEFT JOIN volume_access ON container.volume = volume_access.volume
-        WHERE volume_access.children > 'NONE' AND volume_access.party = -1
+        WHERE volume_access.children > 'NONE' AND volume_access.party = -1 AND container.volume > 0
     """.map(x => SQLContainer(x)).list().apply().map(x => x.containerId -> x).toMap
 
 
