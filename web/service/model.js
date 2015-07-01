@@ -376,7 +376,7 @@ app.factory('modelService', [
     function Volume(init) {
       this.containers = {_PLACEHOLDER:true};
       this.records = {_PLACEHOLDER:true};
-      this.assets = {};
+      this.assets = {}; // cache only
       Model.call(this, init);
     }
 
@@ -401,8 +401,10 @@ app.factory('modelService', [
 
     Volume.prototype.init = function (init) {
       Model.prototype.init.call(this, init);
-      if ('access' in init)
+      if ('access' in init) {
         this.access = partyMakeSubArray(init.access);
+        volumeAccessPreset(this);
+      }
       if ('records' in init) {
         var rl = init.records;
         for (var ri = 0; ri < rl.length; ri ++)
@@ -528,12 +530,34 @@ app.factory('modelService', [
       return Party.search({volume:this.id,query:name});
     };
 
+    function volumeAccessPreset(volume) {
+      if (!volume.access)
+        return;
+      var p = [];
+      var al = volume.access.filter(function (a) {
+        var pi = constants.accessPreset.parties.indexOf(a.party.id);
+        if (pi >= 0)
+          p[pi] = a.children;
+        else
+          return true;
+      });
+      var pi = constants.accessPreset.findIndex(function (preset) {
+        return preset.every(function (s, i) {
+          return preset[i] === (p[i] || 0);
+        });
+      });
+      if (pi >= 0) {
+        volume.access = al;
+        volume.accessPreset = pi;
+      }
+    }
+
     Volume.prototype.accessSave = function (target, data) {
       var v = this;
       return router.http(router.controllers.postVolumeAccess, this.id, target, data)
         .then(function (res) {
           // could update v.access with res.data
-          v.clear('access');
+          v.clear('access', 'accessPreset');
           return v;
         });
     };

@@ -12,10 +12,11 @@
 
   <div class="col-desktop-9 col-tablet-6 col-mobile-6">
     <div>
-      <div ng-if="::!shared" class="overview-access">
+      <div ng-if="::volume.accessPreset === 0" class="overview-access">
         <span>ACCESS: </span>
-        <span message="volume.access.private"></span>
-        <span message="volume.access.private.extra"></span>
+        <span class="icon" ng-class="::'access'+{{::volume.accessPreset}}"></span>
+        <span message="access.preset.title{{::volume.accessPreset}}"></span>
+        <span message="access.preset.extra{{::volume.accessPreset}}"></span>
         <a ng-if="::volume.checkPermission(page.permission.ADMIN)" ng-href="{{::volume.editRoute('access')}}"><button class="yellow icon edit"></button></a>
       </div>
 
@@ -73,6 +74,9 @@
     <show-investigators investigators-title="contributors" minlevel="ADMIN"></show-investigators>
     <show-investigators investigators-title="private" maxlevel="ADMIN" minlevel="READ"></show-investigators>
     <show-investigators investigators-title="shared" maxlevel="READ"></show-investigators>
+
+    <span ng-if="::volume.accessPreset != null" class="icon" ng-class="::'access'+{{::volume.accessPreset}}"></span>
+    <span ng-if="::volume.accessPreset != null" message="access.preset.title{{::volume.accessPreset}}"></span>
 
     <div frame id="frame-funding" frame-title="volume.funding.title" fold>
       <dl class="panel-overview-volume-funds" ng-repeat="funding in ::volume.funding">

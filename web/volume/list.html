@@ -9,10 +9,9 @@
           <span class="icon volume"></span>
           <a ng-href="{{::volume.route()}}" ng-bind="::name(volume)"></a>
         </h1>
-        <div ng-if="::profile" class="volume-access-status">
-          <span class="icon unlocked" ng-if="::shared(volume)"></span>
-          <span class="icon locked" ng-if="::!shared(volume)"></span>
-          <span message="{{shared(volume) ? 'volume.access.shared' : 'volume.access.private'}}"></span>
+        <div ng-if="::volume.accessPreset != null" class="volume-access-status">
+          <span class="icon" ng-class="::'access'+{{::volume.accessPreset}}"></span>
+          <span message="access.preset.title{{::volume.accessPreset}}"></span>
         </div>
 
         <div class="volume-list-investigators" ng-if="::volume.access">

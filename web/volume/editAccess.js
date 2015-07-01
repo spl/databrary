@@ -1,55 +1,43 @@
 'use strict';
 
 app.directive('volumeEditAccessForm', [
-  'pageService', '$q',
-  function (page, $q) {
+  '$q', 'constantService', 'messageService', 'displayService',
+  function ($q, constants, messages, display) {
     var link = function ($scope) {
       var volume = $scope.volume;
       var form = $scope.volumeEditAccessForm;
 
-      form.global = page.constants.accessGlobal[0].slice();
-      form.data = [];
-      volume.access.forEach(function (access) {
-        var i = page.constants.accessGlobal.parties.indexOf(access.party.id);
-        if (i >= 0)
-          form.global[i] = access.children;
-        else
-          form.data.push(access);
-      });
+      form.preset = volume.accessPreset;
+      form.data = _.values(volume.access);
 
-      form.globalVal = page.constants.accessGlobal.findIndex(function (preset) {
-        return preset.every(function (p, i) {
-          return form.global[i] === p;
-        });
-      });
-      if (form.globalVal === -1)
-        form.globalVal = undefined;
-
-      var globalForm = $scope.accessGlobalForm;
+      var presetForm = $scope.accessPresetForm;
       var subforms = [];
 
       $scope.permissionName = function (p) {
-        return page.constants.permission[p];
+        return constants.permission[p];
       };
 
-      function saveGlobal() {
-        form.global = page.constants.accessGlobal[form.globalVal || 0].slice();
-        $q.all(_.map(page.constants.accessGlobal.parties, function (party, i) {
-          var p = form.global[i];
-          volume.accessSave(party, {
-            individual: p,
-            children: p,
+      function savePreset() {
+        if (form.preset == null)
+          return;
+        form.$setSubmitted();
+        $q.all(constants.accessPreset[form.preset].map(function (a, pi) {
+          volume.accessSave(constants.accessPreset.parties[pi], {
+            individual: a,
+            children: a,
           });
         })).then(function () {
-          page.messages.add({
-            body: page.constants.message('access.global.save.success'),
+          form.$setUnsubmitted();
+          messages.add({
+            body: constants.message('access.preset.save.success'),
             type: 'green',
             owner: form
           });
           form.$setPristine();
         }, function (res) {
-          page.messages.addError({
-            body: page.constants.message('access.global.save.error'),
+          form.$setUnsubmitted();
+          messages.addError({
+            body: constants.message('access.preset.save.error'),
             report: res,
             owner: form
           });
@@ -57,13 +45,13 @@ app.directive('volumeEditAccessForm', [
       }
 
       form.saveAll = function () {
-        page.messages.clear(form);
+        messages.clear(form);
         subforms.forEach(function (subform) {
           if (subform.$dirty)
             subform.save(false);
         });
-        if (globalForm.$dirty)
-          saveGlobal();
+        if (presetForm.$dirty)
+          savePreset();
       };
 
       $scope.$on('accessGrantForm-init', function (event, grantForm) {
@@ -81,7 +69,7 @@ app.directive('volumeEditAccessForm', [
           party: found,
         });
         //warning: next line is template dependent! if classnames change this will no longer work
-        page.display.scrollTo('fieldset .access-grant:last');
+        display.scrollTo('fieldset .access-grant:last');
       };
     };
 
