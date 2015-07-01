@@ -10,7 +10,7 @@ app.directive('accessGrantForm', [
 
       form.data = {
         individual: access.individual,
-        extend: access.children === access.individual
+        extend: access.children == access.individual
       };
       if (!access.individual) {
         form.$setDirty();

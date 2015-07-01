@@ -11,8 +11,8 @@
   <scroll-float>
     <fieldset class="clean">
       <div class="col-desktop-5 col-tablet-5 col-mobile-6">
-        <button ng-click="volumeEditAccessForm.saveAll()" class="green" message="save" ng-disabled="volumeEditAccessForm.$pristine || volumeEditAccessForm.$invalid"></button>
-        <button ng-click="volumeEditAccessForm.resetAll()" message="revert" ng-disabled="volumeEditAccessForm.$pristine"></button>
+        <button ng-click="volumeEditAccessForm.saveAll()" class="green" message="save" ng-disabled="volumeEditAccessForm.$pristine || volumeEditAccessForm.$invalid || volumeEditAccessForm.$submitted"></button>
+        <button ng-click="volumeEditAccessForm.resetAll()" message="revert" ng-disabled="volumeEditAccessForm.$pristine || volumeEditAccessForm.$submitted"></button>
       </div>
       <access-search-form class="col-desktop-6 col-tablet-4 col-mobile-6" placeholder-text="{{::'access.search.legend' | message}}"></access-search-form>
     </fieldset>

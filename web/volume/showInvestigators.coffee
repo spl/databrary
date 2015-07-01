@@ -8,7 +8,7 @@ app.directive 'showInvestigators', [
     transclude: true,
     templateUrl: 'volume/showInvestigators.html',
     link: ($scope, $element, $attrs) ->
-      $scope.title = $attrs.title
+      $scope.title = $attrs.investigatorsTitle
 
       maxPerm = constants.permission[$attrs.maxlevel] ? constants.permission.length
       minPerm = constants.permission[$attrs.minlevel] ? 0

@@ -7,7 +7,7 @@ module Databrary.Controller.Upload
 
 import Control.Applicative ((<$>), (<*>))
 import Control.Exception (bracket)
-import Control.Monad ((<=<), when)
+import Control.Monad ((<=<))
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Reader (ReaderT)
 import Control.Monad.Trans.Class (lift)
@@ -27,8 +27,9 @@ import System.Posix.Files.ByteString (setFdSize)
 import System.Posix.IO.ByteString (openFd, OpenMode(ReadOnly, WriteOnly), defaultFileFlags, exclusive, closeFd, fdSeek, fdWriteBuf, fdReadBuf)
 import System.Posix.Types (COff(..))
 
-import Databrary.Has (view, peeks)
+import Databrary.Has (view, peek, peeks, focusIO)
 import qualified Databrary.JSON as JSON
+import Databrary.Service.Log
 import Databrary.Model.Id
 import Databrary.Model.Permission
 import Databrary.Model.Volume
@@ -78,10 +79,15 @@ uploadChunk :: AppRoute ()
 uploadChunk = action POST (pathJSON </< "upload") $ \() -> withAuth $ do
   (up, off, len) <- runForm Nothing chunkForm
   file <- peeks $ uploadFile up
-  let badLength = result =<< returnResponse badRequest400 [] ("Incorrect content length." :: JSON.Value)
+  let checkLength n
+        | n /= len = do
+          t <- peek
+          focusIO $ logMsg t ("uploadChunk: wrong size " ++ show n ++ "/" ++ show len)
+          result =<< returnResponse badRequest400 [] ("Incorrect content length: file being uploaded may have moved or changed" :: JSON.Value)
+        | otherwise = return ()
   bl <- peeks Wai.requestBodyLength
   case bl of
-    Wai.KnownLength l | l /= len -> badLength
+    Wai.KnownLength l -> checkLength l
     _ -> return ()
   rb <- peeks Wai.requestBody
   n <- liftIO $ bracket
@@ -103,9 +109,7 @@ uploadChunk = action POST (pathJSON </< "upload") $ \() -> withAuth $ do
                 then return n'
                 else write b
     block 0
-  when (n /= len) $ do
-    -- TODO: clear block (maybe wait for calloc)
-    badLength
+  checkLength n -- TODO: clear block (maybe wait for calloc)
   emptyResponse noContent204 []
 
 testChunk :: AppRoute ()

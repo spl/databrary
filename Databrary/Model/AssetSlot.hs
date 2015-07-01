@@ -6,6 +6,7 @@ module Databrary.Model.AssetSlot
   , lookupSlotAssets
   , lookupContainerAssets
   , lookupVolumeAssetSlots
+  , lookupVolumeAssetSlotIds
   , changeAssetSlot
   , changeAssetSlotDuration
   , fixAssetSlotDuration
@@ -58,6 +59,10 @@ lookupVolumeAssetSlots :: (MonadDB m) => Volume -> Bool -> m [AssetSlot]
 lookupVolumeAssetSlots v top =
   dbQuery $ ($ v) <$> $(selectQuery selectVolumeSlotAsset "$WHERE asset.volume = ${volumeId v} AND (container.top OR ${not top}) ORDER BY container.id")
 
+lookupVolumeAssetSlotIds :: (MonadDB m) => Volume -> m [(Asset, SlotId)]
+lookupVolumeAssetSlotIds v =
+  dbQuery $ ($ v) <$> $(selectQuery selectVolumeSlotIdAsset "$WHERE asset.volume = ${volumeId v} ORDER BY container")
+
 changeAssetSlot :: (MonadAudit c m) => AssetSlot -> m Bool
 changeAssetSlot as = do
   ident <- getAuditIdentity
@@ -81,8 +86,8 @@ fixAssetSlotDuration as
   | Just dur <- assetDuration (slotAsset as) = as{ assetSlot = (\s -> s{ slotSegment = segmentSetDuration dur (slotSegment s) }) <$> assetSlot as }
   | otherwise = as
 
-findAssetContainerEnd :: MonadDB m => Container -> m (Maybe Offset)
-findAssetContainerEnd c = 
+findAssetContainerEnd :: MonadDB m => Container -> m Offset
+findAssetContainerEnd c = fromMaybe 0 <$>
   dbQuery1' [pgSQL|SELECT max(upper(segment)) FROM slot_asset WHERE container = ${containerId c}|]
 
 assetSlotJSON :: AssetSlot -> JSON.Object

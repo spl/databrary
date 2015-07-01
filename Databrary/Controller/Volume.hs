@@ -23,8 +23,6 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.HashMap.Lazy as HML
 import qualified Data.HashMap.Strict as HM
-import qualified Data.Foldable as Fold
-import Data.Function (on)
 import Data.Maybe (fromMaybe, isNothing)
 import Data.Monoid (Monoid(..), (<>), mempty)
 import qualified Data.Text as T
@@ -129,18 +127,24 @@ volumeJSONField vol "links" _ =
   Just . JSON.toJSON <$> lookupVolumeLinks vol
 volumeJSONField vol "funding" _ =
   Just . JSON.toJSON . map fundingJSON <$> lookupVolumeFunding vol
-volumeJSONField vol "containers" (Just "records") = do
-  (_, rm) <- cacheVolumeRecords vol
+volumeJSONField vol "containers" o = do
+  cl <- if records
+    then lookupVolumeContainersRecordIds vol
+    else nope <$> lookupVolumeContainers vol
+  cl' <- if assets
+    then leftJoin (\(c, _) (_, SlotId a _) -> containerId c == a) cl <$> lookupVolumeAssetSlotIds vol
+    else return $ nope cl
+  rm <- if records then snd <$> cacheVolumeRecords vol else return HM.empty
   let rjs c (s, r) = recordSlotJSON $ RecordSlot (HML.lookupDefault (Record r vol Nothing Nothing []) r rm) (Slot c s)
-  Just . JSON.toJSON . map (\(c, rl) -> containerJSON c JSON..+ "records" JSON..= map (rjs c) rl) <$> lookupVolumeContainersRecordIds vol
-volumeJSONField vol "containers" (Just "assets") = do
-  al <- lookupVolumeAssetSlots vol False
-  cl <- lookupVolumeContainers vol
-  return $ Just $ JSON.toJSON $ map (\(c, ca) -> containerJSON c
-    JSON..+ "assets" JSON..= map assetSlotJSON ca)
-    $ leftJoin (\c -> Fold.any (on (==) containerId c . slotContainer) . assetSlot) cl al
-volumeJSONField vol "containers" _ =
-  Just . JSON.toJSON . map containerJSON <$> lookupVolumeContainers vol
+      ajs c (a, SlotId _ s) = assetSlotJSON $ AssetSlot a (Just (Slot c s))
+  return $ Just $ JSON.toJSON $ map (\((c, rl), al) -> containerJSON c
+    JSON..+? (records ?> "records" JSON..= map (rjs c) rl)
+    JSON..+? (assets ?> "assets" JSON..= map (ajs c) al)) cl'
+  where
+  full = o == Just "all"
+  assets = full || o == Just "assets"
+  records = full || o == Just "records"
+  nope = map (, [])
 volumeJSONField vol "top" _ =
   Just . JSON.toJSON . containerJSON <$> cacheVolumeTopContainer vol
 volumeJSONField vol "records" _ = do
@@ -205,7 +209,7 @@ volumeCitationForm v = do
   look <- flatMapM (lift . lookupCitation) $
     guard (T.null (volumeName vol) || T.null (citationHead cite) || isNothing (citationYear cite)) >> citationURL cite
   let fill = maybe cite (cite <>) look
-      empty = isNothing (citationURL fill) && isNothing (citationYear fill)
+      empty = T.null (citationHead fill) && isNothing (citationURL fill) && isNothing (citationYear fill)
       name 
         | Just title <- citationTitle fill
         , T.null (volumeName vol) = title
@@ -245,7 +249,7 @@ createVolume = action POST (pathAPI </< "volume") $ \api -> withAuth $ do
     (bv, cite) <- volumeCitationForm blankVolume
     own <- "owner" .:> do
       oi <- deformOptional deform
-      own <- maybe (return $ Just $ selfAuthorize u) (lift . lookupAuthorizeParent u) oi
+      own <- maybe (return $ Just $ selfAuthorize u) (lift . lookupAuthorizeParent u) $ mfilter (peek u /=) oi
       deformMaybe' "You are not authorized to create volumes for that owner." $
         authorizeParent . authorization <$> mfilter ((PermissionADMIN <=) . accessMember) own
     auth <- lift $ lookupAuthorization own rootParty
@@ -254,7 +258,7 @@ createVolume = action POST (pathAPI </< "volume") $ \api -> withAuth $ do
     return (bv, cite, own)
   v <- addVolume bv
   _ <- changeVolumeCitation v cite
-  _ <- changeVolumeAccess $ VolumeAccess PermissionADMIN PermissionEDIT owner v
+  _ <- changeVolumeAccess $ VolumeAccess PermissionADMIN PermissionADMIN owner v
   case api of
     JSON -> okResponse [] $ volumeJSON v
     HTML -> redirectRouteResponse [] viewVolume (api, volumeId v) []

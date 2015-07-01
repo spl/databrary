@@ -302,7 +302,7 @@ app.provider('routerService', [
         volume: [
           'pageService', function (page) {
             return page.models.Volume.get(page.$route.current.params.id,
-              {access:'', citation:'', links:'', funding:'', providers:'', consumers:'', top:'', tags:'', excerpts:'', comments:'', records:'', containers:'records', assets:'top'});
+              {access:'', citation:'', links:'', funding:'', top:'', tags:'', excerpts:'', comments:'', records:'', containers:'all'});
           }
         ]
       },
@@ -437,7 +437,7 @@ app.provider('routerService', [
             if (r.method === 'POST' || r.method === 'PUT')
               r.data = arguments[i];
             else
-              r.params = arguments[i];
+              r.url = urlParams(r.url, arguments[i]);
             if (++i < arguments.length)
               angular.extend(r, arguments[i]);
           }

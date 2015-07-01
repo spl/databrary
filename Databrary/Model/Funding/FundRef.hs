@@ -8,6 +8,7 @@ import Control.Monad ((<=<), (>=>), guard, mfilter)
 import Control.Monad.Catch (MonadThrow)
 import Control.Monad.Trans.Maybe (MaybeT(..), runMaybeT)
 import qualified Data.Foldable as Fold
+import Data.Function (on)
 import qualified Data.HashMap.Strict as HM
 import Data.List (stripPrefix, sortBy, nubBy)
 import Data.Maybe (fromMaybe, mapMaybe)
@@ -37,6 +38,7 @@ data CI = CI
   , ciFolded :: T.Text
   }
 
+{-# NOINLINE toCI #-} -- toCaseFold's entire switch gets inlined!
 toCI :: T.Text -> CI
 toCI t = CI t (T.toCaseFold t)
 
@@ -44,7 +46,7 @@ instance IsString CI where
   fromString = toCI . fromString
 
 onCI :: (T.Text -> T.Text -> a) -> CI -> CI -> a
-onCI f CI{ ciFolded = x } CI{ ciFolded = y } = f x y
+onCI f = f `on` ciFolded
 
 instance Eq CI where
   (==) = onCI (==)
@@ -53,7 +55,7 @@ instance Eq CI where
 annotateFunder :: Funder -> [T.Text] -> Maybe T.Text -> Funder
 annotateFunder f [] Nothing = f
 annotateFunder f@Funder{ funderName = n } a c = f{ funderName =
-  maybe id (\cc -> (<> (", " <> cc))) (mfilter (not . noc) c)
+  maybe id (\cc -> (<> (", " <> cc))) (mfilter (not . noc . toCI) c)
   $ case unCI <$> nai' of
       [] -> "" -- impossible
       [nn] -> nn
@@ -66,7 +68,7 @@ annotateFunder f@Funder{ funderName = n } a c = f{ funderName =
     (case filter (T.isInfixOf `onCI` ni) ai of
       [] -> ni
       (lni:_) -> lni) : ai
-  noc cc = toCI (geoName geoNameUS) == ci || any (T.isInfixOf `onCI` ci) nai' where ci = toCI cc
+  noc ci = toCI (geoName geoNameUS) == ci || any (T.isInfixOf `onCI` ci) nai'
 
 parseFundRef :: JSON.Value -> JSON.Parser (Funder, Maybe (Id GeoName))
 parseFundRef = JSON.withObject "fundref" $ \j -> do

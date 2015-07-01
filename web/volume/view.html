@@ -6,7 +6,7 @@
     <volume-excerpts></volume-excerpts>
   </panel>
   <panel id="panel-materials" edit-link="{{::volume.checkPermission(page.permission.EDIT) ? volume.editRoute('materials') : ''}}" panel-title="materials.title" fold>
-    <spreadsheet top assets></spreadsheet>
+    <spreadsheet top></spreadsheet>
   </panel>
   <panel id="panel-sessions" panel-title="sessions.title" edit-link="{{::volume.checkPermission(page.permission.EDIT) ? volume.editRoute('data') : ''}}" fold>
     <spreadsheet limit="32"></spreadsheet>
