@@ -12,7 +12,7 @@
       <div ng-if="::volumes.collaborator.length > 0">
         <span>Collaborator volumes</span>
         <ul>
-          <li ng-click="clickVolume(vc)" ng-class="vc.isSelected" ng-repeat="vc in volumes.collaborator | orderBy:'-alias'" ng-bind="vc.alias? vc.alias : vc.name"></li>
+          <li ng-click="clickVolume(vc)" ng-class="vc.isSelected" ng-repeat="vc in volumes.collaborator | orderBy:'-alias'" ng-bind="vc.alias ? vc.alias : vc.name"></li>
         </ul>  
       </div>
       <div ng-repeat="vin in volumes.inherited">    
