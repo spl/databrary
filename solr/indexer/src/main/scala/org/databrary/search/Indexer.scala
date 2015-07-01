@@ -96,7 +96,7 @@ object Indexer {
          FROM volume
          LEFT JOIN volume_citation ON volume.id = volume_citation.volume
          LEFT JOIN volume_access ON volume.id = volume_access.volume
-         WHERE volume_access.children > 'NONE' AND volume_access.party = -1
+         WHERE volume_access.children > 'NONE' AND volume_access.party = -1 AND id > 0
     """.map(x => SQLVolume(x)).list().apply().map(x => x.volumeId -> x).toMap
 
 
