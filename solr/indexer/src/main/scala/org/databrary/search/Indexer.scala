@@ -104,7 +104,7 @@ object Indexer {
     Extract all of the parties from the DB
     */
     val sQLParties = sql"""
-      SELECT id, name, prename, affiliation FROM party
+      SELECT DISTINCT id, name, prename, affiliation FROM party, volume_access WHERE id = party AND individual > 'EDIT'
     """.map(x => SQLParty(x)).list().apply()
 
     /*
