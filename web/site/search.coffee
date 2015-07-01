@@ -21,6 +21,7 @@ app.controller 'site/search', [
     $scope.partyDisplayStr = "People"
     $scope.partyLinkPrefix = "party/"
     $scope.volumeLinkPrefix = "volume/"
+    $scope.searchBoxQuery = ""
     $scope.affiliations = []
     # $scope.selectHighlightStr = "Volumes w/ Highlights"
     $scope.limit = 10
@@ -57,6 +58,10 @@ app.controller 'site/search', [
   # Search handlers
   ###########################
     $scope.searchBox = ->
+      if $scope.searchBoxQuery? and $scope.searchBoxQuery != ""
+        $scope.originalQuery = $scope.searchBoxQuery
+      else
+        $scope.originalQuery = "*"
       $scope.query = $scope.originalQuery
       $scope.offset = 0
       console.log("NEW SEARCH:", $scope.query)
@@ -88,6 +93,9 @@ app.controller 'site/search', [
         $scope.query = "*"
         $scope.search()
         return
+      # if !$scope.query? or !$scope.query or $scope.query == "" or $scope.query == "null" or $scope.query == "false" or $scope.query == "undefined"
+        # $scope.query = "*"
+      console.log("query before anything:", $scope.query)
       console.log("RES:", res)
       $scope.partyResults = $scope.getResults("party", res)
       $scope.volumeResults = $scope.getResults("volume", res)
@@ -252,7 +260,10 @@ app.controller 'site/search', [
     params = $location.search()
     $scope.query = params.query
     console.log("INITIAL QUERY:", $scope.query)
-    $scope.originalQuery = params.query
+    if !params.query?
+      $scope.originalQuery = "*"
+    else
+      $scope.originalQuery = params.query
     console.log(results)
     $scope.offset = parseInt($location.search().offset, 10) || 0
     $scope.parseResults(results)
