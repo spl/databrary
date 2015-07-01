@@ -66,7 +66,7 @@ addargs() {
 if [[ $USER = databrary && $mode = prod ]] ; then
 	addargs -mem 2048
 fi
-addargs "-Dapplication.mode=$mode" "-Dconfig.file=${mode}.conf" "-Dpidfile.path=$HOME/${mode}.pid" "-Dplay.http.sslengineprovider=site.PoodleSSLEngineProvider"
+addargs "-Dapplication.mode=$mode" "-Dconfig.file=${mode}.conf" "-Dpidfile.path=$HOME/${mode}.pid" "-Dplay.http.sslengineprovider=site.PoodleSSLEngineProvider" "-Djdk.tls.ephemeralDHKeySize=2048"
 while read l ; do
 	if [[ $l = http*=* || $l = java.*=* ]] ; then
 		addargs "-D$l"

@@ -659,9 +659,9 @@ app.controller('volume/slot', [
 
       error: (message) ->
         messages.addError
-          owner: @
-          color: 'red'
+          type: 'red'
           body: constants.message('asset.upload.error', @name, message || 'unknown error')
+          owner: this
         @file.cancel()
         delete @file
         delete @progress
@@ -835,7 +835,8 @@ app.controller('volume/slot', [
 
     $scope.fileSuccess = uploads.fileSuccess
     $scope.fileProgress = uploads.fileProgress
-    $scope.fileError = uploads.fileError
+    $scope.fileError = (file, message) ->
+      file.store.error(message)
 
     class Record extends TimeBar
       constructor: (r) ->
