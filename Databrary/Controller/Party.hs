@@ -87,7 +87,7 @@ partyJSONField p "volumes" o = (?$>) (view p >= PermissionADMIN) $
     | otherwise = return $ volumeJSON v
 partyJSONField p "access" ma = do
   Just . JSON.toJSON . map volumeAccessVolumeJSON
-    <$> lookupPartyVolumeAccess p (fromMaybe PermissionNONE $ readDBEnum . BSC.unpack =<< ma)
+    <$> lookupPartyVolumeAccess p (fromMaybe PermissionEDIT $ readDBEnum . BSC.unpack =<< ma)
 partyJSONField p "authorization" _ = do
   Just . JSON.toJSON . accessSite <$> lookupAuthorization p rootParty
 partyJSONField _ _ _ = return Nothing
