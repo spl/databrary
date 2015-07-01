@@ -222,7 +222,7 @@ app.controller('volume/slot', [
     finite = (args...) -> args.find(isFinite)
 
     resetRange = () ->
-      for c in [$scope.assets, records, $scope.consents, $scope.tags]
+      for c in [$scope.assets, records, $scope.tags]
         for t in c
           t.reset()
       ruler.selection.reset()
@@ -231,7 +231,7 @@ app.controller('volume/slot', [
     updateRange = () ->
       l = Infinity
       u = -Infinity
-      for c in [$scope.assets, records, $scope.consents]
+      for c in [$scope.assets, records]
         for t in c
           if isFinite(t.l)
             l = t.l if t.l < l
@@ -409,7 +409,7 @@ app.controller('volume/slot', [
         # First, let's make a giant array of all the items we want to compare
         # times against.  Then let's extract all the times for the objects into
         # an even bigger array.
-        for i in $scope.assets.concat(records, $scope.consents) when i isnt this
+        for i in $scope.assets.concat(records) when i isnt this
           # We don't want to have the item snap to itself.
 
           # We want to have all the times that are finite in our array to compare against
@@ -1001,24 +1001,6 @@ app.controller('volume/slot', [
             return
       return
 
-    class Consent extends TimeBar
-      constructor: (c) ->
-        if typeof c == 'object'
-          @release = c.release
-          super(c.segment)
-        else
-          @release = c
-          super(undefined)
-        return
-
-      type: 'consent'
-
-      classes: ->
-        cn = constants.release[@release]
-        cls = [cn, 'hint-release-' + cn]
-        cls.push('slot-release-select') if $scope.current == this
-        cls
-
     class TagName extends TimeBar
       constructor: (name) ->
         @id = name
@@ -1145,14 +1127,6 @@ app.controller('volume/slot', [
     Excerpt.fill()
 
     records = slot.records.map((r) -> new Record(r))
-
-    $scope.consents =
-      if Array.isArray(consents = slot.releases)
-        _.map consents, (c) -> new Consent(c)
-      else if (consents)
-        [new Consent(consents)]
-      else
-        []
 
     $scope.playing = 0
     Record.place()

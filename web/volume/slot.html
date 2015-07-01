@@ -12,6 +12,7 @@
           <h3 class="view-title smaller">
             <span ng-bind="::slot.displayName"></span>
             <span ng-if="::slot.date" ng-bind="::' (' + slot.date + ')'"></span>
+            <span class="release icon" ng-class="::[page.constants.release[slot.release], 'hint-release-'+page.constants.release[slot.release]]"></span>
             <a ng-if="::!editing && volume.checkPermission(page.permission.EDIT)" ng-click="toggleEdit()"><span class="neutral button icon edit"></span></a>
             <a ng-if="::editing" ng-click="toggleEdit()"><span class="neutral button icon view-icon"></span></a>
           </h3>
@@ -215,12 +216,6 @@
                 <div class="slot-track-asset" ng-if="t.asset && !t.full" ng-style="t.style()">
                   <div ng-if="t === current && editing === 'position'" class="slot-handle slot-handle-move" mouse-drag="t.dragMove($down, $up)"></div>
                 </div>
-              </div>
-            </div>
-
-            <div ng-if="::!slot.top || consents.length">
-              <div class="slot-release-track slot-track">
-                <div class="slot-release release icon" ng-repeat="c in consents" ng-class="c.classes()" ng-style="c.style()" ng-click="c.click($event)" ng-dblclick="c.select($event)" mouse-drag="dragSelection($down, $up, c)"></div>
               </div>
             </div>
           </div>

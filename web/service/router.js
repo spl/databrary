@@ -355,7 +355,7 @@ app.provider('routerService', [
             return (edit ? checkPermission(page.$q, r, page.permission.EDIT) : r)
               .then(function (volume) {
                 return volume.getSlot(page.$route.current.params.id, edit ? '-' : page.$route.current.params.segment,
-                  ['releases', 'records', 'assets', 'excerpts', 'tags', 'comments']);
+                  ['records', 'assets', 'excerpts', 'tags', 'comments']);
               });
           },
         ],
