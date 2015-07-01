@@ -15,6 +15,6 @@ app.factory('uploadService', [
       permanentErrors: [400, 403, 404, 409, 415, 500, 501]
       successStatuses: [200, 201, 202, 204],
       progressCallbacksInterval: 500
-      prioritizeFirstAndLastChunk: true
+      prioritizeFirstAndLastChunk: false
       headers: {'x-csverf': router.http.csverf}
 ])
