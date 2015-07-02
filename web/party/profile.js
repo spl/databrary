@@ -45,6 +45,8 @@ app.controller('party/profile', [
       
       $scope.volumes.inherited.v = _.map($scope.volumes.inherited.v, unSetSelected);
 
+      $scope.volumes.inherited.p = _.map($scope.volumes.inherited.p, unSetSelected);
+
       
       $scope.users.sponsors = _.map($scope.users.sponsors, unSetSelected);
       $scope.users.nonGroupAffiliates = _.map($scope.users.nonGroupAffiliates, unSetSelected);
