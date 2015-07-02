@@ -921,7 +921,6 @@ app.factory('modelService', [
 
     AssetSlot.prototype.fields = angular.extend({
       permission: true,
-      release: true,
       excerpt: true,
       context: true
     }, AssetSlot.prototype.fields);
@@ -936,6 +935,12 @@ app.factory('modelService', [
 
     delegate(AssetSlot, 'asset',
         'id', 'container', 'format', 'duration', 'classification', 'name', 'pending');
+
+    Object.defineProperty(AssetSlot.prototype, 'release', {
+      get: function () {
+        return Math.max(this.excerpt != null ? this.excerpt : 0, this.classification != null ? this.classification : (this.container.release || 0));
+      }
+    });
 
     Object.defineProperty(AssetSlot.prototype, 'displayName', {
       get: function () {

@@ -93,6 +93,7 @@ findAssetContainerEnd c = fromMaybe 0 <$>
 assetSlotJSON :: AssetSlot -> JSON.Object
 assetSlotJSON as@AssetSlot{..} = assetJSON slotAsset JSON..++ catMaybes
   [ segmentJSON . slotSegment =<< assetSlot
+  -- , ("release" JSON..=) <$> (view as :: Maybe Release)
   , Just $ "permission" JSON..= p
   , p > PermissionNONE ?> "size" JSON..= assetSize slotAsset
   ] where p = dataPermission as

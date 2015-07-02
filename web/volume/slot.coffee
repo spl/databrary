@@ -743,7 +743,7 @@ app.controller('volume/slot', [
 
       excerptOptions: () ->
         l = {}
-        r = @asset.release || constants.release.PRIVATE
+        r = @asset.release || 0
         l[0] = constants.message('release.DEFAULT.select') + ' (' + constants.message('release.' + constants.release[r] + '.title') + ')'
         for c, i in constants.release when i > r
           l[i] = constants.message('release.' + c + '.title') + ': ' + constants.message('release.' + c + '.select')
@@ -755,7 +755,7 @@ app.controller('volume/slot', [
         if value == undefined || value == ''
           return
         messages.clear(this)
-        if !@asset.classification && value > (slot.release || constants.release.PRIVATE) && !confirm(constants.message('release.excerpt.warning'))
+        if !@asset.classification && value > (slot.release || 0) && !confirm(constants.message('release.excerpt.warning'))
           return
         @excerpt.target.setExcerpt(value)
           .then (excerpt) =>

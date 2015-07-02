@@ -22,7 +22,6 @@ import Databrary.Model.Id
 import Databrary.Model.Party.Types
 import Databrary.Model.Identity
 import Databrary.Model.Permission
-import Databrary.Model.Release.Types
 import Databrary.Model.Segment
 import Databrary.Model.Volume.Types
 import Databrary.Model.Container.Types
@@ -73,8 +72,8 @@ assetSegmentJSON as@AssetSegment{..}
     ] ++ fields
   where
   fields =
-    [ ("release" JSON..=) <$> (view as :: Maybe Release)
-    , Just $ "permission" JSON..= dataPermission as
+    [ -- ("release" JSON..=) <$> (view as :: Maybe Release)
+      Just $ "permission" JSON..= dataPermission as
     , ("excerpt" JSON..=) . excerptRelease <$> assetExcerpt
     ]
   fmt = view as
