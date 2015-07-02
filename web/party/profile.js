@@ -116,7 +116,7 @@ app.controller('party/profile', [
         }
       }
 
-      for(i = 0; i < $scope.volumes.collaborator.length; i += 0){
+      for(i = 0; i < $scope.volumes.collaborator.length; i++){
         for(j = 0; j < $scope.volumes.collaborator[i].v.length; j += 1){
           for(k = 0; k < $scope.volumes.collaborator[i].v[j].access.length; k += 1){
             if($scope.volumes.collaborator[i].v[j].access[k].party.id == user.party.id) {
@@ -126,7 +126,7 @@ app.controller('party/profile', [
         }
       }
 
-      for(i = 0; i < $scope.volumes.inherited.length; i += 0){
+      for(i = 0; i < $scope.volumes.inherited.length; i++){
         for(j = 0; j < $scope.volumes.inherited[i].v.length; j += 1){
           for(k = 0; k < $scope.volumes.inherited[i].v[j].access.length; k += 1){
             if($scope.volumes.inherited[i].v[j].access[k].party.id == user.party.id) {
