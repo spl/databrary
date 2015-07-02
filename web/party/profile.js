@@ -17,9 +17,9 @@ app.controller('party/profile', [
         console.log("V: ", v); 
         if(v.children > 0 ){
           users.sponsors.push(v);
-        } else if(v.parents && v.parents.length > 0 && v.party.members && v.party.members.length > 0) {
+        } else if(v.parents && v.parents.length && v.party.members && v.party.members.length) {
           users.labGroupMembers.push(v);
-        } else if(v.parents && v.parents.length > 0){
+        } else if(v.parents && v.parents.length){
           users.nonGroupAffiliates.push(v);
         } else {
           users.otherCollaborators.push(v);
