@@ -50,10 +50,7 @@ instance ResponseData ((BS.ByteString -> IO ()) -> IO ()) where
   response s h f = responseStream s h (\w l -> f (\b -> if BS.null b then l else w (BSB.byteString b)))
 
 instance IsFilePath f => ResponseData (f, Maybe FilePart) where
-  response s h (f, p) = responseFile s h' (toFilePath f) p where
-    h'
-      | isNothing p = ("accept-ranges", "bytes") : h
-      | otherwise = h
+  response s h (f, p) = responseFile s h (toFilePath f) p
 
 instance IsFilePath f => ResponseData (f, FilePart) where
   response s h (f, p) = response s h (f, Just p)

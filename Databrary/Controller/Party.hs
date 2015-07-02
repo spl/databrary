@@ -21,9 +21,10 @@ import qualified Network.Wai as Wai
 import Network.Wai.Parse (FileInfo(..))
 
 import Databrary.Ops
-import Databrary.Has (view, peeks, focusIO)
+import Databrary.Has (view, MonadHas, peek, peeks, focusIO)
 import qualified Databrary.JSON as JSON
 import Databrary.Service.DB
+import Databrary.Model.Time
 import Databrary.Model.Enum
 import Databrary.Model.Id
 import Databrary.Model.Permission
@@ -62,13 +63,15 @@ getParty _ mi = do
   unless (isme mi) $ result =<< forbiddenResponse
   return u
 
-partyJSONField :: (MonadDB m, MonadHasIdentity c m) => Party -> BS.ByteString -> Maybe BS.ByteString -> m (Maybe JSON.Value)
-partyJSONField p "parents" o =
+partyJSONField :: (MonadDB m, MonadHasIdentity c m, MonadHas Timestamp c m) => Party -> BS.ByteString -> Maybe BS.ByteString -> m (Maybe JSON.Value)
+partyJSONField p "parents" o = do
+  now <- peek
   fmap (Just . JSON.toJSON) . mapM (\a -> do
     let ap = authorizeParent (authorization a)
     acc <- if auth then Just . accessSite <$> lookupAuthorization ap rootParty else return Nothing
-    return $ (if admin then authorizeJSON a else mempty) JSON..+
-      ("party" JSON..= (partyJSON ap JSON..+? (("authorization" JSON..=) <$> acc))))
+    return $ (if admin then authorizeJSON a else mempty)
+      JSON..+ ("party" JSON..= (partyJSON ap JSON..+? (("authorization" JSON..=) <$> acc)))
+      JSON..+? (admin && authorizeExpired a now ?> "expired" JSON..= True))
     =<< lookupAuthorizedParents p admin
   where
   admin = view p >= PermissionADMIN
@@ -92,7 +95,7 @@ partyJSONField p "authorization" _ = do
   Just . JSON.toJSON . accessSite <$> lookupAuthorization p rootParty
 partyJSONField _ _ _ = return Nothing
 
-partyJSONQuery :: (MonadDB m, MonadHasIdentity c m) => Party -> JSON.Query -> m JSON.Object
+partyJSONQuery :: (MonadDB m, MonadHasIdentity c m, MonadHas Timestamp c m) => Party -> JSON.Query -> m JSON.Object
 partyJSONQuery p = JSON.jsonQuery (partyJSON p) (partyJSONField p)
 
 viewParty :: AppRoute (API, PartyTarget)

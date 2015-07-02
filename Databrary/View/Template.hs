@@ -94,11 +94,11 @@ htmlFooter = H.footer H.! HA.id "site-footer" H.! HA.class_ "site-footer" $
           H.li $
             H.a H.! HA.href "http://www.nsf.gov/awardsearch/showAward?AWD_ID=1238599&HistoricalAwards=false" $ do
               H.img H.! HA.src "/web/images/grants/nsf.png" H.! HA.class_ "nsf"
-              "BCS-1238599"
+              " BCS-1238599"
           H.li $
             H.a H.! HA.href "http://projectreporter.nih.gov/project_info_description.cfm?aid=8531595&icde=15908155&ddparam=&ddvalue=&ddsub=&cr=1&csb=default&cs=ASC" $ do
               H.img H.! HA.src "/web/images/grants/nih.png" H.! HA.class_ "nih"
-              "U01-HD-076595"
+              " U01-HD-076595"
 
 htmlTemplate :: AuthRequest -> Maybe T.Text -> H.Html -> H.Html
 htmlTemplate req title body = H.docTypeHtml $ do
