@@ -47,16 +47,20 @@ app.controller('party/profile', [
       
     var unselectAll = function(){
 
-      $scope.volumes.individual = _.map($scope.volumes.individual, unSetSelected); 
-      
+      $scope.volumes.individual = _.map($scope.volumes.individual, unSetSelected);
+
       $scope.volumes.collaborator = _.map($scope.volumes.collaborator, unSetSelected);
 
       $scope.volumes.inherited = _.map($scope.volumes.inherited, unSetSelected);
-      
+
       $scope.users.sponsors = _.map($scope.users.sponsors, unSetSelected);
+
       $scope.users.nonGroupAffiliates = _.map($scope.users.nonGroupAffiliates, unSetSelected);
+
       $scope.users.labGroupMembers = _.map($scope.users.labGroupMembers, unSetSelected);
+
       $scope.users.otherCollaborators = _.map($scope.users.otherCollaborators, unSetSelected);
+
     }; 
     
     $scope.clickVolume = function(volume) {
