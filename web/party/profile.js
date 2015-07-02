@@ -44,7 +44,10 @@ app.controller('party/profile', [
       }
 
       for(var j = 0; j < $scope.volumes.collaborator.length; j++){
-        $scope.volumes.collaborator[j].isSelected = ''; 
+        $scope.volumes.collaborator[j].isSelected = '';
+        for(var t = 0; t < $scope.volumes.collaborator[j].v.length; t++){
+          $scope.volumes.collaborator[j].v[t].isSelected = '';
+        }        
       }
 
       for(var k = 0; k < $scope.volumes.inherited; k++){
