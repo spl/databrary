@@ -103,33 +103,41 @@ app.controller('party/profile', [
     // This should take in a user, then select volumes on each thing. 
     $scope.clickUser = function(user){
       unselectAll();
+      var c = 0;
+      var a = 0;
+      var s = 0;
+      var d = 0;
+      var i = 0;
+      var j = 0;
+      var k = 0;
+      var l = 0;
 
-      for(var a = 0; a < $scope.volumes.individual.length; a += 1){
-        for(var s = 0; s < $scope.volumes.individual[a].v.length; s += 1){
-          for(var d = 0; d < $scope.volumes.individual[a].v[s].access.length; d += 1) {
-            if($scope.volumes.individual[a].v[s].access[d].party.id == user.party.id){
-              $scope.volumes.individual[a].isSelected = 'volumeSelected';
+      
+      for(c = 0; c < $scope.volumes.individual[c].length; c += 1){
+        for(a = 0; a < $scope.volumes.individual[c].v.length; a += 1){
+          for(d = 0; d < $scope.volumes.individual[c].v[a].access; d += 1){
+            if($scope.volumes.individual[c].v[a].access[d].party.id == user.party.id){
+              $scope.volumes.individual[c].v[a].isSelected = 'volumeSelected';
             }
           }
         }
       }
 
-      
-      for(var i = 0; i < $scope.volumes.collaborator.length; i += 1){
-        for(var j = 0; j < $scope.volumes.collaborator[i].v.length; j += 1){
-          for(var k = 0; k < $scope.volumes.collaborator[i].v[j].access.length; k += 1) {
-            if($scope.volumes.collaborator[i].v[j].access[k].party.id == user.party.id){
-              $scope.volumes.collaborator[i].isSelected = 'volumeSelected';
+      for(i = 0; i < $scope.volume.collaborator.length; i += 0){
+        for(j = 0; j < $scope.volumes.collaborator[i].v.length; j += 1){
+          for(k = 0; k < $scope.volumes.collaborator[i].v[j].access.length; k += 1){
+            if($scope.volumes.collaborator[i].v[j].access[k].party.id == user.party.id) {
+              $scope.volumes.collaborator[i].v[j].isSelected = 'volumeSelected';
             }
           }
         }
       }
       
-      for(var e = 0; e < $scope.volumes.inherited.length; e += 1){
-        for(var r = 0; r < $scope.volumes.inherited[e].v.length; r += 1){
-          for(var t = 0; t < $scope.volumes.inherited[e].v[r].access.length; t += 1) {
-            if($scope.volumes.inherited[e].v[r].access[t].party.id == user.party.id){
-              $scope.volumes.inherited[e].isSelected = 'volumeSelected';
+      for(i = 0; i < $scope.volume.inherited.length; i += 0){
+        for(j = 0; j < $scope.volumes.inherited[i].v.length; j += 1){
+          for(k = 0; k < $scope.volumes.inherited[i].v[j].access.length; k += 1){
+            if($scope.volumes.inherited[i].v[j].access[k].party.id == user.party.id) {
+              $scope.volumes.inherited[i].v[j].isSelected = 'volumeSelected';
             }
           }
         }
