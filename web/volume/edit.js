@@ -9,7 +9,7 @@ app.controller('volume/edit', [
     if (!volume) {
       $scope.owners = _.chain(models.Login.user.parents
                              ).filter(function (p) {
-                               return p.member >= constants.permission.ADMIN && p.party.access >= constants.permission.EDIT;
+                               return p.member >= constants.permission.ADMIN && p.party.access >= constants.permission.EDIT && !p.expired;
                              }).map(function (p) {
                                return p.party;
                              }).value();
