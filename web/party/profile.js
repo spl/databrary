@@ -43,7 +43,7 @@ app.controller('party/profile', [
       $scope.volumes.collaborator = _.map($scope.volumes.collaborator, unSetSelected);
       $scope.volumes.inherited = _.map($scope.volumes.inherited, unSetSelected);
       
-      $scope.volume.inherited.v = _.map($scope.volumes.inherited.v, unSetSelected);
+      $scope.volumes.inherited.v = _.map($scope.volumes.inherited.v, unSetSelected);
 
       
       $scope.users.sponsors = _.map($scope.users.sponsors, unSetSelected);
