@@ -39,15 +39,24 @@ app.controller('party/profile', [
     };
       
     var unselectAll = function(){
-      $scope.volumes.individual = _.map($scope.volumes.individual, unSetSelected);
-      $scope.volumes.collaborator = _.map($scope.volumes.collaborator, unSetSelected);
-      $scope.volumes.inherited = _.map($scope.volumes.inherited, unSetSelected);
-      
-      $scope.volumes.inherited.v = _.map($scope.volumes.inherited.v, unSetSelected);
+      for(var i = 0; i < $scope.volumes.individual.length; i++){
+        $scope.volumes.individual[i].isSelected = ''; 
+      }
 
-      $scope.volumes.inherited.p = _.map($scope.volumes.inherited.p, unSetSelected);
+      for(var j = 0; j < $scope.volumes.collaborator.length; j++){
+        $scope.volumes.collaborator[j].isSelected = ''; 
+      }
 
-      
+      for(var k = 0; k < $scope.volumes.inherited; k++){
+        $scope.volumes.inherited[k].isSelected = '';
+        for(var a = 0; a < $scope.volumes.inherited[k].v.length; a++){
+          $scope.volumes.inherited[k].v[a].isSelected = '';
+        }
+        // for(var b = 0; b < $scope.volumes.inherited[k].p.length; b++){
+        //   $scope.volumes.inherited[k].p[b].isSelected = '';
+        // }        
+      }
+
       $scope.users.sponsors = _.map($scope.users.sponsors, unSetSelected);
       $scope.users.nonGroupAffiliates = _.map($scope.users.nonGroupAffiliates, unSetSelected);
       $scope.users.labGroupMembers = _.map($scope.users.labGroupMembers, unSetSelected);
@@ -162,6 +171,7 @@ app.controller('party/profile', [
 
     $scope.party = party;
     $scope.volumes = getVolumes(party.volumes);
+    console.log("Volumes: ", $scope.volumes); 
     $scope.users = getUsers(party.volumes);  
     $scope.page = page;
     $scope.profile = page.$location.path() === '/profile';
