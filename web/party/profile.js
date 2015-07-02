@@ -50,28 +50,30 @@ app.controller('party/profile', [
     
     $scope.clickVolume = function(volume) {
       unselectAll();
-      for(var i = 0; i < volume.access.length; i += 1 ){
-        var j;
-        for (j = 0; j < $scope.users.sponsors.length; j += 1){
-          if($scope.users.sponsors[j].id === volume.access[i].party.id){
-            $scope.users.sponsors[j].isSelected = 'userSelected';
+      for(var k = 0; k < volume.v.length; k += 1){
+        for(var i = 0; i < volume.v[k].access.length; i += 1 ){
+          var j;
+          for (j = 0; j < $scope.users.sponsors.length; j += 1){
+            if($scope.users.sponsors[j].party.id === volume.v[k].access[i].party.id){
+              $scope.users.sponsors[j].isSelected = 'userSelected';
+            }
           }
+          for (j = 0; j < $scope.users.labGroupMembers.length; j += 1){
+            if($scope.users.labGroupMembers[j].party.id === volume.v[k].access[i].party.id){
+              $scope.users.labGroupMembers[j].isSelected = 'userSelected';
+            }
+          }
+          for (j = 0; j < $scope.users.nonGroupAffiliates.length; j += 1){
+            if($scope.users.nonGroupAffiliates[j].party.id === volume.v[k].access[i].party.id){
+              $scope.users.nonGroupAffiliates[j].isSelected = 'userSelected';
+            }
+          }
+          for (j = 0; j < $scope.users.otherCollaborators.length; j += 1){
+            if($scope.users.otherCollaborators[j].party.id === volume.v[k].access[i].party.id){
+              $scope.users.otherCollaborators[j].isSelected = 'userSelected';
+            }
+          }        
         }
-        for (j = 0; j < $scope.users.labGroupMembers.length; j += 1){
-          if($scope.users.labGroupMembers[j].id === volume.access[i].party.id){
-            $scope.users.labGroupMembers[j].isSelected = 'userSelected';
-          }
-        }
-        for (j = 0; j < $scope.users.nonGroupAffiliates.length; j += 1){
-          if($scope.users.nonGroupAffiliates[j].id === volume.access[i].party.id){
-            $scope.users.nonGroupAffiliates[j].isSelected = 'userSelected';
-          }
-        }
-        for (j = 0; j < $scope.users.otherCollaborators.length; j += 1){
-          if($scope.users.otherCollaborators[j].id === volume.access[i].party.id){
-            $scope.users.otherCollaborators[j].isSelected = 'userSelected';
-          }
-        }        
       }
     };
 
