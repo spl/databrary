@@ -22,7 +22,7 @@
           <span ng-bind="::' (' + ('auth.member.'+page.constants.permission[vin['p'].member]+'.title' | message) + ')'"></span>
         </span>
         <ul>
-          <li ng-click="clickVolume(vin_)" ng-class="vin_.isSelected" ng-repeat="vin_ in vin['v'] | orderBy:'-alias'" ng-bind="vin_.alias? vin_.alias : vin_.name"></li>
+          <li ng-click="clickVolume(vin_)" ng-class="vin_.isSelected" ng-repeat="vin_ in vin.v | orderBy:'-alias'" ng-bind="vin_.alias? vin_.alias : vin_.name"></li>
         </ul>
       </div>         
     </section>
