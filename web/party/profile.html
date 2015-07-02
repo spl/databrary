@@ -15,7 +15,7 @@
           <li ng-click="clickVolume(vc)" ng-class="vc.isSelected" ng-repeat="vc in volumes.collaborator | orderBy:'-alias'" ng-bind="vc.alias ? vc.alias : vc.name"></li>
         </ul>  
       </div>
-      <div ng-class="vin.isSelected" ng-click="clickVolume(vin)" ng-repeat="vin in volumes.inherited">    
+      <div ng-repeat="vin in volumes.inherited">    
         <span>
           <span>Inherited volumes from </span>
           <span ng-bind="::vin['p'].party.name"></span>
