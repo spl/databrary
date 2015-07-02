@@ -105,8 +105,8 @@ app.controller('party/profile', [
       unselectAll();
 
       var i, j, k; 
-      
-      for(i = 0; i < $scope.volumes.individual[i].length; i += 1){
+
+      for(i = 0; i < $scope.volumes.individual.length; i += 1){
         for(j = 0; j < $scope.volumes.individual[i].v.length; j += 1){
           for(k = 0; k < $scope.volumes.individual[i].v[j].access; k += 1){
             if($scope.volumes.individual[i].v[j].access[k].party.id == user.party.id){
@@ -125,7 +125,7 @@ app.controller('party/profile', [
           }
         }
       }
-      
+
       for(i = 0; i < $scope.volume.inherited.length; i += 0){
         for(j = 0; j < $scope.volumes.inherited[i].v.length; j += 1){
           for(k = 0; k < $scope.volumes.inherited[i].v[j].access.length; k += 1){
