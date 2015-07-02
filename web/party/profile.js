@@ -42,12 +42,12 @@ app.controller('party/profile', [
         });
       }         
 
-      // if(v.p !== undefined){
-      //   v.p = _.map(v.p, function(a){
-      //     a.isSelected = ''; 
-      //     return a; 
-      //   })
-      // }
+      if(v.p !== undefined){
+        v.p = _.map(v.p, function(a){
+          a.isSelected = ''; 
+          return a; 
+        });
+      }
       return v; 
     };
       
