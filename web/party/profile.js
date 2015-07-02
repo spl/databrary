@@ -35,19 +35,19 @@ app.controller('party/profile', [
     // class is set to empty and to avoid repeating code. 
     var unSetSelected = function(v){
       v.isSelected = '';
-      if(v.v != undefined){
+      if(v.v !== undefined){
         v.v = _.map(v.v, function(a){
           a.isSelected = '';
           return a; 
-        })
+        });
       }         
 
-      if(v.p != undefined){
-        v.p = _.map(v.p, function(a){
-          a.isSelected = ''; 
-          return a; 
-        })
-      }
+      // if(v.p !== undefined){
+      //   v.p = _.map(v.p, function(a){
+      //     a.isSelected = ''; 
+      //     return a; 
+      //   })
+      // }
       return v; 
     };
       
