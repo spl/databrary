@@ -13,7 +13,9 @@ app.controller('party/profile', [
       users.nonGroupAffiliates = [];
       users.otherCollaborators = [];
 
-      _(volumes).pluck('access').flatten().each(function(v){
+      _(volumes).pluck('access').flatten().uniq(function(i){
+        return i.party.id; 
+      }).each(function(v){
         console.log("V: ", v); 
         if(v.children > 0 ){
           users.sponsors.push(v);
