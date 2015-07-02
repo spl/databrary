@@ -35,31 +35,30 @@ app.controller('party/profile', [
     // class is set to empty and to avoid repeating code. 
     var unSetSelected = function(v){
       v.isSelected = '';
+      if(v.v != undefined){
+        v.v = _.map(v.v, function(a){
+          a.isSelected = '';
+          return a; 
+        })
+      }         
+
+      if(v.p != undefined){
+        v.p = _.map(v.p, function(a){
+          a.isSelected = ''; 
+          return a; 
+        })
+      }
       return v; 
     };
       
     var unselectAll = function(){
-      for(var i = 0; i < $scope.volumes.individual.length; i++){
-        $scope.volumes.individual[i].isSelected = ''; 
-      }
 
-      for(var j = 0; j < $scope.volumes.collaborator.length; j++){
-        $scope.volumes.collaborator[j].isSelected = '';
-        for(var t = 0; t < $scope.volumes.collaborator[j].v.length; t++){
-          $scope.volumes.collaborator[j].v[t].isSelected = '';
-        }        
-      }
+      $scope.volumes.individual = _.map($scope.volumes.individual, unSetSelected); 
+      
+      $scope.volumes.collaborator = _.map($scope.volumes.collaborator, unSetSelected);
 
-      for(var k = 0; k < $scope.volumes.inherited; k++){
-        $scope.volumes.inherited[k].isSelected = '';
-        for(var a = 0; a < $scope.volumes.inherited[k].v.length; a++){
-          $scope.volumes.inherited[k].v[a].isSelected = '';
-        }
-        // for(var b = 0; b < $scope.volumes.inherited[k].p.length; b++){
-        //   $scope.volumes.inherited[k].p[b].isSelected = '';
-        // }        
-      }
-
+      $scope.volumes.inherited = _.map($scope.volumes.inherited, unSetSelected);
+      
       $scope.users.sponsors = _.map($scope.users.sponsors, unSetSelected);
       $scope.users.nonGroupAffiliates = _.map($scope.users.nonGroupAffiliates, unSetSelected);
       $scope.users.labGroupMembers = _.map($scope.users.labGroupMembers, unSetSelected);
