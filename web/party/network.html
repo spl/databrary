@@ -25,7 +25,7 @@
                 <span message="auth.member.view"></span>&nbsp;<span ng-bind="::'auth.member' | message:'their'"></span>
               </div>
               <div class="permission-auth-member">
-                <strong message="auth.member.{{::page.constants.permission[parent.member]}}.title"></strong>:
+                <strong message="auth.member.{{::page.constants.permission[parent.member]}}.title"></strong>: 
                 {{::'auth.member.'+page.constants.permission[parent.member] | message:'their'}}
               </div>
             </div>
@@ -37,7 +37,7 @@
                 <span message="auth.site.view"></span>&nbsp;<span ng-bind="::'auth.site' | message:'their'"></span>
               </div>
               <div class="permission-auth-site">
-                <strong message="auth.site.{{::page.constants.permission[parent.site]}}.title"></strong>:
+                <strong message="auth.site.{{::page.constants.permission[parent.site]}}.title"></strong>: 
                 {{::'auth.site.'+page.constants.permission[parent.site] | message:'their'}}
               </div>
             </div>
@@ -89,7 +89,7 @@
                 <span message="auth.site.view"></span>&nbsp;<span ng-bind="::'auth.member' | possessive:party"></span>
               </div>
               <div class="permission-auth-member">
-                <strong message="auth.member.{{::page.constants.permission[child.member]}}.title"></strong>:
+                <strong message="auth.member.{{::page.constants.permission[child.member]}}.title"></strong>: 
                 {{'auth.member.'+page.constants.permission[child.member] | possessive:party}}
               </div>
             </div>
@@ -101,7 +101,7 @@
                 <span message="auth.site.view"></span>&nbsp;<span ng-bind="::'auth.site' | possessive:party"></span>
               </div>
               <div class="permission-auth-site">
-                <strong message="auth.site.{{::page.constants.permission[child.site]}}.title"></strong>:
+                <strong message="auth.site.{{::page.constants.permission[child.site]}}.title"></strong>: 
                 {{'auth.site.'+page.constants.permission[child.site] | possessive:party}}
               </div>
             </div>

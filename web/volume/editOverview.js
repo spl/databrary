@@ -77,6 +77,7 @@ app.directive('volumeEditOverviewForm', [
             form.data.citation = res;
             delete res.title;
 
+            form.validator.server({});
             form.$setDirty();
 
             messages.add({
