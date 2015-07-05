@@ -38,6 +38,7 @@ import Databrary.Controller.Comment
 import Databrary.Controller.CSV
 import Databrary.Controller.Audit
 import Databrary.Controller.Transcode
+import Databrary.Controller.Ingest
 import Databrary.Controller.Web
 import Databrary.Web.Routes
 
@@ -131,6 +132,8 @@ routeMap = fromRouteList
   , route queryFunder
   , route remoteTranscode
   , route viewActivity
+
+  , route postIngest
 
   , route webFile
   ]

@@ -187,7 +187,7 @@ viewVolume = action GET (pathAPI </> pathId) $ \(api, vi) -> withAuth $ do
     JSON -> okResponse [] =<< volumeJSONQuery v =<< peeks Wai.queryString
     HTML -> okResponse [] $ volumeName v -- TODO
 
-volumeForm :: (Functor m, Monad m) => Volume -> DeformT m Volume
+volumeForm :: (Functor m, Monad m) => Volume -> DeformT f m Volume
 volumeForm v = do
   name <- "name" .:> deform
   alias <- "alias" .:> deformNonEmpty deform
@@ -198,7 +198,7 @@ volumeForm v = do
     , volumeBody = body
     }
 
-volumeCitationForm :: Volume -> DeformActionM AuthRequest (Volume, Maybe Citation)
+volumeCitationForm :: Volume -> DeformActionM f AuthRequest (Volume, Maybe Citation)
 volumeCitationForm v = do
   csrfForm
   vol <- volumeForm v
@@ -285,7 +285,7 @@ postVolumeLinks = action POST (pathAPI </> pathId </< "link") $ \arg@(api, vi) -
     JSON -> okResponse [] $ volumeJSON v JSON..+ ("links" JSON..= links')
     HTML -> redirectRouteResponse [] viewVolume arg []
 
-volumeSearchForm :: (Applicative m, Monad m) => DeformT m VolumeFilter
+volumeSearchForm :: (Applicative m, Monad m) => DeformT f m VolumeFilter
 volumeSearchForm = VolumeFilter
   <$> ("query" .:> deformNonEmpty deform)
   <*> ("party" .:> optional deform)

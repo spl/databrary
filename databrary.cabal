@@ -18,6 +18,7 @@ data-files:
   schema/*.sql,
   transctl.sh,
   transcode,
+  volume.json,
   web/*.min.css,
   web/*.min.js,
   web/icons/*.ico,

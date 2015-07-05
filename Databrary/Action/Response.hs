@@ -54,6 +54,10 @@ instance IsFilePath f => ResponseData (f, Maybe FilePart) where
 instance IsFilePath f => ResponseData (f, FilePart) where
   response s h (f, p) = response s h (f, Just p)
 
+instance ResponseData String where
+  response s h =
+    response s ((hContentType, "text/plain;charset=utf-8") : h) . BSB.stringUtf8
+
 instance ResponseData T.Text where
   response s h =
     response s ((hContentType, "text/plain;charset=utf-8") : h) . TE.encodeUtf8Builder
