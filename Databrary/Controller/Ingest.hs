@@ -30,7 +30,7 @@ viewIngest = action GET (pathId </< "ingest") $ \vi -> withAuth $ do
   blankForm $ htmlIngestForm v
 
 postIngest :: AppRoute (Id Volume)
-postIngest = action POST (pathId </< "ingest") $ \vi -> withAuth $ do
+postIngest = multipartAction $ action POST (pathId </< "ingest") $ \vi -> withAuth $ do
   admin <- peeks accessMember'
   guardAction (admin >= PermissionADMIN) forbiddenResponse
   v <- getVolume PermissionEDIT vi

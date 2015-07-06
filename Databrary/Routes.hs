@@ -133,6 +133,7 @@ routeMap = fromRouteList
   , route remoteTranscode
   , route viewActivity
 
+  , route viewIngest
   , route postIngest
 
   , route webFile
