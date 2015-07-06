@@ -3,7 +3,6 @@
 app.controller('party/profile', [
   '$scope', 'displayService', 'party', 'pageService','constantService',
   function ($scope, display, party, page, constants) {
-
     var getUsers = function(volumes){
 
       var users = {};
@@ -83,19 +82,19 @@ app.controller('party/profile', [
             }
           }
 
-          for (j = 0; j < $scope.users.labGroupMembers.length; j++){
+          for (j = 0; j < $scope.users.labGroupMembers.length; j++) {
             if($scope.users.labGroupMembers[j].party.id === volume[k].access[i].party.id){
               $scope.users.labGroupMembers[j].isSelected = 'userSelected';
             }
           }
 
-          for (j = 0; j < $scope.users.nonGroupAffiliates.length; j++){
+          for (j = 0; j < $scope.users.nonGroupAffiliates.length; j++) {
             if($scope.users.nonGroupAffiliates[j].party.id === volume[k].access[i].party.id){
               $scope.users.nonGroupAffiliates[j].isSelected = 'userSelected';
             }
           }
 
-          for (j = 0; j < $scope.users.otherCollaborators.length; j++){
+          for (j = 0; j < $scope.users.otherCollaborators.length; j++) {
             if($scope.users.otherCollaborators[j].party.id === volume[k].access[i].party.id){
               $scope.users.otherCollaborators[j].isSelected = 'userSelected';
             }
@@ -164,7 +163,7 @@ app.controller('party/profile', [
       tempVolumes.inherited = getParents(party.parents);
 
       _.each(volumes, function(v){
-        if(!v.party){
+        if(v.party && v.party.id && party.id){
           tempVolumes.individual.push({v: [v]});
         } else if(tempVolumes.isCollaborator){
           tempVolumes.collaborator.push({v: [v]});
