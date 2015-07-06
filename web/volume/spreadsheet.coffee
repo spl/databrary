@@ -411,14 +411,14 @@ app.directive 'spreadsheet', [
           stop = info.slot?.id == volume.top.id
           if info.col.first && info.d?
             if info.c == 'asset'
-              icon = cell.appendChild(document.createElement('span'))
-              icon.className = "icon release " + constants.release[info.asset.release]
               a = cell.appendChild(document.createElement('a'))
               icon = a.appendChild(document.createElement('img'))
               icon.src = info.asset.icon
               icon.className = "format hint-format-" + info.asset.format.extension
               t = {asset:info.d}
               a.setAttribute('href', if Editing then info.slot.editRoute(t) else info.slot.route(t))
+              icon = cell.appendChild(document.createElement('span'))
+              icon.className = 'icon release ' + constants.release[info.asset.release] + ' hint-release-' + constants.release[info.asset.release] 
             else
               if Editing && Key.id == info.c && !stop
                 del = cell.appendChild(document.createElement('a'))
