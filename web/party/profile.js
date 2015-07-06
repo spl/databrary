@@ -19,17 +19,19 @@ app.controller('party/profile', [
         console.log("V: ", v); 
         if(v.children > 0 ){
           users.sponsors.push(v);
-        } else if(v.parents && v.parents.length && v.party.members && v.party.members.length) {
+        } else if(v.parents && v.parents.length) {
           users.labGroupMembers.push(v);
-        } else if(v.parents && v.parents.length){
+        } else if(v.parents && v.parents.length) {
           users.nonGroupAffiliates.push(v);
         } else {
           users.otherCollaborators.push(v);
         }
 
       }).value();
+      // The "value()" call is to actually force the chain to work.
 
-      console.log(users);
+      
+      console.log("Users: ", users);
       return users;
     };
 
