@@ -530,9 +530,9 @@ app.controller('volume/slot', [
         @data =
           if @asset
             name: @asset.name
-            classification: (@asset.classification || 0)+''
+            classification: @asset.classification
           else
-            classification: '0'
+            {}
         return
 
       Object.defineProperty @prototype, 'id',
@@ -755,7 +755,7 @@ app.controller('volume/slot', [
         if value == undefined || value == ''
           return
         messages.clear(this)
-        if !@asset.classification && value > (slot.release || 0) && !confirm(constants.message('release.excerpt.warning'))
+        if !@asset.classification? && value > (slot.release || 0) && !confirm(constants.message('release.excerpt.warning'))
           return
         @excerpt.target.setExcerpt(value)
           .then (excerpt) =>

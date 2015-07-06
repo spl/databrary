@@ -1074,6 +1074,8 @@ app.factory('modelService', [
 
     Asset.prototype.save = function (data) {
       var a = this;
+      if (data.classification === 'undefined')
+        data.classification = '';
       return router.http(router.controllers.postAsset, this.id, data)
         .then(function (res) {
           if ('excerpt' in data) {
