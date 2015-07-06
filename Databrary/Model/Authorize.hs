@@ -56,12 +56,12 @@ lookupAuthorizedChildren parent al = do
 
 lookupAuthorize :: (MonadDB m, MonadHasIdentity c m) => Party -> Party -> m (Maybe Authorize)
 lookupAuthorize child parent =
-  dbQuery1 $ (\a -> a child parent) <$> $(selectQuery authorizeRow "$WHERE authorize.child = ${partyId child} AND authorize.parent = ${partyId parent} AND expires IS NULL OR expires > CURRENT_TIMESTAMP")
+  dbQuery1 $ (\a -> a child parent) <$> $(selectQuery authorizeRow "$WHERE authorize.child = ${partyId child} AND authorize.parent = ${partyId parent} AND (expires IS NULL OR expires > CURRENT_TIMESTAMP)")
 
 lookupAuthorizeParent :: (MonadDB m, MonadHasIdentity c m) => Party -> Id Party -> m (Maybe Authorize)
 lookupAuthorizeParent child parent = do
   ident <- peek
-  dbQuery1 $ $(selectQuery (selectAuthorizeParent 'child 'ident) "$WHERE authorize.parent = ${parent} AND expires IS NULL OR expires > CURRENT_TIMESTAMP")
+  dbQuery1 $ $(selectQuery (selectAuthorizeParent 'child 'ident) "$WHERE authorize.parent = ${parent} AND (expires IS NULL OR expires > CURRENT_TIMESTAMP)")
 
 lookupAuthorization :: (MonadDB m, MonadHasIdentity c m) => Party -> Party -> m Authorization
 lookupAuthorization child parent 
