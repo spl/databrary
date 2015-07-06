@@ -7,12 +7,19 @@ import datacite_validator as dv
 import datetime
 import sys, os
 
+#check if test or not - pass any argument for it to be a test run
+if len(sys.argv)>1:    
+    istest = sys.argv[1]
+else:
+    istest = None
 #set globals
 LOG_PATH = './logs/'
 LOG_FILE = 'ezidlog.log'
 LOG_DEST = LOG_PATH + LOG_FILE
 MAX_LOG_SIZE = 10000000
-
+TEST = False
+if istest is not None:
+    TEST = True
 
 def __setup_log():
     '''check if the log file exists or not, if not, create if, if so 
@@ -225,7 +232,11 @@ def postData(db, payload):
     for p in payload['mint']:
         volume = p['volume']
         record = p['record']
-        mint_res = ezid_doi_session.mint(record)
+        if TEST == True:
+            mint_res = "Your DOI for %s will not be minted because this is test mode" % volume
+            print mint_res
+        else:
+            mint_res = ezid_doi_session.mint(record)
         if mint_res.startswith('doi'):
             curr_doi = mint_res.split('|')[0].strip().split(':')[1]
             new_dois.append({'vol':volume, 'doi':curr_doi})
@@ -242,7 +253,7 @@ def postData(db, payload):
         if type(mod_res) == dict:
             logger.info('%s successfully modified' % identifier)
         elif mod_res.startswith('error'):
-            logger.error('something went wrong modffying a record for DOI: %s, error returned: %s' % (identifier, mod_res))
+            logger.error('something went wrong modifying a record for DOI: %s, error returned: %s' % (identifier, mod_res))
 
 if __name__ == "__main__":
     db = dbDB()
