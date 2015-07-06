@@ -171,6 +171,8 @@
     <field name="party_name_s" type="string" indexed="true" stored="true"/>
     <field name="party_affiliation_s" type="string" indexed="true" stored="true"/>
     <field name="party_id_i" type="int" indexed="true" stored="true"/>
+    <field name="party_is_institution_b" type="boolean" indexed="true" stored="true"/>
+    <field name="party_is_authorized_b" type="boolean" indexed="true" stored="true"/>
 
 
     <!-- Common metadata fields, named specifically to match up with

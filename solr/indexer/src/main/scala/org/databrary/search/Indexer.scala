@@ -103,9 +103,40 @@ object Indexer {
     /*
     Extract all of the parties from the DB
     */
-    val sQLParties = sql"""
-      SELECT DISTINCT id, name, prename, affiliation FROM party, volume_access WHERE id = party AND individual > 'EDIT'
+    val sQLAllParties = sql"""
+      SELECT id, name, prename, affiliation FROM party WHERE id > 0
+    """.map(x => SQLParty(x)).list().apply().map(x => x.partyId -> x).toMap
+
+    val sQLAuthorizedParties = sql"""
+      SELECT party.id AS id, name, prename, affiliation FROM party JOIN authorize_view ON party.id = child AND parent = 0 WHERE id > 0
     """.map(x => SQLParty(x)).list().apply()
+
+    val sQLInstitutionsParties = sql"""
+      SELECT party.id AS id, name, prename, affiliation FROM party LEFT JOIN account ON party.id = account.id WHERE account.id IS NULL AND party.id > 0
+    """.map(x => SQLParty(x)).list().apply()
+
+    sQLAuthorizedParties.foreach(x => sQLAllParties(x.partyId).isAuthorized = true)
+    sQLInstitutionsParties.foreach(x => sQLAllParties(x.partyId).isInstitution = true)
+
+    val sQLParties = sQLAllParties.values
+
+    //    partyFilter :: PartyFilter -> Identity -> BS.ByteString
+    //    partyFilter ¡PartyFilter{..} ident = BS.concat
+    //      [ withq partyFilterAccess (const " JOIN authorize_view ON party.id = child AND parent = 0")
+    //    , " WHERE id > 0"
+    //    , withq partyFilterQuery (\n -> " AND " <> queryVal <> " ILIKE " <> pgLiteralRep (wordPat n))
+    //    , withq partyFilterAccess (\a -> " AND site = " <> pgSafeLiteral a)
+    //    , withq partyFilterInstitution (\i -> if i then " AND account.id IS NULL" else " AND account.password IS NOT NULL")
+    //    , withq partyFilterAuthorize (\a -> let i = pgSafeLiteral a in " AND party.id <> " <> i <> " AND id NOT IN (SELECT child FROM authorize WHERE parent = " <> i <> " UNION SELECT parent FROM authorize WHERE child = " <> i <> ")")
+    //    , withq partyFilterVolume (\v -> " AND id NOT IN (SELECT party FROM volume_access WHERE volume = " <> pgSafeLiteral (volumeId v) <> ")")
+    //    , " ORDER BY name, prename"
+    //    ]
+    //    where
+    //    withq v f = maybe "" f v
+    //    wordPat = intercalate "%" . ("":) . (++[""]) . words
+    //    queryVal
+    //    | showEmail ident = "(COALESCE(prename || ' ', '') || name || COALESCE(' ' || email, ''))"
+    //    | otherwise = "(COALESCE(prename || ' ', '') || name)"
 
     /*
     Get all of the containers from the DB and create a container->volume lookup table
@@ -313,7 +344,10 @@ object Indexer {
   def createPartyDocument(party: SQLParty) = {
     new JsonDocument(content_type = ContentTypes.PARTY, party_affiliation_s = Some(party.affiliation),
       party_id_i = Some(party.partyId.toInt),
-      party_name_s = Some(party.name), party_pre_name_s = Some(party.preName))
+      party_name_s = Some(party.name), party_pre_name_s = Some(party.preName),
+      party_is_institution_b = Some(party.isInstitution),
+      party_is_authorized_b = Some(party.isAuthorized)
+    )
   }
 
   case class Sentence(volId: Long, text: Option[String])
@@ -362,7 +396,7 @@ object Indexer {
    */
   case class SQLSegmentAsset(volumeId: Long, containerId: Long, segment: String, asset: Long, assetName: String, duration: String, isExcerpt: Boolean)
 
-  case class SQLParty(partyId: Long, name: String, preName: String, affiliation: String)
+  case class SQLParty(partyId: Long, name: String, preName: String, affiliation: String, var isAuthorized: Boolean = false, var isInstitution: Boolean = false)
 
   case class Party(partyId: Long, name: Option[String], preName: Option[String], affiliation: Option[String])
 
@@ -423,7 +457,9 @@ object Indexer {
                           party_pre_name_s: Option[String] = None,
                           party_name_s: Option[String] = None,
                           party_affiliation_s: Option[String] = None,
-                          party_id_i: Option[Int] = None
+                          party_id_i: Option[Int] = None,
+                          party_is_institution_b: Option[Boolean] = None,
+                          party_is_authorized_b: Option[Boolean] = None
                            )
 
   /*

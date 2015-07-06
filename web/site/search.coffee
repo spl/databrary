@@ -16,7 +16,8 @@ app.controller 'site/search', [
     $scope.filterDisplay = []
     $scope.selectSessionStr = "Volumes w/ Sessions"
     $scope.selectHighlightStr = "Volumes w/ Highlights"
-    $scope.selectAffiliationStr = "Volumes w/ Sessions"
+    $scope.selectPeopleFilters = ["All", "Authorized Investigators", "Institutions"]
+
     $scope.volumeDisplayStr = "Volumes"
     $scope.partyDisplayStr = "People"
     $scope.partyLinkPrefix = "party/"
@@ -58,6 +59,8 @@ app.controller 'site/search', [
   # Search handlers
   ###########################
     $scope.searchBox = ->
+      console.log("The search box was :", $scope.searchBoxQuery)
+      console.log("The original query was :", $scope.originalQuery)
       if $scope.searchBoxQuery? and $scope.searchBoxQuery != ""
         $scope.originalQuery = $scope.searchBoxQuery
       else
@@ -201,8 +204,8 @@ app.controller 'site/search', [
         if $scope.selectedType.join(" ").includes($scope.volumeDisplayStr)
           $scope.filterDisplay = (s for s in $scope.getVolumeFeatureBoxOpts())
         if $scope.selectedType.join(" ").includes($scope.partyDisplayStr)
-          console.log("AFFILIATIONS:", $scope.affiliations)
-          $scope.filterDisplay = _.sortBy(_.uniq(a for a in $scope.affiliations))
+          # console.log("AFFILIATIONS:", $scope.affiliations)
+          $scope.filterDisplay = (s for s in $scope.selectPeopleFilters)
         currentFilter = $scope.selectedType
 
     # Takes a group of documents, an argument name, and a value, then counts
@@ -224,7 +227,7 @@ app.controller 'site/search', [
         $scope.search()
       console.log($scope.selectedType, $scope.filterDisplay)
 
-    # Action to do something when a filter option is clicked, currently is just enumerating the types
+    # Action to do something when a filter option is clicked
     $scope.filterBoxClick = ->
       console.log("FILTER BOX CLICKED", $scope.selectedFilter)
       if $scope.selectedType.join(" ").includes($scope.volumeDisplayStr)
@@ -233,10 +236,15 @@ app.controller 'site/search', [
         if $scope.selectHighlightStr in $scope.selectedFilter
           $scope.filterByHighlight()
       if $scope.selectedType.join(" ").includes($scope.partyDisplayStr)
-        $scope.partyFilterBoxClick()
+        # $scope.partyFilterBoxClick()
+        $scope.filterParties($scope.selectedFilter)
         console.log("FILTERING BY PARTY")
       $scope.offset = 0 # Reset the offset
       $scope.search()
+
+    $scope.addArgToQuery = (query, arg, val) ->
+      return query + "|arg=" + arg + ":\"" + val + "\""
+
 
     $scope.partyFilterBoxClick = ->
       $scope.filterByAffiliation()
@@ -254,6 +262,19 @@ app.controller 'site/search', [
     $scope.filterBySession = ->
       $scope.requireSession = true
       $scope.query = $scope.originalQuery + "|arg=volume_has_sessions_b:true"
+
+    $scope.filterParties = (filterName) ->
+      console.log("Filtering parties by", filterName)
+      if filterName.join(" ").includes("All")
+        # Select all parties
+        $scope.query = $scope.originalQuery # TODO should this do something else?
+      else if filterName.join(" ").includes("Institution")
+        # Select institutions
+        $scope.query = $scope.addArgToQuery($scope.originalQuery, "party_is_institution_b", "true")
+      else if filterName.join(" ").includes("Authorized")
+        # Select authorized users only
+        $scope.query = $scope.addArgToQuery($scope.originalQuery, "party_is_authorized_b", "true")
+      console.log("Query after filter", $scope.query)
 
 
     # Code for the initial load
