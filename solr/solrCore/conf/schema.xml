@@ -292,6 +292,8 @@
     <copyField source="*_s" dest="text_en"/>
     <copyField source="*_t" dest="text_en"/>
 
+    <copyField source="*_s" dest="text_exact"/>
+    <copyField source="*_t" dest="text_exact"/>
    <!-- Create a string version of author for faceting -->
    <!--<copyField source="author" dest="author_s"/>-->
 
@@ -470,6 +472,7 @@
         -->
         <!-- Case insensitive stop word removal.
         -->
+        <filter class="solr.NGramFilterFactory" minGramSize="3" maxGramSize="15"/>
         <filter class="solr.SynonymFilterFactory" synonyms="index_synonyms.txt" ignoreCase="true" expand="true"/>
         <filter class="solr.StopFilterFactory"
                 ignoreCase="true"
@@ -481,6 +484,7 @@
 	<!-- Optionally you may want to use this less aggressive stemmer instead of PorterStemFilterFactory:
         <filter class="solr.EnglishMinimalStemFilterFactory"/>
 	-->
+        <filter class="solr.LengthFilterFactory" min="3" max="100"/>
         <filter class="solr.PorterStemFilterFactory"/>
       </analyzer>
       <analyzer type="query">
@@ -496,6 +500,7 @@
 	<!-- Optionally you may want to use this less aggressive stemmer instead of PorterStemFilterFactory:
         <filter class="solr.EnglishMinimalStemFilterFactory"/>
 	-->
+        <filter class="solr.LengthFilterFactory" min="3" max="100"/>
         <filter class="solr.PorterStemFilterFactory"/>
       </analyzer>
     </fieldType>

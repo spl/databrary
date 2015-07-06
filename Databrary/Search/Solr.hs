@@ -132,6 +132,7 @@ instance ToJSON SolrQuery where
                         "qf" .= ("text_en^0.6 text_exact^1.5 volume_keywords_ss^10.0 volume_tags_ss^5.0 party_name^5.0" :: String),
                         "pf" .= ("volume_keywords_ss^10.0 volume_tags_ss^5.0 party_name^5.0" :: String),
                         "ps" .= (3 :: Int),
+                        "mm" .= (75 :: Int),
                         "tie" .= (0.1 :: Float),
                         "group" .= ("true" :: String),
                         "group.field" .= ("content_type" :: String),
