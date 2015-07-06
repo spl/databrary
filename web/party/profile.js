@@ -70,37 +70,37 @@ app.controller('party/profile', [
     $scope.clickVolume = function(volume) {
 
       unselectAll();
-
       volume.isSelected = 'volumeSelected';
+      volume = _.flatten([volume.v || volume]);
+      for(var k = 0; k < volume.length; k++){
+        for(var i = 0; i < volume[k].access.length; i += 1 ){
 
-      for(var i = 0; i < volume.access.length; i += 1 ){
+          var j;
 
-        var j;
+          for (j = 0; j < $scope.users.sponsors.length; j += 1){
+            if($scope.users.sponsors[j].party.id === volume[k].access[i].party.id){
+              $scope.users.sponsors[j].isSelected = 'userSelected';
+            }
+          }
 
-        for (j = 0; j < $scope.users.sponsors.length; j += 1){
-          if($scope.users.sponsors[j].party.id === volume.access[i].party.id){
-            $scope.users.sponsors[j].isSelected = 'userSelected';
+          for (j = 0; j < $scope.users.labGroupMembers.length; j += 1){
+            if($scope.users.labGroupMembers[j].party.id === volume[k].access[i].party.id){
+              $scope.users.labGroupMembers[j].isSelected = 'userSelected';
+            }
+          }
+
+          for (j = 0; j < $scope.users.nonGroupAffiliates.length; j += 1){
+            if($scope.users.nonGroupAffiliates[j].party.id === volume[k].access[i].party.id){
+              $scope.users.nonGroupAffiliates[j].isSelected = 'userSelected';
+            }
+          }
+
+          for (j = 0; j < $scope.users.otherCollaborators.length; j += 1){
+            if($scope.users.otherCollaborators[j].party.id === volume[k].access[i].party.id){
+              $scope.users.otherCollaborators[j].isSelected = 'userSelected';
+            }
           }
         }
-
-        for (j = 0; j < $scope.users.labGroupMembers.length; j += 1){
-          if($scope.users.labGroupMembers[j].party.id === volume.access[i].party.id){
-            $scope.users.labGroupMembers[j].isSelected = 'userSelected';
-          }
-        }
-
-        for (j = 0; j < $scope.users.nonGroupAffiliates.length; j += 1){
-          if($scope.users.nonGroupAffiliates[j].party.id === volume.access[i].party.id){
-            $scope.users.nonGroupAffiliates[j].isSelected = 'userSelected';
-          }
-        }
-
-        for (j = 0; j < $scope.users.otherCollaborators.length; j += 1){
-          if($scope.users.otherCollaborators[j].party.id === volume.access[i].party.id){
-            $scope.users.otherCollaborators[j].isSelected = 'userSelected';
-          }
-        }
-
       }
     };
 
@@ -164,7 +164,7 @@ app.controller('party/profile', [
       tempVolumes.inherited = getParents(party.parents);
 
       _.each(volumes, function(v){
-        if(v.isIndividual){
+        if(!v.party){
           tempVolumes.individual.push({v: [v]});
         } else if(tempVolumes.isCollaborator){
           tempVolumes.collaborator.push({v: [v]});
