@@ -2,7 +2,7 @@ import ezid_api
 import logging 
 import psycopg2
 from lxml import etree as e
-from config import conn as c
+from config import conn as c #TODO: THIS WILL HAVE TO CHANGE
 import datacite_validator as dv
 import datetime
 import sys, os
@@ -220,7 +220,7 @@ def makeMetadata(db, rs): #rs is a list -> list of metadata dict
 
 def postData(db, payload):
     new_dois = []
-    ezid_doi_session = ezid_api.ApiSession(scheme='doi')
+    ezid_doi_session = ezid_api.ApiSession(username=c._CREDENTIALS['ezid_u'], password=c._CREDENTIALS['ezid_p'], scheme='doi')
     logger.info('minting %s DOIs and modifiying %s existing records' % (str(len(payload['mint'])), str(len(payload['modify']))))
     for p in payload['mint']:
         volume = p['volume']
