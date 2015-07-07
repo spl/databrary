@@ -590,12 +590,6 @@ app.controller('volume/slot', [
             first = !@asset
             @setAsset(asset)
 
-            messages.add
-              type: 'green'
-              body: constants.message('asset.' + (if @file then (if first then 'upload' else 'replace') else 'update') + '.success', @name) +
-                (if @file && asset.format.transcodable then ' ' + constants.message('asset.upload.transcoding') else '')
-              owner: this
-
             if @file
               asset.creation ?= {date: Date.now(), name: @file.file.name}
               @file.cancel()
