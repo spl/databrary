@@ -92,13 +92,34 @@ instance FromJSON Results where
                                  <*> o .: "docs"
   parseJSON _ = mzero
 
+data SpellCheck = SpellCheck {
+  suggestions :: [Suggestions],
+  correctlySpelled :: Bool,
+  collations :: [Collations]
+} deriving (Show)
+instance FromJSON SpellCheck where
+  parseJSON (Object o) = SpellCheck <$> o .: "suggestions"
+                                 <*> o .: "correctlySpelled"
+                                 <*> o .: "collations"
+  parseJSON _ = mzero
+
+data Suggestions = Suggestions {
+} deriving (Show,Generic)
+instance FromJSON Suggestions
+
+data Collations = Collations {
+} deriving (Show,Generic)
+instance FromJSON Collations
+
 data SolrResponse = SolrResponse {
   responseHeader :: ResponseHeader,
-  response :: Results
+  response :: Results,
+  spellCheck :: SpellCheck
 } deriving (Show)
 instance FromJSON SolrResponse where
   parseJSON (Object o) = SolrResponse <$> o .: "responseHeader"
                                       <*> o .: "response"
+                                      <*> o .: "spellcheck"
   parseJSON _ = mzero
 
 data SolrQuery = SolrQuery {
@@ -137,7 +158,10 @@ instance ToJSON SolrQuery where
                         "group" .= ("true" :: String),
                         "group.field" .= ("content_type" :: String),
                         "group.limit" .= (10 :: Int),
-                        "group.offset" .= sQstart
+                        "group.offset" .= sQstart,
+                        "spellcheck" .= ("true" :: String),
+                        "spellcheck.collate" .= ("true" :: String),
+                        "spellcheck.collateParam.mm" .= ("100%" :: String)
                   ]
                 ]
 
