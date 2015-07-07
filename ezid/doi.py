@@ -47,7 +47,7 @@ class dbDB(object):
     _cur = None
 
     def __init__(self):
-        self._conn = psycopg2.connect(host="localhost", database="haskell")
+        self._conn = psycopg2.connect(host="localhost")
         self._cur = self._conn.cursor()
 
     def __del__(self):
@@ -175,7 +175,8 @@ def makeMetadata(db, rs): #rs is a list -> list of metadata dict
 
 def postData(db, payload):
     new_dois = []
-    ezid_doi_session = ezid_api.ApiSession(username=c._CREDENTIALS['ezid_u'], password=c._CREDENTIALS['ezid_p'], scheme='doi')
+    (username, password) = db.query("SELECT username, password FROM ezid_account")._cur.fetchone()
+    ezid_doi_session = ezid_api.ApiSession(username=username, password=password, scheme='doi')
     #check if the server is up, if not, bail
     server_response = ezid_doi_session.checkserver()
     if server_response == True:
