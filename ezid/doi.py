@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import ezid_api
 import logging
 import psycopg2
@@ -7,10 +9,13 @@ import datetime
 import sys, os
 import getopt
 
-opts, _ = getopt.getopt(sys.argv[1:], "l:nt")
+opts, _ = getopt.getopt(sys.argv[1:], "l:ntu:p:d:")
 LOG_DEST = None
 NOMINT = False
 TEST = False
+EZID_USER = None
+EZID_PASS = None
+DATABASE = None
 for o, a in opts:
     if o == '-l':
         LOG_DEST = a
@@ -18,16 +23,24 @@ for o, a in opts:
         NOMINT = True
     elif o == '-t':
         TEST = True
+    elif o == '-u':
+        EZID_USER = a
+    elif o == '-p':
+        EZID_PASS = a
+    elif o == '-d':
+        DATABASE = a
 
 #Initiate and configure the logger
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-if LOG_DEST is not None:
+if LOG_DEST:
     handler = logging.FileHandler(LOG_DEST)
-    handler.setLevel(logging.INFO)
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
+else:
+    handler = logging.StreamHandler()
+handler.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 target_path = "https://databrary.org"
 
@@ -47,7 +60,7 @@ class dbDB(object):
     _cur = None
 
     def __init__(self):
-        self._conn = psycopg2.connect(host="localhost")
+        self._conn = psycopg2.connect(host="localhost", database=DATABASE)
         self._cur = self._conn.cursor()
 
     def __del__(self):
@@ -124,7 +137,7 @@ def _createXMLDoc(row, volume, funders, doi=None): #tuple, str, dict, dict, dict
             fid.text = fundrefURI + str(f['fundref_id'])
     if cite_url:
         if cite_url.startswith('doi:'):
-            cite_url = "http://dx.doi.org/" + cite_url.split(':')[1]
+            cite_url = "http://dx.doi.org/" + cite_url.split(':', 1)[1]
         relelem = e.SubElement(xmldoc, "relatedIdentifiers")
         relid = e.SubElement(relelem, "relatedIdentifier", relatedIdentifierType="URL", relationType="IsSupplementTo")
         relid.text = cite_url
@@ -174,9 +187,11 @@ def makeMetadata(db, rs): #rs is a list -> list of metadata dict
     return mdPayload
 
 def postData(db, payload):
+    global EZID_USER, EZID_PASS
     new_dois = []
-    (username, password) = db.query("SELECT username, password FROM ezid_account")._cur.fetchone()
-    ezid_doi_session = ezid_api.ApiSession(username=username, password=password, scheme='doi')
+    if not EZID_USER:
+        (EZID_USER, EZID_PASS) = db.query("SELECT username, password FROM ezid_account")._cur.fetchone()
+    ezid_doi_session = ezid_api.ApiSession(username=EZID_USER, password=EZID_PASS, scheme='doi')
     #check if the server is up, if not, bail
     server_response = ezid_doi_session.checkserver()
     if server_response == True:
@@ -191,11 +206,10 @@ def postData(db, payload):
         record = p['record']
         if NOMINT == True:
             mint_res = "Your DOI for %s will not be minted because this is test mode" % volume
-            print(mint_res)
         else:
             mint_res = ezid_doi_session.mint(record)
         if mint_res.startswith('doi'):
-            curr_doi = mint_res.split('|')[0].strip().split(':')[1]
+            curr_doi = mint_res.split('|', 1)[0].strip().split(':', 1)[1]
             new_dois.append({'vol':volume, 'doi':curr_doi})
             logger.info('minted doi: %s for volume %s' % (curr_doi, volume))
         else:
