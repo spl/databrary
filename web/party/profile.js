@@ -1,8 +1,8 @@
 'use strict';
 
 app.controller('party/profile', [
-  '$scope', 'displayService', 'party', 'pageService','constantService',
-  function ($scope, display, party, page, constants) {
+  '$scope', 'displayService', 'party', 'pageService','constantService', 'modelService', 
+  function ($scope, display, party, page, constants, models) {
     var getUsers = function(volumes){
 
       var users = {};
@@ -15,7 +15,10 @@ app.controller('party/profile', [
       _(volumes).pluck('access').flatten().uniq(function(i){
         return i.party.id; 
       }).each(function(v){
-        console.log("V: ", v); 
+        console.log("V: ", v);
+        if(models.Login.user.id === v.party.id){
+          v.isCurrent = true; 
+        }
         if(v.children > 0 ){
           users.sponsors.push(v);
         } else if(v.parents && v.parents.length) {
@@ -166,11 +169,20 @@ app.controller('party/profile', [
       tempVolumes.inherited = getParents(party.parents);
 
       _.each(volumes, function(v){
-        if(!v.party){
+
+        var isCurrent = _.find(v.access, function(r){
+          return r.party.id === models.Login.user.id;
+        });
+        
+        var isAdmin = _.find(v.access, function(r) {
+          return r.party.authorization === 5; 
+        });
+        
+        if(isCurrent && isAdmin){
           // The "mini-object" with v and [v] is to make sure that the data is all
           // shaped the same, making looping over it *substantially* simpler. 
           tempVolumes.individual.push({v: [v]});
-        } else if(tempVolumes.party){
+        } else if(isCurrent){
           tempVolumes.collaborator.push({v: [v]});
         } else{
           for (var i=0;i<v.access.length;i++){
@@ -187,9 +199,11 @@ app.controller('party/profile', [
     };
 
     $scope.party = party;
+    $scope.users = getUsers(party.volumes);      
     $scope.volumes = getVolumes(party.volumes);
-    console.log("Volumes: ", $scope.volumes); 
-    $scope.users = getUsers(party.volumes);  
+    console.log("Volumes: ", $scope.volumes);
+    console.log("Page", models.Login.user); 
+
     $scope.page = page;
     $scope.profile = page.$location.path() === '/profile';
     display.title = party.name;
