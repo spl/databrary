@@ -6,7 +6,9 @@
       <div ng-if="::volumes.individual.length > 0">
         <span class="dashboard-section-header">Data owner volumes</span>
         <ul>
-          <li ng-click="clickVolume(vi)" ng-class="vi.isSelected" ng-repeat="vi in volumes.individual | orderBy:'-alias'">
+          <li ng-class="vi.isSelected" ng-repeat="vi in volumes.individual | orderBy:'-alias'">
+            <span ng-if="vi.isSelected" ng-click="unselectAll()"></span>
+            <span ng-if="!vi.isSelected" ng-click="clickVolume(vi)" class="icon add"></span>
             <span ng-bind="vi.alias? vi.alias : vi.name"></span>
           </li>
         </ul>
@@ -14,7 +16,9 @@
       <div ng-if="::volumes.collaborator.length > 0">
         <span class="dashboard-section-header">Collaborator volumes</span>
         <ul>
-          <li ng-click="clickVolume(vc)" ng-class="vc.isSelected" ng-repeat="vc in volumes.collaborator | orderBy:'-alias'">
+          <li ng-class="vc.isSelected" ng-repeat="vc in volumes.collaborator | orderBy:'-alias'">
+            <span ng-if="vc.isSelected" ng-click="unselectAll()"></span>
+            <span ng-if="!vc.isSelected" ng-click="clickVolume(vc)" class="icon add"></span>
             <span ng-bind="vc.alias ? vc.alias : vc.name"></span>
           </li>
         </ul>  
@@ -26,7 +30,9 @@
           <span ng-bind="::' (' + ('auth.member.'+page.constants.permission[vin['p'].member]+'.title' | message) + ')'"></span>
         </span>
         <ul>
-          <li ng-click="clickVolume(vin_)" ng-class="vin_.isSelected" ng-repeat="vin_ in vin.v | orderBy:'-alias'">
+          <li ng-class="vin_.isSelected" ng-repeat="vin_ in vin.v | orderBy:'-alias'">
+            <span ng-if="vin_.isSelected" ng-click="unselectAll()" class="icon close"></span>
+            <span ng-if="!vin_.isSelected" ng-click="clickVolume(vin_)" class="icon add"></span>
             <span ng-bind="vin_.alias? vin_.alias : vin_.name"></span>
           </li>
         </ul>
@@ -38,32 +44,47 @@
         <span class="dashboard-section-header">Sponsors </span>
         <span class="icon info"></span>
         <ul>
-          <li ng-click="clickUser(sponsor)" ng-class="sponsor.isSelected" ng-repeat="sponsor in users.sponsors" ng-bind="sponsor.party.name"></li>
+          <li ng-class="sponsor.isSelected" ng-repeat="sponsor in users.sponsors">
+            <span ng-if="sponsor.isSelected" ng-click="unselectAll()" class="icon close"></span>
+            <span ng-if="!sponsor.isSelected" ng-click="clickUser(sponsor)" class="icon add"></span>
+            <span ng-bind="sponsor.party.name"></span>
+          </li>
         </ul>
       </div>
       <div ng-if="users.labGroupMembers.length > 0">
         <span class="dashboard-section-header">Lab/Group members </span>
         <span class="icon info"></span>
         <ul>
-          <li ng-click="clickUser(member)" ng-class="member.isSelected" ng-repeat="member in users.labGroupMembers" ng-bind="member.party.name"></li>
+          <li ng-class="member.isSelected" ng-repeat="member in users.labGroupMembers">
+            <span ng-if="member.isSelected" ng-click="unselectAll()" class="icon close"></span>
+            <span ng-if="member.isSelected" ng-click="clickUser(member)" class="icon add"></span>
+            <span ng-bind="member.party.name"></span>
+          </li>
         </ul>
       </div>
       <div ng-if="users.nonGroupAffiliates.length > 0">
         <span class="dashboard-section-header">Non-group affiliates </span>
         <span class="icon info"></span>
         <ul>
-          <li ng-click="clickUser(nonmember)" ng-class="nonmember.isSelected" ng-repeat="nonmember in users.nonGroupAffiliates" ng-bind="nonmember.party.name"></li>
+          <li ng-class="nonmember.isSelected" ng-repeat="nonmember in users.nonGroupAffiliates">
+            <span ng-bind="nonmember.party.name"></span>
+            <span ng-if="nonmember.isSelected" ng-click="unselectAll()" class="icon close"></span>
+            <span ng-if="nonmember.isSelected" ng-click="clickUser(nonmember)" class="icon add"></span>
+          </li>
         </ul>
       </div>
       <div ng-if="users.otherCollaborators.length > 0">
         <span class="dashboard-section-header">Volume collaborators </span>
         <span class="icon info"></span>
         <ul>
-          <li ng-click="clickUser(collaber)" ng-class="collaber.isSelected" ng-repeat="collaber in users.otherCollaborators" ng-bind="collaber.party.name"></li>
+          <li ng-class="collaber.isSelected" ng-repeat="collaber in users.otherCollaborators">
+            <span ng-bind="collaber.party.name"></span>
+            <span ng-if="collaber.isSelected" ng-click="unselectAll()" class="icon close"></span>
+            <span ng-if="collaber.isSelected" ng-click="clickUser(collaber)" class="icon add"></span>            
+          </li>
         </ul>
       </div>
     </section>
-    <party-data></party-data>
   </panel>
   <panel id="panel-network" edit-link="{{::party.editRoute('apply')}}" panel-title="network.title" fold>
     <party-network></party-network>
