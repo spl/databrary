@@ -168,7 +168,7 @@ app.controller('party/profile', [
       _.each(volumes, function(v){
         if(!v.party){
           tempVolumes.individual.push({v: [v]});
-        } else if(tempVolumes.isCollaborator){
+        } else if(tempVolumes.party){
           tempVolumes.collaborator.push({v: [v]});
         } else{
           for (var i=0;i<v.access.length;i++){
