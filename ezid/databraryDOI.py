@@ -17,7 +17,6 @@ LOG_PATH = './logs/'
 LOG_FILE = 'ezidlog.log'
 LOG_DEST = LOG_PATH + LOG_FILE
 MAX_LOG_SIZE = 10000000
-DOI_1 = 'doi:10.17910/B7159Q'
 TEST = False
 if istest is not None:
     TEST = True
