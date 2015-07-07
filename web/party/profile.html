@@ -4,53 +4,59 @@
 
     <section id="dashboard-volumes" class="dashboard-volumes col-desktop-10 col-tablet-6 col-mobile-6">
       <div ng-if="::volumes.individual.length > 0">
-        <span>Data owner volumes</span>
+        <span class="dashboard-section-header">Data owner volumes</span>
         <ul>
-          <li ng-click="clickVolume(vi)" ng-class="vi.isSelected" ng-repeat="vi in volumes.individual | orderBy:'-alias'" ng-bind="vi.alias? vi.alias : vi.name"></li>
+          <li ng-click="clickVolume(vi)" ng-class="vi.isSelected" ng-repeat="vi in volumes.individual | orderBy:'-alias'">
+            <span ng-bind="vi.alias? vi.alias : vi.name"></span>
+          </li>
         </ul>
       </div>
       <div ng-if="::volumes.collaborator.length > 0">
-        <span>Collaborator volumes</span>
+        <span class="dashboard-section-header">Collaborator volumes</span>
         <ul>
-          <li ng-click="clickVolume(vc)" ng-class="vc.isSelected" ng-repeat="vc in volumes.collaborator | orderBy:'-alias'" ng-bind="vc.alias ? vc.alias : vc.name"></li>
+          <li ng-click="clickVolume(vc)" ng-class="vc.isSelected" ng-repeat="vc in volumes.collaborator | orderBy:'-alias'">
+            <span ng-bind="vc.alias ? vc.alias : vc.name"></span>
+          </li>
         </ul>  
       </div>
       <div ng-if="::vin.v.length > 0" ng-repeat="vin in volumes.inherited">    
-        <span>
+        <span class="dashboard-section-header">
           <span>Inherited volumes from </span>
           <span ng-bind="::vin['p'].party.name"></span>
           <span ng-bind="::' (' + ('auth.member.'+page.constants.permission[vin['p'].member]+'.title' | message) + ')'"></span>
         </span>
         <ul>
-          <li ng-click="clickVolume(vin_)" ng-class="vin_.isSelected" ng-repeat="vin_ in vin.v | orderBy:'-alias'" ng-bind="vin_.alias? vin_.alias : vin_.name"></li>
+          <li ng-click="clickVolume(vin_)" ng-class="vin_.isSelected" ng-repeat="vin_ in vin.v | orderBy:'-alias'">
+            <span ng-bind="vin_.alias? vin_.alias : vin_.name"></span>
+          </li>
         </ul>
       </div>         
     </section>
 
     <section id="dashboard-people" class="dashboard-people col-desktop-5 col-tablet-3 col-mobile-6">
       <div ng-if="users.sponsors.length > 0">
-        <span>Sponsors </span>
+        <span class="dashboard-section-header">Sponsors </span>
         <span class="icon info"></span>
         <ul>
           <li ng-click="clickUser(sponsor)" ng-class="sponsor.isSelected" ng-repeat="sponsor in users.sponsors" ng-bind="sponsor.party.name"></li>
         </ul>
       </div>
       <div ng-if="users.labGroupMembers.length > 0">
-        <span>Lab/Group members </span>
+        <span class="dashboard-section-header">Lab/Group members </span>
         <span class="icon info"></span>
         <ul>
           <li ng-click="clickUser(member)" ng-class="member.isSelected" ng-repeat="member in users.labGroupMembers" ng-bind="member.party.name"></li>
         </ul>
       </div>
       <div ng-if="users.nonGroupAffiliates.length > 0">
-        <span>Non-group affiliates </span>
+        <span class="dashboard-section-header">Non-group affiliates </span>
         <span class="icon info"></span>
         <ul>
           <li ng-click="clickUser(nonmember)" ng-class="nonmember.isSelected" ng-repeat="nonmember in users.nonGroupAffiliates" ng-bind="nonmember.party.name"></li>
         </ul>
       </div>
       <div ng-if="users.otherCollaborators.length > 0">
-        <span>Volume collaborators </span>
+        <span class="dashboard-section-header">Volume collaborators </span>
         <span class="icon info"></span>
         <ul>
           <li ng-click="clickUser(collaber)" ng-class="collaber.isSelected" ng-repeat="collaber in users.otherCollaborators" ng-bind="collaber.party.name"></li>
