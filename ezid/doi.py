@@ -77,12 +77,12 @@ def queryAll(db):
     db.query(sql['QueryAll'])
     return db._cur.fetchall()
 
-def _getFunders(db, vs): #vs is a tuple of volume ids -> dict
-    db.query(sql['GetFunders'], (vs,))
+def _getFunders(db, v): #vs is a tuple of volume ids -> dict
+    db.query(sql['GetFunders'], (v,))
     funders = db._cur.fetchall()
-    funder_data = {f[0]:[] for f in funders}
+    funder_data = []
     for f in funders:
-        funder_data[f[0]].append({"award_no":f[1], "funder":f[2], "fundref_id":f[3]})
+        funder_data.append({"award_no":f[1], "funder":f[2], "fundref_id":f[3]})
     return funder_data
 
 def _addDOIS(db, new_dois):
@@ -129,7 +129,7 @@ def _createXMLDoc(row, volume, funders, doi=None): #tuple, str, dict, dict, dict
             crname = e.SubElement(cr, "creatorName")
             crname.text = c.decode('utf-8').split(':', 1)[1]
     if volume in funders:
-        for f in funders[volume]:   
+        for f in funders:   
             ftype = e.SubElement(felem, "contributor", contributorType="Funder")
             fname = e.SubElement(ftype, "contributorName")
             fname.text = f['funder'].decode('utf-8')
@@ -165,11 +165,11 @@ def _payloadDedupe(records, record_kind):
 def makeMetadata(db, rs): #rs is a list -> list of metadata dict
     allToUpload = {"mint":[], "modify":[]}
     volumes = [r[0] for r in rs]
-    funders = _getFunders(db, volumes)
     for r in rs:
         vol = r[0]
         shared = r[2]
         vol_doi = r[5]
+        funders = _getFunders(db, vol)
         if shared:
             status = "public"
             if vol_doi:
