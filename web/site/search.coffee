@@ -71,7 +71,10 @@ app.controller 'site/search', [
       $scope.search()
 
     # Put an ng-key enter here so it does what we offset
-    $scope.search = ->
+    $scope.search = (query = "") ->
+      # This is for if we want to pass an argument into this...
+      if query.length > 0
+        $scope.query = query
       # return page.router.http(page.router.controllers.postSearch, page.$route.current.params)
       console.log("prev results", results)
       # $scope.query = $scope.query.replace /;/g, "\%3B"
@@ -106,10 +109,13 @@ app.controller 'site/search', [
       $scope.partyCount = $scope.getTypeCounts("party", res)
       $scope.volumeCount = $scope.getTypeCounts("volume", res)
 
+      $scope.suggestedQuery = $scope.getCollation(res)
+
       $scope.typeDisplay = [$scope.partyDisplayStr + " (" + ($scope.partyCount || 0) + ")",
         $scope.volumeDisplayStr + " (" + ($scope.volumeCount || 0) + ")"]
 
       console.log("PARTY RESULTS", $scope.partyResults)
+      console.log("SUGGESTED QUERY", $scope.suggestedQuery)
 
       if $scope.partyCount
         $scope.affiliations = (c.party_affiliation_s for c in $scope.partyResults.docs)
@@ -181,6 +187,14 @@ app.controller 'site/search', [
         return groups.indexOf(typeName)
       else
         return -1
+
+    $scope.getSpelling = (res) ->
+      return res.spellcheck.suggestions
+
+    $scope.getCollation = (res) ->
+      if res.spellcheck?.collations.length > 0
+        return res.spellcheck.collations[1].collationQuery
+      return null
 
     $scope.getResults = (type, res) ->
       idx = $scope.findResult(type, res)

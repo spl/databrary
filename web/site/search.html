@@ -8,6 +8,9 @@
           <input class="search-input" type="search" ng-model="searchBoxQuery" key-enter="searchBox()"/>
         </ng-form>
         <p>Number of results found: {{totalCount}}</p>
+        <span ng-if="suggestedQuery.length > 0">
+          <p>Did you mean <a ng-click="search(suggestedQuery)">{{suggestedQuery}}</a>?</p>
+        </span>
         <!--<p>Showing results {{results.start + 1}} to {{results.start + results.docs.length}}</p>-->
 
         <span>
