@@ -57,7 +57,7 @@
         <ul>
           <li ng-class="member.isSelected" ng-repeat="member in users.labGroupMembers">
             <span ng-if="member.isSelected" ng-click="unselectAll()" class="icon close"></span>
-            <span ng-if="member.isSelected" ng-click="clickUser(member)" class="icon add"></span>
+            <span ng-if="!member.isSelected" ng-click="clickUser(member)" class="icon add"></span>
             <span ng-bind="member.party.name"></span>
           </li>
         </ul>
@@ -67,9 +67,9 @@
         <span class="icon info"></span>
         <ul>
           <li ng-class="nonmember.isSelected" ng-repeat="nonmember in users.nonGroupAffiliates">
-            <span ng-bind="nonmember.party.name"></span>
             <span ng-if="nonmember.isSelected" ng-click="unselectAll()" class="icon close"></span>
-            <span ng-if="nonmember.isSelected" ng-click="clickUser(nonmember)" class="icon add"></span>
+            <span ng-if="!nonmember.isSelected" ng-click="clickUser(nonmember)" class="icon add"></span>
+            <span ng-bind="nonmember.party.name"></span>
           </li>
         </ul>
       </div>
@@ -78,9 +78,9 @@
         <span class="icon info"></span>
         <ul>
           <li ng-class="collaber.isSelected" ng-repeat="collaber in users.otherCollaborators">
-            <span ng-bind="collaber.party.name"></span>
             <span ng-if="collaber.isSelected" ng-click="unselectAll()" class="icon close"></span>
-            <span ng-if="collaber.isSelected" ng-click="clickUser(collaber)" class="icon add"></span>            
+            <span ng-if="!collaber.isSelected" ng-click="clickUser(collaber)" class="icon add"></span>  
+            <span ng-bind="collaber.party.name"></span>          
           </li>
         </ul>
       </div>

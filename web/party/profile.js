@@ -106,7 +106,7 @@ app.controller('party/profile', [
     // This should take in a user, then select volumes on each thing. 
     $scope.clickUser = function(user){
       $scope.unselectAll();
-
+      user.isSelected = 'userSelected';
       var i, j, k; 
 
       for(i = 0; i < $scope.volumes.individual.length; i++){
