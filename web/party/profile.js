@@ -167,6 +167,8 @@ app.controller('party/profile', [
 
       _.each(volumes, function(v){
         if(!v.party){
+          // The "mini-object" with v and [v] is to make sure that the data is all
+          // shaped the same, making looping over it *substantially* simpler. 
           tempVolumes.individual.push({v: [v]});
         } else if(tempVolumes.party){
           tempVolumes.collaborator.push({v: [v]});
