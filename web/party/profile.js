@@ -181,9 +181,9 @@ app.controller('party/profile', [
         if(isCurrent && isAdmin){
           // The "mini-object" with v and [v] is to make sure that the data is all
           // shaped the same, making looping over it *substantially* simpler. 
-          tempVolumes.individual.push({v: [v]});
+          tempVolumes.individual.push(v);
         } else if(isCurrent){
-          tempVolumes.collaborator.push({v: [v]});
+          tempVolumes.collaborator.push(v);
         } else{
           for (var i=0;i<v.access.length;i++){
             for (var j=0;j<tempVolumes.inherited.length;j++){
