@@ -9,13 +9,15 @@ import datetime
 import sys, os
 import getopt
 
-opts, _ = getopt.getopt(sys.argv[1:], "l:ntu:p:d:")
+opts, _ = getopt.getopt(sys.argv[1:], "l:ntU:P:d:u:p:")
 LOG_DEST = None
 NOMINT = False
 TEST = False
 EZID_USER = None
 EZID_PASS = None
 DATABASE = None
+DATABASE_USER = None
+DATABASE_PASS = None
 for o, a in opts:
     if o == '-l':
         LOG_DEST = a
@@ -23,12 +25,16 @@ for o, a in opts:
         NOMINT = True
     elif o == '-t':
         TEST = True
-    elif o == '-u':
+    elif o == '-U':
         EZID_USER = a
-    elif o == '-p':
+    elif o == '-P':
         EZID_PASS = a
     elif o == '-d':
         DATABASE = a
+    elif o == '-u':
+        DATABASE_USER = a
+    elif o == '-p':
+        DATABASE_PASS = a
 
 #Initiate and configure the logger
 logger = logging.getLogger(__name__)
@@ -52,7 +58,7 @@ sql = { 'QueryAll' : ("SELECT v.id as target, volume_creation(v.id), volume_acce
             "WHERE v.id > 0 AND volume_access_check(v.id, -1) > 'NONE' OR doi IS NOT NULL "
             "ORDER BY target"
             ), 
-       'GetFunders' : "SELECT vf.volume, vf.awards, f.name, f.fundref_id FROM volume_funding vf LEFT JOIN funder f ON vf.funder = f.fundref_id", 
+       'GetFunders' : "SELECT vf.volume, vf.awards, f.name, f.fundref_id FROM volume_funding vf LEFT JOIN funder f ON vf.funder = f.fundref_id WHERE volume = %s", 
        'AddDOI' : "UPDATE volume SET doi = %s WHERE id = %s AND doi IS NULL"}
 
 class dbDB(object):
@@ -60,7 +66,7 @@ class dbDB(object):
     _cur = None
 
     def __init__(self):
-        self._conn = psycopg2.connect(host="localhost", database=DATABASE)
+        self._conn = psycopg2.connect(host="localhost", database=DATABASE, user=DATABASE_USER, password=DATABASE_PASS)
         self._cur = self._conn.cursor()
 
     def __del__(self):

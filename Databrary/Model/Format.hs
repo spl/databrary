@@ -118,9 +118,10 @@ formatSample f
   | otherwise = Nothing
 
 formatJSON :: Format -> JSON.Object
-formatJSON Format{..} = JSON.record formatId $ catMaybes
-  [ Just $ "mimetype" JSON..= formatMimeType
-  , ("extension" JSON..=) <$> listToMaybe formatExtension
-  , Just $ "name" JSON..= formatName
-  -- TODO: description, transcodable
+formatJSON f = JSON.record (formatId f) $ catMaybes
+  [ Just $ "mimetype" JSON..= formatMimeType f
+  , ("extension" JSON..=) <$> listToMaybe (formatExtension f)
+  , Just $ "name" JSON..= formatName f
+  , ("transcodable" JSON..=) . formatId <$> formatTranscodable f
+  -- TODO: description
   ]
