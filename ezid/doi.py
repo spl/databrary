@@ -77,12 +77,13 @@ def queryAll(db):
     db.query(sql['QueryAll'])
     return db._cur.fetchall()
 
-def _getFunders(db, v): #vs is a tuple of volume ids -> dict
+def _getFunders(db, v): #v is a single volume id -> list
     db.query(sql['GetFunders'], (v,))
     funders = db._cur.fetchall()
     funder_data = []
-    for f in funders:
-        funder_data.append({"award_no":f[1], "funder":f[2], "fundref_id":f[3]})
+    if len(funders) > 0:
+        for f in funders:
+            funder_data.append({"award_no":f[1], "funder":f[2], "fundref_id":f[3]})
     return funder_data
 
 def _addDOIS(db, new_dois):
@@ -93,7 +94,7 @@ def _addDOIS(db, new_dois):
         db.insert(sql['AddDOI'], params)
     db._conn.commit()
 
-def _createXMLDoc(row, volume, funders, doi=None): #tuple, str, dict, dict, dict, str, -> xml str
+def _createXMLDoc(row, volume, funders, doi=None): #tuple, str, list, str -> xml str
     '''taking in a row returned from the database, convert it to datacite xml
         according to http://ezid.cdlib.org/doc/apidoc.html#metadata-profiles this can
         be then sent along in the ANVL'''
@@ -128,7 +129,7 @@ def _createXMLDoc(row, volume, funders, doi=None): #tuple, str, dict, dict, dict
             cr = e.SubElement(crelem, "creator")
             crname = e.SubElement(cr, "creatorName")
             crname.text = c.decode('utf-8').split(':', 1)[1]
-    if volume in funders:
+    if len(funders) > 0:
         for f in funders:   
             ftype = e.SubElement(felem, "contributor", contributorType="Funder")
             fname = e.SubElement(ftype, "contributorName")
