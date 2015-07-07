@@ -68,7 +68,7 @@ app.controller('party/profile', [
     
     $scope.clickVolume = function(volume) {
 
-      unselectAll();
+      $scope.unselectAll();
       volume.isSelected = 'volumeSelected';
       volume = _.flatten([volume.v || volume]);
       for(var k = 0; k < volume.length; k++){
