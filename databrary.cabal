@@ -128,8 +128,7 @@ Executable databrary
     http-client,
     mime-mail,
     fast-logger,
-    digest,
-    aeson-schema
+    digest
 
   if flag(tls)
     Build-depends: warp-tls
