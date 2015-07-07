@@ -52,7 +52,7 @@ sql = { 'QueryAll' : ("SELECT v.id as target, volume_creation(v.id), volume_acce
             "WHERE v.id > 0 AND volume_access_check(v.id, -1) > 'NONE' OR doi IS NOT NULL "
             "ORDER BY target"
             ), 
-       'GetFunders' : "SELECT vf.volume, vf.awards, f.name, f.fundref_id FROM volume_funding vf LEFT JOIN funder f ON vf.funder = f.fundref_id", 
+       'GetFunders' : "SELECT vf.volume, vf.awards, f.name, f.fundref_id FROM volume_funding vf LEFT JOIN funder f ON vf.funder = f.fundref_id WHERE volume = %s", 
        'AddDOI' : "UPDATE volume SET doi = %s WHERE id = %s AND doi IS NULL"}
 
 class dbDB(object):
