@@ -180,8 +180,7 @@ def makeMetadata(db, rs): #rs is a list -> list of metadata dict
                 allToUpload['mint'].append({"volume":vol, "record":_generateRecord(status, xml, vol)})
         elif vol_doi:
                 status = "unavailable"
-                xml = _createXMLDoc(r, vol, funders, vol_doi)
-                allToUpload['modify'].append({'_id':"doi:"+vol_doi, 'record':_generateRecord(status, xml, vol)})
+                allToUpload['modify'].append({'_id':"doi:"+vol_doi, 'record':_generateRecord(status, '', vol)})
 
     mdPayload = {'mint':_payloadDedupe(allToUpload, 'mint'), "modify":_payloadDedupe(allToUpload, 'modify')}
     return mdPayload
