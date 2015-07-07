@@ -48,7 +48,7 @@ app.controller('party/profile', [
       return v; 
     };
       
-    var unselectAll = function(){
+    $scope.unselectAll = function(){
 
       $scope.volumes.individual = _.map($scope.volumes.individual, unSetSelected);
 
