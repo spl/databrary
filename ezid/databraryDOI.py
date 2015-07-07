@@ -17,6 +17,7 @@ LOG_PATH = './logs/'
 LOG_FILE = 'ezidlog.log'
 LOG_DEST = LOG_PATH + LOG_FILE
 MAX_LOG_SIZE = 10000000
+DOI_1 = 'doi:10.17910/B7159Q'
 TEST = False
 if istest is not None:
     TEST = True
@@ -228,7 +229,15 @@ def makeMetadata(db, rs): #rs is a list -> list of metadata dict
 def postData(db, payload):
     new_dois = []
     ezid_doi_session = ezid_api.ApiSession(username=c._CREDENTIALS['ezid_u'], password=c._CREDENTIALS['ezid_p'], scheme='doi')
+    #check if the server is up, if not, bail
+    server_response = ezid_doi_session.checkserver()
+    if server_response == True:
+    	logger.info('ezid server is up, starting operation')
+    else:
+    	logger.info('ezid server seems to be down, exiting since will not be able to do anything until it comes back up')
+    	sys.exit()
     logger.info('minting %s DOIs and modifiying %s existing records' % (str(len(payload['mint'])), str(len(payload['modify']))))
+    #start by minting any new shares
     for p in payload['mint']:
         volume = p['volume']
         record = p['record']
@@ -244,7 +253,7 @@ def postData(db, payload):
         else:
             logger.error('something went wrong minting a DOI for volume %s, error returned: %s' % (volume, mint_res))
     _addDOIS(db, new_dois)
-
+    #next update existing records with dois
     for q in payload['modify']:
         identifier = q['_id']
         record = q['record']

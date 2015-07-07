@@ -39,7 +39,13 @@ class ApiSession ():
         if self.test == True:
             naa = testShoulder[self.scheme]
         self.setNAA(naa)
- 
+
+    def checkserver(self):
+    	statusurl = secureServer + '/status'
+    	s = urllib2.urlopen(statusurl).read()
+    	status = s.startswith('success')
+    	return status
+
     # Core api calls
     def mint(self, metadata={}):
         ''' Generates and registers a random identifier using the id scheme and name assigning authority already set.
