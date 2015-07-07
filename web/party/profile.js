@@ -111,9 +111,10 @@ app.controller('party/profile', [
 
       for(i = 0; i < $scope.volumes.individual.length; i++){
         for(j = 0; j < $scope.volumes.individual[i].v.length; j++){
-          for(k = 0; k < $scope.volumes.individual[i].v[j].access; k++){
+          for(k = 0; k < $scope.volumes.individual[i].v[j].access.length; k++){
             if($scope.volumes.individual[i].v[j].access[k].party.id == user.party.id){
               $scope.volumes.individual[i].v[j].isSelected = 'volumeSelected';
+              $scope.volumes.individual[i].isSelected = 'volumeSelected';              
             }
           }
         }
@@ -124,6 +125,7 @@ app.controller('party/profile', [
           for(k = 0; k < $scope.volumes.collaborator[i].v[j].access.length; k++){
             if($scope.volumes.collaborator[i].v[j].access[k].party.id == user.party.id) {
               $scope.volumes.collaborator[i].v[j].isSelected = 'volumeSelected';
+              $scope.volumes.collaborator[i].isSelected = 'volumeSelected';              
             }
           }
         }
@@ -134,6 +136,7 @@ app.controller('party/profile', [
           for(k = 0; k < $scope.volumes.inherited[i].v[j].access.length; k++){
             if($scope.volumes.inherited[i].v[j].access[k].party.id == user.party.id) {
               $scope.volumes.inherited[i].v[j].isSelected = 'volumeSelected';
+              $scope.volumes.inherited[i].isSelected = 'volumeSelected';
             }
           }
         }
@@ -163,7 +166,7 @@ app.controller('party/profile', [
       tempVolumes.inherited = getParents(party.parents);
 
       _.each(volumes, function(v){
-        if(v.party && v.party.id && party.id){
+        if(!v.party){
           tempVolumes.individual.push({v: [v]});
         } else if(tempVolumes.isCollaborator){
           tempVolumes.collaborator.push({v: [v]});
