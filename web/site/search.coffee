@@ -12,8 +12,21 @@ app.controller 'site/search', [
     $scope.selectedType = ""
     $scope.selectedVolume = ""
     $scope.selectedFilter = ""
+
+    # Array that holds the names of the types the user
+    # can filter by (volume, party)
     $scope.typeDisplay = []
+
+    # Array that holds the current available filters
+    # for the selected type.
     $scope.filterDisplay = []
+
+    # These hold the current number of returned values
+    # for each type. These are all set in parseResults.
+    $scope.volumeCount = 0
+    $scope.partyCount = 0
+    $scope.totalCount = 0
+
     $scope.selectSessionStr = "Volumes w/ Sessions"
     $scope.selectHighlightStr = "Volumes w/ Highlights"
     $scope.selectPeopleFilters = ["All", "Authorized Investigators", "Institutions"]
@@ -22,24 +35,38 @@ app.controller 'site/search', [
     $scope.partyDisplayStr = "People"
     $scope.partyLinkPrefix = "party/"
     $scope.volumeLinkPrefix = "volume/"
+
+    # Holds the current text of the search box
     $scope.searchBoxQuery = ""
+
+    # List of affiliations (currently unused)
     $scope.affiliations = []
-    # $scope.selectHighlightStr = "Volumes w/ Highlights"
+
+    # Number of results of each facet to return.
+    # Currently hardcoded to 10.
     $scope.limit = 10
     display.title = 'Search'
 
+    # Name of the currently selected filter.
     currentFilter = ""
 
 
   ###########################
   # Functions for transforming a document into strings
   ###########################
-    $scope.formPartyLink = (doc) ->
+
+    # Def formPartyLink:
+    # Given a party document, returns a hyperlink.
+    formPartyLink = (doc) ->
       return partyLinkPrefix + doc.party_id_i
 
-    $scope.formVolumeLink = (doc) ->
+    # Def formVolumeLink:
+    # Function that, given a volume document, returns a hyperlink.
+    formVolumeLink = (doc) ->
       return volumeLinkPrefix + doc.volume_id_i
 
+    # Def formVolumeResult:
+    # This is a helper function that concats parts of a volume into a string.
     $scope.formVolumeResult = (doc) ->
       # Form everything except the title, which we'll do in HTML so we can make it the link
       res = []
@@ -58,6 +85,9 @@ app.controller 'site/search', [
   ###########################
   # Search handlers
   ###########################
+
+    # Def searchBox: read the current text in the search box
+    # and initiate a search. If blank, return all results.
     $scope.searchBox = ->
       console.log("The search box was :", $scope.searchBoxQuery)
       console.log("The original query was :", $scope.originalQuery)
@@ -68,10 +98,11 @@ app.controller 'site/search', [
       $scope.query = $scope.originalQuery
       $scope.offset = 0
       console.log("NEW SEARCH:", $scope.query)
-      $scope.search()
+      search()
 
-    # Put an ng-key enter here so it does what we offset
-    $scope.search = (query = "") ->
+    # Def search: the function that is actually calling the search from Haskell.
+    # Get the results from Solr and pass them into parseResults.
+    search = (query = "") ->
       # This is for if we want to pass an argument into this...
       if query.length > 0
         $scope.query = query
@@ -86,44 +117,55 @@ app.controller 'site/search', [
       console.log(promise)
       promise.then (res) ->
         console.log("GOT RES:", res)
-        $scope.parseResults(res.data)
+        parseResults(res.data)
 
+    # This function will return the larger number of results of the
+    # two types. So if there are more volumes than parties, it returns
+    # the number of volumes.
     $scope.maxResults = ->
       return Math.max($scope.volumeCount, $scope.partyCount)
 
     #################################
-    # Parse results, the main workhorse function
+    # Parse results, the main workhorse function.
+    # This function is called after each search and is used to set
+    # all of the params for use in the html.
     # ##############################
-    $scope.parseResults = (res) ->
+    parseResults = (res) ->
       if res == "null"
         $scope.query = "*"
-        $scope.search()
+        search()
         return
       # if !$scope.query? or !$scope.query or $scope.query == "" or $scope.query == "null" or $scope.query == "false" or $scope.query == "undefined"
         # $scope.query = "*"
       console.log("query before anything:", $scope.query)
       console.log("RES:", res)
-      $scope.partyResults = $scope.getResults("party", res)
-      $scope.volumeResults = $scope.getResults("volume", res)
+      $scope.partyResults = getResults("party", res)
+      $scope.volumeResults = getResults("volume", res)
 
-      $scope.partyCount = $scope.getTypeCounts("party", res)
-      $scope.volumeCount = $scope.getTypeCounts("volume", res)
+      # Set the number of parties and volumes returned.
+      $scope.partyCount = getTypeCounts("party", res)
+      $scope.volumeCount = getTypeCounts("volume", res)
 
-      $scope.suggestedQuery = $scope.getCollation(res)
+      # If there is a suggested query, extract it.
+      $scope.suggestedQuery = getSuggestedQuery(res)
 
+      # Include the number of returned results in the type display.
       $scope.typeDisplay = [$scope.partyDisplayStr + " (" + ($scope.partyCount || 0) + ")",
         $scope.volumeDisplayStr + " (" + ($scope.volumeCount || 0) + ")"]
 
       console.log("PARTY RESULTS", $scope.partyResults)
       console.log("SUGGESTED QUERY", $scope.suggestedQuery)
 
-      if $scope.partyCount
-        $scope.affiliations = (c.party_affiliation_s for c in $scope.partyResults.docs)
-      else
-        $scope.affiliations = ["No people found"]
+      # Code for extracting user affiliations for filtering, unused.
+      # if $scope.partyCount
+        # $scope.affiliations = (c.party_affiliation_s for c in $scope.partyResults.docs)
+      # else
+        # $scope.affiliations = ["No people found"]
 
       $scope.totalCount = $scope.partyCount + $scope.volumeCount
 
+
+      # Set up pagination
       $scope.minPage = 1
       $scope.maxPage = 1 + ($scope.maxResults() / ($scope.limit + 1))
       pageRange = []
@@ -134,29 +176,24 @@ app.controller 'site/search', [
 
       $scope.goToPage = (page) ->
         $scope.offset = $scope.limit * (page-1)
-        $scope.search()
-
-      ##########################
-      # Set up pagination
-      # ########################
+        search()
 
       if parseInt($scope.maxResults()) > ($scope.offset + $scope.limit)
         $scope.next = ->
           $scope.offset = $scope.offset + $scope.limit
-          $scope.search()
+          search()
       else
         $scope.next = undefined
       if $scope.offset > 0
         $scope.prev = ->
           $scope.offset = Math.max(0, $scope.offset - $scope.limit)
-          $scope.search()
+          search()
       else
         $scope.prev = undefined
 
-      $scope.updateFilterBoxOptions()
+      updateFilterBoxOptions()
 
       $scope.number = 1 + ($scope.offset / $scope.limit)
-      console.log("NUMBER: ", $scope.number, $scope.offset, $scope.limit)
 
 ################################
 # End parse results
@@ -166,21 +203,21 @@ app.controller 'site/search', [
 # Helper functions
 ################################
 
-    $scope.findFacet = (typeName, res) ->
+    findFacet = (typeName, res) ->
       if res != null and res.facets.content_type
          facets = (facet.val for facet in res.facets.content_type.buckets)
          return facets.indexOf(typeName)
       else
          return -1
 
-    $scope.getTypeCounts = (type, res) ->
-      idx = $scope.findFacet(type, res)
+    getTypeCounts = (type, res) ->
+      idx = findFacet(type, res)
       console.log(idx)
       if idx < 0
         return null
       return res?.facets?.content_type?.buckets[idx].count ? 0
 
-    $scope.findResult = (typeName, res) ->
+    findResult = (typeName, res) ->
       console.log("RESULT IS", res)
       if res != null
         groups = (group.groupValue for group in res.grouped.content_type.groups)
@@ -188,35 +225,35 @@ app.controller 'site/search', [
       else
         return -1
 
-    $scope.getSpelling = (res) ->
+    getCorrectedSpelling = (res) ->
       return res.spellcheck.suggestions
 
-    $scope.getCollation = (res) ->
+    getSuggestedQuery = (res) ->
       if res.spellcheck?.collations.length > 0
         return res.spellcheck.collations[1].collationQuery
       return null
 
-    $scope.getResults = (type, res) ->
-      idx = $scope.findResult(type, res)
+    getResults = (type, res) ->
+      idx = findResult(type, res)
       if idx < 0
         return null
       return res.grouped.content_type.groups[idx].doclist
 
-    $scope.getVolumeFeatureBoxOpts = ->
+    getVolumeFilterBoxOpts = ->
       opts = [$scope.selectSessionStr, $scope.selectHighlightStr]
       return opts
 
-    $scope.getPartyFeatureBoxOpts = ->
+    getPartyFilterBoxOpts = ->
       opts = [$scope.selectSessionStr, $scope.selectHighlightStr]
       return opts
 
-    $scope.updateFilterBoxOptions = ->
+    updateFilterBoxOptions = ->
       console.log("SELTYPE", $scope.selectedType)
       if $scope.selectedType and currentFilter != $scope.selectedType
         # We have to reset offset
         $scope.offset = 0
         if $scope.selectedType.join(" ").includes($scope.volumeDisplayStr)
-          $scope.filterDisplay = (s for s in $scope.getVolumeFeatureBoxOpts())
+          $scope.filterDisplay = (s for s in getVolumeFilterBoxOpts())
         if $scope.selectedType.join(" ").includes($scope.partyDisplayStr)
           # console.log("AFFILIATIONS:", $scope.affiliations)
           $scope.filterDisplay = (s for s in $scope.selectPeopleFilters)
@@ -224,7 +261,7 @@ app.controller 'site/search', [
 
     # Takes a group of documents, an argument name, and a value, then counts
     # how many documents in the set have that value
-    $scope.countWithArg = (group, argument, value) ->
+    countWithArg = (group, argument, value) ->
       console.log(group)
       result = (d for d in group.docs when d[argument] == value).length || 0
       return result
@@ -235,10 +272,10 @@ app.controller 'site/search', [
       console.log($scope.selectedType, $scope.selectedType.join(" "))
       if $scope.selectedType.join(" ").includes($scope.volumeDisplayStr)
         $scope.query = $scope.originalQuery
-        $scope.search()
+        search()
       if $scope.selectedType.join(" ").includes($scope.partyDisplayStr)
         $scope.query = $scope.originalQuery
-        $scope.search()
+        search()
       console.log($scope.selectedType, $scope.filterDisplay)
 
     # Action to do something when a filter option is clicked
@@ -246,48 +283,48 @@ app.controller 'site/search', [
       console.log("FILTER BOX CLICKED", $scope.selectedFilter)
       if $scope.selectedType.join(" ").includes($scope.volumeDisplayStr)
         if $scope.selectSessionStr in $scope.selectedFilter
-          $scope.filterBySession()
+          filterBySession()
         if $scope.selectHighlightStr in $scope.selectedFilter
-          $scope.filterByHighlight()
+          filterByHighlight()
       if $scope.selectedType.join(" ").includes($scope.partyDisplayStr)
         # $scope.partyFilterBoxClick()
-        $scope.filterParties($scope.selectedFilter)
+        filterParties($scope.selectedFilter)
         console.log("FILTERING BY PARTY")
       $scope.offset = 0 # Reset the offset
-      $scope.search()
+      search()
 
-    $scope.addArgToQuery = (query, arg, val) ->
+    addArgToQuery = (query, arg, val) ->
       return query + "|arg=" + arg + ":\"" + val + "\""
 
 
     $scope.partyFilterBoxClick = ->
-      $scope.filterByAffiliation()
+      filterByAffiliation()
 
-    $scope.filterByAffiliation = ->
+    filterByAffiliation = ->
       $scope.query = $scope.originalQuery + "|arg=party_affiliation_s:\"" + $scope.selectedFilter + "\""
 
-      # funcs = {"session" : filterBySession, "highlight" : $scope.filterByHighlight}
+      # funcs = {"session" : filterBySession, "highlight" : filterByHighlight}
 
     # Now we want to rerun the search but only return vols w/ highlights
-    $scope.filterByHighlight = ->
+    filterByHighlight = ->
       $scope.requireHighlight = true
       $scope.query = $scope.originalQuery + "|arg=volume_has_excerpt_b:true"
 
-    $scope.filterBySession = ->
+    filterBySession = ->
       $scope.requireSession = true
       $scope.query = $scope.originalQuery + "|arg=volume_has_sessions_b:true"
 
-    $scope.filterParties = (filterName) ->
+    filterParties = (filterName) ->
       console.log("Filtering parties by", filterName)
       if filterName.join(" ").includes("All")
         # Select all parties
         $scope.query = $scope.originalQuery # TODO should this do something else?
       else if filterName.join(" ").includes("Institution")
         # Select institutions
-        $scope.query = $scope.addArgToQuery($scope.originalQuery, "party_is_institution_b", "true")
+        $scope.query = addArgToQuery($scope.originalQuery, "party_is_institution_b", "true")
       else if filterName.join(" ").includes("Authorized")
         # Select authorized users only
-        $scope.query = $scope.addArgToQuery($scope.originalQuery, "party_is_authorized_b", "true")
+        $scope.query = addArgToQuery($scope.originalQuery, "party_is_authorized_b", "true")
       console.log("Query after filter", $scope.query)
 
 
@@ -301,7 +338,7 @@ app.controller 'site/search', [
       $scope.originalQuery = params.query
     console.log(results)
     $scope.offset = parseInt($location.search().offset, 10) || 0
-    $scope.parseResults(results)
+    parseResults(results)
 
     console.log(results)
 
