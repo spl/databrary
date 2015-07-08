@@ -170,7 +170,6 @@ app.controller('party/profile', [
             for (var j = 0; j < tempVolumes.inherited.length; j++) {
               if (v.access[i].children && v.access[i].party.id === tempVolumes.inherited[j].p.party.id) {
                 tempVolumes.inherited[j].v.push(v);
-                break;
               }
             }
           }
