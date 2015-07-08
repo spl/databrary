@@ -179,6 +179,13 @@ app.controller('party/profile', [
         }
       });
 
+      var getDisplayName = function(i){
+        return i.alias || i.name; 
+      };
+      
+      tempVolumes.individual = _.sortBy(tempVolumes.individual, getDisplayName);
+      tempVolumes.collaborator = _.sortBy(tempVolumes.collaborator, getDisplayName);
+      
       return tempVolumes;
 
     };
