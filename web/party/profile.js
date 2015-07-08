@@ -36,11 +36,14 @@ app.controller('party/profile', [
       var filterOnId = function(i){
         return i.party.id; 
       };
+      var getDisplayName = function(i){
+        return i.party.alias || i.party.name; 
+      };
 
-      users.sponsors = _.uniq(users.sponsors, filterOnId);
-      users.databrary = _.uniq(users.databrary, filterOnId);
-      users.labOnly = _.uniq(users.labOnly, filterOnId);
-      users.otherCollaborators = _.uniq(users.otherCollaborators, filterOnId);
+      users.sponsors = _(users.sponsors).uniq(filterOnId).sortBy(getDisplayName).value(); 
+      users.databrary = _(users.databrary).uniq(filterOnId).sortBy(getDisplayName).value();
+      users.labOnly = _(users.labOnly).uniq(filterOnId).sortBy(getDisplayName).value();
+      users.otherCollaborators = _(users.otherCollaborators).uniq(filterOnId).sortBy(getDisplayName).value();
 
       return users;
     };
@@ -176,6 +179,8 @@ app.controller('party/profile', [
         }
       });
 
+
+      
       return tempVolumes;
 
     };
