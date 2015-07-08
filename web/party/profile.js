@@ -121,10 +121,10 @@ app.controller('party/profile', [
     $scope.clickUser = function(user){
       $scope.unselectAll();
       user.isSelected = 'userSelected';
-      var i, j, k; 
+      var i; 
 
       var compareFunction = function(value, key, array){
-        for(j = 0; j < value.access.length; j++){
+        for(var j = 0; j < value.access.length; j++){
           if(value.access[j].party.id === user.party.id){
             array[key].isSelected = 'volumeSelected';
           }
@@ -179,8 +179,6 @@ app.controller('party/profile', [
         }
       });
 
-
-      
       return tempVolumes;
 
     };
