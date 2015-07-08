@@ -8,31 +8,50 @@ app.controller('party/profile', [
       var users = {};
       
       users.sponsors = [];
-      users.labGroupMembers = [];
-      users.nonGroupAffiliates = [];
+      users.databrary = [];
+      users.labOnly = [];
       users.otherCollaborators = [];
 
       _(volumes).pluck('access').flatten().uniq(function(i){
-        return i.party.id; 
+        return i.party.id;
       }).each(function(v){
         console.log("V: ", v);
         if(models.Login.user.id === v.party.id){
-          v.isCurrent = true; 
+          v.isCurrent = true;
         }
-        if(v.children > 0 ){
-          users.sponsors.push(v);
-        } else if(v.parents && v.parents.length) {
-          users.labGroupMembers.push(v);
-        } else if(v.parents && v.parents.length) {
-          users.nonGroupAffiliates.push(v);
+
+        
+        if(v.party.parents && v.party.parents.length){
+          users.sponsors = users.sponsors.concat(v.party.parents);
+        } else if(v.party.site && v.party.site > page.constants.permission.NONE) {
+          users.databrary.push(v);
+        } else if(v.party.site == null || v.party.site == page.constants.permission.NONE) {
+          users.labOnly.push(v);
         } else {
           users.otherCollaborators.push(v);
         }
+        
+        var getMyId = function(i){
+          return i.party.id; 
+        };
+        
+        users.sponsors = _.uniq(users.sponsors, getMyId);
+        users.databrary = _.uniq(users.databrary, getMyId);
+        users.labOnly = _.uniq(users.labOnly, getMyId);
+        users.otherCollaborators = _.uniq(users.otherCollaborators, getMyId);
 
+        
       }).value();
       // The "value()" call is to actually force the chain to work.
-
       
+      var filterOnId = function(i){
+        return i.party.id; 
+      }; 
+      
+      // _.uniq(users.sponsors,filterOnId);
+      // _.uniq(users.otherCollaborators,filterOnId);
+      // _.uniq(users.labOnly,filterOnId);
+      // _.uniq(users.otherCollaborators, filterOnId); 
       console.log("Users: ", users);
       return users;
     };
@@ -202,7 +221,7 @@ app.controller('party/profile', [
     $scope.users = getUsers(party.volumes);      
     $scope.volumes = getVolumes(party.volumes);
     console.log("Volumes: ", $scope.volumes);
-    console.log("Page", models.Login.user); 
+    console.log("Page", page.constants); 
 
     $scope.page = page;
     $scope.profile = page.$location.path() === '/profile';
