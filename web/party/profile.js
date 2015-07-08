@@ -123,23 +123,17 @@ app.controller('party/profile', [
       var i, j, k; 
 
       for(i = 0; i < $scope.volumes.individual.length; i++){
-        for(j = 0; j < $scope.volumes.individual[i].v.length; j++){
-          for(k = 0; k < $scope.volumes.individual[i].v[j].access.length; k++){
-            if($scope.volumes.individual[i].v[j].access[k].party.id == user.party.id){
-              $scope.volumes.individual[i].v[j].isSelected = 'volumeSelected';
-              $scope.volumes.individual[i].isSelected = 'volumeSelected';              
-            }
+        for(k = 0; k < $scope.volumes.individual[i].access.length; k++){
+          if($scope.volumes.individual[i].access[k].party.id == user.party.id){
+            $scope.volumes.individual[i].isSelected = 'volumeSelected';
           }
         }
       }
 
       for(i = 0; i < $scope.volumes.collaborator.length; i++){
-        for(j = 0; j < $scope.volumes.collaborator[i].v.length; j++){
-          for(k = 0; k < $scope.volumes.collaborator[i].v[j].access.length; k++){
-            if($scope.volumes.collaborator[i].v[j].access[k].party.id == user.party.id) {
-              $scope.volumes.collaborator[i].v[j].isSelected = 'volumeSelected';
-              $scope.volumes.collaborator[i].isSelected = 'volumeSelected';              
-            }
+        for(k = 0; k < $scope.volumes.collaborator[i].access.length; k++){
+          if($scope.volumes.collaborator[i].access[k].party.id == user.party.id) {
+            $scope.volumes.collaborator[i].isSelected = 'volumeSelected';              
           }
         }
       }
