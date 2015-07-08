@@ -4,6 +4,7 @@ module Databrary.Model.Party
   , nobodyParty
   , rootParty
   , partyName
+  , partyEmail
   , lookupParty
   , lookupAuthParty
   , lookupSiteAuthByEmail

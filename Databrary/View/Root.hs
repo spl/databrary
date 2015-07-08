@@ -8,5 +8,5 @@ import Databrary.Action.Auth
 import Databrary.View.Template
 
 htmlRoot :: AuthRequest -> H.Html
-htmlRoot req = htmlTemplate req Nothing $ do
+htmlRoot req = htmlTemplate req Nothing $ \_ -> do
   return ()

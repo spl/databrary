@@ -5,24 +5,47 @@ module Databrary.View.Party
   , htmlPartySearchForm
   ) where
 
-import qualified Text.Blaze.Html5 as H
+import Control.Monad (when)
+import qualified Data.Foldable as Fold
 import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
+import qualified Text.Blaze.Html5 as H
+import qualified Text.Blaze.Html5.Attributes as HA
 
 import Databrary.Ops
+import Databrary.Has (view)
 import Databrary.Action.Auth
 import Databrary.Action
+import Databrary.Model.Permission
 import Databrary.Model.Party
+import Databrary.Model.ORCID
 import Databrary.Store.Temp
 import Databrary.Controller.Paths
+import Databrary.View.Html
 import Databrary.View.Template
 import Databrary.View.Form
 
 import {-# SOURCE #-} Databrary.Controller.Party
 
 htmlPartyView :: Party -> AuthRequest -> H.Html
-htmlPartyView p req = htmlTemplate req (Just (partyName p)) $ do
-  return ()
+htmlPartyView p req = htmlTemplate req (Just (partyName p)) $ \js -> do
+  H.h2 $ H.text $ partyName p
+  when (view p >= PermissionEDIT) $
+    H.a H.! actionLink viewPartyEdit (TargetParty (partyId p)) js [] $ "edit"
+  H.dl $ do
+    Fold.forM_ (partyAffiliation p) $ \a -> do
+      H.dt "affiliation"
+      H.dd $ H.text a
+    Fold.forM_ (partyURL p) $ \u -> do
+      let us = show u
+      H.dt "url"
+      H.dd $ H.a H.! HA.href (H.stringValue us) $ H.string us
+    Fold.forM_ (partyEmail p) $ \e -> do
+      H.dt "email"
+      H.dd $ H.a H.! HA.href (H.textValue $ "mailto:" <> e) $ H.text e
+    Fold.forM_ (partyORCID p) $ \o -> do
+      H.dt "orcid"
+      H.dd $ H.a H.! HA.href (H.stringValue $ show $ orcidURL o) $ H.string $ show o
 
 htmlPartyForm :: Maybe Party -> AuthRequest -> FormHtml TempFile
 htmlPartyForm t req = maybe

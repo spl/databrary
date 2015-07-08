@@ -103,7 +103,7 @@ htmlFooter = H.footer H.! HA.id "site-footer" H.! HA.class_ "site-footer" $
               H.img H.! HA.src "/web/images/grants/nih.png" H.! HA.class_ "nih"
               " U01-HD-076595"
 
-htmlTemplate :: AuthRequest -> Maybe T.Text -> H.Html -> H.Html
+htmlTemplate :: AuthRequest -> Maybe T.Text -> (Maybe Bool -> H.Html) -> H.Html
 htmlTemplate req title body = H.docTypeHtml $ do
   H.head $ do
     htmlHeader canon hasjs
@@ -134,7 +134,7 @@ htmlTemplate req title body = H.docTypeHtml $ do
                 $ "logout")
           $ authIdentity req
     Fold.mapM_ (H.h1 . H.toHtml) title
-    r <- body
+    r <- body hasjs
     htmlFooter
     return r
   where
