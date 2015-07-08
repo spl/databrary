@@ -106,6 +106,7 @@ app.controller 'site/search', [
       # This is for if we want to pass an argument into this...
       if query.length > 0
         $scope.query = query
+        $scope.originalQuery = query
       # return page.router.http(page.router.controllers.postSearch, page.$route.current.params)
       console.log("prev results", results)
       # $scope.query = $scope.query.replace /;/g, "\%3B"
