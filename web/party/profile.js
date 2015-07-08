@@ -31,21 +31,18 @@ app.controller('party/profile', [
           users.otherCollaborators.push(v);
         }
         
-        var getMyId = function(i){
-          return i.party.id; 
-        };
-
 
       }).value();
       // The "value()" call is to actually force the chain to work.
       
       var filterOnId = function(i){
         return i.party.id; 
-      }; 
-      users.sponsors = _.uniq(users.sponsors, getMyId);
-      users.databrary = _.uniq(users.databrary, getMyId);
-      users.labOnly = _.uniq(users.labOnly, getMyId);
-      users.otherCollaborators = _.uniq(users.otherCollaborators, getMyId);
+      };
+      
+      users.sponsors = _.uniq(users.sponsors, filterOnId);
+      users.databrary = _.uniq(users.databrary, filterOnId);
+      users.labOnly = _.uniq(users.labOnly, filterOnId);
+      users.otherCollaborators = _.uniq(users.otherCollaborators, filterOnId);
       
       return users;
     };
