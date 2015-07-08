@@ -139,10 +139,7 @@ app.controller('party/profile', [
     var getParents = function(parents) {
       return _.compact(_.map(parents, function(p){
         if(p.member) {
-          return {
-            p: p,
-            v: []
-          };
+          return _.zipObject(['p', 'v'], [p, []]);
         }
       }));
     };
