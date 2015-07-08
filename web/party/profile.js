@@ -48,21 +48,21 @@ app.controller('party/profile', [
       return users;
     };
 
-    // This is a quick helper function to make sure that the isSelected
-    // class is set to empty and to avoid repeating code. 
-    var unSetSelected = function(v){
-      v.isSelected = '';
-      if(v.v !== undefined){
-        v.v = _.map(v.v, function(a){
-          a.isSelected = '';
-          return a;
-        });
-      }
-
-      return v;
-    };
-
     $scope.unselectAll = function(){
+      // This is a quick helper function to make sure that the isSelected
+      // class is set to empty and to avoid repeating code. 
+      var unSetSelected = function(v){
+        v.isSelected = '';
+        if(v.v !== undefined){
+          v.v = _.map(v.v, function(a){
+            a.isSelected = '';
+            return a;
+          });
+        }
+
+        return v;
+      };
+
 
       $scope.volumes.individual = _.map($scope.volumes.individual, unSetSelected);
 
