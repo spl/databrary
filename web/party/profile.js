@@ -145,9 +145,7 @@ app.controller('party/profile', [
     };
 
     var getVolumes = function(volumes) {
-      var tempVolumes = {};
-      tempVolumes.individual = [];
-      tempVolumes.collaborator = [];
+      var tempVolumes = _.zipObject(['individual', 'collaborator'], [[], []]); 
 
       tempVolumes.inherited = getParents(party.parents);
 
@@ -158,7 +156,7 @@ app.controller('party/profile', [
         });
         
         var isAdmin = _.find(v.access, function(r) {
-          return r.party.authorization === 5; 
+          return r.party.authorization === 5;
         });
         
         if(isCurrent && isAdmin){
