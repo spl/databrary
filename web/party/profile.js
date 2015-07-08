@@ -122,7 +122,7 @@ app.controller('party/profile', [
 
       var compareFunction = function(value, key, array){
         for(j = 0; j < value.access.length; j++){
-          if(value.access[j].party.id == user.party.id){
+          if(value.access[j].party.id === user.party.id){
             array[key].isSelected = 'volumeSelected';
           }
         }
@@ -156,7 +156,7 @@ app.controller('party/profile', [
         });
         
         var isAdmin = _.find(v.access, function(r) {
-          return r.party.authorization === 5;
+          return r.party.authorization === page.constants.permission.ADMIN;
         });
         
         if(isCurrent && isAdmin){
