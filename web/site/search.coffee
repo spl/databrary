@@ -102,7 +102,7 @@ app.controller 'site/search', [
 
     # Def search: the function that is actually calling the search from Haskell.
     # Get the results from Solr and pass them into parseResults.
-    search = (query = "") ->
+    $scope.search = (query = "") ->
       # This is for if we want to pass an argument into this...
       if query.length > 0
         $scope.query = query
