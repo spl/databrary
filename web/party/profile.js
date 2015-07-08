@@ -41,10 +41,9 @@ app.controller('party/profile', [
         return i.party.alias || i.party.name; 
       };
 
-      users.sponsors = _(users.sponsors).uniq(filterOnId).sortBy(getDisplayName).value(); 
-      users.databrary = _(users.databrary).uniq(filterOnId).sortBy(getDisplayName).value();
-      users.labOnly = _(users.labOnly).uniq(filterOnId).sortBy(getDisplayName).value();
-      users.otherCollaborators = _(users.otherCollaborators).uniq(filterOnId).sortBy(getDisplayName).value();
+      _.each(['sponsors', 'databrary', 'labOnly', 'otherCollaborators'], function(i){
+        users[i] = _(users[i]).uniq(filterOnId).sortBy(getDisplayName).value();
+      }); 
 
       return users;
     };
