@@ -14,14 +14,14 @@ app.controller('party/profile', [
 
       _(volumes).pluck('access').flatten().uniq(function(i){
         return i.party.id;
-      }).each(function(v){
+      }).each(function(v, index, array){
 
         if(models.Login.user.id === v.party.id){
           v.isCurrent = true;
+          //users.sponsors.push(v);
         }
 
-
-        if(v.party.parents && v.party.parents.length){
+        if((v.party.parents && v.party.parents.length)){
           users.sponsors = users.sponsors.concat(v.party.parents);
         } else if(v.party.site && v.party.site > page.constants.permission.NONE) {
           users.databrary.push(v);
@@ -30,20 +30,18 @@ app.controller('party/profile', [
         } else {
           users.otherCollaborators.push(v);
         }
-        
-
       }).value();
-      // The "value()" call is to actually force the chain to work.
+      // The "value()" call is to actually force theb chain to work.
       
       var filterOnId = function(i){
         return i.party.id; 
       };
-      
+
       users.sponsors = _.uniq(users.sponsors, filterOnId);
       users.databrary = _.uniq(users.databrary, filterOnId);
       users.labOnly = _.uniq(users.labOnly, filterOnId);
       users.otherCollaborators = _.uniq(users.otherCollaborators, filterOnId);
-      
+
       return users;
     };
 
@@ -133,7 +131,7 @@ app.controller('party/profile', [
       for(i = 0; i < $scope.volumes.collaborator.length; i++){
         for(k = 0; k < $scope.volumes.collaborator[i].access.length; k++){
           if($scope.volumes.collaborator[i].access[k].party.id == user.party.id) {
-            $scope.volumes.collaborator[i].isSelected = 'volumeSelected';              
+            $scope.volumes.collaborator[i].isSelected = 'volumeSelected'; 
           }
         }
       }
