@@ -36,6 +36,7 @@ app.controller('party/profile', [
       var filterOnId = function(i){
         return i.party.id; 
       };
+
       var getDisplayName = function(i){
         return i.party.alias || i.party.name; 
       };
