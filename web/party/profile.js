@@ -15,12 +15,12 @@ app.controller('party/profile', [
       _(volumes).pluck('access').flatten().uniq(function(i){
         return i.party.id;
       }).each(function(v){
-        console.log("V: ", v);
+
         if(models.Login.user.id === v.party.id){
           v.isCurrent = true;
         }
 
-        
+
         if(v.party.parents && v.party.parents.length){
           users.sponsors = users.sponsors.concat(v.party.parents);
         } else if(v.party.site && v.party.site > page.constants.permission.NONE) {
@@ -34,25 +34,19 @@ app.controller('party/profile', [
         var getMyId = function(i){
           return i.party.id; 
         };
-        
-        users.sponsors = _.uniq(users.sponsors, getMyId);
-        users.databrary = _.uniq(users.databrary, getMyId);
-        users.labOnly = _.uniq(users.labOnly, getMyId);
-        users.otherCollaborators = _.uniq(users.otherCollaborators, getMyId);
 
-        
+
       }).value();
       // The "value()" call is to actually force the chain to work.
       
       var filterOnId = function(i){
         return i.party.id; 
       }; 
+      users.sponsors = _.uniq(users.sponsors, getMyId);
+      users.databrary = _.uniq(users.databrary, getMyId);
+      users.labOnly = _.uniq(users.labOnly, getMyId);
+      users.otherCollaborators = _.uniq(users.otherCollaborators, getMyId);
       
-      // _.uniq(users.sponsors,filterOnId);
-      // _.uniq(users.otherCollaborators,filterOnId);
-      // _.uniq(users.labOnly,filterOnId);
-      // _.uniq(users.otherCollaborators, filterOnId); 
-      console.log("Users: ", users);
       return users;
     };
 
@@ -220,13 +214,10 @@ app.controller('party/profile', [
     $scope.party = party;
     $scope.users = getUsers(party.volumes);      
     $scope.volumes = getVolumes(party.volumes);
-    console.log("Volumes: ", $scope.volumes);
-    console.log("Page", page.constants); 
 
     $scope.page = page;
     $scope.profile = page.$location.path() === '/profile';
     display.title = party.name;
 
-    console.log($scope.volumes.inherited);
   }
 ]);
