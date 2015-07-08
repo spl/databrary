@@ -85,36 +85,24 @@ app.controller('party/profile', [
       $scope.unselectAll();
       volume.isSelected = 'volumeSelected';
       volume = _.flatten([volume.v || volume]);
-      for(var k = 0; k < volume.length; k++){
-        for(var i = 0; i < volume[k].access.length; i++){
 
-          var j;
 
-          for (j = 0; j < $scope.users.sponsors.length; j++){
-            if($scope.users.sponsors[j].party.id === volume[k].access[i].party.id){
-              $scope.users.sponsors[j].isSelected = 'userSelected';
+      _.each(volume, function(vol){
+        _.each(vol.access, function(acc){
+          
+          var userSelectFunction = function(user, index, array) {
+            if(user.party.id == acc.party.id){
+              array[index].isSelected = 'userSelected';
             }
-          }
+          };
 
-          for (j = 0; j < $scope.users.labGroupMembers.length; j++) {
-            if($scope.users.labGroupMembers[j].party.id === volume[k].access[i].party.id){
-              $scope.users.labGroupMembers[j].isSelected = 'userSelected';
-            }
-          }
-
-          for (j = 0; j < $scope.users.nonGroupAffiliates.length; j++) {
-            if($scope.users.nonGroupAffiliates[j].party.id === volume[k].access[i].party.id){
-              $scope.users.nonGroupAffiliates[j].isSelected = 'userSelected';
-            }
-          }
-
-          for (j = 0; j < $scope.users.otherCollaborators.length; j++) {
-            if($scope.users.otherCollaborators[j].party.id === volume[k].access[i].party.id){
-              $scope.users.otherCollaborators[j].isSelected = 'userSelected';
-            }
-          }
-        }
-      }
+          _.each($scope.users.sponsors,userSelectFunction);
+          _.each($scope.users.databrary,userSelectFunction);
+          _.each($scope.users.labOnly,userSelectFunction);
+          _.each($scope.users.otherCollaborators,userSelectFunction);
+          
+        });
+      }); 
     };
 
     // This should take in a user, then select volumes on each thing. 
@@ -130,7 +118,7 @@ app.controller('party/profile', [
           }
         }
       };
-
+      _.each($scope.users.otherCollaborators,compareFunction);
       _.each($scope.volumes.individual, compareFunction);
       _.each($scope.volumes.collaborator, compareFunction);
 
