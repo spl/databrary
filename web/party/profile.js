@@ -18,7 +18,7 @@ app.controller('party/profile', [
 
         if(models.Login.user.id === v.party.id){
           v.isCurrent = true;
-          //users.sponsors.push(v);
+          users.sponsors.push(v);
         }
 
         if(v.party.parents && v.party.parents.length){
@@ -120,21 +120,33 @@ app.controller('party/profile', [
       user.isSelected = 'userSelected';
       var i, j, k; 
 
-      for(i = 0; i < $scope.volumes.individual.length; i++){
-        for(j = 0; j < $scope.volumes.individual[i].access.length; j++){
-          if($scope.volumes.individual[i].access[j].party.id == user.party.id){
-            $scope.volumes.individual[i].isSelected = 'volumeSelected';
+      var compareFunction = function(value, key, array){
+        for(j = 0; j < value.access.length; j++){
+          if(value.access[j].party.id == user.party.id){
+            array[key].isSelected = 'volumeSelected';
           }
         }
-      }
+      }; 
 
-      for(i = 0; i < $scope.volumes.collaborator.length; i++){
-        for(j = 0; j < $scope.volumes.collaborator[i].access.length; j++){
-          if($scope.volumes.collaborator[i].access[j].party.id == user.party.id) {
-            $scope.volumes.collaborator[i].isSelected = 'volumeSelected';
-          }
-        }
-      }
+      _.each($scope.volumes.individual, compareFunction);
+      _.each($scope.volumes.collaborator, compareFunction);
+
+      
+      // for(i = 0; i < $scope.volumes.individual.length; i++){
+      //   for(j = 0; j < $scope.volumes.individual[i].access.length; j++){
+      //     if($scope.volumes.individual[i].access[j].party.id == user.party.id){
+      //       $scope.volumes.individual[i].isSelected = 'volumeSelected';
+      //     }
+      //   }
+      // }
+
+      // for(i = 0; i < $scope.volumes.collaborator.length; i++){
+      //   for(j = 0; j < $scope.volumes.collaborator[i].access.length; j++){
+      //     if($scope.volumes.collaborator[i].access[j].party.id == user.party.id) {
+      //       $scope.volumes.collaborator[i].isSelected = 'volumeSelected';
+      //     }
+      //   }
+      // }
 
       for(i = 0; i < $scope.volumes.inherited.length; i++){
         for(j = 0; j < $scope.volumes.inherited[i].v.length; j++){
