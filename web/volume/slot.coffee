@@ -579,8 +579,9 @@ app.controller('volume/slot', [
         return if @pending # sorry
         @pending = 1
         messages.clear(this)
-        (if @file
-          @data.upload = @file.uniqueIdentifier
+        file = @file if @file?.isComplete()
+        (if file
+          @data.upload = file.uniqueIdentifier
           if @asset then @asset.replace(@data) else slot.createAsset(@data)
         else
           @asset.save(@data)
@@ -590,9 +591,9 @@ app.controller('volume/slot', [
             first = !@asset
             @setAsset(asset)
 
-            if @file
-              asset.creation ?= {date: Date.now(), name: @file.file.name}
-              @file.cancel()
+            if file
+              asset.creation ?= {date: Date.now(), name: file.file.name}
+              file.cancel()
               delete @file
               delete @progress
             delete @dirty
@@ -607,8 +608,8 @@ app.controller('volume/slot', [
               body: constants.message('asset.update.error', @name)
               report: res
               owner: this
-            if @file
-              @file.cancel()
+            if file
+              file.cancel()
               delete @file
               delete @progress
               delete @data.upload
