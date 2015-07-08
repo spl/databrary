@@ -185,7 +185,7 @@ app.controller('party/profile', [
           tempVolumes.individual.push(v);
         } else if(isCurrent){
           tempVolumes.collaborator.push(v);
-        } else{
+        } else {
           for (var i = 0; i < v.access.length; i++){
             for (var j = 0; j < tempVolumes.inherited.length; j++){
               if (v.access[i].children && v.access[i].party.id === tempVolumes.inherited[j].p.party.id){
