@@ -54,13 +54,13 @@ app.controller('party/profile', [
       if(v.v !== undefined){
         v.v = _.map(v.v, function(a){
           a.isSelected = '';
-          return a; 
+          return a;
         });
-      }         
+      }
 
-      return v; 
+      return v;
     };
-      
+
     $scope.unselectAll = function(){
 
       $scope.volumes.individual = _.map($scope.volumes.individual, unSetSelected);
@@ -78,7 +78,7 @@ app.controller('party/profile', [
       $scope.users.otherCollaborators = _.map($scope.users.otherCollaborators, unSetSelected);
 
     }; 
-    
+
     $scope.clickVolume = function(volume) {
 
       $scope.unselectAll();
@@ -205,7 +205,9 @@ app.controller('party/profile', [
           }
         }
       });
+
       return tempVolumes;
+
     };
 
     $scope.party = party;
