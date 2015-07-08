@@ -41,8 +41,8 @@ app.controller('party/profile', [
         return i.party.alias || i.party.name; 
       };
 
-      _.each(['sponsors', 'databrary', 'labOnly', 'otherCollaborators'], function(i){
-        users[i] = _(users[i]).uniq(filterOnId).sortBy(getDisplayName).value();
+      _.each(users, function(_value, key){
+        users[key] = _(users[key]).uniq(filterOnId).sortBy(getDisplayName).value();
       }); 
 
       return users;
