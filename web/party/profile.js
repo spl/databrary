@@ -121,16 +121,16 @@ app.controller('party/profile', [
       var i, j, k; 
 
       for(i = 0; i < $scope.volumes.individual.length; i++){
-        for(k = 0; k < $scope.volumes.individual[i].access.length; k++){
-          if($scope.volumes.individual[i].access[k].party.id == user.party.id){
+        for(j = 0; j < $scope.volumes.individual[i].access.length; j++){
+          if($scope.volumes.individual[i].access[j].party.id == user.party.id){
             $scope.volumes.individual[i].isSelected = 'volumeSelected';
           }
         }
       }
 
       for(i = 0; i < $scope.volumes.collaborator.length; i++){
-        for(k = 0; k < $scope.volumes.collaborator[i].access.length; k++){
-          if($scope.volumes.collaborator[i].access[k].party.id == user.party.id) {
+        for(j = 0; j < $scope.volumes.collaborator[i].access.length; j++){
+          if($scope.volumes.collaborator[i].access[j].party.id == user.party.id) {
             $scope.volumes.collaborator[i].isSelected = 'volumeSelected';
           }
         }
@@ -186,9 +186,9 @@ app.controller('party/profile', [
         } else if(isCurrent){
           tempVolumes.collaborator.push(v);
         } else {
-          for (var i = 0; i < v.access.length; i++){
-            for (var j = 0; j < tempVolumes.inherited.length; j++){
-              if (v.access[i].children && v.access[i].party.id === tempVolumes.inherited[j].p.party.id){
+          for (var i = 0; i < v.access.length; i++) {
+            for (var j = 0; j < tempVolumes.inherited.length; j++) {
+              if (v.access[i].children && v.access[i].party.id === tempVolumes.inherited[j].p.party.id) {
                 tempVolumes.inherited[j].v.push(v);
                 break;
               }
