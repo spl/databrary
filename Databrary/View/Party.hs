@@ -30,6 +30,8 @@ import {-# SOURCE #-} Databrary.Controller.Party
 htmlPartyView :: Party -> AuthRequest -> H.Html
 htmlPartyView p req = htmlTemplate req (Just (partyName p)) $ \js -> do
   H.h2 $ H.text $ partyName p
+  H.img
+    H.! HA.src (builderValue $ actionURL Nothing viewAvatar (partyId p) [])
   when (view p >= PermissionEDIT) $
     H.a H.! actionLink viewPartyEdit (TargetParty (partyId p)) js [] $ "edit"
   H.dl $ do
