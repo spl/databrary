@@ -98,7 +98,7 @@ app.controller 'site/search', [
       $scope.query = $scope.originalQuery
       $scope.offset = 0
       console.log("NEW SEARCH:", $scope.query)
-      search()
+      $scope.search()
 
     # Def search: the function that is actually calling the search from Haskell.
     # Get the results from Solr and pass them into parseResults.
@@ -133,7 +133,7 @@ app.controller 'site/search', [
     parseResults = (res) ->
       if res == "null"
         $scope.query = "*"
-        search()
+        $scope.search()
         return
       # if !$scope.query? or !$scope.query or $scope.query == "" or $scope.query == "null" or $scope.query == "false" or $scope.query == "undefined"
         # $scope.query = "*"
@@ -176,18 +176,18 @@ app.controller 'site/search', [
 
       $scope.goToPage = (page) ->
         $scope.offset = $scope.limit * (page-1)
-        search()
+        $scope.search()
 
       if parseInt($scope.maxResults()) > ($scope.offset + $scope.limit)
         $scope.next = ->
           $scope.offset = $scope.offset + $scope.limit
-          search()
+          $scope.search()
       else
         $scope.next = undefined
       if $scope.offset > 0
         $scope.prev = ->
           $scope.offset = Math.max(0, $scope.offset - $scope.limit)
-          search()
+          $scope.search()
       else
         $scope.prev = undefined
 
@@ -272,10 +272,10 @@ app.controller 'site/search', [
       console.log($scope.selectedType, $scope.selectedType.join(" "))
       if $scope.selectedType.join(" ").includes($scope.volumeDisplayStr)
         $scope.query = $scope.originalQuery
-        search()
+        $scope.search()
       if $scope.selectedType.join(" ").includes($scope.partyDisplayStr)
         $scope.query = $scope.originalQuery
-        search()
+        $scope.search()
       console.log($scope.selectedType, $scope.filterDisplay)
 
     # Action to do something when a filter option is clicked
@@ -291,7 +291,7 @@ app.controller 'site/search', [
         filterParties($scope.selectedFilter)
         console.log("FILTERING BY PARTY")
       $scope.offset = 0 # Reset the offset
-      search()
+      $scope.search()
 
     addArgToQuery = (query, arg, val) ->
       return query + "|arg=" + arg + ":\"" + val + "\""
