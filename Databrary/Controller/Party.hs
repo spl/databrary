@@ -168,7 +168,7 @@ createParty = multipartAction $ action POST (pathAPI </< "party") $ \api -> with
     JSON -> okResponse [] $ partyJSON p
     HTML -> redirectRouteResponse [] viewParty (api, TargetParty $ partyId p) []
 
-partySearchForm :: (Applicative m, Monad m) => DeformT m PartyFilter
+partySearchForm :: (Applicative m, Monad m) => DeformT f m PartyFilter
 partySearchForm = PartyFilter
   <$> ("query" .:> deformNonEmpty deform)
   <*> ("authorization" .:> optional deform)

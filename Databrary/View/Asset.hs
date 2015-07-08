@@ -17,7 +17,7 @@ import Databrary.View.Form
 
 import {-# SOURCE #-} Databrary.Controller.Asset
 
-htmlAssetForm :: AssetTarget -> AuthRequest -> FormHtml
+htmlAssetForm :: AssetTarget -> AuthRequest -> FormHtml f
 htmlAssetForm targ req = f req $ do
   csrfForm req
   field "name" $ inputText (assetName =<< asset)

@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, RecordWildCards, TemplateHaskell #-}
+{-# LANGUAGE OverloadedStrings, RecordWildCards #-}
 module Databrary.HTTP.Form 
   ( FormKey(..)
   , FormPath
@@ -6,9 +6,7 @@ module Databrary.HTTP.Form
   , FormData
   , getFormData
   , FormDatum(..)
-  , FormFile
-  , Form
-  , MonadHasForm
+  , Form(..)
   , initForm
   , subForm
   , subForms
@@ -31,26 +29,23 @@ import Data.Word (Word64)
 import qualified Network.Wai as Wai
 import Network.Wai.Parse (FileInfo)
 
-import Databrary.Has (makeHasRec, Has(..), peeks)
-import Databrary.Store.Temp (TempFile)
+import Databrary.Has (Has(..), peeks)
 import Databrary.HTTP.Parse
 import Databrary.Action.App (MonadAppAction)
 
-type FormFile = FileInfo TempFile
-
-data FormData = FormData
+data FormData a = FormData
   { formDataQuery :: Map.Map BS.ByteString (Maybe BS.ByteString)
   , formDataPost :: Map.Map BS.ByteString BS.ByteString
   , formDataJSON :: Maybe JSON.Value
-  , formDataFiles :: Map.Map BS.ByteString FormFile
+  , formDataFiles :: Map.Map BS.ByteString (FileInfo a)
   }
 
-instance Monoid FormData where
+instance Monoid (FormData a) where
   mempty = FormData mempty mempty Nothing mempty
   mappend (FormData q1 p1 j1 f1) (FormData q2 p2 j2 f2) =
     FormData (mappend q1 q2) (mappend p1 p2) (j1 <|> j2) (mappend f1 f2)
 
-getFormData :: (MonadAppAction c m, MonadIO m) => [(BS.ByteString, Word64)] -> m FormData
+getFormData :: (MonadAppAction c m, MonadIO m, FileContent a) => [(BS.ByteString, Word64)] -> m (FormData a)
 getFormData fs = do
   f <- peeks $ FormData . Map.fromList . Wai.queryString
   c <- parseRequestContent (fromMaybe 0 . (`lookup` fs))
@@ -101,18 +96,18 @@ instance Monoid FormDatum where
   mappend FormDatumNone x = x
   mappend x _ = x
 
-data Form = Form
-  { formData :: !FormData
+data Form a = Form
+  { formData :: !(FormData a)
   , formPath :: FormPath
   , formPathBS :: BS.ByteString
   , formJSON :: Maybe JSON.Value
   , formDatum :: FormDatum
-  , formFile :: Maybe FormFile
+  , formFile :: Maybe (FileInfo a)
   }
 
-makeHasRec ''Form ['formData, 'formPath, 'formPathBS, 'formDatum, 'formFile]
+-- makeHasRec ''Form ['formData, 'formPath, 'formPathBS, 'formDatum, 'formFile]
 
-initForm :: FormData -> Form
+initForm :: FormData a -> Form a
 initForm d = form where form = Form d [] "" (formDataJSON d) (getFormDatum form) Nothing
 
 formSubJSON :: FormKey -> JSON.Value -> Maybe JSON.Value
@@ -120,7 +115,7 @@ formSubJSON k (JSON.Object o) = HM.lookup (view k) o
 formSubJSON (FormIndex i) (JSON.Array a) = a V.!? i
 formSubJSON _ _ = Nothing
 
-subForm :: FormKey -> Form -> Form
+subForm :: FormKey -> Form a -> Form a
 subForm key form = form' where
   form' = form
     { formPath = formSubPath key $ formPath form
@@ -130,7 +125,7 @@ subForm key form = form' where
     , formFile = getFormFile form'
     }
 
-formEmpty :: Form -> Bool
+formEmpty :: Form a -> Bool
 formEmpty Form{ formJSON = Just _ } = False
 formEmpty Form{ formPathBS = p, formData = FormData{..} } =
   me formDataQuery || me formDataPost where
@@ -138,7 +133,7 @@ formEmpty Form{ formPathBS = p, formData = FormData{..} } =
   sk s = p `BS.isPrefixOf` s && (l == BS.length s || BSC.index s l == '.')
   l = BS.length p
 
-subForms :: Form -> [Form]
+subForms :: Form a -> [Form a]
 subForms form = sf 0 where
   n | Just (JSON.Array v) <- formJSON form = V.length v
     | otherwise = 0
@@ -147,19 +142,19 @@ subForms form = sf 0 where
     | otherwise = el : sf (succ i)
     where el = subForm (FormIndex i) form
 
-jsonFormDatum :: Form -> FormDatum
+jsonFormDatum :: Form a -> FormDatum
 jsonFormDatum Form{ formJSON = j } = Fold.foldMap FormDatumJSON j
 
-queryFormDatum :: Form -> FormDatum
+queryFormDatum :: Form a -> FormDatum
 queryFormDatum Form{ formData = FormData{ formDataQuery = m }, formPathBS = p } =
   Fold.foldMap (maybe (FormDatumJSON JSON.Null) FormDatumBS) $ Map.lookup p m
 
-postFormDatum :: Form -> FormDatum
+postFormDatum :: Form a -> FormDatum
 postFormDatum Form{ formData = FormData{ formDataPost = m }, formPathBS = p } =
   Fold.foldMap FormDatumBS $ Map.lookup p m
 
-getFormDatum :: Form -> FormDatum
+getFormDatum :: Form a -> FormDatum
 getFormDatum form = postFormDatum form <> jsonFormDatum form <> queryFormDatum form
 
-getFormFile :: Form -> Maybe FormFile
+getFormFile :: Form a -> Maybe (FileInfo a)
 getFormFile Form{ formData = FormData{ formDataFiles = f }, formPathBS = p } = Map.lookup p f
