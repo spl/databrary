@@ -132,10 +132,10 @@ data FileUpload = FileUpload
   , fileUploadProbe :: Maybe AVProbe
   }
 
-deformLookup :: (Monad m, Functor m, Deform a) => FormErrorMessage -> (a -> m (Maybe b)) -> DeformT m (Maybe b)
+deformLookup :: (Monad m, Functor m, Deform f a) => FormErrorMessage -> (a -> m (Maybe b)) -> DeformT f m (Maybe b)
 deformLookup e l = Trav.mapM (deformMaybe' e <=< lift . l) =<< deformNonEmpty deform
 
-detectUpload :: (MonadHasService c m, Has AV c, Has Storage c, MonadIO m) => FileUploadFile -> DeformT m FileUpload
+detectUpload :: (MonadHasService c m, Has AV c, Has Storage c, MonadIO m) => FileUploadFile -> DeformT TempFile m FileUpload
 detectUpload f =
   fd =<< deformMaybe' "Unknown or unsupported file format."
     (getFormatByFilename (fileUploadName f)) where

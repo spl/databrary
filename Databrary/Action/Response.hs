@@ -12,7 +12,6 @@ import qualified Data.Aeson as JSON
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Lazy as BSL
-import Data.Maybe (isNothing)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.Text.Lazy as TL
@@ -54,6 +53,10 @@ instance IsFilePath f => ResponseData (f, Maybe FilePart) where
 
 instance IsFilePath f => ResponseData (f, FilePart) where
   response s h (f, p) = response s h (f, Just p)
+
+instance ResponseData String where
+  response s h =
+    response s ((hContentType, "text/plain;charset=utf-8") : h) . BSB.stringUtf8
 
 instance ResponseData T.Text where
   response s h =

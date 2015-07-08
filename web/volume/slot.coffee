@@ -530,9 +530,9 @@ app.controller('volume/slot', [
         @data =
           if @asset
             name: @asset.name
-            classification: (@asset.classification || 0)+''
+            classification: @asset.classification
           else
-            classification: '0'
+            {}
         return
 
       Object.defineProperty @prototype, 'id',
@@ -579,8 +579,9 @@ app.controller('volume/slot', [
         return if @pending # sorry
         @pending = 1
         messages.clear(this)
-        (if @file
-          @data.upload = @file.uniqueIdentifier
+        file = @file if @file?.isComplete()
+        (if file
+          @data.upload = file.uniqueIdentifier
           if @asset then @asset.replace(@data) else slot.createAsset(@data)
         else
           @asset.save(@data)
@@ -590,15 +591,9 @@ app.controller('volume/slot', [
             first = !@asset
             @setAsset(asset)
 
-            messages.add
-              type: 'green'
-              body: constants.message('asset.' + (if @file then (if first then 'upload' else 'replace') else 'update') + '.success', @name) +
-                (if @file && asset.format.transcodable then ' ' + constants.message('asset.upload.transcoding') else '')
-              owner: this
-
-            if @file
-              asset.creation ?= {date: Date.now(), name: @file.file.name}
-              @file.cancel()
+            if file
+              asset.creation ?= {date: Date.now(), name: file.file.name}
+              file.cancel()
               delete @file
               delete @progress
             delete @dirty
@@ -613,8 +608,8 @@ app.controller('volume/slot', [
               body: constants.message('asset.update.error', @name)
               report: res
               owner: this
-            if @file
-              @file.cancel()
+            if file
+              file.cancel()
               delete @file
               delete @progress
               delete @data.upload
@@ -755,7 +750,7 @@ app.controller('volume/slot', [
         if value == undefined || value == ''
           return
         messages.clear(this)
-        if !@asset.classification && value > (slot.release || 0) && !confirm(constants.message('release.excerpt.warning'))
+        if !@asset.classification? && value > (slot.release || 0) && !confirm(constants.message('release.excerpt.warning'))
           return
         @excerpt.target.setExcerpt(value)
           .then (excerpt) =>

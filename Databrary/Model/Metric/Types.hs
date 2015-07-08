@@ -11,6 +11,7 @@ import qualified Data.ByteString as BS
 import Data.Function (on)
 import Data.Ord (comparing)
 import qualified Data.Text as T
+import Instances.TH.Lift ()
 import Language.Haskell.TH.Lift (deriveLiftMany)
 
 import Databrary.Has (makeHasRec)

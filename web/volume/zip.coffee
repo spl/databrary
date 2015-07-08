@@ -29,7 +29,7 @@ app.controller 'volume/zip', [
           z += a.size
     $scope.assetTotal = t
     $scope.assetDownload = d
-    $scope.assetSize = Math.ceil(z/(1024*1024))
+    $scope.assetSize = Math.ceil(z/(1024*1024*1024))
     
     $scope.close = ->
       window.history.back()

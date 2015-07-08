@@ -46,7 +46,7 @@ containerDownloadName c = T.pack (show (containerId c)) : maybeToList (container
 viewContainer :: AppRoute (API, (Maybe (Id Volume), Id Container))
 viewContainer = I.second (I.second $ slotContainerId . unId I.:<->: containerSlotId) I.<$> viewSlot
 
-containerForm :: Container -> DeformActionM AuthRequest Container
+containerForm :: Container -> DeformActionM () AuthRequest Container
 containerForm c = do
   csrfForm
   name <- "name" .:> deformOptional (deformNonEmpty deform)

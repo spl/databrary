@@ -44,7 +44,7 @@ parseJSONEnum (JSON.Number x) = p (round x) where
   fe = fromEnum
 parseJSONEnum _ = fail $ "Invalid " ++ kindOf (undefined :: a)
 
-enumForm :: forall a m . (Functor m, Monad m, DBEnum a) => DeformT m a
+enumForm :: forall a m f . (Functor m, Monad m, DBEnum a) => DeformT f m a
 enumForm = deformParse minBound fv where
   fv (FormDatumBS b) = maybe e return $ readDBEnum $ BSC.unpack b
   fv (FormDatumJSON j) = left T.pack $ JSON.parseEither parseJSONEnum j
@@ -62,7 +62,7 @@ makeDBEnum name typs =
           toJSON = JSON.toJSON . fromEnum
         instance JSON.FromJSON $(return typt) where
           parseJSON = parseJSONEnum
-        instance Deform $(return typt) where
+        instance Deform f $(return typt) where
           deform = enumForm
     |]
   where
