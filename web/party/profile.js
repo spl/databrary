@@ -126,27 +126,10 @@ app.controller('party/profile', [
             array[key].isSelected = 'volumeSelected';
           }
         }
-      }; 
+      };
 
       _.each($scope.volumes.individual, compareFunction);
       _.each($scope.volumes.collaborator, compareFunction);
-
-      
-      // for(i = 0; i < $scope.volumes.individual.length; i++){
-      //   for(j = 0; j < $scope.volumes.individual[i].access.length; j++){
-      //     if($scope.volumes.individual[i].access[j].party.id == user.party.id){
-      //       $scope.volumes.individual[i].isSelected = 'volumeSelected';
-      //     }
-      //   }
-      // }
-
-      // for(i = 0; i < $scope.volumes.collaborator.length; i++){
-      //   for(j = 0; j < $scope.volumes.collaborator[i].access.length; j++){
-      //     if($scope.volumes.collaborator[i].access[j].party.id == user.party.id) {
-      //       $scope.volumes.collaborator[i].isSelected = 'volumeSelected';
-      //     }
-      //   }
-      // }
 
       for(i = 0; i < $scope.volumes.inherited.length; i++){
         for(j = 0; j < $scope.volumes.inherited[i].v.length; j++){
