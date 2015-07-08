@@ -25,7 +25,7 @@ app.controller('party/profile', [
           users.sponsors = users.sponsors.concat(v.party.parents);
         } else if(v.party.site && v.party.site > page.constants.permission.NONE) {
           users.databrary.push(v);
-        } else if(v.party.site == null || v.party.site == page.constants.permission.NONE) {
+        } else if(v.party.site == null | v.party.site == page.constants.permission.NONE) {
           users.labOnly.push(v);
         } else {
           users.otherCollaborators.push(v);
