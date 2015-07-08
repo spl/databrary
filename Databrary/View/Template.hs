@@ -5,7 +5,7 @@ module Databrary.View.Template
   , htmlTemplate
   ) where
 
-import Control.Monad (void)
+import Control.Monad (void, when)
 import qualified Data.Foldable as Fold
 import qualified Data.ByteString.Builder as BSB
 import Data.Maybe (isJust)
@@ -44,6 +44,9 @@ htmlHeader canon hasjs = do
   H.link
     H.! HA.rel "start"
     H.! actionLink viewRoot HTML hasjs []
+  Fold.forM_ ["news", "about", "access", "community"] $ \l -> H.link
+    H.! HA.rel l
+    H.! HA.href ("//databrary.org/" <> l <> ".html")
 
 htmlFooter :: H.Html
 htmlFooter = H.footer H.! HA.id "site-footer" H.! HA.class_ "site-footer" $
@@ -103,16 +106,22 @@ htmlFooter = H.footer H.! HA.id "site-footer" H.! HA.class_ "site-footer" $
 htmlTemplate :: AuthRequest -> Maybe T.Text -> H.Html -> H.Html
 htmlTemplate req title body = H.docTypeHtml $ do
   H.head $ do
-    htmlHeader (Wai.requestMethod (view req) == methodGet && isJust hasjs ?> nojs) hasjs
+    htmlHeader canon hasjs
     H.title $ do
       Fold.mapM_ (\t -> H.toHtml t >> " || ") title
       "Databrary"
   H.body $ do
+    when (hasjs /= Just True) $ Fold.forM_ canon $ \c -> H.div $ do
+      H.preEscapedString "Our site works best with modern browsers (Firefox, Chrome, Safari &ge;6, IE &ge;10, and others). \
+        \You are viewing the simple version of our site: some functionality may not be available. \
+        \Try switching to the "
+      H.a H.! HA.href (builderValue c) $ "modern version"
+      " to see if it will work on your browser."
     H.section
       H.! HA.id "toolbar"
       H.! HA.class_ "toolbar"
       $ do
-        H.a
+        H.h1 $ H.a
           H.! actionLink viewRoot HTML hasjs []
           $ "Databrary"
         foldIdentity
@@ -128,4 +137,6 @@ htmlTemplate req title body = H.docTypeHtml $ do
     r <- body
     htmlFooter
     return r
-  where (hasjs, nojs) = jsURL Nothing (view req)
+  where
+  (hasjs, nojs) = jsURL Nothing (view req)
+  canon = Wai.requestMethod (view req) == methodGet && isJust hasjs ?> nojs

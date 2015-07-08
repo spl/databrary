@@ -1,9 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Databrary.View.Party
-  ( htmlPartyForm
+  ( htmlPartyView
+  , htmlPartyForm
   , htmlPartySearchForm
   ) where
 
+import qualified Text.Blaze.Html5 as H
 import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
 
@@ -13,9 +15,14 @@ import Databrary.Action
 import Databrary.Model.Party
 import Databrary.Store.Temp
 import Databrary.Controller.Paths
+import Databrary.View.Template
 import Databrary.View.Form
 
 import {-# SOURCE #-} Databrary.Controller.Party
+
+htmlPartyView :: Party -> AuthRequest -> H.Html
+htmlPartyView p req = htmlTemplate req (Just (partyName p)) $ do
+  return ()
 
 htmlPartyForm :: Maybe Party -> AuthRequest -> FormHtml TempFile
 htmlPartyForm t req = maybe
