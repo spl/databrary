@@ -132,14 +132,7 @@ app.controller('party/profile', [
       _.each($scope.volumes.collaborator, compareFunction);
 
       for(i = 0; i < $scope.volumes.inherited.length; i++){
-        for(j = 0; j < $scope.volumes.inherited[i].v.length; j++){
-          for(k = 0; k < $scope.volumes.inherited[i].v[j].access.length; k++){
-            if($scope.volumes.inherited[i].v[j].access[k].party.id == user.party.id) {
-              $scope.volumes.inherited[i].v[j].isSelected = 'volumeSelected';
-              $scope.volumes.inherited[i].isSelected = 'volumeSelected';
-            }
-          }
-        }
+        _.each($scope.volumes.inherited[i].v, compareFunction);
       }
     };
 
