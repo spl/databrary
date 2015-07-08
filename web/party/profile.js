@@ -21,7 +21,7 @@ app.controller('party/profile', [
           //users.sponsors.push(v);
         }
 
-        if((v.party.parents && v.party.parents.length)){
+        if(v.party.parents && v.party.parents.length){
           users.sponsors = users.sponsors.concat(v.party.parents);
         } else if(v.party.site && v.party.site > page.constants.permission.NONE) {
           users.databrary.push(v);
