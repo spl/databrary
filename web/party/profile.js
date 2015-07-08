@@ -137,7 +137,6 @@ app.controller('party/profile', [
     };
 
     var getParents = function(parents) {
-      
       return _.compact(_.map(parents, function(p){
         if(p.member) {
           var v = [];
@@ -147,7 +146,6 @@ app.controller('party/profile', [
           };
         }
       }));
-
     };
 
     var getVolumes = function(volumes) {
