@@ -25,7 +25,7 @@ app.controller('party/profile', [
           users.sponsors = users.sponsors.concat(v.party.parents);
         } else if(v.party.site && v.party.site > page.constants.permission.NONE) {
           users.databrary.push(v);
-        } else if(v.party.site == null | v.party.site == page.constants.permission.NONE) {
+        } else if(v.party.site == null || v.party.site == page.constants.permission.NONE) {
           users.labOnly.push(v);
         } else {
           users.otherCollaborators.push(v);
@@ -131,7 +131,7 @@ app.controller('party/profile', [
       for(i = 0; i < $scope.volumes.collaborator.length; i++){
         for(k = 0; k < $scope.volumes.collaborator[i].access.length; k++){
           if($scope.volumes.collaborator[i].access[k].party.id == user.party.id) {
-            $scope.volumes.collaborator[i].isSelected = 'volumeSelected'; 
+            $scope.volumes.collaborator[i].isSelected = 'volumeSelected';
           }
         }
       }
@@ -149,18 +149,17 @@ app.controller('party/profile', [
     };
 
     var getParents = function(parents) {
-      var tempParents = [];
-      _.each(parents, function(p){
-        if(p.member){
+      
+      return _.compact(_.map(parents, function(p){
+        if(p.member) {
           var v = [];
-          var tempThing = {
+          return {
             p: p,
             v: v
           };
-          tempParents.push(tempThing);
         }
-      });
-      return tempParents;
+      }));
+
     };
 
     var getVolumes = function(volumes) {
