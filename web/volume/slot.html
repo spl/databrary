@@ -12,7 +12,7 @@
           <h3 class="view-title smaller">
             <span ng-bind="::slot.displayName"></span>
             <span ng-if="::slot.date" ng-bind="::' (' + slot.date + ')'"></span>
-            <span class="release icon" ng-class="::[page.constants.release[slot.release], 'hint-release-'+page.constants.release[slot.release]]"></span>
+            <span ng-if="::slot.release != null" class="release icon" ng-class="::[page.constants.release[slot.release], 'hint-release-'+page.constants.release[slot.release]]"></span>
             <a ng-if="::!editing && volume.checkPermission(page.permission.EDIT)" ng-click="toggleEdit()"><span class="neutral button icon edit"></span></a>
             <a ng-if="::editing" ng-click="toggleEdit()"><span class="neutral button icon view-icon"></span></a>
           </h3>
