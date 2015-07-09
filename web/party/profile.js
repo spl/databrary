@@ -34,26 +34,30 @@ app.controller('party/profile', [
       // only apply to everything else. 
       var arrayOfEverything = users.sponsors.concat(users.databrary).concat(users.labOnly); 
 
+      // This is a helper function to grab the ID for the nested object. 
+      var filterOnId = function(i) {
+        return i.party.id; 
+      };
 
-      
-      users.otherCollaborators = _($scope.volumes.individual).pluck('access').flatten().uniq(function(i){
-        return i.party.id;
-      }).filter(function(i){
+
+
+      // This long chain is relatively simple; it loops through all the volumes that
+      // current user has access to (which has been pre-computed and is in volumes.individual
+      // and grabs out all the volumes attatched to those.  From there, it flattens everything,
+      // makes everything uniq, and filters out duplicates and the current user. 
+      users.otherCollaborators = _($scope.volumes.individual).pluck('access').flatten().uniq(filterOnId).filter(function(i){
         return i.party.id !== models.Login.user.id && (_.findIndex(arrayOfEverything, function(j){
           return i.party.id == j.party.id;
         }) == -1);
       }).value();
 
-      var filterOnId = function(i) {
-        return i.party.id; 
-      };
 
       var sorter = function(i){
         return i.party.sortname;
       };
 
       _.each(users, function(_value, key) {
-        users[key] = _(users[key]).uniq(filterOnId).sortBy(sorter).value();
+        users[key] = _(users[key]).sortBy(sorter).value();
       }); 
 
       return users;
