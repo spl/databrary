@@ -11,8 +11,8 @@
             <span ng-if="!vi.isSelected" ng-click="clickVolume(vi)" class="icon add dashboard-section-icons"></span>
             <a ng-href="{{::vi.route()}}" ng-bind="vi.alias? vi.alias : vi.name"></a>
 
-            <span class="icon access0 dashboard-volumes-icons"></span>
-            <span class="icon network dashboard-volumes-icons"></span>
+            <span class="icon dashboard-volumes-icons" ng-class="{'access1': vi.accessPreset !== 0}"></span>
+            <span class="icon dashboard-volumes-icons" ng-class="vi.network"></span>
           </li>
         </ul>
       </div>
@@ -23,6 +23,9 @@
             <span ng-if="vc.isSelected" ng-click="unselectAll()" class="icon close dashboard-section-icons"></span>
             <span ng-if="!vc.isSelected" ng-click="clickVolume(vc)" class="icon add dashboard-section-icons"></span>
             <a ng-href="{{::vc.route()}}" ng-bind="vc.alias ? vc.alias : vc.name"></a>
+
+            <span class="icon dashboard-volumes-icons" ng-class="{'access1': vc.accessPreset !== 0}"></span>
+            <span class="icon network dashboard-volumes-icons"></span>
           </li>
         </ul>  
       </div>
@@ -37,6 +40,8 @@
             <span ng-if="vin_.isSelected" ng-click="unselectAll()" class="icon close dashboard-section-icons"></span>
             <span ng-if="!vin_.isSelected" ng-click="clickVolume(vin_)" class="icon add dashboard-section-icons"></span>
             <a ng-href="{{::vin_.route()}}" ng-bind="vin_.alias? vin_.alias : vin_.name"></a>
+
+            <span class="icon dashboard-volumes-icons" ng-class="{'access1': vin_.accessPreset !== 0}"></span>         
           </li>
         </ul>
       </div>         
@@ -68,7 +73,7 @@
         </ul>
       </div>
       <div ng-if="users.labOnly.length > 0">
-        <span class="dashboard-section-header">Lab Affiliates</span>
+        <span class="dashboard-section-header">Lab Affiliates </span>
         <span class="icon info"></span>
         <ul>
           <li ng-class="nonmember.isSelected" ng-repeat="nonmember in users.labOnly">
