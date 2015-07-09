@@ -51,7 +51,10 @@ object Indexer {
 
     object SQLContainer extends SQLSyntaxSupport[SQLContainer] {
       def apply(rs: WrappedResultSet): SQLContainer = new SQLContainer(
-        rs.long("id"), rs.long("volume"), rs.string("name"), if (rs.dateOpt("date").isDefined) Some(rs.date("date").toJodaDateTime) else None, rs.stringOpt("release"))
+        rs.long("id"), rs.long("volume"), rs.string("name"),
+        if (rs.dateOpt("date").isDefined) Some(rs.date("date").toJodaDateTime) else None, rs.stringOpt("release"),
+        rs.stringOpt("txt")
+      )
     }
 
     object SQLVolume extends SQLSyntaxSupport[SQLVolume] {
@@ -141,13 +144,23 @@ object Indexer {
     /*
     Get all of the containers from the DB and create a container->volume lookup table
      */
-    val sQLContainers = sql"""
-        SELECT id, container.volume AS volume, name, date, release FROM container
-        LEFT JOIN slot_release ON id = slot_release.container
-        LEFT JOIN volume_access ON container.volume = volume_access.volume
-        WHERE volume_access.children > 'NONE' AND volume_access.party = -1 AND container.volume > 0
-    """.map(x => SQLContainer(x)).list().apply().map(x => x.containerId -> x).toMap
+    //    val sQLContainers = sql"""
+    //        SELECT id, container.volume AS volume, name, date, release FROM container
+    //        LEFT JOIN slot_release ON id = slot_release.container
+    //        LEFT JOIN volume_access ON container.volume = volume_access.volume
+    //        WHERE volume_access.children > 'NONE' AND volume_access.party = -1 AND container.volume > 0
+    //    """.map(x => SQLContainer(x)).list().apply().map(x => x.containerId -> x).toMap
 
+    val sQLContainers = sql"""
+       SELECT id, container.volume AS volume, name, date, release, string_agg(datum, ' ') AS txt
+       FROM container
+       LEFT JOIN slot_release ON id = slot_release.container
+       LEFT JOIN volume_access ON container.volume = volume_access.volume
+       LEFT JOIN slot_record ON id = slot_record.container
+       LEFT JOIN measure_text ON slot_record.record = measure_text.record
+       WHERE volume_access.children > 'NONE' AND volume_access.party = -1 AND container.volume > 0
+       GROUP BY container.id, container.volume, name, date, release
+    """.map(x => SQLContainer(x)).list().apply().map(x => x.containerId -> x).toMap
 
     val sQLContainerVolumeLookup = sQLContainers.values.map(x => x.containerId -> sQLVolumes(x.volumeId))
       .toMap.withDefaultValue(new SQLVolume(volumeId = -1))
@@ -310,7 +323,8 @@ object Indexer {
       container_id_i = Some(container.containerId.toInt),
       container_date_tdt = None, // This should never be set for privacy reasons
       container_name_t = Some(container.name), container_age_td = container.age,
-      container_has_excerpt_b = Some(container.hasExcerpt)
+      container_has_excerpt_b = Some(container.hasExcerpt),
+      container_text_t = container.text
     )
   }
 
@@ -362,7 +376,7 @@ object Indexer {
 
   case class Volume(volumeId: Long, title: String, abs: String, alias: String, containers: Seq[Container], var hasExcerpt: Boolean = false, var hasSessions: Boolean = false)
 
-  case class SQLContainer(containerId: Long, volumeId: Long, name: String, date: Option[DateTime] = None, release: Option[String] = None, var age: Option[Double] = None, var hasExcerpt: Boolean = false)
+  case class SQLContainer(containerId: Long, volumeId: Long, name: String, date: Option[DateTime] = None, release: Option[String] = None, text: Option[String], var age: Option[Double] = None, var hasExcerpt: Boolean = false)
 
   case class Container(containerId: Long, volumeId: Long, name: String, date: Option[DateTime], release: Option[String], records: Seq[Record], hasExcerpt: Boolean)
 
@@ -441,6 +455,7 @@ object Indexer {
                           container_age_td: Option[Double] = None,
                           container_has_excerpt_b: Option[Boolean] = None,
                           container_keywords_ss: Option[Seq[String]] = None,
+                          container_text_t: Option[String] = None,
                           record_id_i: Option[Int] = None, record_volume_id_i: Option[Int] = None,
                           record_container_i: Option[Int] = None, record_date_tdt: Option[String] = None,
                           record_text_t: Option[String] = None,
