@@ -9,19 +9,19 @@ app.controller('party/profile', [
 
       users.otherCollaborators = [];
       users.sponsors = $scope.party.parents;
-      
+      console.log($scope.party); 
       users.databrary = _.filter($scope.party.children, function(i) {
-        return i.site > page.constants.permission.NONE; 
+        return i.site > page.constants.permission.NONE && i.party.id != models.Login.user.id; 
       });
       
       users.labOnly = _.filter($scope.party.children, function(i) {
-        return i.site === page.constants.permission.NONE; 
+        return i.site === page.constants.permission.NONE && i.party.id != models.Login.user.id; 
       }); 
 
       users.otherCollaborators = _(volumes).pluck('access').flatten().uniq(function(i) {
         return i.party.id;
       }).filter(function(v, index, array) {
-        return v.party && v.party.permission === page.constants.permission.ADMIN;
+        return v.party && v.party.permission === page.constants.permission.ADMIN && v.party.id != models.Login.user.id;
       }).value();
       // The "value()" call is to actually force theb chain to work.
       
