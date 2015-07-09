@@ -47,6 +47,7 @@ app.controller('party/profile', [
       var unSetSelected = function(v) {
         v.isSelected = '';
         if(v.v !== undefined) {
+
           v.v = _.map(v.v, function(a) {
             a.isSelected = '';
             return a;
@@ -55,7 +56,6 @@ app.controller('party/profile', [
 
         return v;
       };
-
 
       $scope.volumes.individual = _.map($scope.volumes.individual, unSetSelected);
 
@@ -143,7 +143,7 @@ app.controller('party/profile', [
           return r.party.authorization === page.constants.permission.ADMIN;
         });
 
-        if(isCurrent && isAdmin) {
+        if(isCurrent && isCurrent.individual == page.constants.permission.ADMIN) {
           // The "mini-object" with v and [v] is to make sure that the data is all
           // shaped the same, making looping over it *substantially* simpler. 
           tempVolumes.individual.push(v);
@@ -177,6 +177,7 @@ app.controller('party/profile', [
     $scope.party = party;
     $scope.users = getUsers(party.volumes);      
     $scope.volumes = getVolumes(party.volumes);
+    console.log($scope.volumes);
 
     $scope.page = page;
     $scope.profile = page.$location.path() === '/profile';
