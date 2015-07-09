@@ -21,7 +21,7 @@ app.controller('party/profile', [
       users.otherCollaborators = _(volumes).pluck('access').flatten().uniq(function(i){
         return i.party.id;
       }).filter(function(v, index, array){
-        return v.party && v.party.permission == page.constants.permission.ADMIN; 
+        return v.party && v.party.permission === page.constants.permission.ADMIN; 
       }).value();
       // The "value()" call is to actually force theb chain to work.
       
