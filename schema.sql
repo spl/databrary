@@ -469,7 +469,7 @@ CREATE TABLE "asset" (
 	"duration" interval HOUR TO SECOND (3) Check ("duration" > interval '0'),
 	"name" text,
 	"sha1" bytea Check (octet_length("sha1") = 20),
-	"size" bigint Check ("size" >= 0)
+	"size" bigint
 );
 ALTER TABLE "asset"
 	ALTER "name" SET STORAGE EXTERNAL,

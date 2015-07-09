@@ -7,6 +7,7 @@ module Databrary.View.Template
 
 import Control.Monad (void, when)
 import qualified Data.Foldable as Fold
+import qualified Data.ByteString.Builder as BSB
 import Data.Maybe (isJust)
 import Data.Monoid ((<>))
 import qualified Data.Text as T
@@ -17,6 +18,7 @@ import Network.HTTP.Types (methodGet)
 import qualified Network.Wai as Wai
 
 import Paths_databrary (version)
+import Databrary.Ops
 import Databrary.Has (view)
 import Databrary.Model.Identity
 import Databrary.Action.Auth
@@ -30,20 +32,21 @@ import {-# SOURCE #-} Databrary.Controller.Login
 import {-# SOURCE #-} Databrary.Controller.Party
 import Databrary.Controller.Web
 
-htmlHeader :: Wai.Request -> H.Html
-htmlHeader req = do
-  when (Wai.requestMethod req == methodGet && isJust hasjs) $
+htmlHeader :: Maybe BSB.Builder -> Maybe Bool -> H.Html
+htmlHeader canon hasjs = do
+  Fold.forM_ canon $ \c ->
     H.link
       H.! HA.rel "canonical"
-      H.! HA.href (builderValue nojs)
+      H.! HA.href (builderValue c)
   H.link
     H.! HA.rel "shortcut icon"
     H.! HA.href (builderValue $ actionURL Nothing webFile (Just $ staticPath ["icons", "favicon.png"]) [])
   H.link
     H.! HA.rel "start"
     H.! actionLink viewRoot HTML hasjs []
-  where
-  (hasjs, nojs) = jsURL Nothing req
+  Fold.forM_ ["news", "about", "access", "community"] $ \l -> H.link
+    H.! HA.rel l
+    H.! HA.href ("//databrary.org/" <> l <> ".html")
 
 htmlFooter :: H.Html
 htmlFooter = H.footer H.! HA.id "site-footer" H.! HA.class_ "site-footer" $
@@ -100,31 +103,40 @@ htmlFooter = H.footer H.! HA.id "site-footer" H.! HA.class_ "site-footer" $
               H.img H.! HA.src "/web/images/grants/nih.png" H.! HA.class_ "nih"
               " U01-HD-076595"
 
-htmlTemplate :: AuthRequest -> Maybe T.Text -> H.Html -> H.Html
+htmlTemplate :: AuthRequest -> Maybe T.Text -> (Maybe Bool -> H.Html) -> H.Html
 htmlTemplate req title body = H.docTypeHtml $ do
   H.head $ do
-    htmlHeader (view req)
+    htmlHeader canon hasjs
     H.title $ do
       Fold.mapM_ (\t -> H.toHtml t >> " || ") title
       "Databrary"
   H.body $ do
+    when (hasjs /= Just True) $ Fold.forM_ canon $ \c -> H.div $ do
+      H.preEscapedString "Our site works best with modern browsers (Firefox, Chrome, Safari &ge;6, IE &ge;10, and others). \
+        \You are viewing the simple version of our site: some functionality may not be available. \
+        \Try switching to the "
+      H.a H.! HA.href (builderValue c) $ "modern version"
+      " to see if it will work on your browser."
     H.section
       H.! HA.id "toolbar"
       H.! HA.class_ "toolbar"
       $ do
-        H.a
-          H.! actionLink viewRoot HTML (Just False) []
+        H.h1 $ H.a
+          H.! actionLink viewRoot HTML hasjs []
           $ "Databrary"
         foldIdentity
-          (H.a H.! actionLink viewLogin () (Just False) [] $ "login")
+          (H.a H.! actionLink viewLogin () hasjs [] $ "login")
           (\_ -> do
-            H.a H.! actionLink viewParty (HTML, TargetProfile) (Just False) [] $ "profile"
+            H.a H.! actionLink viewParty (HTML, TargetProfile) hasjs [] $ "profile"
             actionForm postLogout HTML $
               H.button
                 H.! HA.type_ "submit"
                 $ "logout")
           $ authIdentity req
     Fold.mapM_ (H.h1 . H.toHtml) title
-    r <- body
+    r <- body hasjs
     htmlFooter
     return r
+  where
+  (hasjs, nojs) = jsURL Nothing (view req)
+  canon = Wai.requestMethod (view req) == methodGet && isJust hasjs ?> nojs

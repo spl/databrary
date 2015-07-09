@@ -10,6 +10,7 @@ import qualified Data.ByteString as BS
 
 import Databrary.Model.Kind
 import Databrary.Model.Id.Types
+import Databrary.Model.Time
 import Databrary.Model.Segment
 import Databrary.Model.Asset.Types
 import Databrary.Model.Party.Types
@@ -25,6 +26,7 @@ data Transcode = Transcode
   , transcodeOrig :: Asset
   , transcodeSegment :: Segment
   , transcodeOptions :: TranscodeArgs
+  , transcodeStart :: Maybe Timestamp
   , transcodeProcess :: Maybe TranscodePID
   , transcodeLog :: Maybe BS.ByteString
   }

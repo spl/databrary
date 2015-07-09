@@ -16,6 +16,7 @@ module Databrary.Model.AssetSlot
 
 import Control.Applicative ((<*>))
 import Control.Monad (when)
+import qualified Data.Foldable as Fold
 import Data.Maybe (fromMaybe, isNothing, catMaybes)
 import Database.PostgreSQL.Typed (pgSQL)
 
@@ -95,5 +96,7 @@ assetSlotJSON as@AssetSlot{..} = assetJSON slotAsset JSON..++ catMaybes
   [ segmentJSON . slotSegment =<< assetSlot
   -- , ("release" JSON..=) <$> (view as :: Maybe Release)
   , Just $ "permission" JSON..= p
-  , p > PermissionNONE ?> "size" JSON..= assetSize slotAsset
-  ] where p = dataPermission as
+  , p > PermissionNONE && Fold.any (0 <=) z ?> "size" JSON..= z
+  ] where
+  p = dataPermission as
+  z = assetSize slotAsset

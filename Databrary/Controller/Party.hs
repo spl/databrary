@@ -104,7 +104,7 @@ viewParty = action GET (pathAPI </> pathPartyTarget) $ \(api, i) -> withAuth $ d
   p <- getParty (Just PermissionNONE) i
   case api of
     JSON -> okResponse [] =<< partyJSONQuery p =<< peeks Wai.queryString
-    HTML -> okResponse [] $ partyName p -- TODO
+    HTML -> okResponse [] =<< peeks (htmlPartyView p)
 
 processParty :: API -> Maybe Party -> AuthActionM (Party, Maybe Asset)
 processParty api p = do

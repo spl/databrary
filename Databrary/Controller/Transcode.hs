@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Databrary.Controller.Transcode
   ( remoteTranscode
+  , viewTranscodes
   ) where
 
 import Control.Applicative (optional)
@@ -21,7 +22,9 @@ import Databrary.Model.Id
 import Databrary.Model.Transcode
 import Databrary.Store.Transcode
 import Databrary.Controller.Paths
+import Databrary.Controller.Permission
 import Databrary.Controller.Form
+import Databrary.View.Transcode
 
 unHex :: String -> Maybe [Word8]
 unHex [] = Just []
@@ -52,3 +55,9 @@ remoteTranscode = action POST (pathJSON >/> pathId) $ \ti -> do
         ("log" .:> deform)
     collectTranscode t res sha1 logs
     okResponse [] BS.empty
+
+viewTranscodes :: AppRoute ()
+viewTranscodes = action GET (pathHTML >/> "transcode") $ \() -> withAuth $ do
+  checkMemberADMIN
+  t <- lookupActiveTranscodes
+  okResponse [] =<< peeks (htmlTranscodes t)
