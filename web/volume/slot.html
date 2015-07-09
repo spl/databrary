@@ -25,9 +25,9 @@
           <div class="player fold">
             <nav ng-if="!(folded || !current)" class="player-actions">
               <button ng-if="editing && !!current.asset" ng-init="current.dirty && form.edit.$setDirty()" class="player-action-word green" ng-click="current.save()" ng-disabled="form.edit.$pristine || form.edit.$invalid || current.pending || form.edit.$submitted">Save</button>
-              <button ng-if="editing && !current.file && current.asset" class="player-action-word yellow" flow-btn>Replace File</button>
+              <button ng-if="editing && current.asset && !current.file" class="player-action-word yellow" flow-btn>Replace File</button>
               <a ng-if="editing && !!(current.asset || current.file) && !current.pending" ng-click="current.remove()" class="player-action-icon icon trash2 button"></a>
-              <a ng-if="!!current.asset && !current.asset.pending && current.asset.checkPermission(page.permission.VIEW)" class="player-action-icon icon download button" ng-href="{{current.asset.route()}}"></a>
+              <a ng-if="current.asset && !current.asset.pending && current.asset.checkPermission(page.permission.VIEW)" class="player-action-icon icon download button" ng-href="{{current.asset.route()}}"></a>
               <button ng-if="current.canRestore()" class="paste icon" tooltip="'asset.restore' | message:current.canRestore().name" ng-click="current.restore()"></button>
             </nav>
             <div ng-if="!(folded || !current)" id="player-scroll" class="player-scroll" ng-style="{height:playerHeight+'px'}">
@@ -211,7 +211,7 @@
                     <span class="track-status" ng-if="t.asset && !t.asset.duration && t.asset.format.type==='video'"> (processing)</span>
                   </div>
                   <upload-progress class="upload-progress-info" ng-if="!!t.file" progress-value="t.progress"></upload-progress>
-                  <span ng-if="!!t.asset && t.asset.release" class="classification-info release icon" ng-class="[page.constants.release[t.asset.release], 'hint-release-'+page.constants.release[t.asset.release]]"></span>
+                  <span ng-if="t.asset.release != null" class="classification-info release icon" ng-class="[page.constants.release[t.asset.release], 'hint-release-'+page.constants.release[t.asset.release]]"></span>
                 </div>
                 <div class="slot-track-asset" ng-if="t.asset && !t.full" ng-style="t.style()">
                   <div ng-if="t === current && editing === 'position'" class="slot-handle slot-handle-move" mouse-drag="t.dragMove($down, $up)"></div>
