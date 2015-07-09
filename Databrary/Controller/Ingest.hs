@@ -18,21 +18,20 @@ import Databrary.HTTP.Form.Deform
 import Databrary.Action.Route
 import Databrary.Action
 import Databrary.Controller.Paths
+import Databrary.Controller.Permission
 import Databrary.Controller.Form
 import Databrary.Controller.Volume
 import Databrary.View.Ingest
 
 viewIngest :: AppRoute (Id Volume)
 viewIngest = action GET (pathId </< "ingest") $ \vi -> withAuth $ do
-  admin <- peeks accessMember'
-  guardAction (admin >= PermissionADMIN) forbiddenResponse
+  checkMemberADMIN
   v <- getVolume PermissionEDIT vi
   blankForm $ htmlIngestForm v
 
 postIngest :: AppRoute (Id Volume)
 postIngest = multipartAction $ action POST (pathId </< "ingest") $ \vi -> withAuth $ do
-  admin <- peeks accessMember'
-  guardAction (admin >= PermissionADMIN) forbiddenResponse
+  checkMemberADMIN
   v <- getVolume PermissionEDIT vi
   (j, r, o) <- runFormFiles [("json", 16*1024*1024)] (Just $ htmlIngestForm v) $ do
     csrfForm
