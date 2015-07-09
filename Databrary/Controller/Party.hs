@@ -83,7 +83,7 @@ partyJSONField p "children" _ =
     <$> lookupAuthorizedChildren p admin
   where admin = view p >= PermissionADMIN
 partyJSONField p "volumes" o = (?$>) (view p >= PermissionADMIN) $
-  fmap JSON.toJSON . mapM vf =<< lookupPartyVolumes p (succ PermissionNONE)
+  fmap JSON.toJSON . mapM vf =<< lookupPartyVolumes p PermissionREAD
   where
   vf v
     | o == Just "access" = (volumeJSON v JSON..+) . ("access" JSON..=) . map volumeAccessPartyJSON <$> lookupVolumeAccess v (succ PermissionNONE)
