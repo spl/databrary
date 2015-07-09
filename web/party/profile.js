@@ -10,17 +10,17 @@ app.controller('party/profile', [
       users.otherCollaborators = [];
       users.sponsors = $scope.party.parents;
       
-      users.databrary = _.filter($scope.party.children, function(i){
+      users.databrary = _.filter($scope.party.children, function(i) {
         return i.site > page.constants.permission.NONE; 
       });
       
-      users.labOnly = _.filter($scope.party.children, function(i){
+      users.labOnly = _.filter($scope.party.children, function(i) {
         return i.site === page.constants.permission.NONE; 
       }); 
 
-      users.otherCollaborators = _(volumes).pluck('access').flatten().uniq(function(i){
+      users.otherCollaborators = _(volumes).pluck('access').flatten().uniq(function(i) {
         return i.party.id;
-      }).filter(function(v, index, array){
+      }).filter(function(v, index, array) {
         return v.party && v.party.permission === page.constants.permission.ADMIN;
       }).value();
       // The "value()" call is to actually force theb chain to work.
@@ -65,9 +65,9 @@ app.controller('party/profile', [
 
       $scope.users.sponsors = _.map($scope.users.sponsors, unSetSelected);
 
-      $scope.users.nonGroupAffiliates = _.map($scope.users.nonGroupAffiliates, unSetSelected);
+      $scope.users.databrary = _.map($scope.users.databrary, unSetSelected);
 
-      $scope.users.labGroupMembers = _.map($scope.users.labGroupMembers, unSetSelected);
+      $scope.users.labOnly = _.map($scope.users.labOnly, unSetSelected);
 
       $scope.users.otherCollaborators = _.map($scope.users.otherCollaborators, unSetSelected);
 
@@ -133,7 +133,7 @@ app.controller('party/profile', [
 
       tempVolumes.inherited = getParents(party.parents);
 
-      _.each(volumes, function(v){
+      _.each(volumes, function(v) {
 
         var isCurrent = _.find(v.access, function(r) {
           return r.party.id === models.Login.user.id;
@@ -142,7 +142,7 @@ app.controller('party/profile', [
         var isAdmin = _.find(v.access, function(r) {
           return r.party.authorization === page.constants.permission.ADMIN;
         });
-        
+
         if(isCurrent && isAdmin) {
           // The "mini-object" with v and [v] is to make sure that the data is all
           // shaped the same, making looping over it *substantially* simpler. 
@@ -158,6 +158,9 @@ app.controller('party/profile', [
             }
           }
         }
+
+        
+        
       });
 
       var getDisplayName = function(i) {

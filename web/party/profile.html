@@ -54,22 +54,22 @@
           </li>
         </ul>
       </div>
-      <div ng-if="users.labGroupMembers.length > 0">
+      <div ng-if="users.databrary.length > 0">
         <span class="dashboard-section-header">Lab/Group members </span>
         <span class="icon info"></span>
         <ul>
-          <li ng-class="member.isSelected" ng-repeat="member in users.labGroupMembers">
+          <li ng-class="member.isSelected" ng-repeat="member in users.databrary">
             <span ng-if="member.isSelected" ng-click="unselectAll()" class="icon close  dashboard-section-icons"></span>
             <span ng-if="!member.isSelected" ng-click="clickUser(member)" class="icon add  dashboard-section-icons"></span>
             <a ng-href="{{::member.party.route()}}" ng-bind="member.party.name"></a>
           </li>
         </ul>
       </div>
-      <div ng-if="users.nonGroupAffiliates.length > 0">
+      <div ng-if="users.labOnly.length > 0">
         <span class="dashboard-section-header">Non-group affiliates </span>
         <span class="icon info"></span>
         <ul>
-          <li ng-class="nonmember.isSelected" ng-repeat="nonmember in users.nonGroupAffiliates">
+          <li ng-class="nonmember.isSelected" ng-repeat="nonmember in users.labOnly">
             <span ng-if="nonmember.isSelected" ng-click="unselectAll()" class="icon close  dashboard-section-icons"></span>
             <span ng-if="!nonmember.isSelected" ng-click="clickUser(nonmember)" class="icon add  dashboard-section-icons"></span>
             <a ng-href="{{::nonmember.party.route()}}" ng-bind="nonmember.party.name"></a>
