@@ -8,7 +8,7 @@ app.controller('party/profile', [
       var users = {};
 
       users.otherCollaborators = [];
-      users.sponsors = users.sponsors.concat($scope.party.parents);
+      users.sponsors = $scope.party.parents;
       
       users.databrary = _.filter($scope.party.children, function(i){
         return i.site > page.constants.permission.NONE; 
@@ -119,7 +119,7 @@ app.controller('party/profile', [
           }
         }
       };
-      _.each($scope.users.otherCollaborators,compareFunction);
+
       _.each($scope.volumes.individual, compareFunction);
       _.each($scope.volumes.collaborator, compareFunction);
 
