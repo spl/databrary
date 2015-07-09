@@ -9,7 +9,6 @@ app.controller('party/profile', [
 
       users.otherCollaborators = [];
       users.sponsors = $scope.party.parents;
-      console.log($scope.party); 
       users.databrary = _.filter($scope.party.children, function(i) {
         return i.site > page.constants.permission.NONE && i.party.id != models.Login.user.id; 
       });
@@ -138,6 +137,8 @@ app.controller('party/profile', [
         var isCurrent = _.find(v.access, function(r) {
           return r.party.id === models.Login.user.id;
         });
+
+        if(isCurrent && isCurrent.children) v.network = 'network';
 
         if(isCurrent && isCurrent.individual == page.constants.permission.ADMIN) {
           // The "mini-object" with v and [v] is to make sure that the data is all
