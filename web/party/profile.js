@@ -138,10 +138,6 @@ app.controller('party/profile', [
         var isCurrent = _.find(v.access, function(r) {
           return r.party.id === models.Login.user.id;
         });
-        
-        var isAdmin = _.find(v.access, function(r) {
-          return r.party.authorization === page.constants.permission.ADMIN;
-        });
 
         if(isCurrent && isCurrent.individual == page.constants.permission.ADMIN) {
           // The "mini-object" with v and [v] is to make sure that the data is all
