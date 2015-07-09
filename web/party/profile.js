@@ -18,22 +18,19 @@ app.controller('party/profile', [
       
       users.labOnly = _.filter($scope.party.children, function(i) {
         return i.site === page.constants.permission.NONE && i.party.id !== models.Login.user.id; 
-      }); 
+      });
+      
+      var arrayOfEverything = users.sponsors.concat(users.databrary).concat(users.labOnly); 
 
-
-      var tempArray = _($scope.volumes.individual).pluck('access').flatten().uniq(function(i){
+      users.otherCollaborators = _($scope.volumes.individual).pluck('access').flatten().uniq(function(i){
         return i.party.id;
       }).filter(function(i){
         return i.party.id != models.Login.user.id;
-      }).value();
-
-      var arrayOfEverything = users.sponsors.concat(users.databrary).concat(users.labOnly); 
-      
-      users.otherCollaborators = _.filter(tempArray, function(i){
+      }).filter(function(i){
         return -1 < (_.findIndex(arrayOfEverything, function(j){
           return i.party.id === j.party.id;
         }));
-      });
+      }).value();
 
       var filterOnId = function(i) {
         return i.party.id; 
