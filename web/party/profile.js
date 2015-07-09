@@ -3,33 +3,45 @@
 app.controller('party/profile', [
   '$scope', 'displayService', 'party', 'pageService','constantService', 'modelService', 
   function ($scope, display, party, page, constants, models) {
+
+    // This function is responsible for extracting out all the users from
+    // volumes (which are passed in) and the party (which is not)
     var getUsers = function(volumes){
 
+      // It's easier to handle all the user information by dividing
+      // the users into subarrays in a hierarchical user object
       var users = {};
 
       users.otherCollaborators = [];
       users.sponsors = $scope.party.parents;
-      console.log($scope.party);
 
-
+      // the databrary users should be every child of the current user that
+      // has at least *some* permission on the site. 
       users.databrary = _.filter($scope.party.children, function(i) {
-        return i.site > page.constants.permission.NONE && i.party.id != models.Login.user.id; 
+        return i.site > page.constants.permission.NONE;
       });
-      
+
+
+      // the labOnly users should be children, (like above), that have
+      // absolutely no access to the site. 
       users.labOnly = _.filter($scope.party.children, function(i) {
-        return i.site === page.constants.permission.NONE && i.party.id !== models.Login.user.id; 
+        return i.site === page.constants.permission.NONE;
       });
-      
+
+
+      // This is a helper variable to grab everything into a single one-dimensional
+      // array for comparison later, specifically because "otherCollaborators" should
+      // only apply to everything else. 
       var arrayOfEverything = users.sponsors.concat(users.databrary).concat(users.labOnly); 
 
+
+      
       users.otherCollaborators = _($scope.volumes.individual).pluck('access').flatten().uniq(function(i){
         return i.party.id;
       }).filter(function(i){
-        return i.party.id != models.Login.user.id;
-      }).filter(function(i){
-        return -1 < (_.findIndex(arrayOfEverything, function(j){
-          return i.party.id === j.party.id;
-        }));
+        return i.party.id !== models.Login.user.id && (_.findIndex(arrayOfEverything, function(j){
+          return i.party.id == j.party.id;
+        }) == -1);
       }).value();
 
       var filterOnId = function(i) {
