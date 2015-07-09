@@ -52,7 +52,6 @@ app.controller('party/profile', [
         return i.party.sortname;
       };
 
-      console.log(users); 
       _.each(users, function(_value, key) {
         users[key] = _(users[key]).uniq(filterOnId).sortBy(sorter).value();
       }); 
