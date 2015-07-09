@@ -6,15 +6,14 @@ app.controller('party/profile', [
     var getUsers = function(volumes){
 
       var users = {};
-      
-      users.sponsors = [];
-      users.databrary = [];
-      users.labOnly = [];
+
       users.otherCollaborators = [];
       users.sponsors = users.sponsors.concat($scope.party.parents);
+      
       users.databrary = _.filter($scope.party.children, function(i){
         return i.site > page.constants.permission.NONE; 
       });
+      
       users.labOnly = _.filter($scope.party.children, function(i){
         return i.site == page.constants.permission.NONE; 
       }); 
@@ -31,8 +30,6 @@ app.controller('party/profile', [
         if(v.party && v.party.permission == page.constants.permission.ADMIN){
           users.otherCollaborators.push(v); 
         }
-        console.log(v);
-
         
       }).value();
       // The "value()" call is to actually force theb chain to work.
