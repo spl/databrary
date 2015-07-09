@@ -196,11 +196,8 @@ app.controller('party/profile', [
 
     $scope.party = party;
     $scope.volumes = getVolumes(party.volumes);
-    $scope.users = getUsers(party.volumes);      
+    $scope.users = getUsers(party.volumes);
     
-    console.log("Constants: ",constants);
-    console.log($scope.users); 
-
     $scope.page = page;
     $scope.profile = page.$location.path() === '/profile';
     display.title = party.name;
