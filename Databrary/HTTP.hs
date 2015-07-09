@@ -1,5 +1,7 @@
 module Databrary.HTTP
-  ( splitHTTP
+  ( encodePathSegments'
+  , encodePath'
+  , splitHTTP
   , quoteHTTP
   , unquoteHTTP
   , formatHTTPTimestamp
@@ -8,12 +10,26 @@ module Databrary.HTTP
 
 import Control.Monad (msum)
 import qualified Data.ByteString as BS
+import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Char8 as BSC
 import Data.Char (isSpace, isControl)
+import Data.Monoid ((<>))
+import qualified Data.Text as T
 import Data.Time.Format (formatTime, parseTime)
+import Network.HTTP.Types (Query, encodePathSegments, renderQueryBuilder)
 import System.Locale (defaultTimeLocale)
 
 import Databrary.Model.Time
+
+-- |Same as 'encodePathSegments' but for absolute paths (empty results in a single slash)
+encodePathSegments' :: [T.Text] -> BSB.Builder
+encodePathSegments' [] = BSB.char7 '/'
+encodePathSegments' p = encodePathSegments p
+
+-- |Same as 'encodePath' but using 'encodePathSegments''
+encodePath' :: [T.Text] -> Query -> BSB.Builder
+encodePath' p [] = encodePathSegments' p
+encodePath' p q = encodePathSegments' p <> renderQueryBuilder True q
 
 splitHTTP :: BS.ByteString -> [BS.ByteString]
 splitHTTP = filter (not . BS.null) . map trim . BSC.split ',' where

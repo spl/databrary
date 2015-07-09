@@ -88,5 +88,5 @@ assetJSON Asset{..} = JSON.record assetId $ catMaybes
   , ("classification" JSON..=) <$> assetRelease
   , ("name" JSON..=) <$> assetName
   , ("duration" JSON..=) <$> assetDuration
-  , ("pending" JSON..= True) <? isNothing assetSHA1
+  , ("pending" JSON..= isNothing assetSize) <? isNothing assetSHA1
   ]

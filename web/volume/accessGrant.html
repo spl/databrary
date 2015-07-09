@@ -20,7 +20,7 @@
             <label ng-bind="::'access.edit.'+name | message:access.party.name" class="option" hint="access-edit-{{::name}}"></label>
           </div>
         </fieldset>
-        <fieldset class="skinny clean radio-set access-grant-checkbox">
+        <fieldset class="clean radio-set access-grant-checkbox">
           <div ng-if="::!access.party.institution">
             <input type="checkbox" ng-model="accessGrantForm.data.extend">
             <label class="option inline">

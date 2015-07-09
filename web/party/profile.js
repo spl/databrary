@@ -169,10 +169,7 @@ app.controller('party/profile', [
               }
             }
           }
-        }
-
-        
-        
+        }   
       });
 
       var getDisplayName = function(i) {

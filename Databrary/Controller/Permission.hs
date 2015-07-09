@@ -3,6 +3,7 @@ module Databrary.Controller.Permission
   ( checkPermission
   , checkDataPermission
   , authAccount
+  , checkMemberADMIN
   , checkVerfHeader
   , guardVerfHeader
   ) where
@@ -36,6 +37,11 @@ authAccount = do
     UnIdentified -> result =<< forbiddenResponse
     Identified s -> return $ view s
     ReIdentified u -> return $ view u
+
+checkMemberADMIN :: AuthActionM ()
+checkMemberADMIN = do
+  admin <- peeks accessMember'
+  guardAction (admin >= PermissionADMIN) forbiddenResponse
 
 checkVerfHeader :: (MonadAuthAction q m) => m Bool
 checkVerfHeader = do

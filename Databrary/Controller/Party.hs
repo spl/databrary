@@ -83,7 +83,7 @@ partyJSONField p "children" _ =
     <$> lookupAuthorizedChildren p admin
   where admin = view p >= PermissionADMIN
 partyJSONField p "volumes" o = (?$>) (view p >= PermissionADMIN) $
-  fmap JSON.toJSON . mapM vf =<< lookupPartyVolumes p (succ PermissionNONE)
+  fmap JSON.toJSON . mapM vf =<< lookupPartyVolumes p PermissionREAD
   where
   vf v
     | o == Just "access" = (volumeJSON v JSON..+) . ("access" JSON..=) . map volumeAccessPartyJSON <$> lookupVolumeAccess v (succ PermissionNONE)
@@ -104,7 +104,7 @@ viewParty = action GET (pathAPI </> pathPartyTarget) $ \(api, i) -> withAuth $ d
   p <- getParty (Just PermissionNONE) i
   case api of
     JSON -> okResponse [] =<< partyJSONQuery p =<< peeks Wai.queryString
-    HTML -> okResponse [] $ partyName p -- TODO
+    HTML -> okResponse [] =<< peeks (htmlPartyView p)
 
 processParty :: API -> Maybe Party -> AuthActionM (Party, Maybe Asset)
 processParty api p = do

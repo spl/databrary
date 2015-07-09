@@ -156,7 +156,7 @@ csrfForm = lift . foldIdentity mempty (\s -> inputHidden (byteStringValue $ sess
 
 htmlForm :: T.Text -> AppRoute a -> a -> AuthRequest -> FormHtml f -> FormHtml f
 htmlForm title act arg req = liftFormHtml $ \form ->
-  htmlTemplate req (Just title) $
+  htmlTemplate req (Just title) $ \_ ->
     actionForm act arg $ do
       err <- form
       errorLists $ allFormErrors err
