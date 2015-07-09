@@ -46,12 +46,13 @@ app.controller('party/profile', [
         return i.party.id; 
       };
 
-      var getDisplayName = function(i) {
-        return i.party.alias || i.party.name; 
+      var sorter = function(i){
+        return i.party.sortname;
       };
 
+      console.log(users); 
       _.each(users, function(_value, key) {
-        users[key] = _(users[key]).uniq(filterOnId).sortBy(getDisplayName).value();
+        users[key] = _(users[key]).uniq(filterOnId).sortBy(sorter).value();
       }); 
 
       return users;
@@ -169,7 +170,10 @@ app.controller('party/profile', [
               }
             }
           }
-        }   
+        }
+
+        
+        
       });
 
       var getDisplayName = function(i) {
