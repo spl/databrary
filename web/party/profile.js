@@ -30,18 +30,11 @@ app.controller('party/profile', [
       var arrayOfEverything = users.sponsors.concat(users.databrary).concat(users.labOnly); 
       
       users.otherCollaborators = _.filter(tempArray, function(i){
-        return !(_.find(arrayOfEverything, function(j){
+        return -1 < (_.findIndex(arrayOfEverything, function(j){
           return i.party.id === j.party.id;
         }));
       });
 
-      // users.otherCollaborators = _(volumes).pluck('access').flatten().uniq(function(i) {
-      //   return i.party.id;
-      // }).filter(function(u) {
-      //   return u.individual >= constants.permission.READ && u.party.id !== models.Login.user.id;
-      // }).value();
-      // The "value()" call is to actually force theb chain to work.
-      
       var filterOnId = function(i) {
         return i.party.id; 
       };
