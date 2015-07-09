@@ -14,13 +14,13 @@ app.controller('party/profile', [
       });
       
       users.labOnly = _.filter($scope.party.children, function(i) {
-        return i.site === page.constants.permission.NONE && i.party.id != models.Login.user.id; 
+        return i.site === page.constants.permission.NONE && i.party.id !== models.Login.user.id; 
       }); 
 
       users.otherCollaborators = _(volumes).pluck('access').flatten().uniq(function(i) {
         return i.party.id;
-      }).filter(function(v, index, array) {
-        return v.party && v.party.permission === page.constants.permission.ADMIN && v.party.id != models.Login.user.id;
+      }).filter(function(u) {
+        return u.individual === constants.permission.ADMIN && u.party.id !== models.Login.user.id;
       }).value();
       // The "value()" call is to actually force theb chain to work.
       
@@ -171,7 +171,8 @@ app.controller('party/profile', [
     $scope.party = party;
     $scope.users = getUsers(party.volumes);      
     $scope.volumes = getVolumes(party.volumes);
-    console.log($scope.volumes);
+    console.log("Constants: ",constants);
+    console.log($scope.users); 
 
     $scope.page = page;
     $scope.profile = page.$location.path() === '/profile';
