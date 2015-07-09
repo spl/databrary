@@ -15,7 +15,7 @@ app.controller('party/profile', [
       });
       
       users.labOnly = _.filter($scope.party.children, function(i){
-        return i.site == page.constants.permission.NONE; 
+        return i.site === page.constants.permission.NONE; 
       }); 
 
       users.otherCollaborators = _(volumes).pluck('access').flatten().uniq(function(i){
