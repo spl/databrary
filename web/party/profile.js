@@ -22,10 +22,10 @@ app.controller('party/profile', [
         return i.party.id;
       }).each(function(v, index, array){
 
-        if(models.Login.user.id === v.party.id){
-          v.isCurrent = true;
-          //users.sponsors.push(v);
-        }
+        // if(models.Login.user.id === v.party.id){
+        //   v.isCurrent = true;
+        //   //users.sponsors.push(v);
+        // }
 
         if(v.party && v.party.permission == page.constants.permission.ADMIN){
           users.otherCollaborators.push(v); 
@@ -180,7 +180,6 @@ app.controller('party/profile', [
     };
 
     $scope.party = party;
-    console.log(party); 
     $scope.users = getUsers(party.volumes);      
     $scope.volumes = getVolumes(party.volumes);
 
