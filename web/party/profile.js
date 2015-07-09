@@ -18,19 +18,10 @@ app.controller('party/profile', [
         return i.site == page.constants.permission.NONE; 
       }); 
 
-      _(volumes).pluck('access').flatten().uniq(function(i){
+      users.otherCollaborators = _(volumes).pluck('access').flatten().uniq(function(i){
         return i.party.id;
-      }).each(function(v, index, array){
-
-        // if(models.Login.user.id === v.party.id){
-        //   v.isCurrent = true;
-        //   //users.sponsors.push(v);
-        // }
-
-        if(v.party && v.party.permission == page.constants.permission.ADMIN){
-          users.otherCollaborators.push(v); 
-        }
-        
+      }).filter(function(v, index, array){
+        return v.party && v.party.permission == page.constants.permission.ADMIN; 
       }).value();
       // The "value()" call is to actually force theb chain to work.
       
