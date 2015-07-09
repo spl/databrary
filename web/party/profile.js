@@ -80,6 +80,8 @@ app.controller('party/profile', [
         return v;
       };
 
+      // This chunk is simply here to go through every single item and make sure that the classes
+      // have been properly cleared out. for all items and (hopefully) nested items. 
       $scope.volumes.individual = _.map($scope.volumes.individual, unSetSelected);
 
       $scope.volumes.collaborator = _.map($scope.volumes.collaborator, unSetSelected);
