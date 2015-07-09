@@ -51,33 +51,36 @@
             <span ng-if="sponsor.isSelected" ng-click="unselectAll()" class="icon close dashboard-section-icons"></span>
             <span ng-if="!sponsor.isSelected" ng-click="clickUser(sponsor)" class="icon add  dashboard-section-icons"></span>
             <a ng-href="{{::sponsor.party.route()}}" ng-bind="sponsor.party.name"></a>
+            <div class="permission-auth-pending" ng-if="::!(sponsor.member || sponsor.site)" message="auth.pending"></div>
           </li>
         </ul>
       </div>
       <div ng-if="users.databrary.length > 0">
-        <span class="dashboard-section-header">Lab/Group members </span>
+        <span class="dashboard-section-header">Databrary Affiliates </span>
         <span class="icon info"></span>
         <ul>
           <li ng-class="member.isSelected" ng-repeat="member in users.databrary">
             <span ng-if="member.isSelected" ng-click="unselectAll()" class="icon close  dashboard-section-icons"></span>
             <span ng-if="!member.isSelected" ng-click="clickUser(member)" class="icon add  dashboard-section-icons"></span>
             <a ng-href="{{::member.party.route()}}" ng-bind="member.party.name"></a>
+            <div ng-if="::!member.site" class="permission-auth-pending" message="auth.pending"></div>
           </li>
         </ul>
       </div>
       <div ng-if="users.labOnly.length > 0">
-        <span class="dashboard-section-header">Non-group affiliates </span>
+        <span class="dashboard-section-header">Lab Affiliates</span>
         <span class="icon info"></span>
         <ul>
           <li ng-class="nonmember.isSelected" ng-repeat="nonmember in users.labOnly">
             <span ng-if="nonmember.isSelected" ng-click="unselectAll()" class="icon close  dashboard-section-icons"></span>
             <span ng-if="!nonmember.isSelected" ng-click="clickUser(nonmember)" class="icon add  dashboard-section-icons"></span>
             <a ng-href="{{::nonmember.party.route()}}" ng-bind="nonmember.party.name"></a>
+            <div ng-if="::!nonmember.member" class="permission-auth-pending" message="auth.pending"></div>            
           </li>
         </ul>
       </div>
       <div ng-if="users.otherCollaborators.length > 0">
-        <span class="dashboard-section-header">Volume collaborators </span>
+        <span class="dashboard-section-header">Volume Collaborators </span>
         <span class="icon info"></span>
         <ul>
           <li ng-class="collaber.isSelected" ng-repeat="collaber in users.otherCollaborators">
