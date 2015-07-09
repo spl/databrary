@@ -11,6 +11,13 @@ app.controller('party/profile', [
       users.databrary = [];
       users.labOnly = [];
       users.otherCollaborators = [];
+      users.sponsors = users.sponsors.concat($scope.party.parents);
+      users.databrary = _.filter($scope.party.children, function(i){
+        return i.site > page.constants.permission.NONE; 
+      });
+      users.labOnly = _.filter($scope.party.children, function(i){
+        return i.site == page.constants.permission.NONE; 
+      }); 
 
       _(volumes).pluck('access').flatten().uniq(function(i){
         return i.party.id;
@@ -18,18 +25,15 @@ app.controller('party/profile', [
 
         if(models.Login.user.id === v.party.id){
           v.isCurrent = true;
-          users.sponsors.push(v);
+          //users.sponsors.push(v);
         }
 
-        if(v.party.parents && v.party.parents.length){
-          users.sponsors = users.sponsors.concat(v.party.parents);
-        } else if(v.party.site && v.party.site > page.constants.permission.NONE) {
-          users.databrary.push(v);
-        } else if(v.party.site == null || v.party.site == page.constants.permission.NONE) {
-          users.labOnly.push(v);
-        } else {
-          users.otherCollaborators.push(v);
+        if(v.party && v.party.permission == page.constants.permission.ADMIN){
+          users.otherCollaborators.push(v); 
         }
+        console.log(v);
+
+        
       }).value();
       // The "value()" call is to actually force theb chain to work.
       
@@ -179,6 +183,7 @@ app.controller('party/profile', [
     };
 
     $scope.party = party;
+    console.log(party); 
     $scope.users = getUsers(party.volumes);      
     $scope.volumes = getVolumes(party.volumes);
 
