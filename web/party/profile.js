@@ -9,6 +9,9 @@ app.controller('party/profile', [
 
       users.otherCollaborators = [];
       users.sponsors = $scope.party.parents;
+      console.log($scope.party);
+
+
       users.databrary = _.filter($scope.party.children, function(i) {
         return i.site > page.constants.permission.NONE && i.party.id != models.Login.user.id; 
       });
@@ -17,11 +20,26 @@ app.controller('party/profile', [
         return i.site === page.constants.permission.NONE && i.party.id !== models.Login.user.id; 
       }); 
 
-      users.otherCollaborators = _(volumes).pluck('access').flatten().uniq(function(i) {
+
+      var tempArray = _($scope.volumes.individual).pluck('access').flatten().uniq(function(i){
         return i.party.id;
-      }).filter(function(u) {
-        return u.individual === constants.permission.ADMIN && u.party.id !== models.Login.user.id;
+      }).filter(function(i){
+        return i.party.id != models.Login.user.id;
       }).value();
+
+      var arrayOfEverything = users.sponsors.concat(users.databrary).concat(users.labOnly); 
+      
+      users.otherCollaborators = _.filter(tempArray, function(i){
+        return !(_.find(arrayOfEverything, function(j){
+          return i.party.id === j.party.id;
+        }));
+      });
+
+      // users.otherCollaborators = _(volumes).pluck('access').flatten().uniq(function(i) {
+      //   return i.party.id;
+      // }).filter(function(u) {
+      //   return u.individual >= constants.permission.READ && u.party.id !== models.Login.user.id;
+      // }).value();
       // The "value()" call is to actually force theb chain to work.
       
       var filterOnId = function(i) {
@@ -81,7 +99,6 @@ app.controller('party/profile', [
 
       _.each(volume, function(vol) {
         _.each(vol.access, function(acc) {
-          
           var userSelectFunction = function(user, index, array) {
             if(user.party.id == acc.party.id) {
               array[index].isSelected = 'userSelected';
@@ -138,8 +155,6 @@ app.controller('party/profile', [
           return r.party.id === models.Login.user.id;
         });
 
-        if(isCurrent && isCurrent.children) v.network = 'network';
-
         if(isCurrent && isCurrent.individual == page.constants.permission.ADMIN) {
           // The "mini-object" with v and [v] is to make sure that the data is all
           // shaped the same, making looping over it *substantially* simpler. 
@@ -172,8 +187,9 @@ app.controller('party/profile', [
     };
 
     $scope.party = party;
-    $scope.users = getUsers(party.volumes);      
     $scope.volumes = getVolumes(party.volumes);
+    $scope.users = getUsers(party.volumes);      
+    
     console.log("Constants: ",constants);
     console.log($scope.users); 
 
