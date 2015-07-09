@@ -25,28 +25,29 @@ app.controller('party/profile', [
       }).value();
       // The "value()" call is to actually force theb chain to work.
       
-      var filterOnId = function(i){
+      var filterOnId = function(i) {
         return i.party.id; 
       };
 
-      var getDisplayName = function(i){
+      var getDisplayName = function(i) {
         return i.party.alias || i.party.name; 
       };
 
-      _.each(users, function(_value, key){
+      _.each(users, function(_value, key) {
         users[key] = _(users[key]).uniq(filterOnId).sortBy(getDisplayName).value();
       }); 
 
       return users;
     };
 
-    $scope.unselectAll = function(){
+    $scope.unselectAll = function() {
+      
       // This is a quick helper function to make sure that the isSelected
       // class is set to empty and to avoid repeating code. 
-      var unSetSelected = function(v){
+      var unSetSelected = function(v) {
         v.isSelected = '';
-        if(v.v !== undefined){
-          v.v = _.map(v.v, function(a){
+        if(v.v !== undefined) {
+          v.v = _.map(v.v, function(a) {
             a.isSelected = '';
             return a;
           });
@@ -79,11 +80,11 @@ app.controller('party/profile', [
       volume = _.flatten([volume.v || volume]);
 
 
-      _.each(volume, function(vol){
-        _.each(vol.access, function(acc){
+      _.each(volume, function(vol) {
+        _.each(vol.access, function(acc) {
           
           var userSelectFunction = function(user, index, array) {
-            if(user.party.id == acc.party.id){
+            if(user.party.id == acc.party.id) {
               array[index].isSelected = 'userSelected';
             }
           };
@@ -98,14 +99,14 @@ app.controller('party/profile', [
     };
 
     // This should take in a user, then select volumes on each thing. 
-    $scope.clickUser = function(user){
+    $scope.clickUser = function(user) {
       $scope.unselectAll();
       user.isSelected = 'userSelected';
       var i; 
 
-      var compareFunction = function(value, key, array){
-        for(var j = 0; j < value.access.length; j++){
-          if(value.access[j].party.id === user.party.id){
+      var compareFunction = function(value, key, array) {
+        for(var j = 0; j < value.access.length; j++) {
+          if(value.access[j].party.id === user.party.id) {
             array[key].isSelected = 'volumeSelected';
           }
         }
@@ -114,13 +115,13 @@ app.controller('party/profile', [
       _.each($scope.volumes.individual, compareFunction);
       _.each($scope.volumes.collaborator, compareFunction);
 
-      for(i = 0; i < $scope.volumes.inherited.length; i++){
+      for(i = 0; i < $scope.volumes.inherited.length; i++) {
         _.each($scope.volumes.inherited[i].v, compareFunction);
       }
     };
 
     var getParents = function(parents) {
-      return _.compact(_.map(parents, function(p){
+      return _.compact(_.map(parents, function(p) {
         if(p.member) {
           return _.zipObject(['p', 'v'], [p, []]);
         }
@@ -134,7 +135,7 @@ app.controller('party/profile', [
 
       _.each(volumes, function(v){
 
-        var isCurrent = _.find(v.access, function(r){
+        var isCurrent = _.find(v.access, function(r) {
           return r.party.id === models.Login.user.id;
         });
         
@@ -142,11 +143,11 @@ app.controller('party/profile', [
           return r.party.authorization === page.constants.permission.ADMIN;
         });
         
-        if(isCurrent && isAdmin){
+        if(isCurrent && isAdmin) {
           // The "mini-object" with v and [v] is to make sure that the data is all
           // shaped the same, making looping over it *substantially* simpler. 
           tempVolumes.individual.push(v);
-        } else if(isCurrent){
+        } else if(isCurrent) {
           tempVolumes.collaborator.push(v);
         } else {
           for (var i = 0; i < v.access.length; i++) {
@@ -159,7 +160,7 @@ app.controller('party/profile', [
         }
       });
 
-      var getDisplayName = function(i){
+      var getDisplayName = function(i) {
         return i.alias || i.name; 
       };
       
