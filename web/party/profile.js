@@ -163,6 +163,8 @@ app.controller('party/profile', [
           return r.party.id === models.Login.user.id;
         });
 
+        if (isCurrent && isCurrent.children) v.network = "network";
+
         if(isCurrent && isCurrent.individual == page.constants.permission.ADMIN) {
           // The "mini-object" with v and [v] is to make sure that the data is all
           // shaped the same, making looping over it *substantially* simpler. 
