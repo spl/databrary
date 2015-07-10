@@ -39,7 +39,7 @@ import Data.Monoid (mempty)
 import Network.HTTP.Types (Status, ok200, seeOther303, forbidden403, notFound404, ResponseHeaders, hLocation, Query)
 import qualified Network.Wai as Wai
 
-import Databrary.Has (peek)
+import Databrary.Has (peek, peeks)
 import Databrary.HTTP.Request
 import Databrary.Action.Types
 import Databrary.Action.Response
@@ -48,6 +48,7 @@ import Databrary.Action.Auth
 import Databrary.Action.Route
 import Databrary.Service.Types
 import Databrary.HTTP.Route
+import {-# SOURCE #-} Databrary.View.Error
 
 emptyResponse :: MonadAction q m => Status -> ResponseHeaders -> m Response
 emptyResponse s h = returnResponse s h (mempty :: BSB.Builder)
@@ -57,11 +58,11 @@ redirectRouteResponse h r a q = do
   req <- peek
   emptyResponse seeOther303 ((hLocation, BSL.toStrict $ BSB.toLazyByteString $ actionURL (Just req) r a q) : h)
 
-forbiddenResponse :: MonadAction q m => m Response
-forbiddenResponse = emptyResponse forbidden403 []
+forbiddenResponse :: MonadAppAction q m => m Response
+forbiddenResponse = returnResponse forbidden403 [] =<< peeks htmlForbidden
 
-notFoundResponse :: MonadAction q m => m Response
-notFoundResponse = emptyResponse notFound404 []
+notFoundResponse :: MonadAppAction q m => m Response
+notFoundResponse = returnResponse notFound404 [] =<< peeks htmlNotFound
 
 okResponse :: (MonadAction q m, ResponseData r) => ResponseHeaders -> r -> m Response
 okResponse = returnResponse ok200
@@ -70,7 +71,7 @@ guardAction :: (MonadAction q m, MonadIO m) => Bool -> m Response -> m ()
 guardAction True _ = return ()
 guardAction False r = result =<< r
 
-maybeAction :: (MonadAction q m, MonadIO m) => Maybe a -> m a
+maybeAction :: (MonadAppAction q m, MonadIO m) => Maybe a -> m a
 maybeAction (Just a) = return a
 maybeAction Nothing = result =<< notFoundResponse
 
