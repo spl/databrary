@@ -3,9 +3,9 @@
 app.controller('party/profile', [
   '$scope', 'displayService', 'party', 'pageService','constantService', 'modelService', 
   function ($scope, display, party, page, constants, models) {
-
     // This function is responsible for extracting out all the users from
     // volumes (which are passed in) and the party (which is not)
+
     var getUsers = function(volumes){
 
       // It's easier to handle all the user information by dividing
@@ -64,7 +64,7 @@ app.controller('party/profile', [
     };
 
     $scope.unselectAll = function() {
-      
+      $scope.expanded = false;
       // This is a quick helper function to make sure that the isSelected
       // class is set to empty and to avoid repeating code. 
       var unSetSelected = function(v) {
@@ -101,7 +101,8 @@ app.controller('party/profile', [
     $scope.clickVolume = function(volume) {
 
       $scope.unselectAll();
-      volume.isSelected = 'volumeSelected';
+      volume.isSelected = 'volumeClicked';
+      $scope.expanded = true;
       volume = _.flatten([volume.v || volume]);
 
 
@@ -110,6 +111,9 @@ app.controller('party/profile', [
           var userSelectFunction = function(user, index, array) {
             if(user.party.id == acc.party.id) {
               array[index].isSelected = 'userSelected';
+              array[index].userAccess = 'ua'+acc.individual;
+            } else {
+              array[index].isSelected = 'notSelected';
             }
           };
 
@@ -125,13 +129,15 @@ app.controller('party/profile', [
     // This should take in a user, then select volumes on each thing. 
     $scope.clickUser = function(user) {
       $scope.unselectAll();
-      user.isSelected = 'userSelected';
+      user.isSelected = 'userClicked';
+      $scope.expanded = true;
       var i; 
 
       var compareFunction = function(value, key, array) {
         for(var j = 0; j < value.access.length; j++) {
           if(value.access[j].party.id === user.party.id) {
             array[key].isSelected = 'volumeSelected';
+            if (value.access[j].individual) array[key].userAccess = 'ua'+value.access[j].individual;
           }
         }
       };
@@ -211,6 +217,7 @@ app.controller('party/profile', [
 
     };
 
+    $scope.expanded = false;
     $scope.party = party;
     $scope.volumes = getVolumes(party.volumes);
     $scope.users = getUsers(party.volumes);

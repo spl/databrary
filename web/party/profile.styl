@@ -1,4 +1,4 @@
-.volumeSelected, .userSelected
+.volumeSelected, .volumeClicked, .userSelected, .userClicked
   background-color orange51
 
 .dashboard-people
@@ -19,8 +19,9 @@
     
 .dashboard-volumes-icons
   float right
+  position relative
   background-size contain
-  vertical align middle
+  vertical-align middle
   margin 0 b3
 
 .dashboard-people
@@ -37,10 +38,18 @@
     padding-left 0
   li:before
     content none
+  li
+    display inline-blocks
   
 .dashboard-section-header
   font-line f1
   font-weight bold
 
 .dashboard-section-icons
-  margin 0 b3
+  position relative
+  margin 0 b3 0 0
+.dashboard-section-link
+  position relative
+  left 0px
+  right 25px
+  overflow hidden
