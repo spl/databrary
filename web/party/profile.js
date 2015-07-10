@@ -153,22 +153,35 @@ app.controller('party/profile', [
     };
 
     var getVolumes = function(volumes) {
-      var tempVolumes = _.zipObject(['individual', 'collaborator'], [[], []]); 
+      
+      // Let's quickly create an object with our empty arrays pre-loaded. 
+      var tempVolumes = _.zipObject(['individual', 'collaborator', 'inherited'], [[], []]); 
 
+      // This will generate the shape for the inherited objects. 
       tempVolumes.inherited = getParents(party.parents);
 
+      // Let's loop through all the volumes so that we can properly colate
+      // the volumes into the correct group. 
       _.each(volumes, function(v) {
 
+        // Let's see if the current user is part of the current volumes.
+        // This should return the user object for the volume, which we can
+        // use to see if he/she has permission. 
         var isCurrent = _.find(v.access, function(r) {
           return r.party.id === models.Login.user.id;
         });
 
+        // Individual volumes should be volumes that you have access to,
+        // but also ones you have admin access to. 
         if(isCurrent && isCurrent.individual == page.constants.permission.ADMIN) {
-          // The "mini-object" with v and [v] is to make sure that the data is all
-          // shaped the same, making looping over it *substantially* simpler. 
           tempVolumes.individual.push(v);
+
+          // If you only have access to a volume, but not admin access, you're
+          // just a collaborator. 
         } else if(isCurrent) {
           tempVolumes.collaborator.push(v);
+
+          // Everything else needs to be sorted into the inherited context. 
         } else {
           for (var i = 0; i < v.access.length; i++) {
             for (var j = 0; j < tempVolumes.inherited.length; j++) {
@@ -183,6 +196,8 @@ app.controller('party/profile', [
         
       });
 
+      // This is a simple helper function to grab the "best" name for sorting:
+      // name only if alias doesn't exist. 
       var getDisplayName = function(i) {
         return i.alias || i.name; 
       };
