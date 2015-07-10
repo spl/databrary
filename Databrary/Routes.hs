@@ -134,6 +134,7 @@ routeMap = fromRouteList
   , route viewActivity
 
   , route viewTranscodes
+  , route postTranscode
   , route viewIngest
   , route postIngest
 
