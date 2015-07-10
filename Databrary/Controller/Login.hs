@@ -73,7 +73,7 @@ postLogin = action POST (pathAPI </< "user" </< "login") $ \api -> withoutAuth $
         block = attempts > 4
     lift $ auditAccountLogin pass (fromMaybe nobodyParty p) email
     when block $ "email" .:> deformError "Too many login attempts. Try again later."
-    unless pass $ "password" .:> deformError "Incorrect login."
+    unless pass $ "password" .:> deformError "Incorrect login"
     return (auth, su)
   withReaderT authApp $ loginAccount api auth su
 
@@ -94,7 +94,7 @@ postUser = action POST (pathAPI </< "user") $ \api -> withAuth $ do
   acct <- authAccount
   acct' <- runForm (api == HTML ?> htmlUserForm acct) $ do
     csrfForm
-    "auth" .:> (deformGuard "Incorrect password." . (`checkPassword` acct) =<< deform)
+    "auth" .:> (deformGuard "Incorrect password" . (`checkPassword` acct) =<< deform)
     email <- "email" .:> deform
     passwd <- "password" .:> deformNonEmpty (passwordForm acct)
     let acct' = acct

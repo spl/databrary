@@ -209,6 +209,7 @@ instance Deform f T.Text where
     fv (FormDatumJSON (JSON.Number n)) = return $ T.pack $ show n
     fv (FormDatumJSON (JSON.Bool True)) = return "1"
     fv (FormDatumJSON (JSON.Bool False)) = return ""
+    fv FormDatumNone = Left "This field is required"
     fv _ = Left "String value required"
 
 instance Deform f BS.ByteString where
@@ -218,6 +219,7 @@ instance Deform f BS.ByteString where
     fv (FormDatumJSON (JSON.Number n)) = return $ BSC.pack $ show n
     fv (FormDatumJSON (JSON.Bool True)) = return "1"
     fv (FormDatumJSON (JSON.Bool False)) = return ""
+    fv FormDatumNone = Left "This field is required"
     fv _ = Left "String value required"
 
 instance Deform f String where
@@ -227,6 +229,7 @@ instance Deform f String where
     fv (FormDatumJSON (JSON.Number n)) = return $ show n
     fv (FormDatumJSON (JSON.Bool True)) = return "1"
     fv (FormDatumJSON (JSON.Bool False)) = return ""
+    fv FormDatumNone = Left "This field is required"
     fv _ = Left "String value required"
 
 instance Deform f Bool where
@@ -261,6 +264,7 @@ instance Deform f Int where
     fv (FormDatumJSON (JSON.Number n)) = return $ round n
     fv (FormDatumJSON (JSON.Bool True)) = return 1
     fv (FormDatumJSON (JSON.Bool False)) = return 0
+    fv FormDatumNone = Left "This field is required"
     fv _ = Left "Integer required"
 
 instance Deform f Int64 where
@@ -270,6 +274,7 @@ instance Deform f Int64 where
     fv (FormDatumJSON (JSON.Number n)) = return $ round n
     fv (FormDatumJSON (JSON.Bool True)) = return 1
     fv (FormDatumJSON (JSON.Bool False)) = return 0
+    fv FormDatumNone = Left "This field is required"
     fv _ = Left "Integer required"
 
 instance Deform f Int32 where
@@ -279,6 +284,7 @@ instance Deform f Int32 where
     fv (FormDatumJSON (JSON.Number n)) = return $ round n
     fv (FormDatumJSON (JSON.Bool True)) = return 1
     fv (FormDatumJSON (JSON.Bool False)) = return 0
+    fv FormDatumNone = Left "This field is required"
     fv _ = Left "Integer required"
 
 instance Deform f Int16 where
@@ -288,6 +294,7 @@ instance Deform f Int16 where
     fv (FormDatumJSON (JSON.Number n)) = return $ round n
     fv (FormDatumJSON (JSON.Bool True)) = return 1
     fv (FormDatumJSON (JSON.Bool False)) = return 0
+    fv FormDatumNone = Left "This field is required"
     fv _ = Left "Integer required"
 
 instance Deform f Date where
