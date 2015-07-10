@@ -66,7 +66,7 @@
             <div class="dashboard-left-icon">
               <span ng-if="sponsor.isSelected=='userClicked'" ng-click="unselectAll()" class="icon close "></span>
               <span ng-if="!sponsor.isSelected && !expanded" ng-click="clickUser(sponsor)" class="icon add "></span>
-              <span ng-if="sponsor.isSelected=='userSelected'" class="icon  user-access" ng-class="sponsor.userAccess"></span>
+              <span ng-if="sponsor.isSelected=='userSelected'" class="icon user-access" ng-class="sponsor.userAccess"></span>
             </div>
 
             <a ng-href="{{::sponsor.party.route()}}" ng-bind="sponsor.party.name"></a>
@@ -100,7 +100,7 @@
             <div class="dashboard-left-icon">
               <span ng-if="nonmember.isSelected=='userClicked'" ng-click="unselectAll()" class="icon close  "></span>
               <span ng-if="!nonmember.isSelected && !expanded" ng-click="clickUser(nonmember)" class="icon add  "></span>
-              <span ng-if="nonmember.isSelected=='userSelected'" class="iconuser-access" ng-class="nonmember.userAccess"></span>
+              <span ng-if="nonmember.isSelected=='userSelected'" class="icon user-access" ng-class="nonmember.userAccess"></span>
             </div>
 
             <a ng-href="{{::nonmember.party.route()}}" ng-bind="nonmember.party.name"></a>
@@ -117,7 +117,7 @@
             <div class="dashboard-left-icon">
               <span ng-if="collaber.isSelected=='userClicked'" ng-click="unselectAll()" class="icon close  "></span>
               <span ng-if="!collaber.isSelected && !expanded" ng-click="clickUser(collaber)" class="icon add  "></span>  
-              <span ng-if="collaber.isSelected=='userSelected'" class="icon  user-access" ng-class="collaber.userAccess"></span>
+              <span ng-if="collaber.isSelected=='userSelected'" class="icon user-access" ng-class="collaber.userAccess"></span>
             </div>
 
             <a ng-href="{{::collaber.party.route()}}" ng-bind="collaber.party.name"></a>         

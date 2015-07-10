@@ -112,8 +112,6 @@ app.controller('party/profile', [
             if(user.party.id == acc.party.id) {
               array[index].isSelected = 'userSelected';
               array[index].userAccess = 'ua'+acc.individual;
-            } else {
-              array[index].isSelected = 'notSelected';
             }
           };
 
