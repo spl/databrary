@@ -88,7 +88,10 @@ app.provider('routerService', [
     /* Add a route to $routeProvider and return a function to get a url given parameters. */
     function makeRoute(route, argNames, handler) {
       if (handler) {
-        $routeProvider.when(getRoute(route, argNames), handler);
+        var path = getRoute(route, argNames);
+        $routeProvider.when(path, handler);
+        if (path.includes('id/:segment'))
+          $routeProvider.when(path.replace('id/:segment', 'id/'), handler);
       }
 
       return function (data, params) {
