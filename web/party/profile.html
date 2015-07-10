@@ -7,9 +7,11 @@
         <span class="dashboard-section-header">Data owner volumes</span>
         <ul>
           <li ng-class="vi.isSelected" ng-repeat="vi in volumes.individual">
-            <span ng-if="vi.isSelected=='volumeClicked'" ng-click="unselectAll()" class="icon close dashboard-section-icons"></span>
-            <span ng-if="!vi.isSelected && !expanded" ng-click="clickVolume(vi)" class="icon add dashboard-section-icons"></span>
-            <span ng-if="vi.isSelected=='volumeSelected'" class="icon dashboard-section-icons user-access" ng-class="vi.userAccess"></span>
+            <div class="dashboard-left-icon">
+              <span ng-if="vi.isSelected=='volumeClicked'" ng-click="unselectAll()" class="icon close "></span>
+              <span ng-if="!vi.isSelected && !expanded" ng-click="clickVolume(vi)" class="icon add "></span>
+              <span ng-if="vi.isSelected=='volumeSelected'" class="icon  user-access" ng-class="vi.userAccess"></span>
+            </div>
 
             <a ng-href="{{::vi.route()}}" ng-bind="vi.alias? vi.alias : vi.name" class="dashboard-section-link"></a>
 
@@ -22,9 +24,11 @@
         <span class="dashboard-section-header">Collaborator volumes</span>
         <ul>
           <li ng-class="vc.isSelected" ng-repeat="vc in volumes.collaborator">
-            <span ng-if="vc.isSelected=='volumeClicked'" ng-click="unselectAll()" class="icon close dashboard-section-icons"></span>
-            <span ng-if="!vc.isSelected && !expanded" ng-click="clickVolume(vc)" class="icon add dashboard-section-icons"></span>
-            <span ng-if="vc.isSelected=='volumeSelected'" class="icon dashboard-section-icons user-access" ng-class"vi.userAccess"></span>
+            <div class="dashboard-left-icon">
+              <span ng-if="vc.isSelected=='volumeClicked'" ng-click="unselectAll()" class="icon close "></span>
+              <span ng-if="!vc.isSelected && !expanded" ng-click="clickVolume(vc)" class="icon add "></span>
+              <span ng-if="vc.isSelected=='volumeSelected'" class="icon  user-access" ng-class"vi.userAccess"></span>
+            </div>
 
             <a ng-href="{{::vc.route()}}" ng-bind="vc.alias ? vc.alias : vc.name" class="dashboard-section-link"></a>
 
@@ -41,8 +45,10 @@
         </span>
         <ul>
           <li ng-class="vin_.isSelected" ng-repeat="vin_ in vin.v">
-            <span ng-if="vin_.isSelected" ng-click="unselectAll()" class="icon close dashboard-section-icons"></span>
-            <span ng-if="!vin_.isSelected && !expanded" ng-click="clickVolume(vin_)" class="icon add dashboard-section-icons"></span>
+            <div class="dashboard-left-icon">
+              <span ng-if="vin_.isSelected" ng-click="unselectAll()" class="icon close "></span>
+              <span ng-if="!vin_.isSelected && !expanded" ng-click="clickVolume(vin_)" class="icon add "></span>
+            </div>
             <a ng-href="{{::vin_.route()}}" ng-bind="vin_.alias? vin_.alias : vin_.name"></a>
 
             <span class="icon dashboard-volumes-icons" ng-class="{'access1': vin_.accessPreset !== 0}"></span>         
@@ -57,9 +63,11 @@
         <span class="icon info"></span>
         <ul>
           <li ng-class="sponsor.isSelected" ng-repeat="sponsor in users.sponsors">
-            <span ng-if="sponsor.isSelected=='userClicked'" ng-click="unselectAll()" class="icon close dashboard-section-icons"></span>
-            <span ng-if="!sponsor.isSelected && !expanded" ng-click="clickUser(sponsor)" class="icon add dashboard-section-icons"></span>
-            <span ng-if="sponsor.isSelected=='userSelected'" class="icon dashboard-section-icons user-access" ng-class="sponsor.userAccess"></span>
+            <div class="dashboard-left-icon">
+              <span ng-if="sponsor.isSelected=='userClicked'" ng-click="unselectAll()" class="icon close "></span>
+              <span ng-if="!sponsor.isSelected && !expanded" ng-click="clickUser(sponsor)" class="icon add "></span>
+              <span ng-if="sponsor.isSelected=='userSelected'" class="icon  user-access" ng-class="sponsor.userAccess"></span>
+            </div>
 
             <a ng-href="{{::sponsor.party.route()}}" ng-bind="sponsor.party.name"></a>
             <div class="permission-auth-pending" ng-if="::!(sponsor.member || sponsor.site)" message="auth.pending"></div>
@@ -72,9 +80,11 @@
         <span class="icon info"></span>
         <ul>
           <li ng-class="member.isSelected" ng-repeat="member in users.databrary">
-            <span ng-if="member.isSelected=='userClicked'" ng-click="unselectAll()" class="icon close dashboard-section-icons"></span>
-            <span ng-if="!member.isSelected && !expanded" ng-click="clickUser(member)" class="icon add dashboard-section-icons"></span>
-            <span ng-if="member.isSelected=='userSelected'" class="icon dashboard-section-icons user-access" ng-class="member.userAccess"></span>
+            <div class="dashboard-left-icon">
+              <span ng-if="member.isSelected=='userClicked'" ng-click="unselectAll()" class="icon close "></span>
+              <span ng-if="!member.isSelected && !expanded" ng-click="clickUser(member)" class="icon add "></span>
+              <span ng-if="member.isSelected=='userSelected'" class="icon user-access" ng-class="member.userAccess"></span>
+            </div>
 
             <a ng-href="{{::member.party.route()}}" ng-bind="member.party.name"></a>
             <div ng-if="::!member.site" class="permission-auth-pending" message="auth.pending"></div>
@@ -87,9 +97,11 @@
         <span class="icon info"></span>
         <ul>
           <li ng-class="nonmember.isSelected" ng-repeat="nonmember in users.labOnly">
-            <span ng-if="nonmember.isSelected=='userClicked'" ng-click="unselectAll()" class="icon close  dashboard-section-icons"></span>
-            <span ng-if="!nonmember.isSelected && !expanded" ng-click="clickUser(nonmember)" class="icon add  dashboard-section-icons"></span>
-            <span ng-if="nonmember.isSelected=='userSelected'" class="icon dashboard-section-icons user-access" ng-class="nonmember.userAccess"></span>
+            <div class="dashboard-left-icon">
+              <span ng-if="nonmember.isSelected=='userClicked'" ng-click="unselectAll()" class="icon close  "></span>
+              <span ng-if="!nonmember.isSelected && !expanded" ng-click="clickUser(nonmember)" class="icon add  "></span>
+              <span ng-if="nonmember.isSelected=='userSelected'" class="iconuser-access" ng-class="nonmember.userAccess"></span>
+            </div>
 
             <a ng-href="{{::nonmember.party.route()}}" ng-bind="nonmember.party.name"></a>
             <div ng-if="::!nonmember.member" class="permission-auth-pending" message="auth.pending"></div> 
@@ -102,9 +114,11 @@
         <span class="icon info"></span>
         <ul>
           <li ng-class="collaber.isSelected" ng-repeat="collaber in users.otherCollaborators">
-            <span ng-if="collaber.isSelected=='userClicked'" ng-click="unselectAll()" class="icon close  dashboard-section-icons"></span>
-            <span ng-if="!collaber.isSelected && !expanded" ng-click="clickUser(collaber)" class="icon add  dashboard-section-icons"></span>  
-            <span ng-if="collaber.isSelected=='userSelected'" class="icon dashboard-section-icons user-access" ng-class="collaber.userAccess"></span>
+            <div class="dashboard-left-icon">
+              <span ng-if="collaber.isSelected=='userClicked'" ng-click="unselectAll()" class="icon close  "></span>
+              <span ng-if="!collaber.isSelected && !expanded" ng-click="clickUser(collaber)" class="icon add  "></span>  
+              <span ng-if="collaber.isSelected=='userSelected'" class="icon  user-access" ng-class="collaber.userAccess"></span>
+            </div>
 
             <a ng-href="{{::collaber.party.route()}}" ng-bind="collaber.party.name"></a>         
           </li>
