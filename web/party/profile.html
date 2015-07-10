@@ -6,7 +6,7 @@
       <div ng-if="::volumes.individual.length > 0">
         <span class="dashboard-section-header">Data owner volumes</span>
         <ul>
-          <li ng-class="vi.isSelected" ng-repeat="vi in volumes.individual | orderBy:'-alias'">
+          <li ng-class="vi.isSelected" ng-repeat="vi in volumes.individual">
             <span ng-if="vi.isSelected" ng-click="unselectAll()" class="icon close dashboard-section-icons"></span>
             <span ng-if="!vi.isSelected" ng-click="clickVolume(vi)" class="icon add dashboard-section-icons"></span>
             <a ng-href="{{::vi.route()}}" ng-bind="vi.alias? vi.alias : vi.name"></a>
@@ -19,7 +19,7 @@
       <div ng-if="::volumes.collaborator.length > 0">
         <span class="dashboard-section-header">Collaborator volumes</span>
         <ul>
-          <li ng-class="vc.isSelected" ng-repeat="vc in volumes.collaborator | orderBy:'-alias'">
+          <li ng-class="vc.isSelected" ng-repeat="vc in volumes.collaborator">
             <span ng-if="vc.isSelected" ng-click="unselectAll()" class="icon close dashboard-section-icons"></span>
             <span ng-if="!vc.isSelected" ng-click="clickVolume(vc)" class="icon add dashboard-section-icons"></span>
             <a ng-href="{{::vc.route()}}" ng-bind="vc.alias ? vc.alias : vc.name"></a>
@@ -36,7 +36,7 @@
           <span ng-bind="::' (' + ('auth.member.'+page.constants.permission[vin['p'].member]+'.title' | message) + ')'"></span>
         </span>
         <ul>
-          <li ng-class="vin_.isSelected" ng-repeat="vin_ in vin.v | orderBy:'-alias'">
+          <li ng-class="vin_.isSelected" ng-repeat="vin_ in vin.v">
             <span ng-if="vin_.isSelected" ng-click="unselectAll()" class="icon close dashboard-section-icons"></span>
             <span ng-if="!vin_.isSelected" ng-click="clickVolume(vin_)" class="icon add dashboard-section-icons"></span>
             <a ng-href="{{::vin_.route()}}" ng-bind="vin_.alias? vin_.alias : vin_.name"></a>

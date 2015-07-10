@@ -173,6 +173,8 @@ app.controller('party/profile', [
 
         // Individual volumes should be volumes that you have access to,
         // but also ones you have admin access to. 
+        if (isCurrent && isCurrent.children) v.network = "network";
+
         if(isCurrent && isCurrent.individual == page.constants.permission.ADMIN) {
           tempVolumes.individual.push(v);
 
