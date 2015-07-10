@@ -12,6 +12,7 @@ module Databrary.Model.Party.SQL
   ) where
 
 import Control.Applicative ((<|>))
+import qualified Data.ByteString as BS
 import qualified Data.Foldable as Fold
 import qualified Language.Haskell.TH as TH
 
@@ -29,7 +30,7 @@ partyRow :: Selector -- ^ @Maybe 'Account' -> 'Permission' -> Maybe 'Access' -> 
 partyRow = selectColumns 'Party "party" ["id", "name", "prename", "orcid", "affiliation", "url"]
 
 accountRow :: Selector -- ^ @'Party' -> 'Account'@
-accountRow = selectColumns 'Account "account" ["email", "password"]
+accountRow = selectColumns 'Account "account" ["email"]
 
 makeParty :: (Maybe Account -> Permission -> Maybe Access -> Party) -> Maybe (Party -> Account) -> Permission -> Maybe Access -> Party
 makeParty pc ac perm a = p where
@@ -75,12 +76,13 @@ selectAccount :: TH.Name -- ^ 'Identity'
 selectAccount ident = selectMap ((`TH.AppE` TH.VarE ident) . (`TH.AppE` (TH.ConE 'Nothing)) . (TH.VarE 'permissionParty `TH.AppE`)) $
   selectPermissionAccount
 
-makeSiteAuth :: (Permission -> Maybe Access -> Account) -> Maybe Access -> SiteAuth
-makeSiteAuth p a = SiteAuth (p maxBound $ Just maxBound) (Fold.fold a)
+makeSiteAuth :: (Permission -> Maybe Access -> Account) -> Maybe BS.ByteString -> Maybe Access -> SiteAuth
+makeSiteAuth p w a = SiteAuth (p maxBound $ Just maxBound) w (Fold.fold a)
 
 selectSiteAuth :: Selector -- @'SiteAuth'@
 selectSiteAuth = selectJoin 'makeSiteAuth
   [ selectPermissionAccount
+  , columnSelector $ SelectColumn "account" "password"
   , maybeJoinOn "party.id = authorize_view.child AND authorize_view.parent = 0"
     $ accessRow "authorize_view"
   ]
@@ -107,7 +109,6 @@ accountSets :: String -- ^ @'Account'@
   -> [(String, String)]
 accountSets a =
   [ ("email", "${accountEmail " ++ a ++ "}")
-  , ("password", "${accountPasswd " ++ a ++ "}")
   ]
 
 updateParty :: TH.Name -- ^ @'AuditIdentity'
@@ -123,10 +124,12 @@ updateAccount :: TH.Name -- ^ @'AuditIdentity'
   -> TH.Name -- ^ @'Account'@
   -> TH.ExpQ -- ()
 updateAccount ident a = auditUpdate ident "account"
-  (accountSets as)
+  (accountSets as ++ [("password", "${accountPasswd " ++ us ++ "}")])
   (whereEq $ accountKeys as)
   Nothing
-  where as = nameRef a
+  where
+  as = "(siteAccount " ++ us ++ ")"
+  us = nameRef a
 
 insertParty :: TH.Name -- ^ @'AuditIdentity'
   -> TH.Name -- ^ @'Party'@

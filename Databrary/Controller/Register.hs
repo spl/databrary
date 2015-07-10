@@ -61,10 +61,9 @@ postRegister = action POST (pathAPI </< "user" </< "register") $ \api -> without
         a = Account
           { accountParty = p
           , accountEmail = email
-          , accountPasswd = Nothing
           }
     return a
-  auth <- maybe (flip SiteAuth mempty <$> addAccount reg) return =<< lookupSiteAuthByEmail (accountEmail reg)
+  auth <- maybe (SiteAuth <$> addAccount reg <$- Nothing <$- mempty) return =<< lookupSiteAuthByEmail (accountEmail reg)
   resetPasswordMail (Right auth) 
     "Databrary account created"
     $ \(Just url) ->

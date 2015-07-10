@@ -39,7 +39,6 @@ data Party = Party
 
 data Account = Account
   { accountEmail :: T.Text
-  , accountPasswd :: Maybe BS.ByteString
   , accountParty :: Party
   }
 
@@ -59,6 +58,7 @@ instance Kinded Party where
 -- Access to the site by a (current) account
 data SiteAuth = SiteAuth
   { siteAccount :: Account -- maybe should be Party (for nobody)
+  , accountPasswd :: Maybe BS.ByteString
   , siteAccess :: Access
   }
 
@@ -71,7 +71,6 @@ nobodySiteAuth :: SiteAuth
 nobodySiteAuth = SiteAuth
   { siteAccount = Account
     { accountEmail = "nobody@databrary.org"
-    , accountPasswd = Nothing
     , accountParty = Party
       { partyId = Id (-1)
       , partySortName = "Nobody"
@@ -84,6 +83,7 @@ nobodySiteAuth = SiteAuth
       , partyAccess = Just minBound
       }
     }
+  , accountPasswd = Nothing
   , siteAccess = mempty
   }
 
