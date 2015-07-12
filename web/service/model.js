@@ -502,6 +502,12 @@ app.factory('modelService', [
       }
     });
 
+    Object.defineProperty(Volume.prototype, 'displayName', {
+      get: function () {
+        return this.alias !== undefined ? this.alias : this.name;
+      }
+    });
+
     Volume.prototype.route = function () {
       return router.volume([this.id]);
     };

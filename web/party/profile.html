@@ -1,132 +1,69 @@
 <article class="view party-view">
   <ng-include src="'party/overview.html'"></ng-include>
-  <panel id="panel_browser" panel-title="profile.dashboard.title" fold ng-if="::party.volumes || page.models.Login.isAuthorized()" class="dashboard">  
+  <panel id="panel_browser" panel-title="profile.title" fold ng-if="::party.volumes || page.models.Login.isAuthorized()" class="profile">  
 
-    <section id="dashboard-volumes" class="dashboard-volumes col-desktop-10 col-tablet-6 col-mobile-6">
-      <div ng-if="::volumes.individual.length > 0">
-        <span class="dashboard-section-header">Data owner volumes</span>
+    <section id="profile-volumes" class="profile-volumes col-desktop-10 col-tablet-6 col-mobile-6">
+      <div ng-repeat="vl in ::volumes" ng-if="::vl.length">
+        <span class="profile-section-header" ng-bind="::vl.title"></span>
         <ul>
-          <li ng-class="vi.isSelected" ng-repeat="vi in volumes.individual">
-            <div class="dashboard-left-icon">
-              <span ng-if="vi.isSelected=='volumeClicked'" ng-click="unselectAll()" class="icon close "></span>
-              <span ng-if="!vi.isSelected && !expanded" ng-click="clickVolume(vi)" class="icon add "></span>
-              <span ng-if="vi.isSelected=='volumeSelected'" class="icon  user-access" ng-class="vi.userAccess"></span>
+          <li ng-repeat="v in vl" ng-class="{'profile-highlight': v.selected}">
+            <div class="profile-left-icon">
+              <span ng-click="v.select()" class="icon" ng-class="v.class()"></span>
             </div>
 
-            <a ng-href="{{::vi.route()}}" ng-bind="vi.alias? vi.alias : vi.name" class="dashboard-section-link"></a>
+            <a ng-href="{{::v.volume.route()}}" ng-bind="::v.volume.displayName" class="profile-section-link"></a>
 
-            <span class="icon dashboard-volumes-icons" ng-class="{'access1': vi.accessPreset !== 0}"></span>
-            <span class="icon dashboard-volumes-icons" ng-class="vi.network"></span>
-          </li>
-        </ul>
-      </div>
-      <div ng-if="::volumes.collaborator.length > 0">
-        <span class="dashboard-section-header">Collaborator volumes</span>
-        <ul>
-          <li ng-class="vc.isSelected" ng-repeat="vc in volumes.collaborator">
-            <div class="dashboard-left-icon">
-              <span ng-if="vc.isSelected=='volumeClicked'" ng-click="unselectAll()" class="icon close "></span>
-              <span ng-if="!vc.isSelected && !expanded" ng-click="clickVolume(vc)" class="icon add "></span>
-              <span ng-if="vc.isSelected=='volumeSelected'" class="icon  user-access" ng-class"vi.userAccess"></span>
-            </div>
-
-            <a ng-href="{{::vc.route()}}" ng-bind="vc.alias ? vc.alias : vc.name" class="dashboard-section-link"></a>
-
-            <span class="icon dashboard-volumes-icons" ng-class="{'access1': vc.accessPreset !== 0}"></span>
-            <span class="icon dashboard-volumes-icons" ng-class="vi.network"></span>
-          </li>
-        </ul>  
-      </div>
-      <div ng-if="::vin.v.length > 0" ng-repeat="vin in volumes.inherited">    
-        <span class="dashboard-section-header">
-          <span>Inherited volumes from </span>
-          <span ng-bind="::vin['p'].party.name"></span>
-          <span ng-bind="::' (' + ('auth.member.'+page.constants.permission[vin['p'].member]+'.title' | message) + ')'"></span>
-        </span>
-        <ul>
-          <li ng-class="vin_.isSelected" ng-repeat="vin_ in vin.v">
-            <div class="dashboard-left-icon">
-              <span ng-if="vin_.isSelected" ng-click="unselectAll()" class="icon close "></span>
-              <span ng-if="!vin_.isSelected && !expanded" ng-click="clickVolume(vin_)" class="icon add "></span>
-            </div>
-            <a ng-href="{{::vin_.route()}}" ng-bind="vin_.alias? vin_.alias : vin_.name"></a>
-
-            <span class="icon dashboard-volumes-icons" ng-class="{'access1': vin_.accessPreset !== 0}"></span>         
-          </li>
-        </ul>
-      </div>         
-    </section>
-
-    <section id="dashboard-people" class="dashboard-people col-desktop-5 col-tablet-3 col-mobile-6">
-      <div ng-if="users.sponsors.length > 0">
-        <span class="dashboard-section-header">Sponsors </span>
-        <span class="icon info"></span>
-        <ul>
-          <li ng-class="sponsor.isSelected" ng-repeat="sponsor in users.sponsors">
-            <div class="dashboard-left-icon">
-              <span ng-if="sponsor.isSelected=='userClicked'" ng-click="unselectAll()" class="icon close "></span>
-              <span ng-if="!sponsor.isSelected && !expanded" ng-click="clickUser(sponsor)" class="icon add "></span>
-              <span ng-if="sponsor.isSelected=='userSelected'" class="icon user-access" ng-class="sponsor.userAccess"></span>
-            </div>
-
-            <a ng-href="{{::sponsor.party.route()}}" ng-bind="sponsor.party.name"></a>
-            <div class="permission-auth-pending" ng-if="::!(sponsor.member || sponsor.site)" message="auth.pending"></div>
-            <span ng-if="::(sponsor.member || sponsor.site)" class="permission-auth-expiration" ng-bind-html="::sponsor.expires | date:'longDate'"></span>
-          </li>
-        </ul>
-      </div>
-      <div ng-if="users.databrary.length > 0">
-        <span class="dashboard-section-header">Databrary Affiliates </span>
-        <span class="icon info"></span>
-        <ul>
-          <li ng-class="member.isSelected" ng-repeat="member in users.databrary">
-            <div class="dashboard-left-icon">
-              <span ng-if="member.isSelected=='userClicked'" ng-click="unselectAll()" class="icon close "></span>
-              <span ng-if="!member.isSelected && !expanded" ng-click="clickUser(member)" class="icon add "></span>
-              <span ng-if="member.isSelected=='userSelected'" class="icon user-access" ng-class="member.userAccess"></span>
-            </div>
-
-            <a ng-href="{{::member.party.route()}}" ng-bind="member.party.name"></a>
-            <div ng-if="::!member.site" class="permission-auth-pending" message="auth.pending"></div>
-            <span ng-if="::(member.member || member.site)" class="permission-auth-expiration" ng-bind-html="::member.expires | date:'longDate'"></span>
-          </li>
-        </ul>
-      </div>
-      <div ng-if="users.labOnly.length > 0">
-        <span class="dashboard-section-header">Lab Affiliates </span>
-        <span class="icon info"></span>
-        <ul>
-          <li ng-class="nonmember.isSelected" ng-repeat="nonmember in users.labOnly">
-            <div class="dashboard-left-icon">
-              <span ng-if="nonmember.isSelected=='userClicked'" ng-click="unselectAll()" class="icon close  "></span>
-              <span ng-if="!nonmember.isSelected && !expanded" ng-click="clickUser(nonmember)" class="icon add  "></span>
-              <span ng-if="nonmember.isSelected=='userSelected'" class="icon user-access" ng-class="nonmember.userAccess"></span>
-            </div>
-
-            <a ng-href="{{::nonmember.party.route()}}" ng-bind="nonmember.party.name"></a>
-            <div ng-if="::!nonmember.member" class="permission-auth-pending" message="auth.pending"></div> 
-            <span ng-if="::(nonmember.member || nonmember.site)" class="permission-auth-expiration" ng-bind-html="::nonmember.expires | date:'longDate'"></span>        
-          </li>
-        </ul>
-      </div>
-      <div ng-if="users.otherCollaborators.length > 0">
-        <span class="dashboard-section-header">Volume Collaborators </span>
-        <span class="icon info"></span>
-        <ul>
-          <li ng-class="collaber.isSelected" ng-repeat="collaber in users.otherCollaborators">
-            <div class="dashboard-left-icon">
-              <span ng-if="collaber.isSelected=='userClicked'" ng-click="unselectAll()" class="icon close  "></span>
-              <span ng-if="!collaber.isSelected && !expanded" ng-click="clickUser(collaber)" class="icon add  "></span>  
-              <span ng-if="collaber.isSelected=='userSelected'" class="icon user-access" ng-class="collaber.userAccess"></span>
-            </div>
-
-            <a ng-href="{{::collaber.party.route()}}" ng-bind="collaber.party.name"></a>         
+            <span class="icon profile-volumes-icons" ng-class="::{'network': v.self.children}"></span>
+            <span class="icon profile-volumes-icons" ng-if="::v.volume.accessPreset" ng-class="::'access'+v.volume.accessPreset"></span>
           </li>
         </ul>
       </div>
     </section>
-  </panel>
-  <panel id="panel-network" edit-link="{{::party.editRoute('apply')}}" panel-title="network.title" fold>
-    <party-network></party-network>
+
+    <section id="profile-parties" class="profile-parties col-desktop-5 col-tablet-3 col-mobile-6">
+      <div ng-if="::parties.parents.length">
+        <span class="profile-section-header" ng-bind="::parties.parents.title"></span>
+        <span class="icon info"></span>
+        <ul>
+          <li ng-repeat="p in parties.parents" ng-class="{'profile-highlight': p.selected}">
+            <div class="profile-left-icon">
+              <span ng-click="p.select()" class="icon" ng-class="p.class()"></span>
+            </div>
+
+            <a ng-href="{{::p.party.route()}}" ng-bind="::p.party.name"></a>
+            <div ng-if="::!(p.parent.member || p.parent.site)" class="permission-auth-pending" message="auth.pending"></div>
+            <span ng-if="::(p.parent.member || p.parent.site)" class="permission-auth-expiration" ng-bind-html="::p.parent.expires | date:'longDate'"></span>
+          </li>
+        </ul>
+      </div>
+      <div ng-repeat="cl in ::parties.children" ng-if="::cl.length">
+        <span class="profile-section-header" ng-bind="::cl.title"></span>
+        <span class="icon info"></span>
+        <ul>
+          <li ng-repeat="p in cl" ng-class="{'profile-highlight': p.selected}">
+            <div class="profile-left-icon">
+              <span ng-click="p.select()" class="icon" ng-class="p.class()"></span>
+            </div>
+
+            <a ng-href="{{::p.party.route()}}" ng-bind="::p.party.name"></a>
+            <div ng-if="::!(p.child.member || p.child.site)" class="permission-auth-pending" message="auth.pending"></div>
+            <span ng-if="::(p.child.member || p.child.site)" class="permission-auth-expiration" ng-bind-html="::p.child.expires | date:'longDate'"></span>
+          </li>
+        </ul>
+      </div>
+      <div ng-if="::parties.collaborators.length">
+        <span class="profile-section-header" ng-bind="::parties.collaborators.title"></span>
+        <span class="icon info"></span>
+        <ul>
+          <li ng-repeat="p in parties.collaborators" ng-class="{'profile-highlight': p.selected}">
+            <div class="profile-left-icon">
+              <span ng-click="p.select()" class="icon" ng-class="p.class()"></span>
+            </div>
+
+            <a ng-href="{{::p.party.route()}}" ng-bind="::p.party.name"></a>
+          </li>
+        </ul>
+      </div>
+    </section>
   </panel>
 </article>

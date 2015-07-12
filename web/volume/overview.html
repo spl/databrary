@@ -15,7 +15,7 @@
       <div ng-if="::volume.accessPreset === 0" class="overview-access">
         <span>
           <span>ACCESS: </span>
-          <span class="icon" ng-class="::'access'+{{::volume.accessPreset}}"></span>
+          <span class="icon" ng-class="::'access'+volume.accessPreset"></span>
           <span message="access.preset.title{{::volume.accessPreset}}"></span> 
           <span message="access.preset.extra{{::volume.accessPreset}}"></span>
         </span>
