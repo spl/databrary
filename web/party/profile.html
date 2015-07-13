@@ -31,7 +31,7 @@
 
             <a ng-href="{{::p.party.route()}}" ng-bind="::p.party.name"></a>
             <div ng-if="::!(p.parent.member || p.parent.site)" class="permission-auth-pending" message="auth.pending"></div>
-            <span ng-if="::(p.parent.member || p.parent.site)" class="permission-auth-expiration" ng-bind-html="::p.parent.expires | date:'yyyy/MM/dd'"></span>
+            <span ng-if="::(p.parent.member || p.parent.site)" class="permission-auth-expiration" ng-bind-html="::p.parent.expires | date:'yyyy/MM/dd'" ng-class="{'red':p.expired}"></span>
           </li>
         </ul>
       </div>
