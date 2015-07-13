@@ -12,10 +12,11 @@ import Data.Monoid ((<>), mempty)
 import qualified Data.Text as T
 
 import Databrary.Ops
-import Databrary.Has (view, peek)
+import Databrary.Has (view, peek, focusIO)
 import Databrary.Action
 import Databrary.Action.Auth
 import Databrary.Service.Mail
+import Databrary.Static.Fillin
 import Databrary.Model.Party
 import Databrary.Model.Identity
 import Databrary.Model.Token
@@ -75,6 +76,8 @@ postRegister = action POST (pathAPI </< "user" </< "register") $ \api -> without
       \http://databrary.org/policies/agreement.pdf\n\n\
       \Once you've validated your e-mail, you will be able to request authorization in\n\
       \order to be granted full access to Databrary.\n"
+  date <- peek
+  focusIO $ staticSendInvestigator (view auth) date
   okResponse [] $ "Your confirmation email has been sent to '" <> accountEmail reg <> "'."
 
 viewPasswordReset :: AppRoute ()

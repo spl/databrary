@@ -6,18 +6,18 @@ module Databrary.Service.Types
   ) where
 
 import qualified Data.ByteString as BS
-import qualified Data.Text as T
 
 import Databrary.Has (makeHasRec)
 import Databrary.Service.DB (DBConn)
 import Databrary.Service.Entropy (Entropy)
 import Databrary.HTTP.Client (HTTPClient)
 import Databrary.Store.Types (Storage)
+import Databrary.Store.AV (AV)
 import Databrary.Service.Passwd (Passwd)
 import Databrary.Service.Log (Logs)
 import Databrary.Service.Messages (Messages)
 import Databrary.Web.Types (Web)
-import Databrary.Store.AV (AV)
+import Databrary.Static.Service (Static)
 import Databrary.Model.Time
 
 newtype Secret = Secret BS.ByteString
@@ -27,14 +27,14 @@ data Service = Service
   , serviceSecret :: !Secret
   , serviceEntropy :: !Entropy
   , servicePasswd :: !Passwd
-  , serviceAuthorizeAddr :: !T.Text
   , serviceLogs :: !Logs
   , serviceMessages :: !Messages
   , serviceDB :: !DBConn
   , serviceStorage :: !Storage
+  , serviceAV :: !AV
   , serviceWeb :: !Web
   , serviceHTTPClient :: !HTTPClient
-  , serviceAV :: !AV
+  , serviceStatic :: !Static
   }
 
-makeHasRec ''Service ['serviceSecret, 'serviceEntropy, 'servicePasswd, 'serviceLogs, 'serviceMessages, 'serviceDB, 'serviceStorage, 'serviceWeb, 'serviceHTTPClient, 'serviceAV]
+makeHasRec ''Service ['serviceSecret, 'serviceEntropy, 'servicePasswd, 'serviceLogs, 'serviceMessages, 'serviceDB, 'serviceStorage, 'serviceAV, 'serviceWeb, 'serviceHTTPClient, 'serviceStatic]

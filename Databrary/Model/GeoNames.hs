@@ -9,7 +9,6 @@ module Databrary.Model.GeoNames
 
 import Control.Applicative ((<$>))
 import Control.Monad (guard)
-import Control.Monad.Catch (MonadThrow)
 import qualified Data.ByteString.Char8 as BSC
 import Data.Int (Int64)
 import Data.List (stripPrefix)
@@ -52,9 +51,9 @@ parseGeoName = JSON.withObject "geoname" $ \j -> do
     , geoName = n
     }
 
-lookupGeoName :: (HTTPClientM c m, MonadThrow m) => Id GeoName -> m (Maybe GeoName)
-lookupGeoName (Id i) = do
+lookupGeoName :: Id GeoName -> HTTPClient -> IO (Maybe GeoName)
+lookupGeoName (Id i) hcm = do
   req <- HC.setQueryString [("geonameId", Just $ BSC.pack $ show i), ("username", Just "databrary")]
     <$> HC.parseUrl "http://api.geonames.org/getJSON"
-  j <- httpRequestJSON req
+  j <- httpRequestJSON req hcm
   return $ JSON.parseMaybe parseGeoName =<< j

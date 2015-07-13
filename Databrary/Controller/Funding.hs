@@ -10,6 +10,7 @@ import qualified Data.Text as T
 import Network.HTTP.Types (StdMethod(DELETE))
 
 import Databrary.Ops
+import Databrary.Has (focusIO)
 import qualified Databrary.JSON as JSON
 import Databrary.Model.Id
 import Databrary.Model.Permission
@@ -31,7 +32,7 @@ queryFunder = action GET (pathJSON </< "funder") $ \() -> withAuth $ do
     ("query" .:> (deformRequired =<< deform))
     ("all" .:> deform)
   r <- if a
-    then searchFundRef q
+    then focusIO $ searchFundRef q
     else findFunders q
   okResponse [] $ JSON.toJSON $ map funderJSON r
 

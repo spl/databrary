@@ -22,9 +22,9 @@ import Network.HTTP.Types (noContent204, StdMethod(DELETE))
 import Databrary.Ops
 import Databrary.Has (peek, peeks)
 import qualified Databrary.JSON as JSON
-import Databrary.Service.Types
 import Databrary.Service.DB
 import Databrary.Service.Mail
+import Databrary.Static.Service
 import Databrary.Model.Party
 import Databrary.Model.Permission
 import Databrary.Model.Identity
@@ -60,8 +60,8 @@ partyDelegates p =
     . filter ((PermissionADMIN <=) . accessPermission)
     <$> lookupAuthorizedChildren p False
 
-authorizeAddr :: Service -> [Either T.Text Account]
-authorizeAddr rc = [Left (serviceAuthorizeAddr rc)]
+authorizeAddr :: Static -> [Either T.Text Account]
+authorizeAddr = return . Left . staticAuthorizeAddr
 
 postAuthorize :: AppRoute (API, PartyTarget, AuthorizeTarget)
 postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarget) $ \arg@(api, i, AuthorizeTarget app oi) -> withAuth $ do

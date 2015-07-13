@@ -7,7 +7,11 @@ module Databrary.Model.URL
   , parseURL
   ) where
 
+import Control.Monad ((<=<))
+import qualified Data.Configurator as C ()
+import qualified Data.Configurator.Types as C
 import Data.Maybe (fromMaybe)
+import qualified Data.Text as T
 import Database.PostgreSQL.Typed.Types (PGParameter(..), PGColumn(..))
 import Language.Haskell.TH.Lift (deriveLiftMany)
 
@@ -29,6 +33,9 @@ instance PGParameter "text" URI where
 instance PGColumn "text" URI where
   pgDecode t = fromPG . pgDecode t
   pgDecodeValue e t = fromPG . pgDecodeValue e t
+
+instance C.Configured URI where
+  convert = parseAbsoluteURI . T.unpack <=< C.convert
 
 deriveLiftMany [''URIAuth, ''URI]
 

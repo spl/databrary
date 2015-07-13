@@ -5,7 +5,8 @@ module Databrary.Model.Funding.FundRef
   ) where
 
 import Control.Monad ((<=<), (>=>), guard, mfilter)
-import Control.Monad.Catch (MonadThrow)
+import Control.Monad.IO.Class (MonadIO)
+import Control.Monad.Trans.Class (lift)
 import Control.Monad.Trans.Maybe (MaybeT(..), runMaybeT)
 import qualified Data.Foldable as Fold
 import Data.Function (on)
@@ -22,6 +23,7 @@ import qualified Network.HTTP.Client as HC
 import Text.Read (readMaybe)
 
 import Databrary.Ops
+import Databrary.Has (MonadHas, focusIO)
 import qualified Databrary.JSON as JSON
 import Databrary.HTTP.Client
 import Databrary.Service.DB
@@ -88,19 +90,19 @@ parseFundRef = JSON.withObject "fundref" $ \j -> do
   where
   label j = j JSON..: "Label" >>= (JSON..: "literalForm") >>= (JSON..: "content")
 
-lookupFundRef :: (HTTPClientM c m, MonadThrow m) => Id Funder -> m (Maybe Funder)
-lookupFundRef fi = runMaybeT $ do
+lookupFundRef :: Id Funder -> HTTPClient -> IO (Maybe Funder)
+lookupFundRef fi hcm = runMaybeT $ do
   req <- HC.parseUrl $ "http://data.fundref.org/fundref/funder/" ++ fundRefDOI ++ show fi
-  j <- MaybeT $ httpRequestJSON req
+  j <- MaybeT $ httpRequestJSON req hcm
   (f, gi) <- MaybeT $ return $ JSON.parseMaybe parseFundRef j
-  g <- flatMapM lookupGeoName gi
+  g <- lift $ flatMapM (\i -> lookupGeoName i hcm) gi
   return $ annotateFunder f [] (geoName <$> g)
 
-lookupFunderRef :: (MonadDB m, HTTPClientM c m, MonadThrow m) => Id Funder -> m (Maybe Funder)
+lookupFunderRef :: (MonadIO m, MonadDB m, MonadHas HTTPClient c m) => Id Funder -> m (Maybe Funder)
 lookupFunderRef fi = do
   f <- lookupFunder fi
   f `orElseM` do
-    r <- lookupFundRef fi
+    r <- focusIO $ lookupFundRef fi
     Fold.mapM_ addFunder r
     return r
 
@@ -116,9 +118,9 @@ parseFundRefs = JSON.withArray "fundrefs" $
     country <- j JSON..:? "country"
     return $ annotateFunder (Funder i name) (fromMaybe [] alts) country
 
-searchFundRef :: (HTTPClientM c m, MonadThrow m) => T.Text -> m [Funder]
-searchFundRef q = do
+searchFundRef :: T.Text -> HTTPClient -> IO [Funder]
+searchFundRef q hcm = do
   req <- HC.setQueryString [("q", Just $ TE.encodeUtf8 q)]
     <$> HC.parseUrl "http://search.crossref.org/funders"
-  j <- httpRequestJSON req
+  j <- httpRequestJSON req hcm
   return $ fromMaybe [] $ JSON.parseMaybe parseFundRefs =<< j
