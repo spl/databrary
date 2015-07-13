@@ -397,8 +397,6 @@ app.provider('routerService', [
     routes.volumeThumb = makeRoute(controllers.thumbVolume, ['id', 'size']);
     routes.assetThumb = makeRoute(controllers.thumbAssetSegment, ['cid', 'segment', 'id', 'size']);
     routes.assetDownload = makeRoute(controllers.downloadAssetSegment, ['cid', 'segment', 'id', 'inline']);
-    routes.assetEdit = makeRoute(controllers.viewAssetEdit, ['id']);
-    routes.record = makeRoute(controllers.viewRecord, ['id']);
 
     //
 

@@ -35,12 +35,10 @@ import Databrary.Action
 import Databrary.Controller.Paths
 import Databrary.Controller.Form
 import Databrary.Controller.Party
-import Databrary.Controller.Angular
 import Databrary.View.Authorize
 
 viewAuthorize :: AppRoute (API, PartyTarget, AuthorizeTarget)
 viewAuthorize = action GET (pathAPI </>> pathPartyTarget </> pathAuthorizeTarget) $ \(api, i, AuthorizeTarget app oi) -> withAuth $ do
-  angular
   p <- getParty (Just PermissionADMIN) i
   o <- maybeAction =<< lookupParty oi
   let (child, parent) = if app then (p, o) else (o, p)

@@ -169,7 +169,6 @@ jsRoutes = mconcat
 
   , jsRoute "viewFormats" viewFormats ()
   , jsRoute "viewAssetSegment" viewAssetSegment (HTML, Just volume, slot, asset)
-  , jsRoute "viewAssetEdit" viewAssetEdit (asset)
   , jsRoute "downloadAssetSegment" downloadAssetSegment (slot, asset)
   , jsRoute "thumbAssetSegment" thumbAssetSegment (slot, asset)
 

@@ -16,7 +16,7 @@ module Databrary.Controller.Asset
 
 import Control.Applicative ((<|>))
 import Control.Exception (try)
-import Control.Monad ((<=<), when, void, guard)
+import Control.Monad ((<=<), void, guard)
 import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.Trans.Class (lift)
 import qualified Data.ByteString as BS
@@ -69,7 +69,6 @@ import Databrary.Controller.Form
 import Databrary.Controller.Volume
 import Databrary.Controller.Slot
 import {-# SOURCE #-} Databrary.Controller.AssetSegment
-import Databrary.Controller.Angular
 import Databrary.View.Asset
 
 getAsset :: Permission -> Id Asset -> AuthActionM AssetSlot
@@ -99,7 +98,6 @@ assetDownloadName a = T.pack (show (assetId a)) : maybeToList (assetName a)
 
 viewAsset :: AppRoute (API, Id Asset)
 viewAsset = action GET (pathAPI </> pathId) $ \(api, i) -> withAuth $ do
-  when (api == HTML) angular
   asset <- getAsset PermissionPUBLIC i
   case api of
     JSON -> okResponse [] =<< assetJSONQuery asset =<< peeks Wai.queryString
@@ -226,7 +224,6 @@ postAsset = multipartAction $ action POST (pathAPI </> pathId) $ \(api, ai) -> w
 
 viewAssetEdit :: AppRoute (Id Asset)
 viewAssetEdit = action GET (pathHTML >/> pathId </< "edit") $ \ai -> withAuth $ do
-  angular
   asset <- getAsset PermissionEDIT ai
   blankForm $ htmlAssetForm $ AssetTargetAsset asset
 
@@ -237,7 +234,6 @@ createAsset = multipartAction $ action POST (pathAPI </> pathId </< "asset") $ \
 
 viewAssetCreate :: AppRoute (Id Volume)
 viewAssetCreate = action GET (pathHTML >/> pathId </< "asset") $ \vi -> withAuth $ do
-  angular
   v <- getVolume PermissionEDIT vi
   blankForm $ htmlAssetForm $ AssetTargetVolume v
 
@@ -248,7 +244,6 @@ createSlotAsset = multipartAction $ action POST (pathAPI </> pathSlotId </< "ass
 
 viewSlotAssetCreate :: AppRoute (Id Slot)
 viewSlotAssetCreate = action GET (pathHTML >/> pathSlotId </< "asset") $ \si -> withAuth $ do
-  angular
   s <- getSlot PermissionEDIT Nothing si
   blankForm $ htmlAssetForm $ AssetTargetSlot s
 

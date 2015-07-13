@@ -901,10 +901,6 @@ app.factory('modelService', [
       }
     });
 
-    Record.prototype.route = function () {
-      return router.record([this.id]);
-    };
-
     ///////////////////////////////// AssetSlot
 
     // This usually maps to an AssetSegment
@@ -1126,10 +1122,6 @@ app.factory('modelService', [
             a.container.clear('assets');
           return a.update(res.data);
         });
-    };
-
-    Asset.prototype.editRoute = function () {
-      return router.assetEdit([this.id]);
     };
 
     ///////////////////////////////// Comment
