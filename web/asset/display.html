@@ -1,6 +1,7 @@
-<div class="asset-display" ng-switch="::asset.pending ? 'pending' : (readable ? asset.format.type : 'noperm')">
+<div class="asset-display" ng-switch="::asset.pending !== undefined ? 'pending' : (readable ? asset.format.type : 'noperm')">
   <div class="no-preview" ng-switch-when="pending">
-    <span message="asset.display.pending"></span>
+    <span ng-if="::asset.pending" message="asset.display.pending"></span>
+    <span ng-if="::!asset.pending" message="asset.display.failed"></span>
   </div>
 
   <div class="no-preview" ng-switch-when="noperm">
