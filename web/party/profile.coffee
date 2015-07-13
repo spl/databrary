@@ -7,10 +7,12 @@ app.controller 'party/profile', [
     $scope.party = party
 
     class Item
+      selected = false
+
       class: () ->
         switch s = @selected
           when true then ["close"]
-          when undefined then ["add"]
+          when undefined then (if selected then [] else ["add"])
           else ["user-access", constants.permission[s.individual]]
 
       Object.defineProperty @prototype, 'selected',
@@ -20,8 +22,10 @@ app.controller 'party/profile', [
         s = @selected
         @constructor.selection = {}
         if s == true
+          selected = false
           @constructor.foreign.selection = {}
         else
+          selected = true
           @constructor.selection[@id] = true
           @constructor.foreign.selection = @access
         return
