@@ -11,8 +11,8 @@ app.controller 'party/profile', [
 
       class: () ->
         switch s = @selected
-          when true then ["close"]
-          when undefined then (if selected then [] else ["add"])
+          when true then ["radio-selected"]
+          when undefined then (if selected then [] else ["radio"])
           else ["user-access", constants.permission[s.individual]]
 
       Object.defineProperty @prototype, 'selected',

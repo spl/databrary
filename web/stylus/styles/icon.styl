@@ -105,6 +105,17 @@
     background-image url('/web/images/icon/paste.png')
     cursor pointer
 
+  &.radio,&.radio:hover,&.radio-selected
+    background-size contain
+  &.radio
+    background-image url('/web/images/icon/radio-open.svg')
+    transition transition
+  &.radio:hover
+    background-image url('/web/images/icon/radio-hover.svg')
+  &.radio-selected
+    background-image url('/web/images/icon/radio-selected.svg')
+    transition transition
+
   &.resize
     background-image url('/web/images/icon/resize.svg')
     background-size contain
