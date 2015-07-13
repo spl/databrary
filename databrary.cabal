@@ -129,7 +129,8 @@ Executable databrary
     mime-mail,
     fast-logger,
     digest,
-    hjsonschema
+    hjsonschema,
+    aeson-better-errors >= 0.9
 
   if flag(tls)
     Build-depends: warp-tls

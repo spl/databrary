@@ -4,8 +4,8 @@ module Databrary.Controller.Ingest
   , postIngest
   ) where
 
-import Control.Monad.Trans.Except (runExceptT)
 import qualified Data.Aeson as JSON
+import qualified Data.Text as T
 import System.Posix.FilePath (takeExtension)
 import Network.HTTP.Types (badRequest400)
 import Network.Wai.Parse (FileInfo(..))
@@ -45,6 +45,6 @@ postIngest = multipartAction $ action POST (pathId </< "ingest") $ \vi -> withAu
       =<< deform)
     return (json, run, overwrite)
   either
-    (returnResponse badRequest400 [] . unlines)
+    (returnResponse badRequest400 [] . T.unlines)
     (okResponse [] . JSON.toJSON . map containerJSON)
-    =<< runExceptT (ingestJSON v (fileContent j) r o)
+    =<< ingestJSON v (fileContent j) r o

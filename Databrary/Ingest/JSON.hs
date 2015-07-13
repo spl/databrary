@@ -7,7 +7,8 @@ import Control.Applicative ((<$>))
 import Control.Arrow (left)
 import Control.Monad.IO.Class (MonadIO(liftIO))
 import Control.Monad.Trans.Class (lift)
-import Control.Monad.Trans.Except (ExceptT(..), mapExceptT)
+import Control.Monad.Trans.Except (ExceptT(..), runExceptT, mapExceptT)
+import qualified Data.Aeson.BetterErrors as JE
 import qualified Data.Attoparsec.ByteString as P
 import qualified Data.ByteString as BS
 import Data.ByteString.Lazy.Internal (defaultChunkSize)
@@ -23,29 +24,31 @@ import Databrary.Service.DB
 import Databrary.Model.Volume.Types
 import Databrary.Model.Container.Types
 
-type IngestT m a = ExceptT [String] m a
+type IngestT m a = ExceptT T.Text m a
+type IngestParseT m a = JE.ParseT T.Text m a
 
-exceptT :: Monad m => Either e a -> ExceptT e m a
-exceptT = ExceptT . return
+liftParse :: (Functor m, Monad m) => IngestT m a -> IngestParseT m a
+liftParse f = lift (runExceptT f) >>= either JE.throwCustomError return
 
-meither :: (Functor m, Monad m) => Either e a -> ExceptT [e] m a
-meither = exceptT . left return
+jsErr :: (Functor m, Monad m) => Either (V.Vector JS.ValErr) a -> ExceptT [T.Text] m a
+jsErr = ExceptT . return . left V.toList
 
-jsErr :: (Functor m, Monad m) => Either (V.Vector JS.ValErr) a -> IngestT m a
-jsErr = exceptT . left (map T.unpack . V.toList)
-
-loadSchema :: IngestT IO JS.Schema
+loadSchema :: ExceptT [T.Text] IO JS.Schema
 loadSchema = do
   schema <- lift $ getDataFileName "volume.json"
   r <- lift $ withBinaryFile schema ReadMode (\h ->
     P.parseWith (BS.hGetSome h defaultChunkSize) JSON.json' BS.empty)
-  js <- meither $ JSON.eitherJSON =<< P.eitherResult r
+  js <- ExceptT . return . left (return . T.pack) $ JSON.eitherJSON =<< P.eitherResult r
   let rs = JS.RawSchema "" js
-  g <- ExceptT $ left (return . T.unpack) <$> JS.fetchRefs JS.draft4 rs mempty
+  g <- ExceptT $ left return <$> JS.fetchRefs JS.draft4 rs mempty
   jsErr $ JS.compileDraft4 g rs
 
-ingestJSON :: (MonadIO m, MonadDB m) => Volume -> JSON.Value -> Bool -> Bool -> IngestT m [Container]
-ingestJSON vol jdata' run overwrite = do
+ingestJSON :: (MonadIO m, MonadDB m) => Volume -> JSON.Value -> Bool -> Bool -> m (Either [T.Text] [Container])
+ingestJSON vol jdata' run overwrite = runExceptT $ do
   schema <- mapExceptT liftIO loadSchema
   jdata <- jsErr $ JS.validate schema jdata'
-  return []
+  if run
+    then ExceptT $ left (JE.displayError id) <$> JE.parseValueM ingest jdata
+    else return []
+  where
+  ingest = return []
