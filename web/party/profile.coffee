@@ -121,12 +121,11 @@ app.controller 'party/profile', [
     parties.parents.sort(partySort) # .parent.site/member?
     parties.parents.title = "Sponsors"
     parties.site.sort(partySort)    # .child.site?
-    parties.site.title = "Databrary Affiliates"
+    parties.site.type = "site"
     parties.member.sort(partySort)  # .child.member?
-    parties.member.title = "Lab Members"
+    parties.member.type = "member"
     parties.children = [parties.site, parties.member]
     parties.collaborators.sort(partySort)
-    parties.collaborators.title = "Volume Collaborators"
 
     return
 ]

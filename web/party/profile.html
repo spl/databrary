@@ -22,8 +22,7 @@
 
     <section id="profile-parties" class="profile-parties col-desktop-5 col-tablet-3 col-mobile-6">
       <div ng-if="::parties.parents.length">
-        <span class="profile-section-header" ng-bind="::parties.parents.title"></span>
-        <span class="icon info"></span>
+        <span class="profile-section-header" ng-bind="::parties.parents.title"></span> 
         <ul>
           <li ng-repeat="p in parties.parents" ng-class="{'profile-highlight': p.selected}">
             <div class="profile-left-icon">
@@ -37,23 +36,23 @@
         </ul>
       </div>
       <div ng-repeat="cl in ::parties.children" ng-if="::cl.length">
-        <span class="profile-section-header" ng-bind="::cl.title"></span>
-        <span class="icon info"></span>
+        <span class="profile-section-header" ng-bind="::'parties.'+cl.type+'.title' | message"></span> 
+        <span class="icon info" tooltip="::'parties.'+cl.type+'.definition' | message"></span>
         <ul>
           <li ng-repeat="p in cl" ng-class="{'profile-highlight': p.selected}">
             <div class="profile-left-icon">
               <span ng-click="p.select()" class="icon" ng-class="p.class()"></span>
             </div>
 
-            <a ng-href="{{::p.party.route()}}" ng-bind="::p.party.name"></a>
+            <span><a ng-href="{{::p.party.route()}}" ng-bind="::p.party.name"></a></span>
             <div ng-if="::!(p.child.member || p.child.site)" class="permission-auth-pending" message="auth.pending"></div>
             <span ng-if="::(p.child.member || p.child.site)" class="permission-auth-expiration" ng-bind-html="::p.child.expires | date:'yyyy/MM/dd'"></span>
           </li>
         </ul>
       </div>
       <div ng-if="::parties.collaborators.length">
-        <span class="profile-section-header" ng-bind="::parties.collaborators.title"></span>
-        <span class="icon info"></span>
+        <span class="profile-section-header" ng-bind="::'parties.collaborators.title' | message"></span> 
+        <span class="icon info" tooltip="::'parties.collaborators.definition' | message"></span>
         <ul>
           <li ng-repeat="p in parties.collaborators" ng-class="{'profile-highlight': p.selected}">
             <div class="profile-left-icon">
