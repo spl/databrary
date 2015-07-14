@@ -295,9 +295,12 @@ app.controller('volume/slot', [
         return
       ended: ->
         $scope.playing = 0
+
+        # This is a sort of "cache" so that we don't repeat results. 
+        $scope.index = _.findIndex $scope.assets.slice($scope.index ? 0), (i) ->
+                i.asset.id == $scope.asset.id
         
-        $scope.index = (_.findIndex $scope.assets.slice($scope.index ? 0), (i) -> i.asset.id == $scope.asset.id) + 1
-        if $scope.assets[$scope.index]?
+        if $scope.assets[++$scope.index]?
           $scope.assets[$scope.index].choose()
           $timeout ->
             $scope.play()
