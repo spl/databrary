@@ -35,7 +35,7 @@
               <span ng-click="p.select()" class="icon" ng-class="p.class()"></span>
             </div>
 
-            <a ng-href="{{::p.party.route()}}" ng-bind="::p.party.name"></a>
+            <a ng-href="{{::p.party.route()}}" ng-bind="::p.party.name"></a><wbr>
             <div ng-if="::!(p.parent.member || p.parent.site)" class="permission-auth-pending" message="auth.pending"></div>
             <span ng-if="::(p.parent.member || p.parent.site)" class="permission-auth-expiration" ng-bind="::p.parent.expires | date:'yyyy/MM/dd'" ng-class="isExpired(p.parent.expires)"></span>
           </li>
@@ -50,7 +50,7 @@
               <span ng-click="p.select()" class="icon" ng-class="p.class()"></span>
             </div>
 
-            <span><a ng-href="{{::p.party.route()}}" ng-bind="::p.party.name"></a></span>
+            <span><a ng-href="{{::p.party.route()}}" ng-bind="::p.party.name"></a></span><wbr>
             <div ng-if="::!(p.child.member || p.child.site)" class="permission-auth-pending" message="auth.pending"></div>
             <span ng-if="::(p.child.member || p.child.site)" class="permission-auth-expiration" ng-bind="::p.child.expires | date:'yyyy/MM/dd'" ng-class="isExpired(p.child.expires)"></span>
           </li>
