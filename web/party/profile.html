@@ -17,7 +17,7 @@
 
             <div class="profile-link"><a ng-href="{{::v.volume.route()}}" ng-bind="::v.volume.displayName"></a></div>
             <div class="profile-right-icons">
-              <span class="icon" ng-if="::v.volume.accessPreset" ng-class="::'access'+v.volume.accessPreset"></span>
+              <span class="icon access1" ng-show="::v.volume.accessPreset"></span>
               <span class="icon user-access" ng-class="::page.constants.permission[v.volume.permission]"></span>
               <span class="icon" ng-class="::{'network': v.self.children}"></span>
             </div>
