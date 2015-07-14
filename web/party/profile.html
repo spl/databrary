@@ -4,19 +4,19 @@
 
     <section id="profile-volumes" class="profile-volumes col-desktop-10 col-tablet-6 col-mobile-6">
       <div ng-repeat="vl in ::volumes" ng-if="::vl.length">
-        <div class="profile-section-header">
+        <span class="profile-section-header">
           <span ng-bind="::vl.title"></span> 
           <span ng-if="::vl.accessLevel">(Your access:
             <span class="icon user-access" ng-class="::vl.accessLevel" tooltip="vl.tooltip"></span>
             )
-          </div>
+          </span>
         </span>
         <ul>
           <li ng-repeat="v in ::vl" ng-class="{'profile-highlight': !!v.selected}">
             <div class="profile-right-icons">
               <span class="icon access1" ng-show="::v.volume.accessPreset"></span>
               <span class="icon user-access" ng-class="::page.constants.permission[v.volume.permission]"></span>
-              <span class="icon" ng-class="::{'network': v.self.children}"></span>
+              <span class="icon" ng-class="::{'network': v.self.children}" tooltip="'profile.access.extend' | message"></span>
             </div>
             <div class="profile-left-icons">
               <span ng-click="v.select()" class="icon" ng-class="v.class()"></span>
@@ -31,7 +31,7 @@
 
     <section id="profile-parties" class="profile-parties col-desktop-5 col-tablet-3 col-mobile-6">
       <div class="profile-section" ng-if="::parties.parents.length">
-        <div class="profile-section-header" ng-bind="::parties.parents.title"></div> 
+        <div class="profile-section-header" ng-bind="::'parties.parents.title' | message"></div> 
         <ul>
           <li ng-repeat="p in ::parties.parents" ng-class="{'profile-highlight': !!p.selected}">
             <div class="profile-left-icons">
@@ -63,6 +63,9 @@
         </div>      
         <ul>
           <li ng-repeat="p in cl" ng-class="{'profile-highlight': !!p.selected}">
+            <div class="profile-right-icons">
+              <span class="icon user-access" ng-class="::page.constants.permission[p.child.member]"></span>
+            </div>
             <div class="profile-left-icons">
               <span ng-click="p.select()" class="icon" ng-class="p.class()"></span>
             </div>
@@ -71,9 +74,6 @@
               <span><a ng-href="{{::p.party.route()}}" ng-bind="::p.party.name"></a></span><wbr>
               <span ng-if="::!(p.child.member || p.child.site)" class="permission-auth-pending" message="auth.pending"></span>
               <span ng-if="::(p.child.member || p.child.site)" class="permission-auth-expiration" ng-bind="::p.child.expires | date:'yyyy/MM/dd'" ng-class="isExpired(p.child.expires)"></span>
-            </div>
-            <div class="profile-right-icons">
-              <span class="icon user-access" ng-class="::page.constants.permission[p.child.member]"></span>
             </div>
           </li>
         </ul>

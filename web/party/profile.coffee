@@ -109,19 +109,22 @@ app.controller 'party/profile', [
 
     volumes.individual.sort(volumeSort)
     volumes.individual.title = "Data owner volumes"
+    volumes.individual.type = "individual"
     volumes.collaborator.sort(volumeSort)
     volumes.collaborator.title = "Collaborator volumes"
+    volumes.collaborator.type = "collaborator"
     $scope.volumes = [volumes.individual, volumes.collaborator]
     for ii, il of volumes.inherited
       p = Party.all[ii]
       il.sort(volumeSort)
       il.title = "Inherited volumes from " + p.party.name
+      il.type = "inherited"
       il.accessLevel = constants.permission[p.parent.member]
       il.tooltip = $filter('possessive')('auth.member.'+constants.permission[p.parent.member], p.party)
       $scope.volumes.push(il)
 
     parties.parents.sort(partySort) # .parent.site/member?
-    parties.parents.title = "Sponsors"
+    parties.parents.type = "parents"
     parties.site.sort(partySort)    # .child.site?
     parties.site.type = "site"
     parties.member.sort(partySort)  # .child.member?
