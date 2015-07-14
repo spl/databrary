@@ -185,7 +185,7 @@ viewVolume = action GET (pathAPI </> pathId) $ \(api, vi) -> withAuth $ do
   v <- getVolume PermissionPUBLIC vi
   case api of
     JSON -> okResponse [] =<< volumeJSONQuery v =<< peeks Wai.queryString
-    HTML -> okResponse [] $ volumeName v -- TODO
+    HTML -> okResponse [] =<< peeks (htmlVolumeView v)
 
 volumeForm :: (Functor m, Monad m) => Volume -> DeformT f m Volume
 volumeForm v = do
