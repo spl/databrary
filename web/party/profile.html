@@ -3,24 +3,27 @@
   <panel id="panel_browser" panel-title="profile.title" fold ng-if="::party.volumes || page.models.Login.isAuthorized()" class="profile">  
 
     <section id="profile-volumes" class="profile-volumes col-desktop-10 col-tablet-6 col-mobile-6">
-      <div class="profile-section" ng-repeat="vl in ::volumes" ng-if="::vl.length">
-        <span class="profile-section-header" ng-bind="::vl.title"></span> 
-        <span class="profile-section-header" ng-if="::vl.accessLevel" tooltip="vl.tooltip">(Your access:
-          <span class="icon user-access" ng-class="::vl.accessLevel"></span>
-          )
+      <div ng-repeat="vl in ::volumes" ng-if="::vl.length">
+        <div class="profile-section-header">
+          <span ng-bind="::vl.title"></span> 
+          <span ng-if="::vl.accessLevel">(Your access:
+            <span class="icon user-access" ng-class="::vl.accessLevel" tooltip="vl.tooltip"></span>
+            )
+          </div>
         </span>
         <ul>
           <li ng-repeat="v in ::vl" ng-class="{'profile-highlight': !!v.selected}">
-            <div class="profile-left-icons">
-              <span ng-click="v.select()" class="icon" ng-class="v.class()"></span>
-            </div>
-
-            <div class="profile-link"><a ng-href="{{::v.volume.route()}}" ng-bind="::v.volume.displayName"></a></div>
             <div class="profile-right-icons">
               <span class="icon access1" ng-show="::v.volume.accessPreset"></span>
               <span class="icon user-access" ng-class="::page.constants.permission[v.volume.permission]"></span>
               <span class="icon" ng-class="::{'network': v.self.children}"></span>
             </div>
+            <div class="profile-left-icons">
+              <span ng-click="v.select()" class="icon" ng-class="v.class()"></span>
+            </div>
+
+            <div class="profile-link"><a ng-href="{{::v.volume.route()}}" ng-bind="::v.volume.displayName"></a></div>
+
           </li>
         </ul>
       </div>
