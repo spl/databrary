@@ -17,7 +17,7 @@
 
             <a ng-href="{{::v.volume.route()}}" ng-bind="::v.volume.displayName" class="profile-section-link"></a>
             <!-- need to put in ngIf, for collaborators only -->
-            <span class="icon user-access" ng-class="::page.constants.permission[v.volume.permission]"></span>
+            <span class="icon profile-right-icons user-access" ng-class="::page.constants.permission[v.volume.permission]"></span>
 
             <span class="icon profile-right-icons" ng-class="::{'network': v.self.children}"></span>
             <span class="icon profile-right-icons" ng-if="::v.volume.accessPreset" ng-class="::'access'+v.volume.accessPreset"></span>
@@ -54,7 +54,7 @@
             <div ng-if="::!(p.child.member || p.child.site)" class="permission-auth-pending" message="auth.pending"></div>
             <span ng-if="::(p.child.member || p.child.site)" class="permission-auth-expiration" ng-bind="::p.child.expires | date:'yyyy/MM/dd'" ng-class="isExpired(p.child.expires)"></span>
 
-            <span class="icon user-access" ng-class="::page.constants.permission[p.child.member]"></span>
+            <span class="icon profile-right-icons user-access" ng-class="::page.constants.permission[p.child.member]"></span>
           </li>
         </ul>
       </div>
