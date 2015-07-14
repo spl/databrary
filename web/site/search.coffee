@@ -114,7 +114,7 @@ app.controller 'site/search', [
       # page.$route.current.params.query = $scope.query
       console.log("THE QUERY IS", $scope.query)
       promise = page.router.http(page.router.controllers.postSearch,
-        {"query" : $scope.query, "offset" : $scope.offset, "limit" : $scope.limit})
+        {"query" : $scope.query + "|type=container", "offset" : $scope.offset, "limit" : $scope.limit})
       console.log(promise)
       promise.then (res) ->
         console.log("GOT RES:", res)
@@ -247,6 +247,12 @@ app.controller 'site/search', [
     getPartyFilterBoxOpts = ->
       opts = [$scope.selectSessionStr, $scope.selectHighlightStr]
       return opts
+
+    searchContainersForVolume = (volId) ->
+      # Place holder for getting the list of containers for a volume
+      # We need to do this in such a way where we dont erase the
+      # search results that we already have
+      temp = 0
 
     updateFilterBoxOptions = ->
       console.log("SELTYPE", $scope.selectedType)

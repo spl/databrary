@@ -41,13 +41,15 @@ data DocType = Container | Record | Volume | AssetSegment | TagSegment | Segment
 {-data QueryArg = QueryArg {queryArg :: String}-}
 {-data QuerySearchTerm = QuerySearchTerm {querySearchTerm :: String}-}
 data QueryPart = QueryArg String String | QueryJoin String String
-                    | QuerySearchTerm String | QueryLimit Int | QueryStart Int deriving Show
+                    | QuerySearchTerm String | QueryLimit Int | QueryStart Int
+                    | QueryType String deriving Show
 
 data Query = Query {qJoin :: Maybe QueryPart,
                     qArguments :: Maybe [QueryPart],
                     qSearchTerms :: Maybe [QueryPart],
                     qLimit :: Maybe QueryPart,
-                    qStart :: Maybe QueryPart} deriving Show
+                    qStart :: Maybe QueryPart,
+                    qContentType :: Maybe QueryPart} deriving Show
 
 instance Show DocType where
         show Container = containerType
@@ -91,16 +93,18 @@ createQuery :: String -> Query
 createQuery x = formQuery $ parseQuery x
 
 formQuery :: [QueryPart] -> Query
-formQuery qs = Query j a t limit start
+formQuery qs = Query j a t limit start contentType
    where
       joinTest =  mapMaybe filterJoin qs
       limitTest = mapMaybe filterLimit qs
       startTest = mapMaybe filterStart qs
+      contentTest = mapMaybe filterContentType qs
       j = if length joinTest >= 1 then Just $ head joinTest else Nothing
       a = Just $ mapMaybe filterArg qs
       t = Just $ concat $ mapMaybe filterTerm qs
       limit = if length limitTest >= 1 then Just $ head limitTest else Nothing
       start = if length startTest >= 1 then Just $ head startTest else Nothing
+      contentType = if length contentTest >= 1 then Just $ head contentTest else Nothing
 
 filterArg :: QueryPart -> Maybe QueryPart
 filterArg (QueryArg x y) = Just $ QueryArg x y
@@ -115,6 +119,10 @@ filterJoin _ = Nothing
 filterTerm :: QueryPart -> Maybe [QueryPart]
 filterTerm (QuerySearchTerm x) = Just $ map QuerySearchTerm $ splitOn " " x
 filterTerm _ = Nothing
+
+filterContentType :: QueryPart -> Maybe QueryPart
+filterContentType (QueryType x) = Just $ QueryType x
+filterContentType _ = Nothing
 
 filterLimit :: QueryPart -> Maybe QueryPart
 filterLimit (QueryLimit x) = Just $ QueryLimit x
@@ -138,6 +146,7 @@ parseQueryPart x
    | isInfixOf "arg=" x = parseQueryArg x
    | isInfixOf "start=" x = parseQueryStart x
    | isInfixOf "rows=" x = parseQueryLimit x
+   | isInfixOf "type=" x = parseQueryType x
    | otherwise = parseTerm x
 
 -- Joins look like join=type,type and we just want the types
@@ -166,6 +175,12 @@ parseQueryStart q = QueryStart (read limit :: Int)
                      where
                         args = splitOn "=" q
                         [_, limit] = args
+
+parseQueryType :: String -> QueryPart
+parseQueryType q = QueryType contentType
+                     where
+                        x = splitOn "=" q
+                        [_, contentType] = x
 
 -- Terms just look like terms=what,ever,this,is
 -- TODO add support for quoted strings
@@ -203,11 +218,22 @@ termsToString' :: QueryPart -> String
 termsToString' (QuerySearchTerm t1) = t1
 termsToString' _ = ""
 
-queryToString :: Query -> (String, String, String)
-queryToString q = (query, args, join) where
+contentTypeToString :: Maybe QueryPart -> String
+contentTypeToString qp = do
+    case qp of
+      Nothing -> ""
+      Just q -> contentTypeToString' q
+
+contentTypeToString' :: QueryPart -> String
+contentTypeToString' (QueryType q) = q
+contentTypeToString' _ = ""
+
+queryToString :: Query -> (String, String, String, String)
+queryToString q = (query, args, join, contentType) where
    join = joinToString (qJoin q)
    args = argsToString (qArguments q)
    query = termsToString (qSearchTerms q)
+   contentType = contentTypeToString (qContentType q)
 
 -- TODO Break query to string up into a function where the joins and args
 -- are separated into their own strings, so it is Query ->
