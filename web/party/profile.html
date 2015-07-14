@@ -49,6 +49,9 @@
       <div ng-repeat="cl in ::parties.children" ng-if="::cl.length">
         <span class="profile-section-header" ng-bind="::'parties.'+cl.type+'.title' | message"></span> 
         <span class="icon info" tooltip="::'parties.'+cl.type+'.definition' | message"></span>
+        <div class="profile-right-icons">
+          <span class="icon network"></span>
+        </div>        
         <ul>
           <li ng-repeat="p in cl" ng-class="{'profile-highlight': !!p.selected}">
             <div class="profile-left-icons">
