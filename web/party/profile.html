@@ -3,7 +3,7 @@
   <panel id="panel_browser" panel-title="profile.title" fold ng-if="::party.volumes || page.models.Login.isAuthorized()" class="profile">  
 
     <section id="profile-volumes" class="profile-volumes col-desktop-10 col-tablet-6 col-mobile-6">
-      <div ng-repeat="vl in ::volumes" ng-if="::vl.length">
+      <div class="profile-section" ng-repeat="vl in ::volumes" ng-if="::vl.length">
         <span class="profile-section-header" ng-bind="::vl.title"></span> 
         <span class="profile-section-header" ng-if="::vl.accessLevel" tooltip="vl.tooltip">(Your access:
           <span class="icon user-access" ng-class="::vl.accessLevel"></span>
@@ -27,8 +27,8 @@
     </section>
 
     <section id="profile-parties" class="profile-parties col-desktop-5 col-tablet-3 col-mobile-6">
-      <div ng-if="::parties.parents.length">
-        <span class="profile-section-header" ng-bind="::parties.parents.title"></span> 
+      <div class="profile-section" ng-if="::parties.parents.length">
+        <div class="profile-section-header" ng-bind="::parties.parents.title"></div> 
         <ul>
           <li ng-repeat="p in ::parties.parents" ng-class="{'profile-highlight': !!p.selected}">
             <div class="profile-left-icons">
@@ -39,19 +39,22 @@
             <span ng-if="::!(p.parent.member || p.parent.site)" class="permission-auth-pending" message="auth.pending"></span>
             <span ng-if="::(p.parent.member || p.parent.site)" class="permission-auth-expiration" ng-bind="::p.parent.expires | date:'yyyy/MM/dd'" ng-class="isExpired(p.parent.expires)"></span>
             <br>
-            <span ng-if="::!!p.parent.site" class="profile-additional">
+            <div ng-if="::!!p.parent.site" class="profile-additional">
+              authorized you as 
               <span ng-bind="::'auth.site.'+page.constants.permission[p.parent.site]+'.title' | message"></span><wbr>
               <span ng-bind="::' ('+('auth.site.'+page.constants.permission[p.parent.site] | message:'their')+')'"></span>
-            </span>
+            </div>
           </li>
         </ul>
       </div>
-      <div ng-repeat="cl in ::parties.children" ng-if="::cl.length">
-        <span class="profile-section-header" ng-bind="::'parties.'+cl.type+'.title' | message"></span> 
-        <span class="icon info" tooltip="::'parties.'+cl.type+'.definition' | message"></span>
-        <div class="profile-right-icons">
-          <span class="icon network"></span>
-        </div>        
+      <div class="profile-section" ng-repeat="cl in ::parties.children" ng-if="::cl.length">
+        <div class="profile-section-header">
+          <span ng-bind="::'parties.'+cl.type+'.title' | message"></span> 
+          <span class="icon info" tooltip="::'parties.'+cl.type+'.definition' | message"></span>
+          <div class="profile-right-icons">
+            <span class="icon network"></span>
+          </div>  
+        </div>      
         <ul>
           <li ng-repeat="p in cl" ng-class="{'profile-highlight': !!p.selected}">
             <div class="profile-left-icons">
@@ -68,9 +71,11 @@
           </li>
         </ul>
       </div>
-      <div ng-if="::parties.collaborators.length">
-        <span class="profile-section-header" ng-bind="::'parties.collaborators.title' | message"></span> 
-        <span class="icon info" tooltip="::'parties.collaborators.definition' | message"></span>
+      <div class="profile-section" ng-if="::parties.collaborators.length">
+        <div class="profile-section-header">
+          <span ng-bind="::'parties.collaborators.title' | message"></span> 
+          <span class="icon info" tooltip="::'parties.collaborators.definition' | message"></span>
+        </div>
         <ul>
           <li ng-repeat="p in ::parties.collaborators" ng-class="{'profile-highlight': !!p.selected}">
             <div class="profile-left-icons">
