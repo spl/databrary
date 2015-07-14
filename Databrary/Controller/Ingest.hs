@@ -8,7 +8,6 @@ import qualified Data.ByteString as BS
 import System.Posix.FilePath (takeExtension)
 import Network.Wai.Parse (FileInfo(..))
 
-import Databrary.Has (peeks)
 import Databrary.Model.Id
 import Databrary.Model.Permission
 import Databrary.Model.Volume

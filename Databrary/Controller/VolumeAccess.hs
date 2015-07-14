@@ -18,12 +18,10 @@ import Databrary.Action
 import Databrary.Controller.Paths
 import Databrary.Controller.Form
 import Databrary.Controller.Volume
-import Databrary.Controller.Angular
 import Databrary.View.VolumeAccess
 
 viewVolumeAccess :: AppRoute (Id Volume, VolumeAccessTarget)
 viewVolumeAccess = action GET (pathHTML >/> pathId </> pathVolumeAccessTarget) $ \(vi, VolumeAccessTarget ap) -> withAuth $ do
-  angular
   v <- getVolume PermissionADMIN vi
   a <- maybeAction =<< lookupVolumeAccessParty v ap
   blankForm (htmlVolumeAccessForm a)

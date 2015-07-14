@@ -89,7 +89,7 @@ changeParty p = do
   ident <- getAuditIdentity
   dbExecute1' $(updateParty 'ident 'p)
 
-changeAccount :: MonadAudit c m => Account -> m ()
+changeAccount :: MonadAudit c m => SiteAuth -> m ()
 changeAccount a = do
   ident <- getAuditIdentity
   dbExecute1' $(updateAccount 'ident 'a)

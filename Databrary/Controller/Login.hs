@@ -32,7 +32,6 @@ import Databrary.Action
 import Databrary.Action.Auth
 import Databrary.Controller.Paths
 import Databrary.Controller.Form
-import Databrary.Controller.Permission
 import Databrary.Controller.Angular
 import Databrary.View.Login
 
@@ -55,7 +54,7 @@ viewLogin = action GET ("user" >/> "login") $ \() -> withAuth $ do
     (blankForm htmlLogin)
     (\_ -> redirectRouteResponse [] viewParty (HTML, TargetProfile) [])
 
-checkPassword :: BS.ByteString -> Account -> Bool
+checkPassword :: BS.ByteString -> SiteAuth -> Bool
 checkPassword p = Fold.any (`BCrypt.validatePassword` p) . accountPasswd
 
 postLogin :: AppRoute API
@@ -66,14 +65,13 @@ postLogin = action POST (pathAPI </< "user" </< "login") $ \api -> withoutAuth $
     superuser <- "superuser" .:> deform
     auth <- lift $ lookupSiteAuthByEmail email
     let p = view <$> auth
-        a = partyAccount =<< p
         su = superuser && Fold.any ((PermissionADMIN ==) . accessPermission) auth
     attempts <- lift $ maybe (return 0) recentAccountLogins p
-    let pass = checkPassword password `Fold.any` a
+    let pass = checkPassword password `Fold.any` auth
         block = attempts > 4
     lift $ auditAccountLogin pass (fromMaybe nobodyParty p) email
     when block $ "email" .:> deformError "Too many login attempts. Try again later."
-    unless pass $ "password" .:> deformError "Incorrect login."
+    unless pass $ "password" .:> deformError "Incorrect login"
     return (auth, su)
   withReaderT authApp $ loginAccount api auth su
 
@@ -91,19 +89,22 @@ viewUser = action GET (pathJSON </< "user") $ \() -> withAuth $
 
 postUser :: AppRoute API
 postUser = action POST (pathAPI </< "user") $ \api -> withAuth $ do
-  acct <- authAccount
-  acct' <- runForm (api == HTML ?> htmlUserForm acct) $ do
+  auth <- peek
+  let acct = siteAccount auth
+  auth' <- runForm (api == HTML ?> htmlUserForm acct) $ do
     csrfForm
-    "auth" .:> (deformGuard "Incorrect password." . (`checkPassword` acct) =<< deform)
+    "auth" .:> (deformGuard "Incorrect password" . (`checkPassword` auth) =<< deform)
     email <- "email" .:> deform
     passwd <- "password" .:> deformNonEmpty (passwordForm acct)
     let acct' = acct
           { accountEmail = email
-          , accountPasswd = passwd <|> accountPasswd acct
           , accountParty = (accountParty acct){ partyAccount = Just acct' }
           }
-    return acct'
-  changeAccount acct'
+    return auth
+      { siteAccount = acct'
+      , accountPasswd = passwd <|> accountPasswd auth
+      }
+  changeAccount auth'
   case api of
-    JSON -> okResponse [] $ partyJSON $ accountParty acct'
+    JSON -> okResponse [] $ partyJSON $ accountParty $ siteAccount auth'
     HTML -> redirectRouteResponse [] viewParty (api, TargetProfile) []

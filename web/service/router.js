@@ -88,7 +88,10 @@ app.provider('routerService', [
     /* Add a route to $routeProvider and return a function to get a url given parameters. */
     function makeRoute(route, argNames, handler) {
       if (handler) {
-        $routeProvider.when(getRoute(route, argNames), handler);
+        var path = getRoute(route, argNames);
+        $routeProvider.when(path, handler);
+        if (path.includes('id/:segment'))
+          $routeProvider.when(path.replace('id/:segment', 'id'), handler);
       }
 
       return function (data, params) {
@@ -382,7 +385,7 @@ app.provider('routerService', [
           'pageService', function (page) {
             return page.models.Volume.get(page.$route.current.params.vid)
               .then(function (volume) {
-                return volume.getAsset(page.$route.current.params.id, page.$route.current.params.cid, page.$route.current.params.segment);
+                return volume.getAsset(page.$route.current.params.id, page.$route.current.params.cid, page.$route.current.params.segment, ['container']);
               });
           },
         ]
@@ -400,8 +403,6 @@ app.provider('routerService', [
     routes.volumeThumb = makeRoute(controllers.thumbVolume, ['id', 'size']);
     routes.assetThumb = makeRoute(controllers.thumbAssetSegment, ['cid', 'segment', 'id', 'size']);
     routes.assetDownload = makeRoute(controllers.downloadAssetSegment, ['cid', 'segment', 'id', 'inline']);
-    routes.assetEdit = makeRoute(controllers.viewAssetEdit, ['id']);
-    routes.record = makeRoute(controllers.viewRecord, ['id']);
 
     //
 

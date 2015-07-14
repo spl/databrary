@@ -97,7 +97,7 @@
               <div class="panel-tag-name" ng-click="tag.toggle()">
                 <span ng-bind="::tag.id"></span>
               </div>
-              <div class="panel-tag-controls" ng-if="::page.models.Login.isAuthorized()">
+              <div class="panel-tag-controls" ng-if="::authorized">
                 <button class="panel-tag-vote available null" name="vote" ng-click="tag.save(false)" ng-if="tag.state === true" hint="tags-vote-null">
                   -
                 </button>
@@ -106,7 +106,7 @@
                 </button>
               </div>
             </li>
-            <li class="panel-tags-item tag-add" ng-if="::editing || page.models.Login.isAuthorized()">
+            <li class="panel-tags-item tag-add" ng-if="::editing || authorized">
               <tag-add ng-if="::!editing"></tag-add>
               <tag-add ng-if="::editing" keyword></tag-add>
             </li>
@@ -229,7 +229,7 @@
         </div>
 
         <section ng-if="::!editing" id="slot-comments" class="slot-comments">
-          <div ng-if="!commentReply">
+          <div ng-if="!commentReply && authorized">
             <textarea ng-model="form.comment.text" placeholder="{{::'comments.prompt' | message}}"></textarea>
             <button ng-disabled="!form.comment.text.length" ng-click="addComment(form.comment.text)" class="mini" message="comments.post"></button>
           </div>
@@ -253,7 +253,7 @@
                   </aside>
                 </footer>
                 <div class="panel-comments-body" ng-bind-html="comment.comment.text | format"></div>
-                <div class="panel-comments-body" ng-if="commentReply !== comment">
+                <div class="panel-comments-body" ng-if="commentReply !== comment && authorized">
                   <button ng-click="comment.setReply($event)" class="mini" message="comments.reply"></button>
                 </div>
               </div>

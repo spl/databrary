@@ -140,6 +140,8 @@ Executable databrary
 
   if flag(devel)
     cpp-options: -DDEVEL
+  else
+    ghc-options: -with-rtsopts -N
   if flag(sandbox)
     cpp-options: -DSANDBOX
 

@@ -1,14 +1,15 @@
 'use strict'
 
 app.controller('volume/slot', [
-  '$scope', '$location', '$sce', '$timeout', 'constantService', 'displayService', 'messageService', 'tooltipService', 'styleService', 'storageService', 'Offset', 'Segment', 'uploadService', 'routerService', 'slot', 'edit',
-  ($scope, $location, $sce, $timeout, constants, display, messages, tooltips, styles, storage, Offset, Segment, uploads, router, slot, editing) ->
+  '$scope', '$location', '$sce', '$timeout', 'constantService', 'modelService', 'displayService', 'messageService', 'tooltipService', 'styleService', 'storageService', 'Offset', 'Segment', 'uploadService', 'routerService', 'slot', 'edit',
+  ($scope, $location, $sce, $timeout, constants, models, display, messages, tooltips, styles, storage, Offset, Segment, uploads, router, slot, editing) ->
     display.title = slot.displayName
     $scope.flowOptions = uploads.flowOptions()
     $scope.slot = slot
     $scope.volume = slot.volume
     $scope.editing = editing # $scope.editing (but not editing) is also a modal (toolbar) indicator
     $scope.form = {} # all ng-forms are put here
+    $scope.authorized = models.Login.isAuthorized()
     $flow = $scope.$flow # not really in this scope
 
     ################################### Base classes/utilities

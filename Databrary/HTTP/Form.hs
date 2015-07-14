@@ -90,6 +90,7 @@ data FormDatum
   = FormDatumNone
   | FormDatumBS !BS.ByteString
   | FormDatumJSON !JSON.Value
+  deriving (Show)
 
 instance Monoid FormDatum where
   mempty = FormDatumNone

@@ -3,9 +3,10 @@ module Databrary.View.Transcode
   ( htmlTranscodes
   ) where
 
-import Control.Monad (forM_)
+import Control.Monad (when, forM_)
 import qualified Data.Foldable as Fold
 import qualified Text.Blaze.Html5 as H
+import qualified Text.Blaze.Html5.Attributes as HA
 
 import Databrary.Has (view)
 import Databrary.Action.Auth
@@ -19,6 +20,7 @@ import Databrary.View.Template
 
 import Databrary.Controller.Asset
 import Databrary.Controller.Party
+import {-# SOURCE #-} Databrary.Controller.Transcode
 
 htmlTranscodes :: [Transcode] -> AuthRequest -> H.Html
 htmlTranscodes tl req = htmlTemplate req (Just "transcodes") $ \js -> do
@@ -36,22 +38,14 @@ htmlTranscodes tl req = htmlTemplate req (Just "transcodes") $ \js -> do
         , "log"
         ]
     H.tbody $
-      forM_ tl $ \Transcode{..} -> H.tr $ do
-        H.td $ return ()
-          {-
-          @widget.formErrors(form)
-          @if(t.process) {
-            <button name='stop' value='true'>stop</button>
-          } else {
-            <button type='submit'>
-              @if(t.fake) {
-                start
-              } else {
-                restart
-              }
-            </button>
-          }
-          -}
+      forM_ tl $ \t@Transcode{..} -> H.tr $ do
+        H.td $ actionForm postTranscode (transcodeId t) $ do
+          let act a = H.input H.! HA.type_ "submit" H.! HA.name "action" H.! HA.value (H.stringValue $ show a)
+          maybe (do
+            act TranscodeStart
+            act TranscodeFail)
+            (\p -> when (p >= 0) $ act TranscodeStop)
+            transcodeProcess
         H.td $ H.a H.! actionLink viewAsset (HTML, assetId transcodeAsset) js [] $
           H.string $ show $ assetId transcodeAsset
         H.td $ Fold.foldMap (H.string . show) transcodeStart
@@ -62,15 +56,6 @@ htmlTranscodes tl req = htmlTemplate req (Just "transcodes") $ \js -> do
         H.td $ H.a H.! actionLink viewAsset (HTML, assetId transcodeOrig) js [] $
           maybe (H.string $ show $ assetId transcodeOrig) H.text (assetName transcodeOrig)
         H.td $ H.string $ show transcodeSegment
-          {-
-          @if(t.fake) {
-            @widget.tag.inputText(form.start(), args = 'size -> 9)
-            &ndash;
-            @widget.tag.inputText(form.end(), args = 'size -> 9)
-          } else {
-            @display(t.segment)
-          }
-          -}
         H.td $ mapM_ ((>>) " " . H.string) transcodeOptions
         H.td $ Fold.foldMap (H.string . show) transcodeProcess
         H.td $ Fold.foldMap (H.pre . byteStringHtml) transcodeLog

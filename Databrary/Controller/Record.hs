@@ -36,7 +36,6 @@ import Databrary.Controller.Form
 import Databrary.Controller.Volume
 import Databrary.Controller.Slot
 import Databrary.Controller.Permission
-import Databrary.Controller.Angular
 import Databrary.View.Record
 
 getRecord :: Permission -> Id Record -> AuthActionM Record
@@ -45,7 +44,6 @@ getRecord p i =
 
 viewRecord :: AppRoute (API, Id Record)
 viewRecord = action GET (pathAPI </> pathId) $ \(api, i) -> withAuth $ do
-  when (api == HTML) angular
   rec <- getRecord PermissionPUBLIC i
   case api of
     JSON -> okResponse [] $ recordJSON rec

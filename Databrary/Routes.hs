@@ -134,6 +134,7 @@ routeMap = fromRouteList
   , route viewActivity
 
   , route viewTranscodes
+  , route postTranscode
   , route viewIngest
   , route postIngest
 
@@ -168,7 +169,6 @@ jsRoutes = mconcat
 
   , jsRoute "viewFormats" viewFormats ()
   , jsRoute "viewAssetSegment" viewAssetSegment (HTML, Just volume, slot, asset)
-  , jsRoute "viewAssetEdit" viewAssetEdit (asset)
   , jsRoute "downloadAssetSegment" downloadAssetSegment (slot, asset)
   , jsRoute "thumbAssetSegment" thumbAssetSegment (slot, asset)
 
@@ -219,7 +219,7 @@ jsRoutes = mconcat
   , jsRoute "postRecordSlot" postRecordSlot (JSON, slot, record)
 
   , jsRoute "getAsset" viewAsset (JSON, asset)
-  , jsRoute "getAssetSegment" viewAssetSegment (JSON, Nothing, slot, asset)
+  , jsRoute "getAssetSegment" viewAssetSegment (JSON, Just volume, slot, asset)
   , jsRoute "postAsset" postAsset (JSON, asset)
   , jsRoute "createAsset" createAsset (JSON, volume)
   , jsRoute "deleteAsset" deleteAsset (JSON, asset)

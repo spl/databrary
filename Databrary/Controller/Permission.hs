@@ -20,12 +20,12 @@ import Databrary.Model.Identity
 import Databrary.HTTP.Request
 import Databrary.Action
 
-checkPermission :: (MonadAction c m, MonadIO m, Has Permission a) => Permission -> a -> m a
+checkPermission :: (MonadAppAction c m, MonadIO m, Has Permission a) => Permission -> a -> m a
 checkPermission p o = do
   guardAction (view o >= p) forbiddenResponse
   return o
 
-checkDataPermission :: (MonadAction c m, MonadIO m, Has Release a, Has Permission a) => a -> m a
+checkDataPermission :: (MonadAppAction c m, MonadIO m, Has Release a, Has Permission a) => a -> m a
 checkDataPermission o = do
   guardAction (dataPermission o > PermissionNONE) forbiddenResponse
   return o

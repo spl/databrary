@@ -1,6 +1,8 @@
 {-# LANGUAGE RecordWildCards, OverloadedStrings #-}
 module Databrary.Store.Transcode
-  ( forkTranscode
+  ( startTranscode
+  , forkTranscode
+  , stopTranscode
   , collectTranscode
   , transcodeEnabled
   ) where
@@ -81,6 +83,15 @@ forkTranscode tc = focusIO $ \app ->
     (either
       (\e -> logMsg (view app) ("forkTranscode: " ++ show e) (view app))
       (const $ return ()))
+
+stopTranscode :: Transcode -> TranscodeM Transcode
+stopTranscode tc@Transcode{ transcodeProcess = Just pid } | pid >= 0 = do
+  tc' <- updateTranscode tc Nothing (Just "aborted")
+  (r, out, err) <- ctlTranscode tc ["-k", show pid]
+  unless (r == ExitSuccess) $
+    fail ("stopTranscode: " ++ out ++ err)
+  return tc'
+stopTranscode tc = return tc
 
 collectTranscode :: Transcode -> Int -> Maybe BS.ByteString -> String -> TranscodeM ()
 collectTranscode tc 0 sha1 logs = do
