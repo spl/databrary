@@ -3,6 +3,7 @@
   <panel id="panel_browser" panel-title="profile.title" fold ng-if="::party.volumes || page.models.Login.isAuthorized()" class="profile">  
 
     <section id="profile-volumes" class="profile-volumes col-desktop-10 col-tablet-6 col-mobile-6">
+      <div class="hide-desktop hide-tablet profile-mobile-header view-title smaller" ng-bind="'volumes.title' | message"></div>
       <div ng-repeat="vl in ::volumes" ng-if="::vl.length">
         <span class="profile-section-header">
           <span ng-bind="::vl.title"></span> 
@@ -30,6 +31,8 @@
     </section>
 
     <section id="profile-parties" class="profile-parties col-desktop-5 col-tablet-3 col-mobile-6">
+      <div class="hide-desktop hide-tablet profile-mobile-header view-title smaller" ng-bind="'network.title' | message"></div>
+
       <div class="profile-section" ng-if="::parties.parents.length">
         <div class="profile-section-header" ng-bind="::'parties.parents.title' | message"></div> 
         <ul>
