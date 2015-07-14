@@ -15,7 +15,7 @@
               <span ng-click="v.select()" class="icon" ng-class="v.class()"></span>
             </div>
 
-            <a ng-href="{{::v.volume.route()}}" ng-bind="::v.volume.displayName"></a>
+            <div class="profile-link"><a ng-href="{{::v.volume.route()}}" ng-bind="::v.volume.displayName"></a></div>
             <div class="profile-right-icons">
               <span class="icon" ng-if="::v.volume.accessPreset" ng-class="::'access'+v.volume.accessPreset"></span>
               <span class="icon user-access" ng-class="::page.constants.permission[v.volume.permission]"></span>
@@ -35,15 +35,18 @@
               <span ng-click="p.select()" class="icon" ng-class="p.class()"></span>
             </div>
 
-            <a ng-href="{{::p.party.route()}}" ng-bind="::p.party.name"></a><wbr>
-            <span ng-if="::!(p.parent.member || p.parent.site)" class="permission-auth-pending" message="auth.pending"></span>
-            <span ng-if="::(p.parent.member || p.parent.site)" class="permission-auth-expiration" ng-bind="::p.parent.expires | date:'yyyy/MM/dd'" ng-class="isExpired(p.parent.expires)"></span>
-            <br>
+            <div class="profile-link">
+              <a ng-href="{{::p.party.route()}}" ng-bind="::p.party.name"></a><wbr>
+              <span ng-if="::!(p.parent.member || p.parent.site)" class="permission-auth-pending" message="auth.pending"></span>
+              <span ng-if="::(p.parent.member || p.parent.site)" class="permission-auth-expiration" ng-bind="::p.parent.expires | date:'yyyy/MM/dd'" ng-class="isExpired(p.parent.expires)"></span>
+              <br>
+            </div>
             <div ng-if="::!!p.parent.site" class="profile-additional">
               authorized you as 
               <span ng-bind="::'auth.site.'+page.constants.permission[p.parent.site]+'.title' | message"></span><wbr>
               <span ng-bind="::' ('+('auth.site.'+page.constants.permission[p.parent.site] | message:'their')+')'"></span>
             </div>
+
           </li>
         </ul>
       </div>
@@ -61,10 +64,11 @@
               <span ng-click="p.select()" class="icon" ng-class="p.class()"></span>
             </div>
 
-            <span><a ng-href="{{::p.party.route()}}" ng-bind="::p.party.name"></a></span><wbr>
-            <span ng-if="::!(p.child.member || p.child.site)" class="permission-auth-pending" message="auth.pending"></span>
-            <span ng-if="::(p.child.member || p.child.site)" class="permission-auth-expiration" ng-bind="::p.child.expires | date:'yyyy/MM/dd'" ng-class="isExpired(p.child.expires)"></span>
-
+            <div class="profile-link">
+              <span><a ng-href="{{::p.party.route()}}" ng-bind="::p.party.name"></a></span><wbr>
+              <span ng-if="::!(p.child.member || p.child.site)" class="permission-auth-pending" message="auth.pending"></span>
+              <span ng-if="::(p.child.member || p.child.site)" class="permission-auth-expiration" ng-bind="::p.child.expires | date:'yyyy/MM/dd'" ng-class="isExpired(p.child.expires)"></span>
+            </div>
             <div class="profile-right-icons">
               <span class="icon user-access" ng-class="::page.constants.permission[p.child.member]"></span>
             </div>
@@ -82,7 +86,7 @@
               <span ng-click="p.select()" class="icon" ng-class="p.class()"></span>
             </div>
 
-            <a ng-href="{{::p.party.route()}}" ng-bind="::p.party.name"></a>
+            <div class="profile-link"><a ng-href="{{::p.party.route()}}" ng-bind="::p.party.name"></a></div>
           </li>
         </ul>
       </div>
