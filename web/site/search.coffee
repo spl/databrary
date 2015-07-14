@@ -17,7 +17,7 @@ app.directive 'searchForm', [
       if $scope.type == 'party'
         if params.institution == 'true'
           $scope.type = 'institution'
-        else if `params.access == constants.permission.EDIT` || $.isEmptyObject(params)
+        else if `params.access == constants.permission.EDIT`
           $scope.type = 'principal'
       $scope.query = params.query
       $scope.search = ->
