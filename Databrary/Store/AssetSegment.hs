@@ -18,6 +18,7 @@ import qualified Data.Streaming.Process as P
 import qualified Database.PostgreSQL.Typed.Range as Range
 import System.IO (Handle, hClose)
 import System.Posix.FilePath (takeDirectory)
+import System.Posix.Files.ByteString (setFileMode)
 
 import Databrary.Ops
 import Databrary.Has (MonadHas, peek)
@@ -96,6 +97,7 @@ getAssetSegmentStore as sz
         tf <- makeTempFileAs (maybe (storageTemp store) (</> "tmp/") cache) (const $ return ()) rs
         gen (Right (tempFilePath tf))
         _ <- createDir (takeDirectory f) 0o770
+        setFileMode (tempFilePath tf) 0o640
         renameTempFile tf f rs
       return $ Right f)
     cf
