@@ -3,6 +3,7 @@ module Databrary.Controller.Party
   ( getParty
   , viewParty
   , viewPartyEdit
+  , viewPartyCreate
   , postParty
   , createParty
   , queryParties
@@ -140,6 +141,11 @@ viewPartyEdit = action GET (pathHTML >/> pathPartyTarget </< "edit") $ \i -> wit
   p <- getParty (Just PermissionADMIN) i
   blankForm $ htmlPartyForm $ Just p
 
+viewPartyCreate :: AppRoute ()
+viewPartyCreate = action GET (pathHTML </< "party" </< "create") $ \() -> withAuth $ do
+  checkMemberADMIN
+  blankForm $ htmlPartyForm Nothing
+
 postParty :: AppRoute (API, PartyTarget)
 postParty = multipartAction $ action POST (pathAPI </> pathPartyTarget) $ \(api, i) -> withAuth $ do
   p <- getParty (Just PermissionADMIN) i
@@ -153,8 +159,7 @@ postParty = multipartAction $ action POST (pathAPI </> pathPartyTarget) $ \(api,
 
 createParty :: AppRoute API
 createParty = multipartAction $ action POST (pathAPI </< "party") $ \api -> withAuth $ do
-  perm <- peeks accessPermission'
-  _ <- checkPermission PermissionADMIN perm
+  checkMemberADMIN
   (bp, a) <- processParty api Nothing
   p <- addParty bp
   when (isJust a) $

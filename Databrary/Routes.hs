@@ -62,6 +62,7 @@ routeMap = fromRouteList
   , route viewParty
   , route postParty
   , route viewPartyEdit
+  , route viewPartyCreate
   , route viewAuthorize
   , route postAuthorize
   , route deleteAuthorize
