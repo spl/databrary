@@ -52,8 +52,13 @@ object Indexer {
     object SQLContainer extends SQLSyntaxSupport[SQLContainer] {
       def apply(rs: WrappedResultSet): SQLContainer = new SQLContainer(
         rs.long("id"), rs.long("volume"), rs.string("name"),
-        if (rs.dateOpt("date").isDefined) Some(rs.date("date").toJodaDateTime) else None, rs.stringOpt("release"),
-        rs.stringOpt("txt")
+        if (rs.dateOpt("date").isDefined) Some(rs.date("date").toJodaDateTime) else None, rs.stringOpt("release")
+      )
+    }
+
+    object SQLContainerText extends SQLSyntaxSupport[SQLContainerText] {
+      def apply(rs: WrappedResultSet): SQLContainerText = new SQLContainerText(
+        rs.long("id"), rs.longOpt("metric"), rs.stringOpt("txt")
       )
     }
 
@@ -78,6 +83,12 @@ object Indexer {
     object SQLExcerpt extends SQLSyntaxSupport[SQLRecord] {
       def apply(rs: WrappedResultSet): SQLExcerpt = new SQLExcerpt(
         rs.long("asset"), rs.string("segment"), rs.stringOpt("release")
+      )
+    }
+
+    object SQLMetric extends SQLSyntaxSupport[SQLMetric] {
+      def apply(rs: WrappedResultSet): SQLMetric = new SQLMetric(
+        rs.long("id"), rs.string("name"), rs.stringOpt("assumed"), rs.arrayOpt("options")
       )
     }
 
@@ -144,23 +155,52 @@ object Indexer {
     /*
     Get all of the containers from the DB and create a container->volume lookup table
      */
-    //    val sQLContainers = sql"""
-    //        SELECT id, container.volume AS volume, name, date, release FROM container
-    //        LEFT JOIN slot_release ON id = slot_release.container
-    //        LEFT JOIN volume_access ON container.volume = volume_access.volume
-    //        WHERE volume_access.children > 'NONE' AND volume_access.party = -1 AND container.volume > 0
-    //    """.map(x => SQLContainer(x)).list().apply().map(x => x.containerId -> x).toMap
-
     val sQLContainers = sql"""
-       SELECT id, container.volume AS volume, name, date, release, string_agg(datum, ' ') AS txt
-       FROM container
-       LEFT JOIN slot_release ON id = slot_release.container
-       LEFT JOIN volume_access ON container.volume = volume_access.volume
-       LEFT JOIN slot_record ON id = slot_record.container
-       LEFT JOIN measure_text ON slot_record.record = measure_text.record
-       WHERE volume_access.children > 'NONE' AND volume_access.party = -1 AND container.volume > 0
-       GROUP BY container.id, container.volume, name, date, release
+        SELECT id, container.volume AS volume, name, date, release FROM container
+        LEFT JOIN slot_release ON id = slot_release.container
+        LEFT JOIN volume_access ON container.volume = volume_access.volume
+        WHERE volume_access.children > 'NONE' AND volume_access.party = -1 AND container.volume > 0
     """.map(x => SQLContainer(x)).list().apply().map(x => x.containerId -> x).toMap
+
+    // This will get all of the text for the containers as well as that texts' metric
+    val sQLContainersText = sql"""
+           SELECT slot_record.container AS id, datum AS txt, measure_text.metric AS metric
+           FROM slot_record, measure_text
+           LEFT JOIN metric ON metric.id = measure_text.metric
+           WHERE slot_record.record = measure_text.record AND metric.release >= 'EXCERPTS'
+    """.map(x => SQLContainerText(x)).list().apply()
+
+    val sQLMetrics = sql"""
+      SELECT id, name, assumed, options FROM metric
+    """.map(x => SQLMetric(x)).list().apply().map(x => x.metricId -> x).toMap
+
+    sQLContainersText.foreach{ x =>
+      val c = sQLContainers.getOrElse(x.containerId, null)
+      if(c != null && x.metric.isDefined && x.text.isDefined) {
+        val measureName = sQLMetrics(x.metric.get).metricName
+        measureName match {
+          case "race" => if (c.race.isDefined) c.race = Some(c.race.get + " " +  x.text.get) else c.race = x.text
+          case "ethnicity" => if (c.ethnicity.isDefined) c.ethnicity = Some(c.ethnicity.get + " " +  x.text.get) else c.ethnicity = x.text
+          case "gender" => if (c.gender.isDefined) c.gender = Some(c.gender.get + " " +  x.text.get) else c.gender = x.text
+          case "state" => if (c.state.isDefined) c.state = Some(c.state.get + " " + x.text.get) else c.state = x.text
+          case "setting" => if (c.setting.isDefined) c.setting = Some(c.setting.get + " " + x.text.get) else c.setting = x.text
+          case "language" => if (c.language.isDefined) c.language = Some(c.language.get + " " + x.text.get) else c.language = x.text
+          case "country" => if (c.country.isDefined) c.country = Some(c.country.get + " " + x.text.get) else c.country = x.text
+          case _ => if (c.text.isDefined) c.text = Some(c.text.get + " " + x.text.get) else c.text = x.text
+        }
+      }
+    }
+
+//    val sQLContainers = sql"""
+//       SELECT id, container.volume AS volume, name, date, release, string_agg(datum, ' ') AS txt
+//       FROM container
+//       LEFT JOIN slot_release ON id = slot_release.container
+//       LEFT JOIN volume_access ON container.volume = volume_access.volume
+//       LEFT JOIN slot_record ON id = slot_record.container
+//       LEFT JOIN measure_text ON slot_record.record = measure_text.record
+//       WHERE volume_access.children > 'NONE' AND volume_access.party = -1 AND container.volume > 0
+//       GROUP BY container.id, container.volume, name, date, release
+//    """.map(x => SQLContainer(x)).list().apply().map(x => x.containerId -> x).toMap
 
     val sQLContainerVolumeLookup = sQLContainers.values.map(x => x.containerId -> sQLVolumes(x.volumeId))
       .toMap.withDefaultValue(new SQLVolume(volumeId = -1))
@@ -324,7 +364,14 @@ object Indexer {
       container_date_tdt = None, // This should never be set for privacy reasons
       container_name_t = Some(container.name), container_age_td = container.age,
       container_has_excerpt_b = Some(container.hasExcerpt),
-      container_text_t = container.text
+      container_text_t = container.text,
+      container_country_s = container.country,
+      container_gender_s = container.gender,
+      container_language_s = container.language,
+      container_state_s = container.state,
+      container_ethnicity_s = container.ethnicity,
+      container_race_s = container.race,
+      container_setting_s = container.setting
     )
   }
 
@@ -376,7 +423,13 @@ object Indexer {
 
   case class Volume(volumeId: Long, title: String, abs: String, alias: String, containers: Seq[Container], var hasExcerpt: Boolean = false, var hasSessions: Boolean = false)
 
-  case class SQLContainer(containerId: Long, volumeId: Long, name: String, date: Option[DateTime] = None, release: Option[String] = None, text: Option[String], var age: Option[Double] = None, var hasExcerpt: Boolean = false)
+  case class SQLContainer(containerId: Long, volumeId: Long, name: String, date: Option[DateTime] = None, release: Option[String] = None,
+                          var text: Option[String] = None, var age: Option[Double] = None, var hasExcerpt: Boolean = false,
+                          var state: Option[String] = None, var ethnicity: Option[String] = None,
+                          var gender: Option[String] = None, var language: Option[String] = None, var race: Option[String] = None,
+                          var setting: Option[String] = None, var country: Option[String] = None)
+
+  case class SQLContainerText(containerId: Long, metric: Option[Long], text: Option[String])
 
   case class Container(containerId: Long, volumeId: Long, name: String, date: Option[DateTime], release: Option[String], records: Seq[Record], hasExcerpt: Boolean)
 
@@ -409,6 +462,8 @@ object Indexer {
   to store it ourselves
    */
   case class SQLSegmentAsset(volumeId: Long, containerId: Long, segment: String, asset: Long, assetName: String, duration: String, isExcerpt: Boolean)
+
+  case class SQLMetric(metricId: Long, metricName: String, assumed: Option[String], options: Option[java.sql.Array])
 
   case class SQLParty(partyId: Long, name: String, preName: String, affiliation: String, var isAuthorized: Boolean = false, var isInstitution: Boolean = false)
 
@@ -456,6 +511,13 @@ object Indexer {
                           container_has_excerpt_b: Option[Boolean] = None,
                           container_keywords_ss: Option[Seq[String]] = None,
                           container_text_t: Option[String] = None,
+                          container_state_s: Option[String] = None,
+                          container_ethnicity_s: Option[String] = None,
+                          container_gender_s: Option[String] = None,
+                          container_language_s: Option[String] = None,
+                          container_race_s: Option[String] = None,
+                          container_setting_s: Option[String] = None,
+                          container_country_s: Option[String] = None,
                           record_id_i: Option[Int] = None, record_volume_id_i: Option[Int] = None,
                           record_container_i: Option[Int] = None, record_date_tdt: Option[String] = None,
                           record_text_t: Option[String] = None,
