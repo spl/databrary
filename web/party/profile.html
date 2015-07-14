@@ -4,7 +4,11 @@
 
     <section id="profile-volumes" class="profile-volumes col-desktop-10 col-tablet-6 col-mobile-6">
       <div ng-repeat="vl in ::volumes" ng-if="::vl.length">
-        <span class="profile-section-header" ng-bind="::vl.title"></span>
+        <span class="profile-section-header" ng-bind="::vl.title"></span> 
+        <span class="profile-section-header" ng-if="::vl.accessLevel" tooltip="vl.tooltip">(Your access:
+          <span class="icon user-access" ng-class="::vl.accessLevel"></span>
+          )
+        </span>
         <ul>
           <li ng-repeat="v in vl" ng-class="{'profile-highlight': v.selected}">
             <div class="profile-left-icon">
@@ -12,6 +16,8 @@
             </div>
 
             <a ng-href="{{::v.volume.route()}}" ng-bind="::v.volume.displayName" class="profile-section-link"></a>
+            <!-- need to put in ngIf, for collaborators only -->
+            <span class="icon user-access" ng-class="page.constants.permission[v.volume.permission]"></span>
 
             <span class="icon profile-volumes-icons" ng-class="::{'network': v.self.children}"></span>
             <span class="icon profile-volumes-icons" ng-if="::v.volume.accessPreset" ng-class="::'access'+v.volume.accessPreset"></span>
@@ -31,7 +37,7 @@
 
             <a ng-href="{{::p.party.route()}}" ng-bind="::p.party.name"></a>
             <div ng-if="::!(p.parent.member || p.parent.site)" class="permission-auth-pending" message="auth.pending"></div>
-            <span ng-if="::(p.parent.member || p.parent.site)" class="permission-auth-expiration" ng-bind-html="::p.parent.expires | date:'yyyy/MM/dd'" ng-class="{'red':p.expired}"></span>
+            <span ng-if="::(p.parent.member || p.parent.site)" class="permission-auth-expiration" ng-bind="::p.parent.expires | date:'yyyy/MM/dd'" ng-class="isExpired(p.parent.expires)"></span>
           </li>
         </ul>
       </div>
@@ -46,7 +52,7 @@
 
             <span><a ng-href="{{::p.party.route()}}" ng-bind="::p.party.name"></a></span>
             <div ng-if="::!(p.child.member || p.child.site)" class="permission-auth-pending" message="auth.pending"></div>
-            <span ng-if="::(p.child.member || p.child.site)" class="permission-auth-expiration" ng-bind-html="::p.child.expires | date:'yyyy/MM/dd'"></span>
+            <span ng-if="::(p.child.member || p.child.site)" class="permission-auth-expiration" ng-bind="::p.child.expires | date:'yyyy/MM/dd'" ng-class="isExpired(p.child.expires)"></span>
           </li>
         </ul>
       </div>

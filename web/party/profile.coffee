@@ -115,7 +115,9 @@ app.controller 'party/profile', [
     for ii, il of volumes.inherited
       p = Party.all[ii]
       il.sort(volumeSort)
-      il.title = "Inherited volumes from " + p.party.name + " (" + $filter('possessive')('auth.member.'+constants.permission[p.parent.member], p.party) + ")"
+      il.title = "Inherited volumes from " + p.party.name
+      il.accessLevel = constants.permission[p.parent.member]
+      il.tooltip = $filter('possessive')('auth.member.'+constants.permission[p.parent.member], p.party)
       $scope.volumes.push(il)
 
     parties.parents.sort(partySort) # .parent.site/member?
@@ -126,6 +128,10 @@ app.controller 'party/profile', [
     parties.member.type = "member"
     parties.children = [parties.site, parties.member]
     parties.collaborators.sort(partySort)
+
+    today = Date.now()
+    $scope.isExpired = (expires) ->
+      if new Date(expires) < today then 'expired'
 
     return
 ]
