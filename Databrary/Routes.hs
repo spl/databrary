@@ -219,7 +219,7 @@ jsRoutes = mconcat
   , jsRoute "postRecordSlot" postRecordSlot (JSON, slot, record)
 
   , jsRoute "getAsset" viewAsset (JSON, asset)
-  , jsRoute "getAssetSegment" viewAssetSegment (JSON, Nothing, slot, asset)
+  , jsRoute "getAssetSegment" viewAssetSegment (JSON, Just volume, slot, asset)
   , jsRoute "postAsset" postAsset (JSON, asset)
   , jsRoute "createAsset" createAsset (JSON, volume)
   , jsRoute "deleteAsset" deleteAsset (JSON, asset)

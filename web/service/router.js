@@ -379,7 +379,7 @@ app.provider('routerService', [
           'pageService', function (page) {
             return page.models.Volume.get(page.$route.current.params.vid)
               .then(function (volume) {
-                return volume.getAsset(page.$route.current.params.id, page.$route.current.params.cid, page.$route.current.params.segment);
+                return volume.getAsset(page.$route.current.params.id, page.$route.current.params.cid, page.$route.current.params.segment, ['container']);
               });
           },
         ]

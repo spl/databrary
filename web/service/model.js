@@ -1048,11 +1048,12 @@ app.factory('modelService', [
       return l;
     }
 
-    Volume.prototype.getAsset = function (asset, container, segment) {
+    Volume.prototype.getAsset = function (asset, container, segment, options) {
       var v = this;
+      options = checkOptions(null, options);
       return (container === undefined ?
-          router.http(router.controllers.getAsset, v.id, asset) :
-          router.http(router.controllers.getAssetSegment, container, Segment.format(segment), asset))
+          router.http(router.controllers.getAsset, v.id, asset, options) :
+          router.http(router.controllers.getAssetSegment, v.id, container, Segment.format(segment), asset, options))
         .then(function (res) {
           return assetMake(v, res.data);
         });

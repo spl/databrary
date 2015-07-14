@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Databrary.Controller.Asset
   ( getAsset
+  , assetJSONField 
   , viewAsset
   , AssetTarget(..)
   , postAsset
