@@ -30,7 +30,7 @@
       <tr class="spreadsheet-head-groups">
         <th class="metric-col" ng-repeat="col in groups track by col.category.id" id="{{::id}}-category_{{::col.category.id}}" colspan="{{col.metrics.length}}" ng-class="::'col'+col.category.id">
           <span class="spreadsheet-tab-name" ng-bind="::col.category.name"></span>
-          <span class="icon list spreadsheet-tab-options-icon" ng-click="tabOptionsToggle($event)" ng-if="key === col.category && views.length > 1"></span>
+          <span class="icon list spreadsheet-tab-options-icon" ng-click="tabOptionsToggle($event)" ng-if="key === col.category && views.length > 1" tooltip="'spreadsheet.switchview' | message"></span>
           <span class="icon add spreadsheet-tab-options-icon" ng-if="::editing && !col.category.fixed" ng-click="clickCategoryAdd($event, col)" tooltip="'spreadsheet.add.metric' | message:col.category.name"></span>
 
           <ul class="flat spreadsheet-tab-options" click-elsewhere="tabOptionsToggle($event)" ng-if="key === col.category && tabOptionsClick">

@@ -8,7 +8,7 @@ module Databrary.Controller.Permission
   , guardVerfHeader
   ) where
 
-import Control.Monad (liftM2)
+import Control.Monad (void, liftM2)
 import Control.Monad.IO.Class (MonadIO)
 import qualified Data.Foldable as Fold
 
@@ -41,7 +41,7 @@ authAccount = do
 checkMemberADMIN :: AuthActionM ()
 checkMemberADMIN = do
   admin <- peeks accessMember'
-  guardAction (admin >= PermissionADMIN) forbiddenResponse
+  void $ checkPermission PermissionADMIN admin
 
 checkVerfHeader :: (MonadAuthAction q m) => m Bool
 checkVerfHeader = do
