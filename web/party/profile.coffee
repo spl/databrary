@@ -104,7 +104,7 @@ app.controller 'party/profile', [
     parties.collaborators = (Party.all[pi] for pi of collaborators)
 
     stringSort = (a,b) -> +(a > b) || +(a == b) - 1
-    volumeSort = (a,b) -> b.permission - a.permission || stringSort(a.volume.displayName, b.volume.displayName)
+    volumeSort = (a,b) -> b.volume.permission - a.volume.permission || stringSort(a.volume.displayName, b.volume.displayName)
     partySort = (a,b) -> stringSort(a.party.sortname, b.party.sortname)
 
     volumes.individual.sort(volumeSort)
