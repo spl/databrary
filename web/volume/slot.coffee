@@ -294,7 +294,7 @@ app.controller('volume/slot', [
               seekOffset(ruler.selection.l) if ruler.selection.lBounded
         return
       ended: ->
-        $scope.playing = 0
+        # $scope.playing = 0
         # look for something else to play?
         return
 
