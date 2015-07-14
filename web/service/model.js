@@ -104,7 +104,8 @@ app.factory('modelService', [
       function descr(f) {
         return {
           get: function () {
-            return this[sub].hasOwnProperty(f) ? this[sub][f] : undefined;
+            var s = this[sub];
+            return s && s.hasOwnProperty(f) ? s[f] : undefined;
           },
           set: function (v) {
             Object.defineProperty(this, f, {

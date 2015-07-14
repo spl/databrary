@@ -91,7 +91,7 @@ app.provider('routerService', [
         var path = getRoute(route, argNames);
         $routeProvider.when(path, handler);
         if (path.includes('id/:segment'))
-          $routeProvider.when(path.replace('id/:segment', 'id/'), handler);
+          $routeProvider.when(path.replace('id/:segment', 'id'), handler);
       }
 
       return function (data, params) {
