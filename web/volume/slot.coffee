@@ -300,7 +300,8 @@ app.controller('volume/slot', [
           $scope.assets[index].choose()
           $timeout ->
             $scope.play()
-          , 400
+            $scope.playing = 1
+          , 300
         # look for something else to play?
         return
 
