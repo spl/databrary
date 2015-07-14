@@ -1,6 +1,7 @@
 /lib/
 *.min.*
 *.map
+*.js.hinted
 /constants.js
 /constants.json
 /messages.js
