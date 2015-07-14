@@ -298,7 +298,7 @@ app.controller('volume/slot', [
 
 
         biggerAssets = _.chain($scope.assets)
-                        .filter (i) -> i.lt.o >= $scope.asset.segment.u
+                        .filter (i) -> i.lt.o >= $scope.asset.segment.u && i.asset.format.type == 'video'
                         .sortBy (i) -> i.lt.o
                         .value()
 
