@@ -18,7 +18,7 @@
               <span class="icon user-access" ng-class="::page.constants.permission[v.volume.permission]"></span>
               <span class="icon" ng-class="::{'network': v.self.children}" tooltip="'profile.access.extend' | message"></span>
             </div>
-            <div class="profile-left-icons">
+            <div class="profile-left-icons hide-mobile">
               <span ng-click="v.select()" class="icon" ng-class="v.class()"></span>
             </div>
 
@@ -34,7 +34,7 @@
         <div class="profile-section-header" ng-bind="::'parties.parents.title' | message"></div> 
         <ul>
           <li ng-repeat="p in ::parties.parents" ng-class="{'profile-highlight': !!p.selected}">
-            <div class="profile-left-icons">
+            <div class="profile-left-icons hide-mobile">
               <span ng-click="p.select()" class="icon" ng-class="p.class()"></span>
             </div>
 
@@ -57,16 +57,13 @@
         <div class="profile-section-header">
           <span ng-bind="::'parties.'+cl.type+'.title' | message"></span> 
           <span class="icon info" tooltip="::'parties.'+cl.type+'.definition' | message"></span>
-          <div class="profile-right-icons">
-            <span class="icon network"></span>
-          </div>  
         </div>      
         <ul>
           <li ng-repeat="p in cl" ng-class="{'profile-highlight': !!p.selected}">
             <div class="profile-right-icons">
               <span class="icon user-access" ng-class="::page.constants.permission[p.child.member]"></span>
             </div>
-            <div class="profile-left-icons">
+            <div class="profile-left-icons hide-mobile">
               <span ng-click="p.select()" class="icon" ng-class="p.class()"></span>
             </div>
 
@@ -78,14 +75,14 @@
           </li>
         </ul>
       </div>
-      <div class="profile-section" ng-if="::parties.collaborators.length">
+      <div class="profile-section hide-mobile" ng-if="::parties.collaborators.length">
         <div class="profile-section-header">
           <span ng-bind="::'parties.collaborators.title' | message"></span> 
           <span class="icon info" tooltip="::'parties.collaborators.definition' | message"></span>
         </div>
         <ul>
           <li ng-repeat="p in ::parties.collaborators" ng-class="{'profile-highlight': !!p.selected}">
-            <div class="profile-left-icons">
+            <div class="profile-left-icons hide-mobile">
               <span ng-click="p.select()" class="icon" ng-class="p.class()"></span>
             </div>
 
