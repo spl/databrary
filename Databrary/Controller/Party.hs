@@ -172,7 +172,7 @@ partySearchForm :: (Applicative m, Monad m) => DeformT f m PartyFilter
 partySearchForm = PartyFilter
   <$> ("query" .:> deformNonEmpty deform)
   <*> ("access" .:> optional deform)
-  <*> ("institution" .:> optional deform)
+  <*> ("institution" .:> deformNonEmpty deform)
   <*> ("authorize" .:> optional deform)
   <*> pure Nothing
 
