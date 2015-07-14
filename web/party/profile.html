@@ -10,7 +10,7 @@
           )
         </span>
         <ul>
-          <li ng-repeat="v in vl" ng-class="{'profile-highlight': v.selected}">
+          <li ng-repeat="v in ::vl" ng-class="{'profile-highlight': !!v.selected}">
             <div class="profile-left-icon">
               <span ng-click="v.select()" class="icon" ng-class="v.class()"></span>
             </div>
@@ -30,7 +30,7 @@
       <div ng-if="::parties.parents.length">
         <span class="profile-section-header" ng-bind="::parties.parents.title"></span> 
         <ul>
-          <li ng-repeat="p in parties.parents" ng-class="{'profile-highlight': p.selected}">
+          <li ng-repeat="p in ::parties.parents" ng-class="{'profile-highlight': !!p.selected}">
             <div class="profile-left-icon">
               <span ng-click="p.select()" class="icon" ng-class="p.class()"></span>
             </div>
@@ -45,7 +45,7 @@
         <span class="profile-section-header" ng-bind="::'parties.'+cl.type+'.title' | message"></span> 
         <span class="icon info" tooltip="::'parties.'+cl.type+'.definition' | message"></span>
         <ul>
-          <li ng-repeat="p in cl" ng-class="{'profile-highlight': p.selected}">
+          <li ng-repeat="p in cl" ng-class="{'profile-highlight': !!p.selected}">
             <div class="profile-left-icon">
               <span ng-click="p.select()" class="icon" ng-class="p.class()"></span>
             </div>
@@ -60,7 +60,7 @@
         <span class="profile-section-header" ng-bind="::'parties.collaborators.title' | message"></span> 
         <span class="icon info" tooltip="::'parties.collaborators.definition' | message"></span>
         <ul>
-          <li ng-repeat="p in parties.collaborators" ng-class="{'profile-highlight': p.selected}">
+          <li ng-repeat="p in ::parties.collaborators" ng-class="{'profile-highlight': !!p.selected}">
             <div class="profile-left-icon">
               <span ng-click="p.select()" class="icon" ng-class="p.class()"></span>
             </div>
