@@ -10,7 +10,6 @@ import qualified Data.ByteString.Char8 as BSC
 import qualified Data.Foldable as Fold
 import System.FilePath (takeExtensions)
 import System.Posix.FilePath (splitFileName, addExtension)
-import System.Posix.Files.ByteString (touchFile)
 import System.Posix.IO.ByteString (openFd, OpenMode(WriteOnly), defaultFileFlags, closeFd)
 import System.Process (callProcess)
 

@@ -99,17 +99,6 @@
               </li>
               <li><a href="" ng-click="page.auth.logout()" message="toolbar.logout"></a>
               </li>
-
-              <li ng-if="::page.models.Login.user.superuser !== undefined" class="toolbar-password-form">
-                <ng-form name="superuserForm" ng-if="::!page.models.Login.user.superuser" class="cf">
-                  <input type="password" class="mini password" ng-model="superuserForm.auth" placeholder="Password" key-enter="page.auth.toggleSU(superuserForm)">
-                  <button type="submit" class="link toolbar-superuser off" ng-click="page.auth.toggleSU(superuserForm)">
-                    activate SU
-                  </button>
-                </ng-form>
-
-                <a ng-if="::page.models.Login.user.superuser" class="toolbar-superuser on" href="#" ng-click="page.auth.toggleSU()">deactivate SU</a>
-              </li>
             </ul>
           </div>
 
