@@ -47,7 +47,7 @@
 
             <div class="col-desktop-2 col-tablet-2 col-mobile-5" ng-if="::parent.member || parent.site">
               <div class="permission-auth-heading expiration" message="auth.expiration"></div>
-              <div class="permission-auth-expiration" ng-bind-html="::parent.expires | date:'longDate'"></div>
+              <div class="permission-auth-expiration" ng-bind="::parent.expires | date:'longDate'"></div>
               <div class="permission-auth-expiration" ng-if="::!parent.expires" message="auth.expiration.none"></div>
             </div>
           </div>
@@ -111,7 +111,7 @@
 
             <div class="col-desktop-2 col-tablet-2 col-mobile-5" ng-if="::child.member || child.site">
               <div class="permission-auth-heading expiration" message="auth.expiration"></div>
-              <div class="permission-auth-expiration" ng-bind-html="::child.expires | date:'longDate'"></div>
+              <div class="permission-auth-expiration" ng-bind="::child.expires | date:'longDate'"></div>
               <div class="permission-auth-expiration" ng-if="::!child.expires" message="auth.expiration.none"></div>
             </div>
           </div>

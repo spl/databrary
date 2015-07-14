@@ -17,7 +17,7 @@
 
             <a ng-href="{{::v.volume.route()}}" ng-bind="::v.volume.displayName" class="profile-section-link"></a>
             <!-- need to put in ngIf, for collaborators only -->
-            <span class="icon user-access" ng-class="page.constants.permission[v.volume.permission]"></span>
+            <span class="icon user-access" ng-class="::page.constants.permission[v.volume.permission]"></span>
 
             <span class="icon profile-volumes-icons" ng-class="::{'network': v.self.children}"></span>
             <span class="icon profile-volumes-icons" ng-if="::v.volume.accessPreset" ng-class="::'access'+v.volume.accessPreset"></span>
