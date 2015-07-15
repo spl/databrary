@@ -167,8 +167,8 @@ processAsset api target = do
       _ -> Nothing <$ deformError "Conflicting uploaded files found."
     up <- Trav.mapM detectUpload upfile
     let fmt = maybe (assetFormat a) fileUploadFormat up
-    name <- "name" .:> fmap (dropFormatExtension fmt) <$> deformNonEmpty deform
-    classification <- "classification" .:> deformNonEmpty deform
+    name <- "name" .:> maybe (assetName a) (TE.decodeUtf8 . dropFormatExtension fmt <$>) <$> deformOptional (deformNonEmpty deform)
+    classification <- "classification" .:> fromMaybe (assetRelease a) <$> deformOptional (deformNonEmpty deform)
     slot <-
       "container" .:> (<|> slotContainer <$> s) <$> deformLookup "Container not found." (lookupVolumeContainer (assetVolume a))
       >>= Trav.mapM (\c -> "position" .:> do
@@ -181,7 +181,7 @@ processAsset api target = do
     return
       ( as
         { slotAsset = a
-          { assetName = TE.decodeUtf8 <$> name
+          { assetName = name
           , assetRelease = classification
           , assetFormat = fmt
           }
