@@ -265,7 +265,7 @@ app.factory('modelService', [
       return router.http(router.controllers.postAuthorize, this.id, target, data)
         .then(function (res) {
           p.clear('children');
-          return p;
+          return res.data;
         });
     };
 
