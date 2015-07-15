@@ -54,10 +54,15 @@ htmlFooter = H.footer H.! HA.id "site-footer" H.! HA.class_ "site-footer" $
     H.div H.! HA.class_ "row" $ do
       H.div H.! HA.class_ "site-footer-links col-desktop-8 col-tablet-5 col-mobile-6" $
         H.p $ do
-          void "Stay informed with "
+          H.a H.! HA.href "http://databrary.org/about/contact.html" $
+            "Contact us"
+          H.preEscapedString ". &nbsp;Stay informed with "
           H.a H.! HA.href "http://databrary.org/contact/newsletter.html" $
             "our newsletter"
-          "!"
+          H.preEscapedString ". &nbsp;"
+          H.a H.! HA.href "http://databrary.org/about/jobs.html" $
+            "Join our team"
+          "."
       H.div H.! HA.class_ "site-footer-social col-desktop-7 col-tablet-4 col-mobile-6" $
         H.p $ do
           let sm n l a =
