@@ -12,7 +12,7 @@ app.controller('volume/slot', [
     $scope.authorized = models.Login.isAuthorized()
     $flow = $scope.$flow # not really in this scope
 
-    #  ---- Base classes/utilities
+    #################################### Base classes/utilities
 
     # Represents a point on the timeline, which can be expressed as "o" (offset time in ms), "x" (pixel X position in client coordinates), or "p" (fractional position on the timeline, may escape [0,1])
     class TimePoint
@@ -195,7 +195,7 @@ app.controller('volume/slot', [
         finalizeSelection()
         event?.stopPropagation()
 
-    #  ---- Global state
+    ################################### Global state
 
     target = $location.search()
     video = undefined # currently playing video element
