@@ -7,11 +7,9 @@
       <div ng-repeat="vl in ::volumes" ng-if="::vl.length">
         <div class="profile-section-header">
           <span ng-bind="::'profile.volumes.'+vl.type+'.title' | message:vl.parent.party.name"></span> 
-          <span ng-if="::!!vl.parent">
-            (Your access:
-            <span class="icon user-access" ng-class="::page.constants.permission[vl.parent.parent.member]" tooltip="'auth.member.'+page.constants.permission[vl.parent.parent.member] | possessive:vl.parent.party"></span>
-            )
-          </span>
+          <div class="profile-additional" ng-if="::!!vl.parent">
+            <span ng-bind="('auth.member.'+page.constants.permission[vl.parent.parent.member]+'.title' | message)+': '+('auth.member.'+page.constants.permission[vl.parent.parent.member] | message:'their')"></span>
+          </div>
         </div>
         <ul>
           <li ng-repeat="v in ::vl" ng-class="{'profile-highlight': !!v.selected}">
