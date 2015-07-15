@@ -9,11 +9,11 @@ app.controller('volume/edit', [
     if (!volume) {
       $scope.owners = _.chain(models.Login.user.parents
                              ).filter(function (p) {
-                               return p.member >= constants.permission.ADMIN && p.party.access >= constants.permission.EDIT && !p.expired;
+                               return p.member >= constants.permission.ADMIN && p.party.authorization >= constants.permission.EDIT && !p.expired;
                              }).map(function (p) {
                                return p.party;
                              }).value();
-      if (models.Login.user.access >= constants.permission.EDIT)
+      if (models.Login.user.authorization >= constants.permission.EDIT)
         $scope.owners.unshift(models.Login.user);
     }
 

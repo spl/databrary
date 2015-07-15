@@ -17,7 +17,7 @@ module Databrary.Model.SQL.Select
   , selectJoin
   , selectMap
   , makeQuery
-  , selectQuery
+  , selectDistinctQuery
   , nameRef
   ) where
 
@@ -182,10 +182,14 @@ makeQuery flags sql output = do
     (h:l) -> toLower h : l
   cols = outputColumns output
 
-selectQuery :: Selector -> String -> TH.ExpQ
-selectQuery (Selector{ selectOutput = o, selectSource = s }) sqlf =
-  makeQuery flags (\c -> "SELECT " ++ c ++ " FROM " ++ s ++ ' ':sql) o
-  where (flags, sql) = parseQueryFlags sqlf
+selectDistinctQuery :: Maybe [String] -> Selector -> String -> TH.ExpQ
+selectDistinctQuery dist (Selector{ selectOutput = o, selectSource = s }) sqlf =
+  makeQuery flags (\c -> select dist ++ c ++ " FROM " ++ s ++ ' ':sql) o
+  where
+  (flags, sql) = parseQueryFlags sqlf
+  select Nothing = "SELECT " -- ALL
+  select (Just []) = "SELECT DISTINCT "
+  select (Just l) = "SELECT DISTINCT ON (" ++ intercalate "," l ++ ") "
 
 nameRef :: TH.Name -> String
 nameRef n = maybe b (++ '.' : b) $ TH.nameModule n where b = TH.nameBase n

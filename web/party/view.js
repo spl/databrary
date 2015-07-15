@@ -1,8 +1,10 @@
 'use strict';
 
 app.controller('party/view', [
-  '$scope', 'party', 'pageService', function ($scope, party, page) {
+  '$scope', 'displayService', 'party',
+  function ($scope, display, party) {
     $scope.party = party;
-    page.display.title = party.name;
+    $scope.volumes = _.pluck(party.access, 'volume');
+    display.title = party.name;
   }
 ]);

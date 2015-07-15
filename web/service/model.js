@@ -142,13 +142,15 @@ app.factory('modelService', [
       email: true,
       institution: true,
       url: true,
-      access: false,
+      authorization: false,
     };
 
     Party.prototype.init = function (init) {
       Model.prototype.init.call(this, init);
+      if ('access' in init)
+        this.access = volumeMakeSubArray(init.access);
       if ('volumes' in init)
-        this.volumes = volumeMakeSubArray(init.volumes);
+        this.volumes = volumeMakeArray(init.volumes);
       if ('parents' in init)
         this.parents = partyMakeSubArray(init.parents);
       if ('children' in init)
@@ -311,8 +313,8 @@ app.factory('modelService', [
       return Login.user.id !== constants.party.NOBODY;
     };
 
-    Login.checkAccess = function (level) {
-      return Login.user.access >= level;
+    Login.checkAuthorization = function (level) {
+      return Login.user.authorization >= level;
     };
 
     Model.prototype.checkPermission = function (level) {
@@ -325,7 +327,7 @@ app.factory('modelService', [
     };
 
     Login.isAuthorized = function () {
-      return Login.isLoggedIn() && Login.checkAccess(constants.permission.PUBLIC);
+      return Login.isLoggedIn() && Login.checkAuthorization(constants.permission.PUBLIC);
     };
 
     Login.prototype.route = function () {
@@ -375,7 +377,7 @@ app.factory('modelService', [
     function Volume(init) {
       this.containers = {_PLACEHOLDER:true};
       this.records = {_PLACEHOLDER:true};
-      this.assets = {};
+      this.assets = {}; // cache only
       Model.call(this, init);
     }
 
@@ -400,8 +402,10 @@ app.factory('modelService', [
 
     Volume.prototype.init = function (init) {
       Model.prototype.init.call(this, init);
-      if ('access' in init)
+      if ('access' in init) {
         this.access = partyMakeSubArray(init.access);
+        volumeAccessPreset(this);
+      }
       if ('records' in init) {
         var rl = init.records;
         for (var ri = 0; ri < rl.length; ri ++)
@@ -425,6 +429,12 @@ app.factory('modelService', [
     function volumeMake(init) {
       var v = Volume.cache.get(init.id);
       return v ? v.update(init) : Volume.poke(new Volume(init));
+    }
+
+    function volumeMakeArray(l) {
+      for (var i = 0; i < l.length; i ++)
+        l[i] = volumeMake(l[i]);
+      return l;
     }
 
     function volumeMakeSubArray(l) {
@@ -474,7 +484,7 @@ app.factory('modelService', [
       return router.http(router.controllers.createVolume, data)
         .then(function (res) {
           if ((owner = (owner === undefined ? Login.user : partyPeek(owner))))
-            owner.clear('volumes');
+            owner.clear('access', 'volumes');
           return volumeMake(res.data);
         });
     };
@@ -490,6 +500,12 @@ app.factory('modelService', [
       get: function () {
         if ('citation' in this)
           return this.citation ? 'study' : 'dataset';
+      }
+    });
+
+    Object.defineProperty(Volume.prototype, 'displayName', {
+      get: function () {
+        return this.alias !== undefined ? this.alias : this.name;
       }
     });
 
@@ -521,12 +537,34 @@ app.factory('modelService', [
       return Party.search({volume:this.id,query:name});
     };
 
+    function volumeAccessPreset(volume) {
+      if (!volume.access)
+        return;
+      var p = [];
+      var al = volume.access.filter(function (a) {
+        var pi = constants.accessPreset.parties.indexOf(a.party.id);
+        if (pi >= 0)
+          p[pi] = a.children;
+        else
+          return true;
+      });
+      var pi = constants.accessPreset.findIndex(function (preset) {
+        return preset.every(function (s, i) {
+          return preset[i] === (p[i] || 0);
+        });
+      });
+      if (pi >= 0) {
+        volume.access = al;
+        volume.accessPreset = pi;
+      }
+    }
+
     Volume.prototype.accessSave = function (target, data) {
       var v = this;
       return router.http(router.controllers.postVolumeAccess, this.id, target, data)
         .then(function (res) {
           // could update v.access with res.data
-          v.clear('access');
+          v.clear('access', 'accessPreset');
           return v;
         });
     };

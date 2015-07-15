@@ -17,7 +17,7 @@ app.directive 'searchForm', [
       if $scope.type == 'party'
         if params.institution == 'true'
           $scope.type = 'institution'
-        else if `params.access == constants.permission.EDIT`
+        else if `params.authorization == constants.permission.EDIT`
           $scope.type = 'principal'
       $scope.query = params.query
       $scope.search = ->
@@ -25,9 +25,9 @@ app.directive 'searchForm', [
           when 'volume'
             $location.url(routes.volumeSearch())
           when 'institution'
-            $location.url(routes.partySearch()).search({institution:'true',access:constants.permission.ADMIN})
+            $location.url(routes.partySearch()).search({institution:'true',authorization:constants.permission.ADMIN})
           when 'principal'
-            $location.url(routes.partySearch()).search({institution:'false',access:constants.permission.EDIT})
+            $location.url(routes.partySearch()).search({institution:'false',authorization:constants.permission.EDIT})
           when 'party'
             $location.url(routes.partySearch())
           ).search('query', $scope.query)

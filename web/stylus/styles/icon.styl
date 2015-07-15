@@ -80,6 +80,9 @@
   &.jump
     background-image url('/web/images/icon/jump.png')
 
+  &.network
+    background-image url('/web/images/icon/network.svg')
+
   &.play
     background-image url('/web/images/icon/play.png')
 
@@ -107,6 +110,19 @@
     background-image url('/web/images/icon/paste.png')
     cursor pointer
 
+  &.radio,&.radio:hover,&.radio-selected
+    background-size contain
+  &.radio
+    background-image url('/web/images/icon/radio-open.svg')
+    transition transition
+  &.radio:hover
+    background-image url('/web/images/icon/radio-hover.svg')
+  &.radio-selected
+    background-image url('/web/images/icon/radio-selected.svg')
+    transition transition
+  &.radio-selected:hover
+    opacity 0.4
+
   &.resize
     background-image url('/web/images/icon/resize.svg')
     background-size contain
@@ -125,6 +141,28 @@
     background-image url('/web/images/icon/zoomout.svg')
     cursor pointer
     background-size 16px
+
+  &.user-access
+    background-size contain
+  &.user-access.READ
+    background-image url('/web/images/icon/volume-access-r.svg')
+  &.user-access.EDIT
+    background-image url('/web/images/icon/volume-access-rw.svg')
+  &.user-access.ADMIN
+    background-image url('/web/images/icon/volume-access-rws.svg')
+  &.user-access.PUBLIC
+    background-image url('/web/images/icon/volume-access-public.svg')
+  &.user-access.SHARED
+    background-image url('/web/images/icon/volume-access-shared.svg')
+
+  &.site.READ
+    background-image url('/web/icons/release/shared.svg')
+    background-position-x 0
+        
+  &.access0
+    background-image url('/web/images/icon/private.svg')
+  &.access1
+    background-image url('/web/images/icon/public.svg')
 
   &.line
     height b1

@@ -15,42 +15,8 @@
           <div class="permission-heading col-desktop-15 col-tablet-9 col-mobile-6">
             <a ng-href="{{::parent.party.route()}}" class="permission-auth-username">{{parent.party.name}}</a>
             <span class="permission-auth-email" ng-if="::!!parent.party.email" ng-bind="::parent.party.email"></span>
-            <div class="permission-auth-pending" ng-if="::isAdmin && !(parent.member || parent.site)" message="auth.pending"></div>
           </div>
 
-          <div ng-if="::isAdmin">
-
-           <div class="col-desktop-6 col-tablet-3 col-mobile-5" ng-if="::parent.member">
-              <div class="permission-auth-heading">
-                <span message="auth.member.view"></span>&nbsp;<span ng-bind="::'auth.member' | message:'their'"></span>
-              </div>
-              <div class="permission-auth-member">
-                <strong message="auth.member.{{::page.constants.permission[parent.member]}}.title"></strong>: 
-                {{::'auth.member.'+page.constants.permission[parent.member] | message:'their'}}
-              </div>
-            </div>
-            <div class="col-desktop-6 col-tablet-3 col-mobile-5" ng-if="::!parent.member">
-              &nbsp;
-            </div>
-            <div class="col-desktop-6 col-tablet-3 col-mobile-5" ng-if="::parent.site">
-              <div class="permission-auth-heading">
-                <span message="auth.site.view"></span>&nbsp;<span ng-bind="::'auth.site' | message:'their'"></span>
-              </div>
-              <div class="permission-auth-site">
-                <strong message="auth.site.{{::page.constants.permission[parent.site]}}.title"></strong>: 
-                {{::'auth.site.'+page.constants.permission[parent.site] | message:'their'}}
-              </div>
-            </div>
-            <div class="col-desktop-6 col-tablet-3 col-mobile-5" ng-if="::!parent.site">
-              &nbsp;
-            </div>
-
-            <div class="col-desktop-2 col-tablet-2 col-mobile-5" ng-if="::parent.member || parent.site">
-              <div class="permission-auth-heading expiration" message="auth.expiration"></div>
-              <div class="permission-auth-expiration" ng-bind-html="::parent.expires | date:'longDate'"></div>
-              <div class="permission-auth-expiration" ng-if="::!parent.expires" message="auth.expiration.none"></div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -80,40 +46,6 @@
           <div class="permission-heading col-desktop-14 col-tablet-8 col-mobile-5">
             <a ng-href="{{::child.party.route()}}" class="permission-auth-username" ng-bind="::child.party.name"></a>
             <span class="permission-auth-email" ng-if="::!!child.party.email" ng-bind="::child.party.email"></span>
-            <div ng-if="::isAdmin && !(child.member || child.site)" class="permission-auth-pending" message="auth.pending"></div>
-          </div>
-
-          <div ng-if="::isAdmin">
-            <div class="col-desktop-6 col-tablet-3 col-mobile-5" ng-if="::child.member">
-              <div class="permission-auth-heading">
-                <span message="auth.site.view"></span>&nbsp;<span ng-bind="::'auth.member' | possessive:party"></span>
-              </div>
-              <div class="permission-auth-member">
-                <strong message="auth.member.{{::page.constants.permission[child.member]}}.title"></strong>: 
-                {{'auth.member.'+page.constants.permission[child.member] | possessive:party}}
-              </div>
-            </div>
-            <div class="col-desktop-6 col-tablet-3 col-mobile-5" ng-if="::!child.member">
-              &nbsp;
-            </div>
-            <div class="col-desktop-6 col-tablet-3 col-mobile-5" ng-if="::child.site">
-              <div class="permission-auth-heading">
-                <span message="auth.site.view"></span>&nbsp;<span ng-bind="::'auth.site' | possessive:party"></span>
-              </div>
-              <div class="permission-auth-site">
-                <strong message="auth.site.{{::page.constants.permission[child.site]}}.title"></strong>: 
-                {{'auth.site.'+page.constants.permission[child.site] | possessive:party}}
-              </div>
-            </div>
-            <div class="col-desktop-6 col-tablet-3 col-mobile-5" ng-if="::!child.site">
-              &nbsp;
-            </div>
-
-            <div class="col-desktop-2 col-tablet-2 col-mobile-5" ng-if="::child.member || child.site">
-              <div class="permission-auth-heading expiration" message="auth.expiration"></div>
-              <div class="permission-auth-expiration" ng-bind-html="::child.expires | date:'longDate'"></div>
-              <div class="permission-auth-expiration" ng-if="::!child.expires" message="auth.expiration.none"></div>
-            </div>
           </div>
         </div>
       </div>

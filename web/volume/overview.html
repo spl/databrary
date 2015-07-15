@@ -12,8 +12,13 @@
 
   <div class="col-desktop-9 col-tablet-6 col-mobile-6">
     <div>
-      <div ng-if="::!shared" class="overview-access">
-        <span>ACCESS: Private (shared only with selected collaborators).</span>
+      <div ng-if="::volume.accessPreset === 0" class="overview-access">
+        <span>
+          <span>ACCESS: </span>
+          <span class="icon" ng-class="::'access'+volume.accessPreset"></span>
+          <span message="access.preset.title{{::volume.accessPreset}}"></span> 
+          <span message="access.preset.extra{{::volume.accessPreset}}"></span>
+        </span>
         <a ng-if="::volume.checkPermission(page.permission.ADMIN)" ng-href="{{::volume.editRoute('access')}}"><button class="yellow icon edit"></button></a>
       </div>
 
@@ -68,15 +73,22 @@
 
   <div class="col-desktop-6 col-tablet-3 col-mobile-6">
     <img class="panel-overview-volume-thumb" ng-src="{{::volume.thumbRoute()}}">
+    <div ng-if="::volume.accessPreset != null" class="panel-overview-volume-access">
+      <span class="icon" ng-class="::'access'+{{::volume.accessPreset}}"></span>
+      <span message="access.preset.title{{::volume.accessPreset}}"></span> 
+      <span>volume</span>
+    </div>
     <show-investigators investigators-title="contributors" minlevel="ADMIN"></show-investigators>
     <show-investigators investigators-title="private" maxlevel="ADMIN" minlevel="READ"></show-investigators>
     <show-investigators investigators-title="shared" maxlevel="READ"></show-investigators>
 
-    <div frame id="frame-funding" frame-title="volume.funding.title" fold>
-      <dl class="panel-overview-volume-funds" ng-repeat="funding in ::volume.funding">
-        <dt ng-bind="::funding.funder.name"></dt>
-        <dd ng-repeat="award in ::funding.awards" ng-bind="::award"></dd>
-      </dl>
+    <div class="row" ng-if="::volume.funding.length">
+      <div frame id="frame-funding" frame-title="volume.funding.title" fold>
+        <dl class="panel-overview-volume-funds" ng-repeat="funding in ::volume.funding">
+          <dt ng-bind="::funding.funder.name"></dt>
+          <dd ng-repeat="award in ::funding.awards" ng-bind="::award"></dd>
+        </dl>
+      </div>
     </div>
 
     <div frame id="frame-reuse" frame-title="volume.reuse.title" fold ng-if="::(volume.consumers.length || volume.providers.length) > 0">

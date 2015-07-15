@@ -119,8 +119,7 @@ leftJoin p (a:al) b = uncurry (:) $ ((a, ) *** leftJoin p al) $ span (p a) b
 
 volumeJSONField :: (MonadDB m, MonadHasIdentity c m) => Volume -> BS.ByteString -> Maybe BS.ByteString -> StateT VolumeCache m (Maybe JSON.Value)
 volumeJSONField vol "access" ma = do
-  Just . JSON.toJSON . map (\va ->
-    volumeAccessJSON va JSON..+ ("party" JSON..= partyJSON (volumeAccessParty va)))
+  Just . JSON.toJSON . map volumeAccessPartyJSON
     <$> cacheVolumeAccess vol (fromMaybe PermissionNONE $ readDBEnum . BSC.unpack =<< ma)
 volumeJSONField vol "citation" _ =
   Just . JSON.toJSON <$> lookupVolumeCitation vol
