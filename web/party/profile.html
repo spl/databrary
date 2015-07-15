@@ -56,15 +56,15 @@
           </li>
         </ul>
       </div>
-      <div class="profile-section" ng-repeat="cl in ::parties.children" ng-if="::cl.length">
+      <div class="profile-section" ng-repeat="(member, cl) in ::parties.children track by member" ng-if="::cl.length">
         <div class="profile-section-header">
-          <span ng-bind="::'profile.parties.'+cl.type+'.title' | message"></span> 
-          <span class="icon info" tooltip="::'profile.parties.'+cl.type+'.definition' | message"></span>
+          <span ng-bind="::'auth.member.'+page.constants.permission[member]+'.title' | message"></span> 
+          <span class="icon info" tooltip="::'auth.member.'+page.constants.permission[member] | possessive:party"></span>
         </div>      
         <ul>
           <li ng-repeat="p in cl" ng-class="{'profile-highlight': !!p.selected}">
             <div class="profile-right-icons">
-              <span class="icon user-access" ng-class="::page.constants.permission[p.child.member]" tooltip="('auth.member.'+page.constants.permission[p.child.member]+'.title' | message)+': '+('auth.member.'+page.constants.permission[p.child.member] | message:'your')"></span>
+              <span class="icon user-access" ng-class="::page.constants.permission[p.child.site]" tooltip="('auth.site.'+page.constants.permission[p.child.member]+'.title' | message)+': '+('auth.site.'+page.constants.permission[p.child.member] | possessive:party)"></span>
             </div>
             <div class="profile-left-icons hide-mobile">
               <span ng-click="p.select()" class="icon" ng-class="p.class()"></span>

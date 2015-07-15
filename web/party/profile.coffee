@@ -73,8 +73,7 @@ app.controller 'party/profile', [
         p.parent = a
         volumes.inherited[p.party.id] = [] if a.member
         p
-      site: [] # all children with some site permission
-      member: [] # all other children
+      children: [] # children indexed by .member access
       collaborators: [] # all other parties on volumes with permission >= ADMIN
     collaborators = {}
 
@@ -92,7 +91,7 @@ app.controller 'party/profile', [
         for pi of v.access
           collaborators[pi] = true
 
-    # coll collaborators accounted for elsewhere
+    # cull collaborators accounted for elsewhere
     delete collaborators[party.id]
     for a in party.parents
       delete collaborators[a.party.id]
@@ -100,7 +99,7 @@ app.controller 'party/profile', [
       delete collaborators[a.party.id]
       p = Party.make(a.party)
       p.child = a
-      (if a.site then parties.site else parties.member).push(p)
+      (parties.children[a.member] || (parties.children[a.member] = [])).push(p)
     parties.collaborators = (Party.all[pi] for pi of collaborators)
 
     stringSort = (a,b) -> +(a > b) || +(a == b) - 1
@@ -121,11 +120,8 @@ app.controller 'party/profile', [
 
     parties.parents.sort(partySort) # .parent.site/member?
     parties.parents.type = "parents"
-    parties.site.sort(partySort)    # .child.site?
-    parties.site.type = "site"
-    parties.member.sort(partySort)  # .child.member?
-    parties.member.type = "member"
-    parties.children = [parties.site, parties.member]
+    for cl in parties.children when cl
+      cl.sort(partySort)
     parties.collaborators.sort(partySort)
     parties.collaborators.type = 'collaborators'
 
