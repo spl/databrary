@@ -53,7 +53,7 @@ loadSchema = do
   g <- ExceptT $ left return <$> JS.fetchRefs JS.draft4 rs mempty
   jsErr $ JS.compileDraft4 g rs
 
-throwPE :: (Functor m, Monad m) => T.Text -> IngestParseT m a
+throwPE :: (Functor m, Monad m) => T.Text -> IngestParseT m ()
 throwPE = JE.throwCustomError
 
 inObj :: forall a m . (Functor m, Kinded a, Has (Id a) a, Show (IdType a)) => a -> IngestParseT m a -> IngestParseT m a
@@ -73,12 +73,12 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
     then ExceptT $ left (JE.displayError id) <$> JE.parseValueM volume jdata
     else return []
   where
-  update cur change new =
-    liftParse $ Fold.forM_ new $ \v ->
-      when (Fold.all (v /=) cur) $ do
-        unless (overwrite || isNothing cur) $
-          throwE $ "conflicting value: " <> T.pack (show v) <> " <> " <> T.pack (show (fromJust cur))
-        lift $ change v
+  update _ _ Nothing = return ()
+  update cur change (Just v) =
+    liftParse $ when (Fold.all (v /=) cur) $ do
+      unless (overwrite || isNothing cur) $
+        throwE $ "conflicting value: " <> T.pack (show v) <> " <> " <> T.pack (show (fromJust cur))
+      lift $ change v
   volume = do
     _ <- JE.keyMay "name" JE.asText >>= update (Just $ volumeName vol) (\n -> changeVolume vol{ volumeName = n })
     JE.key "containers" $ JE.eachInArray container
@@ -98,9 +98,13 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
         addIngestContainer c key
         return c)
       (\c -> inObj c $ do
-        unless (Fold.all (containerId c ==) cid) $
+        unless (Fold.all (containerId c ==) cid) $ do
           throwPE "id mismatch"
+          update (Just (containerTop c, containerName c, containerDate c)) (\_ -> changeContainer c
+            { containerTop = top
+            , containerName = name
+            , containerDate = date
+            }) (Just (top, name, date))
         return c)
       =<< lift (lookupIngestContainer vol key)
-      
     return c
