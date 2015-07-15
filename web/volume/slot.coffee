@@ -187,7 +187,7 @@ app.controller('volume/slot', [
 
       select: (event) ->
         return false if $scope.editing == 'position'
-        ruler.selection = new TimeSegment(if @full then null else @)
+        ruler.selection = new TimeSegment(if @full || !ruler.range.overlaps(@) then null else @)
         if isFinite(@l) && !@contains(ruler.position)
           seekOffset(@l)
         else if @full
