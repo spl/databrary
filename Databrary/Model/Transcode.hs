@@ -4,6 +4,7 @@ module Databrary.Model.Transcode
   , defaultTranscodeOptions
   , transcodeAuth
   , lookupTranscode
+  , lookupActiveTranscodes
   , addTranscode
   , updateTranscode
   ) where
@@ -44,6 +45,10 @@ lookupTranscode :: MonadDB m => Id Transcode -> m (Maybe Transcode)
 lookupTranscode a =
   dbQuery1 $(selectQuery selectTranscode "WHERE transcode.asset = ${a}")
 
+lookupActiveTranscodes :: MonadDB m => m [Transcode]
+lookupActiveTranscodes =
+  dbQuery $(selectQuery selectTranscode "WHERE asset.size IS NULL")
+
 minAppend :: Ord a => Maybe a -> Maybe a -> Maybe a
 minAppend (Just x) (Just y) = Just $ min x y
 minAppend Nothing x = x
@@ -69,6 +74,7 @@ addTranscode orig seg@(Segment rng) opts probe = do
     , transcodeOrig = orig
     , transcodeSegment = seg
     , transcodeOptions = opts
+    , transcodeStart = Nothing -- actually now, whatever
     , transcodeProcess = Nothing
     , transcodeLog = Nothing
     }

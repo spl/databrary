@@ -16,6 +16,7 @@ module Databrary.View.Form
   ) where
 
 import Control.Applicative ((<|>))
+import Control.Monad.Reader (reader)
 import Control.Monad.Trans.Class (lift)
 import Control.Monad.Trans.Control (liftWith)
 import qualified Data.ByteString as BS
@@ -31,7 +32,7 @@ import qualified Text.Blaze.Html5.Attributes as HA
 import System.Locale (defaultTimeLocale)
 
 import Databrary.Ops
-import Databrary.Has (view, peek, peeks)
+import Databrary.Has (view)
 import Databrary.Model.Enum
 import Databrary.Model.Time
 import Databrary.Model.Token
@@ -43,18 +44,18 @@ import Databrary.HTTP.Form.View
 import Databrary.View.Html
 import Databrary.View.Template
 
-type FormHtmlM = FormViewT M.MarkupM
-type FormHtml = FormHtmlM ()
+type FormHtmlM f = FormViewT f M.MarkupM
+type FormHtml f = FormHtmlM f ()
 
-liftFormHtml :: (M.MarkupM FormErrors -> H.Html) -> FormHtml -> FormHtml
+liftFormHtml :: (M.MarkupM FormErrors -> H.Html) -> FormHtml f -> FormHtml f
 liftFormHtml h f = liftWith $ \run -> h (snd <$> run f)
 
-pathId :: FormHtmlM H.AttributeValue
-pathId = peeks byteStringValue
+pathId :: FormHtmlM f H.AttributeValue
+pathId = reader (byteStringValue . formPathBS)
 
-value :: FormHtmlM (Maybe BS.ByteString)
+value :: FormHtmlM f (Maybe BS.ByteString)
 value = do
-  val <- peek
+  val <- reader formDatum
   return $ case val of
     FormDatumNone -> Nothing
     FormDatumJSON _ -> Nothing -- that's weird
@@ -79,7 +80,7 @@ _label ref = H.label
 
 type Field = H.AttributeValue -> Maybe BS.ByteString -> H.Html
 
-field :: T.Text -> Field -> FormHtml
+field :: T.Text -> Field -> FormHtml f
 field k sub = k .:> do
   ref <- pathId
   err <- formViewErrors
@@ -150,12 +151,12 @@ inputHidden val ref dat = H.input
   H.! HA.name  ref
   H.! HA.value (maybe (H.toValue val) byteStringValue dat)
 
-csrfForm :: AuthRequest -> FormHtml
+csrfForm :: AuthRequest -> FormHtml f
 csrfForm = lift . foldIdentity mempty (\s -> inputHidden (byteStringValue $ sessionVerf s) "csverf" Nothing) . view
 
-htmlForm :: T.Text -> AppRoute a -> a -> AuthRequest -> FormHtml -> FormHtml
+htmlForm :: T.Text -> AppRoute a -> a -> AuthRequest -> FormHtml f -> FormHtml f
 htmlForm title act arg req = liftFormHtml $ \form ->
-  htmlTemplate req (Just title) $
+  htmlTemplate req (Just title) $ \_ ->
     actionForm act arg $ do
       err <- form
       errorLists $ allFormErrors err

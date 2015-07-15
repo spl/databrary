@@ -4,6 +4,7 @@ module Databrary.Service.Log
   , MonadLog
   , initLogs
   , finiLogs
+  , LogStr
   , toLogStr
   , requestLog
   , logMsg

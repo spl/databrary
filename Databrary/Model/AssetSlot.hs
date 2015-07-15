@@ -6,6 +6,7 @@ module Databrary.Model.AssetSlot
   , lookupSlotAssets
   , lookupContainerAssets
   , lookupVolumeAssetSlots
+  , lookupVolumeAssetSlotIds
   , changeAssetSlot
   , changeAssetSlotDuration
   , fixAssetSlotDuration
@@ -15,6 +16,7 @@ module Databrary.Model.AssetSlot
 
 import Control.Applicative ((<*>))
 import Control.Monad (when)
+import qualified Data.Foldable as Fold
 import Data.Maybe (fromMaybe, isNothing, catMaybes)
 import Database.PostgreSQL.Typed (pgSQL)
 
@@ -58,6 +60,10 @@ lookupVolumeAssetSlots :: (MonadDB m) => Volume -> Bool -> m [AssetSlot]
 lookupVolumeAssetSlots v top =
   dbQuery $ ($ v) <$> $(selectQuery selectVolumeSlotAsset "$WHERE asset.volume = ${volumeId v} AND (container.top OR ${not top}) ORDER BY container.id")
 
+lookupVolumeAssetSlotIds :: (MonadDB m) => Volume -> m [(Asset, SlotId)]
+lookupVolumeAssetSlotIds v =
+  dbQuery $ ($ v) <$> $(selectQuery selectVolumeSlotIdAsset "$WHERE asset.volume = ${volumeId v} ORDER BY container")
+
 changeAssetSlot :: (MonadAudit c m) => AssetSlot -> m Bool
 changeAssetSlot as = do
   ident <- getAuditIdentity
@@ -81,13 +87,16 @@ fixAssetSlotDuration as
   | Just dur <- assetDuration (slotAsset as) = as{ assetSlot = (\s -> s{ slotSegment = segmentSetDuration dur (slotSegment s) }) <$> assetSlot as }
   | otherwise = as
 
-findAssetContainerEnd :: MonadDB m => Container -> m (Maybe Offset)
-findAssetContainerEnd c = 
+findAssetContainerEnd :: MonadDB m => Container -> m Offset
+findAssetContainerEnd c = fromMaybe 0 <$>
   dbQuery1' [pgSQL|SELECT max(upper(segment)) FROM slot_asset WHERE container = ${containerId c}|]
 
 assetSlotJSON :: AssetSlot -> JSON.Object
 assetSlotJSON as@AssetSlot{..} = assetJSON slotAsset JSON..++ catMaybes
   [ segmentJSON . slotSegment =<< assetSlot
+  -- , ("release" JSON..=) <$> (view as :: Maybe Release)
   , Just $ "permission" JSON..= p
-  , p > PermissionNONE ?> "size" JSON..= assetSize slotAsset
-  ] where p = dataPermission as
+  , p > PermissionNONE && Fold.any (0 <=) z ?> "size" JSON..= z
+  ] where
+  p = dataPermission as
+  z = assetSize slotAsset

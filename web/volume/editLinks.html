@@ -1,7 +1,7 @@
 <ng-form name="volumeEditLinksForm">
   <scroll-float>
     <fieldset class="clean">
-      <button ng-click="volumeEditLinksForm.save()" class="green" message="save" ng-disabled="volumeEditLinksForm.$pristine"></button>
+      <button ng-click="volumeEditLinksForm.save()" class="green" message="save" ng-disabled="volumeEditLinksForm.$pristine || volumeEditLinksForm.$invalid || volumeEditLinksForm.$submitted"></button>
       <button ng-click="volumeEditLinksForm.resetAll()" class="neutral" message="revert" ng-disabled="volumeEditLinksForm.$pristine"></button>
     </fieldset>
   </scroll-float>

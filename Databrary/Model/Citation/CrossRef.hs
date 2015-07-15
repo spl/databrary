@@ -42,15 +42,15 @@ parseCitation = JSON.withObject "citation" $ \o ->
   where
   parseDOI d = hdlURL d <? validHDL d
 
-lookupCitation :: (HTTPClientM c m) => URI.URI -> m (Maybe Citation)
-lookupCitation uri = runMaybeT $ do
+lookupCitation :: URI.URI -> HTTPClient -> IO (Maybe Citation)
+lookupCitation uri hcm = runMaybeT $ do
   hdl <- may $ uriHDL uri
   let req = httpRequest (crossRefReq hdl)
-  j <- MaybeT $ req "application/vnd.citationstyles.csl+json" $ \rb ->
-    P.maybeResult <$> P.parseWith rb JSON.json BS.empty
+  j <- MaybeT $ req "application/vnd.citationstyles.csl+json" (\rb ->
+    P.maybeResult <$> P.parseWith rb JSON.json BS.empty) hcm
   cite <- may $ JSON.parseMaybe parseCitation j
   -- empirically this is UTF-8, but does not say so:
-  bib <- lift $ req "text/x-bibliography;style=apa" $ fmap Just . HC.brConsume
+  bib <- lift $ req "text/x-bibliography;style=apa" (fmap Just . HC.brConsume) hcm
   return $ maybe cite (\h -> cite{ citationHead = Fold.foldMap TE.decodeUtf8 h }) bib
   where
   may = MaybeT . return

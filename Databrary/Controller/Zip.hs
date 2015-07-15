@@ -97,17 +97,20 @@ zipEmpty :: ZipEntry -> Bool
 zipEmpty ZipEntry{ zipEntryContent = ZipDirectory l } = all zipEmpty l
 zipEmpty _ = False
 
+checkAsset :: AssetSlot -> Bool
+checkAsset a = dataPermission a > PermissionNONE && assetBacked (view a)
+
 zipContainer :: AppRoute (Maybe (Id Volume), Id Slot)
 zipContainer = action GET (pathMaybe pathId </> pathSlotId </< "zip") $ \(vi, ci) -> withAuth $ do
   c <- getContainer PermissionPUBLIC vi ci
-  z <- containerZipEntry c =<< lookupContainerAssets c
+  z <- containerZipEntry c . filter checkAsset =<< lookupContainerAssets c
   auditSlotDownload (not $ zipEmpty z) (containerSlot c)
   zipResponse ("databrary-" <> BSC.pack (show (volumeId (containerVolume c))) <> "-" <> BSC.pack (show (containerId c))) [z]
 
 zipVolume :: AppRoute (Id Volume)
 zipVolume = action GET (pathId </< "zip") $ \vi -> withAuth $ do
   v <- getVolume PermissionPUBLIC vi
-  a <- filter (\a -> dataPermission a > PermissionNONE && assetBacked (view a)) <$> lookupVolumeAssetSlots v False
+  a <- filter checkAsset <$> lookupVolumeAssetSlots v False
   z <- volumeZipEntry v a
   auditVolumeDownload (not $ zipEmpty z) v
   zipResponse ("databrary-" <> BSC.pack (show (volumeId v))) [z]

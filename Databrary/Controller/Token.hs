@@ -57,9 +57,9 @@ postPasswordToken :: AppRoute (API, Id LoginToken)
 postPasswordToken = action POST (pathAPI </> pathId) $ \(api, ti) -> withoutAuth $ do
   tok <- maybeAction =<< lookupLoginToken ti
   guardAction (loginPasswordToken tok) notFoundResponse
-  let acct = view tok
+  let auth = view tok
   pw <- runForm (api == HTML ?> htmlPasswordToken ti) $
-    passwordForm acct
-  changeAccount acct{ accountPasswd = Just pw } -- or should this be withAuth?
+    passwordForm (siteAccount auth)
+  changeAccount auth{ accountPasswd = Just pw } -- or should this be withAuth?
   _ <- removeLoginToken tok
   withReaderT authApp $ loginAccount api (view tok) False

@@ -15,7 +15,7 @@ import Databrary.View.Form
 
 import {-# SOURCE #-} Databrary.Controller.Container
 
-htmlContainerForm :: Either Volume Container -> AuthRequest -> FormHtml
+htmlContainerForm :: Either Volume Container -> AuthRequest -> FormHtml f
 htmlContainerForm targ req = f req $ do
   csrfForm req
   field "name" $ inputText (containerName =<< cont)

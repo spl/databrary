@@ -4,9 +4,12 @@ module Databrary.Model.VolumeAccess
   , lookupVolumeAccess
   , lookupVolumeAccessParty
   , lookupPartyVolumeAccess
+  , lookupPartyVolumes
   , changeVolumeAccess
   , volumeAccessProvidesADMIN
   , volumeAccessJSON
+  , volumeAccessPartyJSON
+  , volumeAccessVolumeJSON
   , lookupVolumeActivity
   ) where
 
@@ -18,13 +21,15 @@ import Databrary.Has (peek, view)
 import qualified Databrary.JSON as JSON
 import Databrary.Service.DB
 import Databrary.Model.SQL
+import Databrary.Model.SQL.Select (selectDistinctQuery)
 import Databrary.Model.Time
 import Databrary.Model.Id.Types
 import Databrary.Model.Permission.Types
 import Databrary.Model.Identity.Types
-import Databrary.Model.Party.Types
-import Databrary.Model.Volume.Types
 import Databrary.Model.Audit
+import Databrary.Model.Party
+import Databrary.Model.Volume
+import Databrary.Model.Volume.SQL
 import Databrary.Model.VolumeAccess.Types
 import Databrary.Model.VolumeAccess.SQL
 
@@ -42,6 +47,11 @@ lookupPartyVolumeAccess :: (MonadDB m, MonadHasIdentity c m) => Party -> Permiss
 lookupPartyVolumeAccess p perm = do
   ident <- peek
   dbQuery $(selectQuery (selectPartyVolumeAccess 'p 'ident) "$WHERE volume_access.individual >= ${perm} ORDER BY individual DESC, children DESC")
+
+lookupPartyVolumes :: (MonadDB m, MonadHasIdentity c m) => Party -> Permission -> m [Volume]
+lookupPartyVolumes p perm = do
+  ident <- peek
+  dbQuery $(selectDistinctQuery (Just ["volume.id"]) (selectVolume 'ident) "$JOIN volume_access_view ON volume.id = volume_access_view.volume WHERE party = ${partyId p} AND access >= ${perm}")
 
 changeVolumeAccess :: (MonadAudit c m) => VolumeAccess -> m Bool
 changeVolumeAccess va = do
@@ -62,6 +72,12 @@ volumeAccessJSON VolumeAccess{..} = JSON.object $ catMaybes
   [ ("individual" JSON..= volumeAccessIndividual) <? (volumeAccessIndividual >= PermissionNONE)
   , ("children"   JSON..= volumeAccessChildren)   <? (volumeAccessChildren   >= PermissionNONE)
   ]
+
+volumeAccessPartyJSON :: VolumeAccess -> JSON.Object
+volumeAccessPartyJSON va@VolumeAccess{..} = volumeAccessJSON va JSON..+ ("party" JSON..= partyJSON volumeAccessParty)
+
+volumeAccessVolumeJSON :: VolumeAccess -> JSON.Object
+volumeAccessVolumeJSON va@VolumeAccess{..} = volumeAccessJSON va JSON..+ ("volume" JSON..= volumeJSON volumeAccessVolume)
 
 lookupVolumeActivity :: (MonadDB m, MonadHasIdentity c m) => Int -> m [(Timestamp, Volume)]
 lookupVolumeActivity limit = do

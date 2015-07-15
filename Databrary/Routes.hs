@@ -38,6 +38,7 @@ import Databrary.Controller.Comment
 import Databrary.Controller.CSV
 import Databrary.Controller.Audit
 import Databrary.Controller.Transcode
+import Databrary.Controller.Ingest
 import Databrary.Controller.Web
 import Databrary.Controller.Search
 import Databrary.Web.Routes
@@ -62,6 +63,7 @@ routeMap = fromRouteList
   , route viewParty
   , route postParty
   , route viewPartyEdit
+  , route viewPartyCreate
   , route viewAuthorize
   , route postAuthorize
   , route deleteAuthorize
@@ -135,6 +137,11 @@ routeMap = fromRouteList
   , route remoteTranscode
   , route viewActivity
 
+  , route viewTranscodes
+  , route postTranscode
+  , route viewIngest
+  , route postIngest
+
   , route webFile
   ]
 
@@ -166,7 +173,6 @@ jsRoutes = mconcat
 
   , jsRoute "viewFormats" viewFormats ()
   , jsRoute "viewAssetSegment" viewAssetSegment (HTML, Just volume, slot, asset)
-  , jsRoute "viewAssetEdit" viewAssetEdit (asset)
   , jsRoute "downloadAssetSegment" downloadAssetSegment (slot, asset)
   , jsRoute "thumbAssetSegment" thumbAssetSegment (slot, asset)
   , jsRoute "viewSearch" postSearch (HTML)
@@ -219,7 +225,7 @@ jsRoutes = mconcat
   , jsRoute "postRecordSlot" postRecordSlot (JSON, slot, record)
 
   , jsRoute "getAsset" viewAsset (JSON, asset)
-  , jsRoute "getAssetSegment" viewAssetSegment (JSON, Nothing, slot, asset)
+  , jsRoute "getAssetSegment" viewAssetSegment (JSON, Just volume, slot, asset)
   , jsRoute "postAsset" postAsset (JSON, asset)
   , jsRoute "createAsset" createAsset (JSON, volume)
   , jsRoute "deleteAsset" deleteAsset (JSON, asset)

@@ -43,7 +43,7 @@ instance JSON.ToJSON (IdType a) => JSON.ToJSON (Id a) where
 instance JSON.FromJSON (IdType a) => JSON.FromJSON (Id a) where
   parseJSON = fmap Id . JSON.parseJSON
 
-instance Deform (IdType a) => Deform (Id a) where
+instance Deform f (IdType a) => Deform f (Id a) where
   deform = Id <$> deform
 
 instance TH.Lift (IdType a) => TH.Lift (Id a) where

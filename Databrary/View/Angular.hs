@@ -34,7 +34,7 @@ webURL p = builderValue $ actionURL Nothing webFile (Just $ StaticPath p) []
 htmlAngular :: Maybe [WebFilePath] -> BSB.Builder -> AuthRequest -> H.Html
 htmlAngular debug nojs auth = H.docTypeHtml H.! ngAttribute "app" "databraryModule" $ do
   H.head $ do
-    htmlHeader (view auth)
+    htmlHeader Nothing Nothing
     H.noscript $
       H.meta
         H.! HA.httpEquiv "Refresh"

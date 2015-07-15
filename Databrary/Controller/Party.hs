@@ -3,6 +3,7 @@ module Databrary.Controller.Party
   ( getParty
   , viewParty
   , viewPartyEdit
+  , viewPartyCreate
   , postParty
   , createParty
   , queryParties
@@ -21,9 +22,10 @@ import qualified Network.Wai as Wai
 import Network.Wai.Parse (FileInfo(..))
 
 import Databrary.Ops
-import Databrary.Has (view, peeks, focusIO)
+import Databrary.Has (view, MonadHas, peek, peeks, focusIO)
 import qualified Databrary.JSON as JSON
 import Databrary.Service.DB
+import Databrary.Model.Time
 import Databrary.Model.Enum
 import Databrary.Model.Id
 import Databrary.Model.Permission
@@ -62,32 +64,39 @@ getParty _ mi = do
   unless (isme mi) $ result =<< forbiddenResponse
   return u
 
-partyJSONField :: (MonadDB m, MonadHasIdentity c m) => Party -> BS.ByteString -> Maybe BS.ByteString -> m (Maybe JSON.Value)
-partyJSONField p "parents" o =
+partyJSONField :: (MonadDB m, MonadHasIdentity c m, MonadHas Timestamp c m) => Party -> BS.ByteString -> Maybe BS.ByteString -> m (Maybe JSON.Value)
+partyJSONField p "parents" o = do
+  now <- peek
   fmap (Just . JSON.toJSON) . mapM (\a -> do
     let ap = authorizeParent (authorization a)
-    acc <- if access then Just . accessSite <$> lookupAuthorization ap rootParty else return Nothing
-    return $ (if admin then authorizeJSON a else mempty) JSON..+
-      ("party" JSON..= (partyJSON ap JSON..+? (("access" JSON..=) <$> acc))))
+    acc <- if auth then Just . accessSite <$> lookupAuthorization ap rootParty else return Nothing
+    return $ (if admin then authorizeJSON a else mempty)
+      JSON..+ ("party" JSON..= (partyJSON ap JSON..+? (("authorization" JSON..=) <$> acc)))
+      JSON..+? (admin && authorizeExpired a now ?> "expired" JSON..= True))
     =<< lookupAuthorizedParents p admin
   where
   admin = view p >= PermissionADMIN
-  access = admin && o == Just "access"
+  auth = admin && o == Just "authorization"
 partyJSONField p "children" _ =
   Just . JSON.toJSON . map (\a ->
     let ap = authorizeChild (authorization a) in
     (if admin then authorizeJSON a else mempty) JSON..+ ("party" JSON..= partyJSON ap))
     <$> lookupAuthorizedChildren p admin
   where admin = view p >= PermissionADMIN
-partyJSONField p "volumes" ma = do
-  Just . JSON.toJSON . map (\va -> 
-    volumeAccessJSON va JSON..+ ("volume" JSON..= volumeJSON (volumeAccessVolume va)))
-    <$> lookupPartyVolumeAccess p (fromMaybe PermissionNONE $ readDBEnum . BSC.unpack =<< ma)
-partyJSONField p "access" _ = do
+partyJSONField p "volumes" o = (?$>) (view p >= PermissionADMIN) $
+  fmap JSON.toJSON . mapM vf =<< lookupPartyVolumes p PermissionREAD
+  where
+  vf v
+    | o == Just "access" = (volumeJSON v JSON..+) . ("access" JSON..=) . map volumeAccessPartyJSON <$> lookupVolumeAccess v (succ PermissionNONE)
+    | otherwise = return $ volumeJSON v
+partyJSONField p "access" ma = do
+  Just . JSON.toJSON . map volumeAccessVolumeJSON
+    <$> lookupPartyVolumeAccess p (fromMaybe PermissionEDIT $ readDBEnum . BSC.unpack =<< ma)
+partyJSONField p "authorization" _ = do
   Just . JSON.toJSON . accessSite <$> lookupAuthorization p rootParty
 partyJSONField _ _ _ = return Nothing
 
-partyJSONQuery :: (MonadDB m, MonadHasIdentity c m) => Party -> JSON.Query -> m JSON.Object
+partyJSONQuery :: (MonadDB m, MonadHasIdentity c m, MonadHas Timestamp c m) => Party -> JSON.Query -> m JSON.Object
 partyJSONQuery p = JSON.jsonQuery (partyJSON p) (partyJSONField p)
 
 viewParty :: AppRoute (API, PartyTarget)
@@ -96,7 +105,7 @@ viewParty = action GET (pathAPI </> pathPartyTarget) $ \(api, i) -> withAuth $ d
   p <- getParty (Just PermissionNONE) i
   case api of
     JSON -> okResponse [] =<< partyJSONQuery p =<< peeks Wai.queryString
-    HTML -> okResponse [] $ partyName p -- TODO
+    HTML -> okResponse [] =<< peeks (htmlPartyView p)
 
 processParty :: API -> Maybe Party -> AuthActionM (Party, Maybe Asset)
 processParty api p = do
@@ -137,6 +146,11 @@ viewPartyEdit = action GET (pathHTML >/> pathPartyTarget </< "edit") $ \i -> wit
   p <- getParty (Just PermissionADMIN) i
   blankForm $ htmlPartyForm $ Just p
 
+viewPartyCreate :: AppRoute ()
+viewPartyCreate = action GET (pathHTML </< "party" </< "create") $ \() -> withAuth $ do
+  checkMemberADMIN
+  blankForm $ htmlPartyForm Nothing
+
 postParty :: AppRoute (API, PartyTarget)
 postParty = multipartAction $ action POST (pathAPI </> pathPartyTarget) $ \(api, i) -> withAuth $ do
   p <- getParty (Just PermissionADMIN) i
@@ -150,8 +164,7 @@ postParty = multipartAction $ action POST (pathAPI </> pathPartyTarget) $ \(api,
 
 createParty :: AppRoute API
 createParty = multipartAction $ action POST (pathAPI </< "party") $ \api -> withAuth $ do
-  perm <- peeks accessPermission'
-  _ <- checkPermission PermissionADMIN perm
+  checkMemberADMIN
   (bp, a) <- processParty api Nothing
   p <- addParty bp
   when (isJust a) $
@@ -160,11 +173,11 @@ createParty = multipartAction $ action POST (pathAPI </< "party") $ \api -> with
     JSON -> okResponse [] $ partyJSON p
     HTML -> redirectRouteResponse [] viewParty (api, TargetParty $ partyId p) []
 
-partySearchForm :: (Applicative m, Monad m) => DeformT m PartyFilter
+partySearchForm :: (Applicative m, Monad m) => DeformT f m PartyFilter
 partySearchForm = PartyFilter
   <$> ("query" .:> deformNonEmpty deform)
-  <*> ("access" .:> optional deform)
-  <*> ("institution" .:> optional deform)
+  <*> ("authorization" .:> optional deform)
+  <*> ("institution" .:> deformNonEmpty deform)
   <*> ("authorize" .:> optional deform)
   <*> pure Nothing
 

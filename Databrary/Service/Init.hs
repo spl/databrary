@@ -14,11 +14,12 @@ import Databrary.Service.DB (initDB, finiDB)
 import Databrary.Service.Entropy (initEntropy, finiEntropy)
 import Databrary.HTTP.Client (initHTTPClient, finiHTTPClient)
 import Databrary.Store.Service (initStorage)
+import Databrary.Store.AV (initAV)
 import Databrary.Service.Passwd (initPasswd)
 import Databrary.Service.Log (initLogs, finiLogs)
 import Databrary.Service.Messages (initMessages)
 import Databrary.Web.Service (initWeb)
-import Databrary.Store.AV (initAV)
+import Databrary.Static.Service (initStatic)
 import Databrary.Service.Types
 
 loadConfig :: IO C.Config
@@ -33,26 +34,26 @@ initService conf = do
   secret <- C.require conf "secret"
   entropy <- initEntropy
   passwd <- initPasswd
-  authaddr <- C.require conf "authorize"
   messages <- initMessages (C.subconfig "message" conf)
   db <- initDB (C.subconfig "db" conf)
   storage <- initStorage (C.subconfig "store" conf)
+  av <- initAV
   web <- initWeb
   httpc <- initHTTPClient
-  av <- initAV
+  static <- initStatic (C.subconfig "static" conf)
   return $ Service
     { serviceStartTime = time
     , serviceSecret = Secret secret
     , serviceEntropy = entropy
     , servicePasswd = passwd
-    , serviceAuthorizeAddr = authaddr
     , serviceLogs = logs
     , serviceMessages = messages
     , serviceDB = db
     , serviceStorage = storage
+    , serviceAV = av
     , serviceWeb = web
     , serviceHTTPClient = httpc
-    , serviceAV = av
+    , serviceStatic = static
     }
 
 finiService :: Service -> IO ()

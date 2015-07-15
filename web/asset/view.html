@@ -21,9 +21,7 @@
       </li>
     </ul>
   </div>
-  <div ng-if="::hasThumbnail">
-    <img class="popup-thumb" ng-src="{{::asset.thumbRoute(480)}}">
-  </div>
+  <asset-display asset="asset"></asset-display>
   <div class="popup-cite" ng-if="::volume">
     <cite-volume></cite-volume>
   </div>
@@ -32,7 +30,7 @@
     <span class="popup-classification-title" ng-bind="::'release.'+page.constants.release[asset.release]+'.title' | message"></span>: 
     <span ng-bind="::'release.'+page.constants.release[asset.release]+'.description' | message"></span>.
   </div>
-  <a ng-href="{{::asset.downloadRoute(false)}}" class=" button green" target="_self" tooltip="'excerpts.download' | message">
+  <a ng-href="{{::asset.permission? asset.downloadRoute(false): ''}}" ng-class="::{'disabled': !asset.permission}" class="button green" target="_self" tooltip="'excerpts.download' | message">
     <span class="download icon"></span><span>Download</span>
   </a>
 </div>

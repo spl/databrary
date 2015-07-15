@@ -31,7 +31,7 @@ maybeIdentity u i = foldIdentity u i =<< peek
 
 identityJSON :: Identity -> JSON.Object
 identityJSON i = partyJSON (view i) JSON..++ catMaybes
-  [ Just $ "access" JSON..= accessSite i
+  [ Just $ "authorization" JSON..= accessSite i
   , ("csverf" JSON..=) <$> identityVerf i
   , identitySuperuser i ?> ("superuser" JSON..= True)
   ]

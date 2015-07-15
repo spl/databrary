@@ -20,7 +20,7 @@ import Databrary.HTTP
 import Databrary.Action
 import Databrary.Model.Format
 
-fileResponse :: (MonadAction c m, MonadIO m) => RawFilePath -> Format -> Maybe BS.ByteString -> BS.ByteString -> m (ResponseHeaders, Maybe Wai.FilePart)
+fileResponse :: (MonadAppAction c m, MonadIO m) => RawFilePath -> Format -> Maybe BS.ByteString -> BS.ByteString -> m (ResponseHeaders, Maybe Wai.FilePart)
 fileResponse file fmt save etag = do
   (sz, mt) <- fromMaybeM (result =<< notFoundResponse) =<< liftIO (fileInfo file)
   let szi = toInteger sz
@@ -43,7 +43,7 @@ fileResponse file fmt save etag = do
         Wai.FilePart 0 szi szi -- force full file
   return (fh, part)
 
-serveFile :: (MonadAction c m, MonadIO m) => RawFilePath -> Format -> Maybe BS.ByteString -> BS.ByteString -> m Response
+serveFile :: (MonadAppAction c m, MonadIO m) => RawFilePath -> Format -> Maybe BS.ByteString -> BS.ByteString -> m Response
 serveFile file fmt save etag = do
   (fh, part) <- fileResponse file fmt save etag
   okResponse fh (file, part)

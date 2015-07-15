@@ -5,6 +5,7 @@ module Databrary.Model.AssetSlot.SQL
   , selectContainerSlotAsset
   , selectAssetSlotAsset
   , selectVolumeSlotAsset
+  , selectVolumeSlotIdAsset
   , selectSlotAsset
   , selectAssetSlot
   , insertSlotAsset
@@ -43,6 +44,16 @@ makeContainerSlotAsset s af c = makeSlotAsset (af (view c)) c s
 selectContainerSlotAsset :: Selector -- ^ @'Container' -> 'AssetSlot'@
 selectContainerSlotAsset = selectJoin 'makeContainerSlotAsset
   [ slotAssetRow
+  , joinOn "slot_asset.asset = asset.id"
+    selectVolumeAsset -- XXX volumes match?
+  ]
+
+makeVolumeSlotIdAsset :: SlotId -> (Volume -> Asset) -> Volume -> (Asset, SlotId)
+makeVolumeSlotIdAsset s af v = (af v, s)
+
+selectVolumeSlotIdAsset :: Selector -- ^ @'Volume' -> '(Asset, SlotId)'@
+selectVolumeSlotIdAsset = selectJoin 'makeVolumeSlotIdAsset
+  [ selectColumns 'SlotId "slot_asset" ["container", "segment"]
   , joinOn "slot_asset.asset = asset.id"
     selectVolumeAsset -- XXX volumes match?
   ]

@@ -10,6 +10,7 @@ module Databrary.Model.Volume
   , findVolumes
   , getVolumeAlias
   , volumeJSON
+  , updateVolumeIndex
   ) where
 
 import Control.Applicative ((<|>))
@@ -105,3 +106,7 @@ findVolumes pf limit offset = do
   ident <- peek
   dbQuery $ unsafeModifyQuery $(selectQuery (selectVolume 'ident) "")
     (<> volumeFilter pf <> " LIMIT " <> pgLiteralRep limit <> " OFFSET " <> pgLiteralRep offset)
+
+updateVolumeIndex :: MonadDB m => m ()
+updateVolumeIndex =
+  dbExecute_ "SELECT volume_text_refresh()"

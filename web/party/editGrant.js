@@ -17,9 +17,7 @@ app.directive('partyEditGrantForm', [
             subform.save(false);
         });
 
-        $q.all(formPromises).then(function(){
-          form.$setUnsubmitted();
-        }, function(){
+        $q.all(formPromises).finally(function(){
           form.$setUnsubmitted();
         });
       };

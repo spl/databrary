@@ -5,6 +5,7 @@ module Databrary.Controller.Citation
 
 import Data.Aeson (toJSON)
 
+import Databrary.Has (focusIO)
 import Databrary.Action
 import Databrary.HTTP.Form.Deform
 import Databrary.HTTP.Path.Parser
@@ -14,5 +15,5 @@ import Databrary.Model.Citation.CrossRef
 getCitation :: AppRoute ()
 getCitation = action GET (pathJSON </< "cite") $ \() -> do
   url <- runForm Nothing $ "url" .:> deform
-  cite <- maybeAction =<< lookupCitation url
+  cite <- maybeAction =<< focusIO (lookupCitation url)
   okResponse [] $ toJSON cite
