@@ -3,7 +3,6 @@ module Databrary.Ingest.JSON
   ( ingestJSON
   ) where
 
-import Control.Applicative ((<$>))
 import Control.Arrow (left)
 import Control.Monad (when, unless)
 import Control.Monad.IO.Class (MonadIO(liftIO))
@@ -22,13 +21,14 @@ import qualified Data.Vector as V
 import System.IO (withBinaryFile, IOMode(ReadMode))
 
 import Paths_databrary
+import Databrary.Ops
 import Databrary.Has (Has, view)
 import qualified Databrary.JSON as J
 import Databrary.Model.Kind
 import Databrary.Model.Id.Types
 import Databrary.Model.Audit
 import Databrary.Model.Volume
-import Databrary.Model.Container.Types
+import Databrary.Model.Container
 
 type IngestT m a = ExceptT T.Text m a
 type IngestParseT m a = JE.ParseT T.Text m a
@@ -57,7 +57,7 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
   schema <- mapExceptT liftIO loadSchema
   jdata <- jsErr $ JS.validate schema jdata'
   if run
-    then ExceptT $ left (JE.displayError id) <$> JE.parseValueM ingest jdata
+    then ExceptT $ left (JE.displayError id) <$> JE.parseValueM volume jdata
     else return []
   where
   update cur change = do
@@ -68,6 +68,11 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
           throwE $ "conflicting value: " <> T.pack (show v) <> " <> " <> T.pack (show (fromJust cur))
         lift $ change v
     return jv
-  ingest = do
-    _ <- update (Just $ volumeName vol) (\n -> changeVolume vol{ volumeName = n })
-    return []
+  volume = do
+    _ <- JE.keyMay "name" $ update (Just $ volumeName vol) (\n -> changeVolume vol{ volumeName = n })
+    JE.key "containers" $ JE.eachInArray container
+  container = do
+    cid <- JE.keyMay "id" $ Id <$> JE.asIntegral
+    key <- JE.key "key" $ JE.asText
+    c <- lift $ lookupVolumeContainer vol `flatMapM` cid
+    return $ fromJust c
