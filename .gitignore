@@ -17,13 +17,4 @@
 /unreset.dump
 /solr/solrInstance/
 /solr/solrData/
-/dbrary/
-/logs/
-/macros/
-/media/
-/project/
 /solr/solrInstall/
-/target/
-.idea/
-.DS_Store
-*.swp

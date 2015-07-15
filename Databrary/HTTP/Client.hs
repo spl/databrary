@@ -39,7 +39,7 @@ httpRequest :: HC.Request -> BS.ByteString -> (HC.BodyReader -> IO (Maybe a)) ->
 httpRequest req acc f hcm = do
   handle (\(_ :: HC.HttpException) -> return Nothing) $
     HC.withResponse req { HC.requestHeaders = (hAccept, acc) : HC.requestHeaders req } hcm $ \res ->
-      if traceShowId (HC.responseStatus res) == ok200 && traceShowId (responseContentType res) == Just (contentType acc)
+      if HC.responseStatus res == ok200 && responseContentType res == Just (contentType acc)
         then f $ HC.responseBody res
         else return Nothing
 

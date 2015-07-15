@@ -10,6 +10,7 @@ import Data.Aeson
 import Data.Map
 import Control.Applicative
 import Control.Monad (mzero)
+import Control.Monad.IO.Class (MonadIO)
 import Control.Exception (handle)
 import GHC.Generics
 import Network.HTTP.Types (hAccept, hContentType, ok200)
@@ -23,6 +24,7 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy.Char8 as L
 import Control.Monad.IO.Class (liftIO)
 
+import Databrary.Has (MonadHas, focusIO)
 import qualified Databrary.Search.Query as Q
 
 
@@ -172,7 +174,7 @@ containerPf = ""
 -- formQuery :: String -> SolrQuery
 -- formQuery q = SolrQuery q
 
-submitQuery :: HTTPClientM c m => HC.Request -> m (Maybe Value)
+submitQuery :: HC.Request -> HTTPClient -> IO (Maybe Value)
 submitQuery q = httpRequestJSONSolr q
 
 generatePostReq :: SolrQuery -> IO HC.Request
@@ -187,13 +189,13 @@ generatePostReq sr = do
                     }
       return req
 
-httpRequestJSONSolr :: HTTPClientM c m => HC.Request -> m (Maybe Value)
+httpRequestJSONSolr :: HC.Request -> HTTPClient -> IO (Maybe Value)
 httpRequestJSONSolr req = httpRequest req "text/plain" $ \rb ->
   P.maybeResult <$> P.parseWith rb json BS.empty
 
-search :: HTTPClientM c m => String -> Int32 -> Int32 -> m (Maybe Value)
-search q offset limit = do
-      liftIO $ print q
+search :: (MonadHas HTTPClient c m, MonadIO m) => String -> Int32 -> Int32 -> m (Maybe Value)
+search q offset limit = focusIO $ \hcm -> do
+      print q
       let query = Q.createQuery q
       let (queryStr, args, join, cType) = Q.queryToString query
       -- This is hard-coded here so no one can send anything else...
@@ -202,9 +204,9 @@ search q offset limit = do
       let sQuery = SolrQuery  (if(length queryStr > 0) then queryStr else "*")
                               (contentType ++ (if(length args > 0) then " AND " else " ") ++ args)
                               join limit offset
-      request <- liftIO $ generatePostReq sQuery
-      liftIO $ print $ encode sQuery
-      liftIO $ print contentType
-      liftIO $ print sQuery -- TODO REMOVE THIS
-      liftIO $ print request
-      (submitQuery request)
+      request <- generatePostReq sQuery
+      print $ encode sQuery
+      print contentType
+      print sQuery -- TODO REMOVE THIS
+      print request
+      submitQuery request hcm
