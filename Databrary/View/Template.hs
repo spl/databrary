@@ -52,18 +52,7 @@ htmlFooter :: H.Html
 htmlFooter = H.footer H.! HA.id "site-footer" H.! HA.class_ "site-footer" $
   H.div H.! HA.class_ "wrap" $
     H.div H.! HA.class_ "row" $ do
-      H.div H.! HA.class_ "site-footer-links col-desktop-8 col-tablet-5 col-mobile-6" $
-        H.p $ do
-          H.a H.! HA.href "http://databrary.org/about/contact.html" $
-            "Contact us"
-          H.preEscapedString ". &nbsp;Stay informed with "
-          H.a H.! HA.href "http://databrary.org/contact/newsletter.html" $
-            "our newsletter"
-          H.preEscapedString ". &nbsp;"
-          H.a H.! HA.href "http://databrary.org/about/jobs.html" $
-            "Join our team"
-          "."
-      H.div H.! HA.class_ "site-footer-social col-desktop-7 col-tablet-4 col-mobile-6" $
+      H.div H.! HA.class_ "site-footer-social col-desktop-7 col-tablet-4 col-mobile-6" $ do
         H.p $ do
           let sm n l a =
                 H.a H.! HA.href l H.! HA.target "_blank" H.! HA.class_ "img" $
@@ -79,25 +68,6 @@ htmlFooter = H.footer H.! HA.id "site-footer" H.! HA.class_ "site-footer" $
           void ", and "
           sm "github" "https://github.com/databrary/" "GitHub"
           "."
-      H.div H.! HA.class_ "site-footer-legal col" $ do
-        H.p $
-          "This service is based on work supported by the National Science Foundation under Grant No. BCS-1238599 and the Eunice Kennedy Shriver National Institute of Child Health and Human Development under Cooperative Agreement U01-HD-076595. Any opinions, findings, and conclusions or recommendations expressed in the material contributed here are those of the author(s) and do not necessarily reflect the views of the National Science Foundation or the Eunice Kennedy Shriver National Institute of Child Health and Human Development."
-        H.p $ do
-          void "Each dataset on Databrary represents an individual work owned by the party who contributed it. Data on Databrary is provided for non-commercial use and is subject to the terms of use outlined in the "
-          H.a H.! HA.href "http://databrary.org/access/policies/agreement.html" H.! HA.target "_blank" $
-            "Databrary Access Agreement"
-          "."
-        H.p $ do
-          H.span H.! H.customAttribute "xmlns:dct" "http://purl.org/dc/terms/" H.! HA.href "http://purl.org/dc/dcmitype/Text" H.! H.customAttribute "property" "dct:title" H.! HA.rel "dct:type" $
-            "Databrary.org documentation"
-          void " is licensed under a "
-          H.a H.! HA.rel "license" H.! HA.href "http://creativecommons.org/licenses/by-nc-sa/3.0/deed.en_US" $
-            "Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License"
-          "."
-        H.p $ do
-          void "["
-          H.string $ showVersion version
-          "]"
         H.ul H.! HA.class_ "site-footer-grants" $ do
           H.li $
             H.a H.! HA.href "http://www.nsf.gov/awardsearch/showAward?AWD_ID=1238599&HistoricalAwards=false" $ do
@@ -107,6 +77,14 @@ htmlFooter = H.footer H.! HA.id "site-footer" H.! HA.class_ "site-footer" $
             H.a H.! HA.href "http://projectreporter.nih.gov/project_info_description.cfm?aid=8531595&icde=15908155&ddparam=&ddvalue=&ddsub=&cr=1&csb=default&cs=ASC" $ do
               H.img H.! HA.src "/web/images/grants/nih.png" H.! HA.class_ "nih"
               " U01-HD-076595"
+      H.div H.! HA.class_ "site-footer-legal col" $ do
+        H.p $ do
+          void "Each dataset on Databrary represents an individual work owned by the party who contributed it. Data on Databrary is provided for non-commercial use and is subject to the terms of use outlined in the "
+          H.a H.! HA.href "//databrary.org/access/policies/agreement.html" H.! HA.target "_blank" $
+            "Databrary Access Agreement"
+          void ". ["
+          H.string $ showVersion version
+          "]"
 
 htmlTemplate :: AuthRequest -> Maybe T.Text -> (Maybe Bool -> H.Html) -> H.Html
 htmlTemplate req title body = H.docTypeHtml $ do
