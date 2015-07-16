@@ -14,7 +14,6 @@ import qualified Data.ByteString as BS
 import Data.ByteString.Lazy.Internal (defaultChunkSize)
 import qualified Data.Foldable as Fold
 import qualified Data.JsonSchema as JS
-import Data.Maybe (isNothing, fromJust)
 import Data.Monoid (mempty, (<>))
 import Data.Time.Format (parseTime)
 import qualified Data.Text as T
@@ -32,6 +31,8 @@ import Databrary.Model.Id.Types
 import Databrary.Model.Audit
 import Databrary.Model.Volume
 import Databrary.Model.Container
+import Databrary.Model.Slot.Types
+import Databrary.Model.Release
 import Databrary.Model.Ingest
 
 type IngestT m a = ExceptT T.Text m a
@@ -53,10 +54,10 @@ loadSchema = do
   g <- ExceptT $ left return <$> JS.fetchRefs JS.draft4 rs mempty
   jsErr $ JS.compileDraft4 g rs
 
-throwPE :: (Functor m, Monad m) => T.Text -> IngestParseT m ()
+throwPE :: (Functor m, Monad m) => T.Text -> IngestParseT m a
 throwPE = JE.throwCustomError
 
-inObj :: forall a m . (Functor m, Kinded a, Has (Id a) a, Show (IdType a)) => a -> IngestParseT m a -> IngestParseT m a
+inObj :: forall a b m . (Functor m, Kinded a, Has (Id a) a, Show (IdType a)) => a -> IngestParseT m b -> IngestParseT m b
 inObj o = JE.mapError $ (<>) $ " for " <> kindOf o <> T.pack (' ' : show (view o :: Id a))
 
 asKey :: (Functor m, Monad m) => IngestParseT m IngestKey
@@ -64,6 +65,9 @@ asKey = JE.asText
 
 asDate :: (Functor m, Monad m) => IngestParseT m Date
 asDate = JE.withString (maybe (Left "expecting %F") Right . parseTime defaultTimeLocale "%F")
+
+asRelease :: (Functor m, Monad m) => IngestParseT m (Maybe Release)
+asRelease = JE.perhaps JE.fromAesonParser
 
 ingestJSON :: (MonadIO m, MonadAudit c m) => Volume -> J.Value -> Bool -> Bool -> m (Either [T.Text] [Container])
 ingestJSON vol jdata' run overwrite = runExceptT $ do
@@ -73,14 +77,15 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
     then ExceptT $ left (JE.displayError id) <$> JE.parseValueM volume jdata
     else return []
   where
-  update _ _ Nothing = return ()
-  update cur change (Just v) =
-    liftParse $ when (Fold.all (v /=) cur) $ do
-      unless (overwrite || isNothing cur) $
-        throwE $ "conflicting value: " <> T.pack (show v) <> " <> " <> T.pack (show (fromJust cur))
-      lift $ change v
+  check a b
+    | a == b = return False
+    | not overwrite = throwPE $ "conflicting value: " <> T.pack (show b) <> " <> " <> T.pack (show a)
+    | otherwise = return True
   volume = do
-    _ <- JE.keyMay "name" JE.asText >>= update (Just $ volumeName vol) (\n -> changeVolume vol{ volumeName = n })
+    _ <- JE.keyMay "name" $ do
+      name <- JE.asText
+      name' <- check (volumeName vol) name
+      when name' $ lift $ changeVolume vol{ volumeName = name }
     JE.key "containers" $ JE.eachInArray container
   container = do
     cid <- JE.keyMay "id" $ Id <$> JE.asIntegral
@@ -89,22 +94,39 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
     name <- JE.keyMay "name" JE.asText
     date <- JE.keyMay "date" asDate
     c <- maybe
-      (lift $ do
-        c <- addContainer (blankContainer vol)
-          { containerTop = top
-          , containerName = name
-          , containerDate = date
-          }
-        addIngestContainer c key
+      (do
+        c <- maybe
+          (lift $ addContainer (blankContainer vol)
+            { containerTop = top
+            , containerName = name
+            , containerDate = date
+            })
+          (\i -> fromMaybeM (throwPE $ "container " <> T.pack (show i) <> "/" <> key <> " not found")
+            =<< lift (lookupVolumeContainer vol i))
+          cid
+        inObj c $ lift $ addIngestContainer c key
         return c)
       (\c -> inObj c $ do
         unless (Fold.all (containerId c ==) cid) $ do
           throwPE "id mismatch"
-          update (Just (containerTop c, containerName c, containerDate c)) (\_ -> changeContainer c
-            { containerTop = top
-            , containerName = name
-            , containerDate = date
-            }) (Just (top, name, date))
+        top' <- check (containerTop c) top
+        name' <- check (containerName c) name
+        date' <- check (containerDate c) date
+        when (top' || name' || date') $ lift $ changeContainer c
+          { containerTop = top
+          , containerName = name
+          , containerDate = date
+          }
         return c)
       =<< lift (lookupIngestContainer vol key)
-    return c
+    inObj c $ do
+      _ <- JE.keyMay "release" $ do
+        release <- asRelease
+        release' <- check (containerRelease c) release
+        when release' $ do
+          r <- lift $ changeRelease (containerSlot c) release
+          unless r $ throwPE "update failed"
+      JE.key "records" $ JE.eachInArray $ record c
+      return c
+  record c = do
+    return ()
