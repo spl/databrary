@@ -5,15 +5,17 @@ module Databrary.Ingest.JSON
 
 import Control.Arrow (left)
 import Control.Monad (when, unless)
+import Control.Monad.Except (ExceptT(..), runExceptT, mapExceptT, throwError, catchError)
 import Control.Monad.IO.Class (MonadIO(liftIO))
 import Control.Monad.Trans.Class (lift)
-import Control.Monad.Trans.Except (ExceptT(..), runExceptT, mapExceptT, throwE)
 import qualified Data.Aeson.BetterErrors as JE
 import qualified Data.Attoparsec.ByteString as P
 import qualified Data.ByteString as BS
 import Data.ByteString.Lazy.Internal (defaultChunkSize)
 import qualified Data.Foldable as Fold
+import Data.Function (on)
 import qualified Data.JsonSchema as JS
+import Data.List (find)
 import Data.Monoid (mempty, (<>))
 import Data.Time.Format (parseTime)
 import qualified Data.Text as T
@@ -33,6 +35,8 @@ import Databrary.Model.Volume
 import Databrary.Model.Container
 import Databrary.Model.Slot.Types
 import Databrary.Model.Release
+import Databrary.Model.Record
+import Databrary.Model.RecordCategory
 import Databrary.Model.Ingest
 
 type IngestT m a = ExceptT T.Text m a
@@ -68,6 +72,12 @@ asDate = JE.withString (maybe (Left "expecting %F") Right . parseTime defaultTim
 
 asRelease :: (Functor m, Monad m) => IngestParseT m (Maybe Release)
 asRelease = JE.perhaps JE.fromAesonParser
+
+asCategory :: (Functor m, Monad m) => IngestParseT m (Maybe RecordCategory)
+asCategory = JE.perhaps $ do
+  JE.withIntegral (maybe (Left "category not found") Right . getRecordCategory . Id) `catchError` \_ -> do
+    n <- JE.asText
+    fromMaybeM (throwPE "category not found") $ find ((n ==) . recordCategoryName) allRecordCategories
 
 ingestJSON :: (MonadIO m, MonadAudit c m) => Volume -> J.Value -> Bool -> Bool -> m (Either [T.Text] [Container])
 ingestJSON vol jdata' run overwrite = runExceptT $ do
@@ -126,7 +136,32 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
         when release' $ do
           r <- lift $ changeRelease (containerSlot c) release
           unless r $ throwPE "update failed"
-      JE.key "records" $ JE.eachInArray $ record c
+      _ <- JE.key "records" $ JE.eachInArray record
       return c
-  record c = do
-    return ()
+  record = do
+    rid <- JE.keyMay "id" $ Id <$> JE.asIntegral
+    key <- JE.key "key" $ asKey
+    category <- JE.key "category" asCategory
+    r <- maybe
+      (do
+        r <- maybe
+          (lift $ addRecord (blankRecord vol)
+            { recordCategory = category
+            })
+          (\i -> fromMaybeM (throwPE $ "record " <> T.pack (show i) <> "/" <> key <> " not found")
+            =<< lift (lookupVolumeRecord vol i))
+          rid
+        inObj r $ lift $ addIngestRecord r key
+        return r)
+      (\r -> inObj r $ do
+        unless (Fold.all (recordId r ==) rid) $ do
+          throwPE "id mismatch"
+        category' <- on check (fmap recordCategoryName) (recordCategory r) category
+        when category' $ lift $ changeRecord r
+          { recordCategory = category
+          }
+        return r)
+      =<< lift (lookupIngestRecord vol key)
+    inObj r $
+      return ()
+    return r
