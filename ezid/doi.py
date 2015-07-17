@@ -196,7 +196,8 @@ def postData(db, payload):
     global EZID_USER, EZID_PASS
     new_dois = []
     if not EZID_USER:
-        (EZID_USER, EZID_PASS) = db.query("SELECT username, password FROM ezid_account")._cur.fetchone()
+        db.query("SELECT username, password FROM ezid_account")
+        (EZID_USER, EZID_PASS) = db._cur.fetchone()
     ezid_doi_session = ezid_api.ApiSession(username=EZID_USER, password=EZID_PASS, scheme='doi')
     #check if the server is up, if not, bail
     server_response = ezid_doi_session.checkserver()
