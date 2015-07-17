@@ -3,6 +3,7 @@ module Databrary.View.Template
   ( htmlHeader
   , htmlFooter
   , htmlTemplate
+  , htmlSocialMedia
   ) where
 
 import Control.Monad (void, when)
@@ -48,6 +49,24 @@ htmlHeader canon hasjs = do
     H.! HA.rel l
     H.! HA.href ("//databrary.org/" <> l <> ".html")
 
+htmlSocialMedia :: H.Html
+htmlSocialMedia = 
+  H.p $ do
+    let sm n l a =
+          H.a H.! HA.href l H.! HA.target "_blank" H.! HA.class_ "img" $
+            H.img H.! HA.id n H.! HA.src ("/web/images/social/16px/" <> n <> ".png") H.! HA.alt a
+    void "Find us on "
+    sm "twitter" "https://twitter.com/databrary" "Twitter"
+    void ", "
+    sm "facebook" "https://www.facebook.com/databrary" "Facebook"
+    void ", "
+    sm "linkedin" "https://www.linkedin.com/company/databrary-project" "LinkedIn"
+    void ", "
+    sm "google-plus" "https://plus.google.com/u/1/111083162045777800330/posts" "Google+"
+    void ", and "
+    sm "github" "https://github.com/databrary/" "GitHub"
+    "."
+
 htmlFooter :: H.Html
 htmlFooter = H.footer H.! HA.id "site-footer" H.! HA.class_ "site-footer" $
   H.div H.! HA.class_ "wrap" $
@@ -62,21 +81,7 @@ htmlFooter = H.footer H.! HA.id "site-footer" H.! HA.class_ "site-footer" $
             H.img H.! HA.src "/web/images/grants/nih.png" H.! HA.class_ "nih"
             " U01-HD-076595"
       H.div H.! HA.class_ "site-footer-social col-desktop-7 col-tablet-4 col-mobile-6" $ do
-        H.p $ do
-          let sm n l a =
-                H.a H.! HA.href l H.! HA.target "_blank" H.! HA.class_ "img" $
-                  H.img H.! HA.id n H.! HA.src ("/web/images/social/16px/" <> n <> ".png") H.! HA.alt a
-          void "Find us on "
-          sm "twitter" "https://twitter.com/databrary" "Twitter"
-          void ", "
-          sm "facebook" "https://www.facebook.com/databrary" "Facebook"
-          void ", "
-          sm "linkedin" "https://www.linkedin.com/company/databrary-project" "LinkedIn"
-          void ", "
-          sm "google-plus" "https://plus.google.com/u/1/111083162045777800330/posts" "Google+"
-          void ", and "
-          sm "github" "https://github.com/databrary/" "GitHub"
-          "."
+        htmlSocialMedia
       H.div H.! HA.class_ "site-footer-legal col" $ do
         H.p $ do
           void "Each dataset on Databrary represents an individual work owned by the party who contributed it. Data on Databrary is provided for non-commercial use and is subject to the terms of use outlined in the "
