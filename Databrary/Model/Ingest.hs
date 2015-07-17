@@ -5,6 +5,8 @@ module Databrary.Model.Ingest
   , addIngestContainer
   , lookupIngestRecord
   , addIngestRecord
+  , lookupIngestAsset
+  , addIngestAsset
   ) where
 
 import qualified Data.Text as T
@@ -17,6 +19,8 @@ import Databrary.Model.Container.Types
 import Databrary.Model.Container.SQL
 import Databrary.Model.Record.Types
 import Databrary.Model.Record.SQL
+import Databrary.Model.Asset.Types
+import Databrary.Model.Asset.SQL
 
 type IngestKey = T.Text
 
@@ -35,3 +39,11 @@ lookupIngestRecord vol k =
 addIngestRecord :: MonadDB m => Record -> IngestKey -> m ()
 addIngestRecord r k =
   dbExecute1' [pgSQL|INSERT INTO ingest.record (id, volume, key) VALUES (${recordId r}, ${volumeId $ recordVolume r}, ${k})|]
+
+lookupIngestAsset :: MonadDB m => Volume -> FilePath -> m (Maybe Asset)
+lookupIngestAsset vol k =
+  dbQuery1 $ fmap ($ vol) $(selectQuery selectVolumeAsset "JOIN ingest.asset AS ingest USING (id) WHERE ingest.file = ${k} AND asset.volume = ${volumeId vol}")
+
+addIngestAsset :: MonadDB m => Asset -> FilePath -> m ()
+addIngestAsset r k =
+  dbExecute1' [pgSQL|INSERT INTO ingest.asset (id, file) VALUES (${assetId r}, ${k})|]

@@ -4,7 +4,7 @@ module Databrary.Ingest.JSON
   ) where
 
 import Control.Arrow (left)
-import Control.Monad (when, unless)
+import Control.Monad (join, when, unless)
 import Control.Monad.Except (ExceptT(..), runExceptT, mapExceptT, throwError, catchError)
 import Control.Monad.IO.Class (MonadIO(liftIO))
 import Control.Monad.Trans.Class (lift)
@@ -13,9 +13,9 @@ import qualified Data.Attoparsec.ByteString as P
 import qualified Data.ByteString as BS
 import Data.ByteString.Lazy.Internal (defaultChunkSize)
 import qualified Data.Foldable as Fold
-import Data.Function (on)
 import qualified Data.JsonSchema as JS
 import Data.List (find)
+import Data.Maybe (isJust, fromMaybe)
 import Data.Monoid (mempty, (<>))
 import Data.Time.Format (parseTime)
 import qualified Data.Text as T
@@ -42,6 +42,7 @@ import Databrary.Model.Release
 import Databrary.Model.Record
 import Databrary.Model.RecordCategory
 import Databrary.Model.RecordSlot
+import Databrary.Model.Asset
 import Databrary.Model.Format
 import Databrary.Model.Ingest
 
@@ -107,31 +108,32 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
     then ExceptT $ left (JE.displayError id) <$> JE.parseValueM volume jdata
     else return []
   where
-  check a b
-    | a == b = return False
-    | not overwrite = throwPE $ "conflicting value: " <> T.pack (show b) <> " <> " <> T.pack (show a)
-    | otherwise = return True
+  check _ Nothing = return Nothing
+  check cur (Just new)
+    | cur == new = return Nothing
+    | not overwrite = throwPE $ "conflicting value: " <> T.pack (show new) <> " <> " <> T.pack (show cur)
+    | otherwise = return $ Just new
   volume = do
     dir <- JE.keyOrDefault "directory" "" $ stageFileRel <$> asStageFile ""
     _ <- JE.keyMay "name" $ do
-      name <- JE.asText
-      name' <- check (volumeName vol) name
-      when name' $ lift $ changeVolume vol{ volumeName = name }
+      name <- check (volumeName vol) . Just =<< JE.asText
+      Fold.forM_ name $ \n -> lift $ changeVolume vol{ volumeName = n }
     JE.key "containers" $ JE.eachInArray (container dir)
   container dir = do
     cid <- JE.keyMay "id" $ Id <$> JE.asIntegral
     key <- JE.key "key" $ asKey
-    top <- JE.keyOrDefault "top" False JE.asBool
-    name <- JE.keyMay "name" JE.asText
-    date <- JE.keyMay "date" asDate
     c <- maybe
       (do
         c <- maybe
-          (lift $ addContainer (blankContainer vol)
-            { containerTop = top
-            , containerName = name
-            , containerDate = date
-            })
+          (do
+            top <- JE.keyOrDefault "top" False JE.asBool
+            name <- JE.keyMay "name" JE.asText
+            date <- JE.keyMay "date" asDate
+            lift $ addContainer (blankContainer vol)
+              { containerTop = top
+              , containerName = name
+              , containerDate = date
+              })
           (\i -> fromMaybeM (throwPE $ "container " <> T.pack (show i) <> "/" <> key <> " not found")
             =<< lift (lookupVolumeContainer vol i))
           cid
@@ -140,23 +142,22 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
       (\c -> inObj c $ do
         unless (Fold.all (containerId c ==) cid) $ do
           throwPE "id mismatch"
-        top' <- check (containerTop c) top
-        name' <- check (containerName c) name
-        date' <- check (containerDate c) date
-        when (top' || name' || date') $ lift $ changeContainer c
-          { containerTop = top
-          , containerName = name
-          , containerDate = date
+        top <- fmap join . JE.keyMay "top" $ check (containerTop c) . Just =<< JE.asBool
+        name <- fmap join . JE.keyMay "name" $ check (containerName c) . Just =<< JE.perhaps JE.asText
+        date <- fmap join . JE.keyMay "date" $ check (containerDate c) . Just =<< JE.perhaps asDate
+        when (isJust top || isJust name || isJust date) $ lift $ changeContainer c
+          { containerTop = fromMaybe (containerTop c) top
+          , containerName = fromMaybe (containerName c) name
+          , containerDate = fromMaybe (containerDate c) date
           }
         return c)
       =<< lift (lookupIngestContainer vol key)
     inObj c $ do
       _ <- JE.keyMay "release" $ do
-        release <- asRelease
-        release' <- check (containerRelease c) release
-        when release' $ do
-          r <- lift $ changeRelease (containerSlot c) release
-          unless r $ throwPE "update failed"
+        release <- check (containerRelease c) . Just =<< asRelease
+        Fold.forM_ release $ \r -> do
+          o <- lift $ changeRelease (containerSlot c) r
+          unless o $ throwPE "update failed"
       _ <- JE.key "records" $ JE.eachInArray $ do
         r <- record
         seg <- JE.keyOrDefault "position" fullSegment asSegment
@@ -169,13 +170,14 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
   record = do
     rid <- JE.keyMay "id" $ Id <$> JE.asIntegral
     key <- JE.key "key" $ asKey
-    category <- JE.key "category" asCategory
     r <- maybe
       (do
         r <- maybe
-          (lift $ addRecord (blankRecord vol)
-            { recordCategory = category
-            })
+          (do
+            category <- JE.key "category" asCategory
+            lift $ addRecord (blankRecord vol)
+              { recordCategory = category
+              })
           (\i -> fromMaybeM (throwPE $ "record " <> T.pack (show i) <> "/" <> key <> " not found")
             =<< lift (lookupVolumeRecord vol i))
           rid
@@ -184,10 +186,12 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
       (\r -> inObj r $ do
         unless (Fold.all (recordId r ==) rid) $ do
           throwPE "id mismatch"
-        category' <- on check (fmap recordCategoryName) (recordCategory r) category
-        when category' $ lift $ changeRecord r
-          { recordCategory = category
-          }
+        _ <- JE.key "category" $ do
+          category <- asCategory
+          category' <- (category <$) <$> check (recordCategoryName <$> recordCategory r) (Just $ recordCategoryName <$> category)
+          Fold.forM_ category' $ \c -> lift $ changeRecord r
+            { recordCategory = c
+            }
         return r)
       =<< lift (lookupIngestRecord vol key)
     inObj r $
@@ -198,4 +202,25 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
       file <- asStageFile dir
       fmt <- fromMaybeM (throwPE "unknown file format") $ getFormatByFilename $ toRawFilePath $ stageFileRel file
       return (file, fmt)
-    return ()
+    a <- maybe
+      (do
+        release <- JE.key "release" asRelease
+        name <- JE.keyMay "name" JE.asText
+        a <- lift $ addAsset (blankAsset vol)
+          { assetFormat = fmt
+          , assetRelease = release
+          , assetName = name
+          } (Just $ toRawFilePath $ stageFileAbs file)
+        lift $ addIngestAsset a (stageFileRel file)
+        return a)
+      (\a -> inObj a $ do
+        unless (assetBacked a) $ throwPE "ingested asset incomplete"
+        release <- fmap join . JE.keyMay "release" $ check (assetRelease a) . Just =<< asRelease
+        name <- fmap join . JE.keyMay "name" $ check (assetName a) . Just =<< JE.perhaps JE.asText
+        if (isJust release || isJust name) then lift $ changeAsset a
+          { assetRelease = fromMaybe (assetRelease a) release
+          , assetName = fromMaybe (assetName a) name
+          } Nothing
+        else return a)
+      =<< lift (lookupIngestAsset vol $ stageFileRel file)
+    return a
