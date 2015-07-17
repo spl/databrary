@@ -49,8 +49,7 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 target_path = "https://databrary.org"
-databraryShoulder = {ezid_api.schemes['ark'] : '87910/b9', ezid_api.schemes['doi'] : '10.17910/B7'}
-
+auth_num = "10.17910/B7"
 
 sql = { 'QueryAll' : ("SELECT v.id as target, volume_creation(v.id), volume_access_check(v.id, -1) > 'NONE', v.name as title, "
             "owners as creator, doi, c.url, v.body "
@@ -200,7 +199,7 @@ def postData(db, payload):
     if not EZID_USER:
         db.query("SELECT username, password FROM ezid_account")
         (EZID_USER, EZID_PASS) = db._cur.fetchone()
-    ezid_doi_session = ezid_api.ApiSession(username=EZID_USER, password=EZID_PASS, scheme='doi', naa=databraryShoulder)
+    ezid_doi_session = ezid_api.ApiSession(username=EZID_USER, password=EZID_PASS, scheme='doi', naa=auth_num)
     #check if the server is up, if not, bail
     server_response = ezid_doi_session.checkserver()
     if server_response == True:
