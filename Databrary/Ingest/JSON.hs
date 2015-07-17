@@ -25,18 +25,24 @@ import System.IO (withBinaryFile, IOMode(ReadMode))
 
 import Paths_databrary
 import Databrary.Ops
-import Databrary.Has (Has, view)
+import Databrary.Has (Has, view, focusIO)
 import qualified Databrary.JSON as J
+import Databrary.Files
+import Databrary.Store.Types
+import Databrary.Store.Stage
 import Databrary.Model.Time
 import Databrary.Model.Kind
 import Databrary.Model.Id.Types
 import Databrary.Model.Audit
 import Databrary.Model.Volume
 import Databrary.Model.Container
+import Databrary.Model.Segment
 import Databrary.Model.Slot.Types
 import Databrary.Model.Release
 import Databrary.Model.Record
 import Databrary.Model.RecordCategory
+import Databrary.Model.RecordSlot
+import Databrary.Model.Format
 import Databrary.Model.Ingest
 
 type IngestT m a = ExceptT T.Text m a
@@ -79,7 +85,21 @@ asCategory = JE.perhaps $ do
     n <- JE.asText
     fromMaybeM (throwPE "category not found") $ find ((n ==) . recordCategoryName) allRecordCategories
 
-ingestJSON :: (MonadIO m, MonadAudit c m) => Volume -> J.Value -> Bool -> Bool -> m (Either [T.Text] [Container])
+asSegment :: (Functor m, Monad m) => IngestParseT m Segment
+asSegment = JE.fromAesonParser
+
+data StageFile = StageFile
+  { stageFileRel :: FilePath
+  , stageFileAbs :: FilePath
+  }
+
+asStageFile :: (MonadStorage c m) => FilePath -> IngestParseT m StageFile
+asStageFile b = do
+  r <- (b </>) <$> JE.asString
+  a <- fromMaybeM (throwPE "stage file not found") =<< lift (focusIO (stageFile r))
+  return $ StageFile r a
+
+ingestJSON :: (MonadAudit c m, MonadStorage c m) => Volume -> J.Value -> Bool -> Bool -> m (Either [T.Text] [Container])
 ingestJSON vol jdata' run overwrite = runExceptT $ do
   schema <- mapExceptT liftIO loadSchema
   jdata <- jsErr $ JS.validate schema jdata'
@@ -92,12 +112,13 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
     | not overwrite = throwPE $ "conflicting value: " <> T.pack (show b) <> " <> " <> T.pack (show a)
     | otherwise = return True
   volume = do
+    dir <- JE.keyOrDefault "directory" "" $ stageFileRel <$> asStageFile ""
     _ <- JE.keyMay "name" $ do
       name <- JE.asText
       name' <- check (volumeName vol) name
       when name' $ lift $ changeVolume vol{ volumeName = name }
-    JE.key "containers" $ JE.eachInArray container
-  container = do
+    JE.key "containers" $ JE.eachInArray (container dir)
+  container dir = do
     cid <- JE.keyMay "id" $ Id <$> JE.asIntegral
     key <- JE.key "key" $ asKey
     top <- JE.keyOrDefault "top" False JE.asBool
@@ -136,7 +157,14 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
         when release' $ do
           r <- lift $ changeRelease (containerSlot c) release
           unless r $ throwPE "update failed"
-      _ <- JE.key "records" $ JE.eachInArray record
+      _ <- JE.key "records" $ JE.eachInArray $ do
+        r <- record
+        seg <- JE.keyOrDefault "position" fullSegment asSegment
+        o <- lift $ moveRecordSlot (RecordSlot r (Slot c emptySegment)) seg
+        unless o $ throwPE "record link failed"
+      _ <- JE.key "assets" $ JE.eachInArray $ do
+        a <- asset dir
+        return a
       return c
   record = do
     rid <- JE.keyMay "id" $ Id <$> JE.asIntegral
@@ -165,3 +193,9 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
     inObj r $
       return ()
     return r
+  asset dir = do
+    (file, fmt) <- JE.key "file" $ do
+      file <- asStageFile dir
+      fmt <- fromMaybeM (throwPE "unknown file format") $ getFormatByFilename $ toRawFilePath $ stageFileRel file
+      return (file, fmt)
+    return ()
