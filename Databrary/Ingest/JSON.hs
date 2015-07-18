@@ -19,6 +19,7 @@ import Data.Maybe (isJust, fromMaybe)
 import Data.Monoid (mempty, (<>))
 import Data.Time.Format (parseTime)
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 import qualified Data.Vector as V
 import System.Locale (defaultTimeLocale)
 import System.IO (withBinaryFile, IOMode(ReadMode))
@@ -41,6 +42,8 @@ import Databrary.Model.Slot.Types
 import Databrary.Model.Release
 import Databrary.Model.Record
 import Databrary.Model.RecordCategory
+import Databrary.Model.Metric
+import Databrary.Model.Measure
 import Databrary.Model.RecordSlot
 import Databrary.Model.Asset
 import Databrary.Model.Format
@@ -194,8 +197,11 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
             }
         return r)
       =<< lift (lookupIngestRecord vol key)
-    inObj r $
-      return ()
+    _ <- inObj r $ JE.forEachInObject $ \m ->
+      unless (m `elem` ["id", "key", "category", "position"]) $ do
+        metric <- fromMaybeM (throwPE "metric not found") $ find ((m ==) . metricName) allMetrics
+        datum <- maybe return (check . measureDatum) (getMeasure metric (recordMeasures r)) . Just . TE.encodeUtf8 =<< JE.asText
+        Fold.forM_ datum $ lift . changeRecordMeasure . Measure r metric
     return r
   asset dir = do
     (file, fmt) <- JE.key "file" $ do

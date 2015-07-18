@@ -130,7 +130,7 @@ Executable databrary
     fast-logger,
     digest,
     hjsonschema,
-    aeson-better-errors >= 0.9
+    aeson-better-errors > 0.9
 
   if flag(tls)
     Build-depends: warp-tls
