@@ -3,7 +3,7 @@
 app.controller 'party/search', [
   '$scope', '$location', 'displayService', 'parties',
   ($scope, $location, display, parties) ->
-    limit = 24 # server-side default
+    limit = 25-1 # server-side default
     offset = parseInt($location.search().offset, 10) || 0
     display.title = 'Users'
     $scope.parties = parties
