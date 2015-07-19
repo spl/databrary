@@ -4,7 +4,7 @@ module Databrary.Ingest.JSON
   ) where
 
 import Control.Arrow (left)
-import Control.Monad (join, when, unless)
+import Control.Monad (join, when, unless, void)
 import Control.Monad.Except (ExceptT(..), runExceptT, mapExceptT, throwError, catchError)
 import Control.Monad.IO.Class (MonadIO(liftIO))
 import Control.Monad.Trans.Class (lift)
@@ -26,11 +26,13 @@ import System.IO (withBinaryFile, IOMode(ReadMode))
 
 import Paths_databrary
 import Databrary.Ops
-import Databrary.Has (Has, view, focusIO)
+import Databrary.Has (Has, view, MonadHas, focusIO)
 import qualified Databrary.JSON as J
 import Databrary.Files
 import Databrary.Store.Types
 import Databrary.Store.Stage
+import Databrary.Store.Probe
+import Databrary.Store.AV
 import Databrary.Model.Time
 import Databrary.Model.Kind
 import Databrary.Model.Id.Types
@@ -47,6 +49,7 @@ import Databrary.Model.Measure
 import Databrary.Model.RecordSlot
 import Databrary.Model.Asset
 import Databrary.Model.Format
+import Databrary.Model.Transcode
 import Databrary.Model.Ingest
 
 type IngestT m a = ExceptT T.Text m a
@@ -73,6 +76,9 @@ throwPE = JE.throwCustomError
 
 inObj :: forall a b m . (Functor m, Kinded a, Has (Id a) a, Show (IdType a)) => a -> IngestParseT m b -> IngestParseT m b
 inObj o = JE.mapError $ (<>) $ " for " <> kindOf o <> T.pack (' ' : show (view o :: Id a))
+
+noKey :: (Functor m, Monad m) => T.Text -> IngestParseT m ()
+noKey k = void $ JE.keyMay k $ throwPE "unhandled value"
 
 asKey :: (Functor m, Monad m) => IngestParseT m IngestKey
 asKey = JE.asText
@@ -103,7 +109,7 @@ asStageFile b = do
   a <- fromMaybeM (throwPE "stage file not found") =<< lift (focusIO (stageFile r))
   return $ StageFile r a
 
-ingestJSON :: (MonadAudit c m, MonadStorage c m) => Volume -> J.Value -> Bool -> Bool -> m (Either [T.Text] [Container])
+ingestJSON :: (MonadAudit c m, MonadStorage c m, MonadHas AV c m) => Volume -> J.Value -> Bool -> Bool -> m (Either [T.Text] [Container])
 ingestJSON vol jdata' run overwrite = runExceptT $ do
   schema <- mapExceptT liftIO loadSchema
   jdata <- jsErr $ JS.validate schema jdata'
@@ -204,16 +210,17 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
         Fold.forM_ datum $ lift . changeRecordMeasure . Measure r metric
     return r
   asset dir = do
-    (file, fmt) <- JE.key "file" $ do
+    (file, probe) <- JE.key "file" $ do
       file <- asStageFile dir
-      fmt <- fromMaybeM (throwPE "unknown file format") $ getFormatByFilename $ toRawFilePath $ stageFileRel file
-      return (file, fmt)
+      either throwPE (return . (,) file)
+        =<< lift (probeFile (toRawFilePath $ stageFileRel file) (toRawFilePath $ stageFileAbs file))
+    ae <- lift (lookupIngestAsset vol $ stageFileRel file)
     a <- maybe
       (do
         release <- JE.key "release" asRelease
         name <- JE.keyMay "name" JE.asText
         a <- lift $ addAsset (blankAsset vol)
-          { assetFormat = fmt
+          { assetFormat = probeFormat probe
           , assetRelease = release
           , assetName = name
           } (Just $ toRawFilePath $ stageFileAbs file)
@@ -228,5 +235,17 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
           , assetName = fromMaybe (assetName a) name
           } Nothing
         else return a)
-      =<< lift (lookupIngestAsset vol $ stageFileRel file)
+      ae
+    t <- case probe of
+      ProbePlain _ -> do
+        noKey "clip"
+        noKey "options"
+        return a
+      ProbeVideo _ av -> do
+        clip <- JE.keyOrDefault "clip" fullSegment asSegment
+        opts <- JE.keyOrDefault "options" defaultTranscodeOptions $ JE.eachInArray JE.asString
+        Just t <- flatMapM
+          (\_ -> lift $ findTranscode a clip opts)
+          ae
+        return $ transcodeAsset t
     return a
