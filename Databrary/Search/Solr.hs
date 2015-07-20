@@ -152,8 +152,8 @@ instance ToJSON SolrQuery where
                   "params" .= object [
                         "defType" .= ("edismax" :: String),
                         "q" .= sQquery,
-                        {- "qf" .= (volumeQf ++ (" " :: String) ++ containerQf), -}
-                        {- "pf" .= (volumePf ++ (" " :: String) ++ containerPf), -}
+                        "qf" .= (volumeQf ++ (" " :: String) ++ containerQf),
+                        "pf" .= (volumePf ++ (" " :: String) ++ containerPf),
                         "ps" .= (3 :: Int),
                         {- "mm" .= (75 :: Int), -}
                         "tie" .= (0.1 :: Float),
@@ -167,8 +167,8 @@ instance ToJSON SolrQuery where
                   ]
                 ]
 
-volumeQf = "text_en^0.6 text_exact^1.5 volume_keywords_ss^10.0 volume_tags_ss^5.0 party_name^5.0" :: String
-volumePf = "volume_keywords_ss^10.0 volume_tags_ss^5.0 party_name^5.0" :: String
+volumeQf = "text_en^0.6 text_exact^1.5 volume_keywords_ss^10.0 volume_tags_ss^5.0 party_name_s^5.0" :: String
+volumePf = "volume_keywords_ss^10.0 volume_tags_ss^5.0 party_name_s^5.0" :: String
 containerQf = "container_ethnicity_s^5 container_gender_s^5 container_race_s^5 container_text_t^3" :: String
 containerPf = "container_ethnicity_s^5 container_gender_s^5 container_race_s^5 container_text_t^3" :: String
 
