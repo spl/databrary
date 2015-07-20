@@ -33,8 +33,8 @@ data Party = Party
   , partyAffiliation :: Maybe T.Text
   , partyURL :: Maybe URI
   , partyAccount :: Maybe Account
-  , partyPermission :: Permission
-  , partyAccess :: Maybe Access
+  , partyPermission :: Permission -- permission current user has over this party
+  , partyAccess :: Maybe Access -- direct authorization this party has granted to current user
   }
 
 data Account = Account

@@ -96,7 +96,7 @@ passwordForm acct = do
 
 paginationForm :: (Applicative m, Monad m) => DeformT f m (Int32, Int32)
 paginationForm = (,)
-  <$> ("limit" .:> (deformCheck "Invalid limit" (\l -> l > 0 && l <= 129) =<< deform) <|> return 32)
+  <$> ("limit" .:> (deformCheck "Invalid limit" (\l -> l > 0 && l <= 129) =<< deform) <|> return 25)
   <*> ("offset" .:> (deformCheck "Invalid offset" (>= 0) =<< deform) <|> return 0)
 
 csrfForm :: (MonadAuthAction q m) => DeformT f m ()

@@ -49,6 +49,7 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 target_path = "https://databrary.org"
+auth_num = "10.17910/B7"
 
 sql = { 'QueryAll' : ("SELECT v.id as target, volume_creation(v.id), volume_access_check(v.id, -1) > 'NONE', v.name as title, "
             "owners as creator, doi, c.url, v.body "
@@ -92,12 +93,10 @@ def _getFunders(db, v): #v is a single volume id -> list
             funder_data.append({"award_no":f[1], "funder":f[2], "fundref_id":f[3]})
     return funder_data
 
-def _addDOIS(db, new_dois):
-    '''takes a list of dicts with dois and the volumes they belong to and updates the database with those values'''
-
-    for i in new_dois:
-        params = (i['doi'], i['vol'])
-        db.insert(sql['AddDOI'], params)
+def _addDOI(db, new_doi):
+    '''takes a dict with doi and the volume it belongs to and updates the database with those values'''
+    params = (new_doi['doi'], new_doi['vol'])
+    db.insert(sql['AddDOI'], params)
     db._conn.commit()
 
 def _createXMLDoc(row, volume, funders, doi=None): #tuple, str, list, str -> xml str
@@ -194,10 +193,10 @@ def makeMetadata(db, rs): #rs is a list -> list of metadata dict
 
 def postData(db, payload):
     global EZID_USER, EZID_PASS
-    new_dois = []
     if not EZID_USER:
-        (EZID_USER, EZID_PASS) = db.query("SELECT username, password FROM ezid_account")._cur.fetchone()
-    ezid_doi_session = ezid_api.ApiSession(username=EZID_USER, password=EZID_PASS, scheme='doi')
+        db.query("SELECT username, password FROM ezid_account")
+        (EZID_USER, EZID_PASS) = db._cur.fetchone()
+    ezid_doi_session = ezid_api.ApiSession(username=EZID_USER, password=EZID_PASS, scheme='doi', naa=auth_num)
     #check if the server is up, if not, bail
     server_response = ezid_doi_session.checkserver()
     if server_response == True:
@@ -216,11 +215,11 @@ def postData(db, payload):
             mint_res = ezid_doi_session.mint(record)
         if mint_res.startswith('doi'):
             curr_doi = mint_res.split('|', 1)[0].strip().split(':', 1)[1]
-            new_dois.append({'vol':volume, 'doi':curr_doi})
+            new_doi = {'vol':volume, 'doi':curr_doi}
+            _addDOI(db, new_doi)
             logger.info('minted doi: %s for volume %s' % (curr_doi, volume))
         else:
             logger.error('something went wrong minting a DOI for volume %s, error returned: %s' % (volume, mint_res))
-    _addDOIS(db, new_dois)
     #next update existing records with dois
     for q in payload['modify']:
         identifier = q['_id']

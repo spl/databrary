@@ -24,7 +24,7 @@ app.directive('accessGrantForm', [
         return p == constants.permission.READ ||
           p == constants.permission.EDIT ||
           p == constants.permission.ADMIN ||
-          models.Login.checkAccess(constants.permission.ADMIN);
+          models.Login.checkAuthorization(constants.permission.ADMIN);
       };
 
       //
@@ -33,7 +33,9 @@ app.directive('accessGrantForm', [
         messages.clear(form);
         form.data.children = form.data.extend ? form.data.individual : 0;
 
+        form.$setSubmitted();
         volume.accessSave(access.party.id, form.data).then(function () {
+          form.$setUnsubmitted();
           messages.add({
             body: constants.message('access.grant.save.success'),
             type: 'green',
@@ -43,6 +45,7 @@ app.directive('accessGrantForm', [
           delete access.new;
           form.$setPristine();
         }, function (res) {
+          form.$setUnsubmitted();
           messages.addError({
             body: constants.message('access.grant.save.error'),
             report: res,
@@ -59,7 +62,9 @@ app.directive('accessGrantForm', [
           form.removeSuccessFn(access);
           return;
         }
+        form.$setSubmitted();
         volume.accessRemove(access.party.id).then(function () {
+          form.$setUnsubmitted();
           messages.add({
             body: constants.message('access.grant.remove.success'),
             type: 'green',
@@ -69,6 +74,7 @@ app.directive('accessGrantForm', [
           form.$setPristine();
           form.removeSuccessFn(access);
         }, function (res) {
+          form.$setUnsubmitted();
           messages.addError({
             body: constants.message('access.grant.remove.error'),
             report: res,

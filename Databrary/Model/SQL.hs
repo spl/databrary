@@ -11,10 +11,14 @@ module Databrary.Model.SQL
 import Control.Monad (guard)
 import Database.PostgreSQL.Typed.Protocol (PGError(..), pgErrorCode)
 import Database.PostgreSQL.Typed.Query (PGQuery)
+import qualified Language.Haskell.TH as TH
 
 import Databrary.Ops
 import Databrary.Service.DB
 import Databrary.Model.SQL.Select
+
+selectQuery :: Selector -> String -> TH.ExpQ
+selectQuery = selectDistinctQuery Nothing
 
 isUniqueViolation, isExclusionViolation, isForeignKeyViolation :: PGError -> Bool
 isUniqueViolation = ("23505" ==) . pgErrorCode

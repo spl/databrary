@@ -211,25 +211,31 @@ app.provider('routerService', [
 
     //
 
-    var partyView = {
+    routes.profile = makeRoute(controllers.viewProfile, [], {
+      controller: 'party/profile',
+      templateUrl: 'party/profile.html',
+      resolve: {
+        party: [
+          'modelService', function (models) {
+            return models.Login.user.get({parents:'', children:'', volumes:'access'});
+          }
+        ]
+      },
+      reloadOnSearch: false,
+    });
+
+    routes.party = makeRoute(controllers.viewParty, ['id'], {
       controller: 'party/view',
       templateUrl: 'party/view.html',
       resolve: {
         party: [
           'pageService', function (page) {
-            var req = ['access', 'parents', 'children', 'volumes'];
-            if ('id' in page.$route.current.params)
-              return page.models.Party.get(page.$route.current.params.id, req);
-            else
-              return page.models.Login.user.get(req);
+            return page.models.Party.get(page.$route.current.params.id, ['parents', 'children', 'access']);
           }
         ],
       },
       reloadOnSearch: false,
-    };
-
-    routes.profile = makeRoute(controllers.viewProfile, [], partyView);
-    routes.party = makeRoute(controllers.viewParty, ['id'], partyView);
+    });
 
     //
 
@@ -267,7 +273,7 @@ app.provider('routerService', [
         volume: [
           'pageService', function (page) {
             if (!('id' in page.$route.current.params)) {
-              return page.models.Login.user.get({'parents':'access'})
+              return page.models.Login.user.get({parents:'authorization'})
                 .then(function () {
                   return undefined;
                 });
@@ -397,6 +403,8 @@ app.provider('routerService', [
     routes.volumeThumb = makeRoute(controllers.thumbVolume, ['id', 'size']);
     routes.assetThumb = makeRoute(controllers.thumbAssetSegment, ['cid', 'segment', 'id', 'size']);
     routes.assetDownload = makeRoute(controllers.downloadAssetSegment, ['cid', 'segment', 'id', 'inline']);
+
+    $routeProvider.otherwise('/');
 
     //
 

@@ -42,6 +42,8 @@ import Databrary.Controller.Ingest
 import Databrary.Controller.Web
 import Databrary.Web.Routes
 
+import Databrary.Controller.Email
+
 routeMap :: RouteMap AppAction
 routeMap = fromRouteList
   [ route viewRoot
@@ -62,6 +64,7 @@ routeMap = fromRouteList
   , route viewParty
   , route postParty
   , route viewPartyEdit
+  , route viewPartyCreate
   , route viewAuthorize
   , route postAuthorize
   , route deleteAuthorize
@@ -138,6 +141,8 @@ routeMap = fromRouteList
   , route viewIngest
   , route postIngest
 
+  , route testEmail
+  
   , route webFile
   ]
 

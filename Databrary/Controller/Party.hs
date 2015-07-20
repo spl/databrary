@@ -3,6 +3,7 @@ module Databrary.Controller.Party
   ( getParty
   , viewParty
   , viewPartyEdit
+  , viewPartyCreate
   , postParty
   , createParty
   , queryParties
@@ -68,25 +69,30 @@ partyJSONField p "parents" o = do
   now <- peek
   fmap (Just . JSON.toJSON) . mapM (\a -> do
     let ap = authorizeParent (authorization a)
-    acc <- if access then Just . accessSite <$> lookupAuthorization ap rootParty else return Nothing
+    acc <- if auth then Just . accessSite <$> lookupAuthorization ap rootParty else return Nothing
     return $ (if admin then authorizeJSON a else mempty)
-      JSON..+ ("party" JSON..= (partyJSON ap JSON..+? (("access" JSON..=) <$> acc)))
+      JSON..+ ("party" JSON..= (partyJSON ap JSON..+? (("authorization" JSON..=) <$> acc)))
       JSON..+? (admin && authorizeExpired a now ?> "expired" JSON..= True))
     =<< lookupAuthorizedParents p admin
   where
   admin = view p >= PermissionADMIN
-  access = admin && o == Just "access"
+  auth = admin && o == Just "authorization"
 partyJSONField p "children" _ =
   Just . JSON.toJSON . map (\a ->
     let ap = authorizeChild (authorization a) in
     (if admin then authorizeJSON a else mempty) JSON..+ ("party" JSON..= partyJSON ap))
     <$> lookupAuthorizedChildren p admin
   where admin = view p >= PermissionADMIN
-partyJSONField p "volumes" ma = do
-  Just . JSON.toJSON . map (\va -> 
-    volumeAccessJSON va JSON..+ ("volume" JSON..= volumeJSON (volumeAccessVolume va)))
-    <$> lookupPartyVolumeAccess p (fromMaybe PermissionNONE $ readDBEnum . BSC.unpack =<< ma)
-partyJSONField p "access" _ = do
+partyJSONField p "volumes" o = (?$>) (view p >= PermissionADMIN) $
+  fmap JSON.toJSON . mapM vf =<< lookupPartyVolumes p PermissionREAD
+  where
+  vf v
+    | o == Just "access" = (volumeJSON v JSON..+) . ("access" JSON..=) . map volumeAccessPartyJSON <$> lookupVolumeAccess v (succ PermissionNONE)
+    | otherwise = return $ volumeJSON v
+partyJSONField p "access" ma = do
+  Just . JSON.toJSON . map volumeAccessVolumeJSON
+    <$> lookupPartyVolumeAccess p (fromMaybe PermissionEDIT $ readDBEnum . BSC.unpack =<< ma)
+partyJSONField p "authorization" _ = do
   Just . JSON.toJSON . accessSite <$> lookupAuthorization p rootParty
 partyJSONField _ _ _ = return Nothing
 
@@ -140,6 +146,11 @@ viewPartyEdit = action GET (pathHTML >/> pathPartyTarget </< "edit") $ \i -> wit
   p <- getParty (Just PermissionADMIN) i
   blankForm $ htmlPartyForm $ Just p
 
+viewPartyCreate :: AppRoute ()
+viewPartyCreate = action GET (pathHTML </< "party" </< "create") $ \() -> withAuth $ do
+  checkMemberADMIN
+  blankForm $ htmlPartyForm Nothing
+
 postParty :: AppRoute (API, PartyTarget)
 postParty = multipartAction $ action POST (pathAPI </> pathPartyTarget) $ \(api, i) -> withAuth $ do
   p <- getParty (Just PermissionADMIN) i
@@ -153,8 +164,7 @@ postParty = multipartAction $ action POST (pathAPI </> pathPartyTarget) $ \(api,
 
 createParty :: AppRoute API
 createParty = multipartAction $ action POST (pathAPI </< "party") $ \api -> withAuth $ do
-  perm <- peeks accessPermission'
-  _ <- checkPermission PermissionADMIN perm
+  checkMemberADMIN
   (bp, a) <- processParty api Nothing
   p <- addParty bp
   when (isJust a) $
@@ -166,8 +176,8 @@ createParty = multipartAction $ action POST (pathAPI </< "party") $ \api -> with
 partySearchForm :: (Applicative m, Monad m) => DeformT f m PartyFilter
 partySearchForm = PartyFilter
   <$> ("query" .:> deformNonEmpty deform)
-  <*> ("access" .:> optional deform)
-  <*> ("institution" .:> optional deform)
+  <*> ("authorization" .:> optional deform)
+  <*> ("institution" .:> deformNonEmpty deform)
   <*> ("authorize" .:> optional deform)
   <*> pure Nothing
 

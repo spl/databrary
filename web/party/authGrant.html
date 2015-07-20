@@ -1,21 +1,22 @@
 <ng-form name="authGrantForm" class="auth-grant-form">
   <fieldset class="skinny clean radio-set">
     <div class="permission-auth-heading">
-      <span message="auth.site.edit"></span>&nbsp;<span ng-bind="'auth.site' | possessive:party"></span>
+      <span message="auth.site.edit"></span> <span ng-bind="'auth.site' | possessive:party"></span>
     </div>
 
     <div ng-repeat="(val, name) in page.constants.permission" ng-if="::canGrantSite(val)">
-      <input type="radio" ng-model="authGrantForm.data.site" name="auth-{{auth.party.id}}-site" ng-value="val" ng-selected="val == authGrantForm.data.site">
-      <label class="option">
+      <input type="radio" ng-model="authGrantForm.data.site" name="auth-{{auth.party.id}}-site" ng-value="val" ng-selected="val == authGrantForm.data.site" ng-disabled="::val >= party.authorization">
+      <label class="option" ng-class="::{disabled:val >= party.authorization}">
         <strong message="auth.site.{{::name}}.title"></strong>: 
-        {{'auth.site.'+name | possessive:party}}
+        {{'auth.site.'+name | possessive:party}} 
+        <mark ng-if="val >= party.authorization" ng-bind="'auth.site.disabled' | message:('auth.site.'+page.constants.permission[val+1]+'.title' | message)"></mark>
       </label>
     </div>
   </fieldset>
 
   <fieldset class="skinny clean radio-set">
     <div class="permission-auth-heading">
-      <span message="auth.member.edit"></span>&nbsp;<span ng-bind="'auth.member' | possessive:party"></span>
+      <span message="auth.member.edit"></span> <span ng-bind="'auth.member' | possessive:party"></span>
     </div>
 
     <div ng-repeat="(val, name) in page.constants.permission" ng-if="::canGrantMember(val)">

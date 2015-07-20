@@ -1,10 +1,10 @@
 <ng-form name="volumeEditAccessForm">
-  <fieldset class="radio-set volume-edit-access-radioset" ng-disabled="!page.models.Login.checkAccess(page.permission.EDIT)" ng-form="accessGlobalForm">
-    <legend message="access.global.legend"></legend>
-    <div class="col message message-yellow message-content" ng-if="::!page.models.Login.checkAccess(page.permission.EDIT)" message="access.global.restricted"></div>
-    <div ng-repeat="perms in page.constants.accessGlobal track by $index">
-      <input type="radio" ng-model="volumeEditAccessForm.globalVal" name="access-global" ng-value="$index">
-      <label message="access.global.{{::perms.map(permissionName).join('.')}}" class="option"></label>
+  <fieldset class="radio-set volume-edit-access-radioset" ng-disabled="!page.models.Login.checkAuthorization(page.permission.EDIT)" ng-form="accessPresetForm">
+    <legend message="access.preset.legend"></legend>
+    <div class="col message message-yellow message-content" ng-if="::!page.models.Login.checkAuthorization(page.permission.EDIT)" message="access.preset.restricted"></div>
+    <div ng-repeat="perms in page.constants.accessPreset track by $index">
+      <input type="radio" ng-model="volumeEditAccessForm.preset" name="access-preset" ng-value="$index">
+      <label class="option"><span message="access.preset.title{{::$index}}"></span>: <span message="access.preset.select{{::$index}}"></span></label>
     </div>
   </fieldset>
 
@@ -18,7 +18,7 @@
     </fieldset>
   </scroll-float>
 
-  <fieldset ng-show="volumeEditAccessForm.data.length > 0">
+  <fieldset>
     <legend message="access.grant.legend"></legend>
     <article ng-repeat="access in volumeEditAccessForm.data track by access.party.id" id="access-{{::access.party.id}}" class="access-grant cf anchor">
       <div class="row">

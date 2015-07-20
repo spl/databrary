@@ -14,8 +14,8 @@
           <ul class="toolbar-nav-ul inline-block flat cf">
             <li ng-class="{'hide-tablet hide-desktop': !hoverNav}">
               <a href="" class="toolbar-nav-toggle" ng-click="hoverNavToggle($event)">
-                <img src="/web/images/icon/navmenu.svg" class="icon" ng-show="!hoverNav">
-                <img src="/web/images/icon/backarrow.svg" class="icon" ng-show="hoverNav">
+                <img src="/web/icons/navmenu.svg" class="icon" ng-show="!hoverNav">
+                <img src="/web/icons/backarrow.svg" class="icon" ng-show="hoverNav">
               </a>
             </li>
             <li ng-class="{'hide-mobile':!hoverNav}">
@@ -46,8 +46,8 @@
             <li ng-class="{'hide-mobile':!hoverNav}">
               <a href="//databrary.org/community.html"><span>Community</span></a>
               <ul>
-                <li><a ng-href="{{::page.router.partySearch()}}">Authorized Investigators</a></li>
-                <li><a ng-href="{{::page.router.partySearch()}}?institution=true&access=5">Institutions</a></li>
+                <li><a ng-href="{{::page.router.partySearch()}}?institution=false&authorization=4">Authorized Investigators</a></li>
+                <li><a ng-href="{{::page.router.partySearch()}}?institution=true&authorization=5">Institutions</a></li>
                 <li><a href="//databrary.org/community/board.html">Board</a></li>
               </ul>
             </li>
@@ -73,13 +73,13 @@
         </span>
 
         <a href="" ng-click="hoverSearchToggle($event)" class="toolbar-search-toggle">
-          <img src="/web/images/icon/search.svg" class="icon">
+          <img src="/web/icons/search.svg" class="icon">
           <span class="hide-mobile hide-tablet">Search</span>
         </a>
 
         <span class="sep">|</span>
 
-        <a href="mailto:feedback@databrary.org" class="icon contact" id="toolbar-contact" target="_blank" tooltip="'toolbar.contact' | message"></a>
+        <a href="//databrary.org/about/support.html" class="icon contact" id="toolbar-contact" target="_blank" tooltip="'toolbar.contact' | message"></a>
 
       </div>
 
@@ -98,17 +98,6 @@
                 <a ng-href="{{::page.router.volumeCreate()}}" message="volume.edit.create" ng-if="::page.models.Login.isAuthorized()"></a>
               </li>
               <li><a href="" ng-click="page.auth.logout()" message="toolbar.logout"></a>
-              </li>
-
-              <li ng-if="::page.models.Login.user.superuser !== undefined" class="toolbar-password-form">
-                <ng-form name="superuserForm" ng-if="::!page.models.Login.user.superuser" class="cf">
-                  <input type="password" class="mini password" ng-model="superuserForm.auth" placeholder="Password" key-enter="page.auth.toggleSU(superuserForm)">
-                  <button type="submit" class="link toolbar-superuser off" ng-click="page.auth.toggleSU(superuserForm)">
-                    activate SU
-                  </button>
-                </ng-form>
-
-                <a ng-if="::page.models.Login.user.superuser" class="toolbar-superuser on" href="#" ng-click="page.auth.toggleSU()">deactivate SU</a>
               </li>
             </ul>
           </div>

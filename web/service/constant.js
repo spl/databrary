@@ -17,21 +17,12 @@ app.factory('constantService', [
         data[data[i]] = i;
     }
 
-    var invertBy = function (data, field) {
-      var r = {};
-      _.each(data, function (x) {
-        if (field in x)
-          r[x[field]] = x;
-      });
-      return r;
-    };
-
     constants.release['undefined'] = 'DEFAULT';
     constants.releases = Object.keys(constants.release);
     invertArray(constants.permission);
     invertArray(constants.release);
-    constants.categoryName = invertBy(constants.category, "name");
-    constants.metricName = invertBy(constants.metric, "name");
+    constants.categoryName = _.indexBy(constants.category, 'name');
+    constants.metricName = _.indexBy(constants.metric, 'name');
 
     /* convenient aliases: */
     constants.permission.VIEW = constants.permission.PUBLIC;
@@ -39,27 +30,27 @@ app.factory('constantService', [
     constants.permission.SUPER = constants.permission.length;
 
     /* backwards compatibility: */
-    _.each(constants.party, function (party, name) {
+    _.forEach(constants.party, function (party, name) {
       var uname = name.toUpperCase();
       if (angular.isObject(party) && name !== uname)
         constants.party[uname] = party.id;
     });
 
-    _.each(constants.category, function (cat) {
+    _.forEach(constants.category, function (cat) {
       var m = 'not.' + cat.name;
       cat.not = m in messages ? messages[m] : 'No ' + cat.name;
     });
 
-    _.each(constants.format, function (fmt) {
+    _.forEach(constants.format, function (fmt) {
       var m = fmt.mimetype;
       fmt.type = m.slice(0, m.indexOf('/'));
     });
 
-    constants.accessGlobal = [
-      [constants.permission.NONE, constants.permission.NONE],
+    constants.accessPreset = [
+      [constants.permission.NONE,   constants.permission.NONE],
       [constants.permission.PUBLIC, constants.permission.SHARED]
     ];
-    constants.accessGlobal.parties = [
+    constants.accessPreset.parties = [
       constants.party.NOBODY,
       constants.party.ROOT
     ];

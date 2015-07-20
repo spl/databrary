@@ -16,7 +16,9 @@ import qualified Text.Regex.Posix as Regex
 
 import Databrary.Ops
 import Databrary.Has (peek, view)
+#ifdef DEVEL
 import Databrary.Web.Uglify
+#endif
 import Databrary.Action
 import Databrary.HTTP (encodePath')
 import Databrary.HTTP.Request
