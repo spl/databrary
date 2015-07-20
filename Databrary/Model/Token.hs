@@ -11,6 +11,7 @@ module Databrary.Model.Token
   , lookupUpload
   , createUpload
   , removeUpload
+  , cleanTokens
   ) where
 
 import Control.Monad (when, void, (<=<))
@@ -19,10 +20,11 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Base64.URL as Base64
 import Data.Int (Int64)
 import Database.PostgreSQL.Typed (pgSQL)
-import System.Posix.Files.ByteString (removeLink)
+import Database.PostgreSQL.Typed.Query (simpleQueryFlags)
 
 import Databrary.Ops
 import Databrary.Has (view, peek, peeks)
+import Databrary.Files (removeFile)
 import Databrary.Service.Types
 import Databrary.Service.Entropy
 import Databrary.Service.Crypto
@@ -30,6 +32,7 @@ import Databrary.Service.DB
 import Databrary.Store.Types
 import Databrary.Store.Upload
 import Databrary.Model.SQL (selectQuery)
+import Databrary.Model.SQL.Select (makeQuery, selectOutput)
 import Databrary.Model.Offset
 import Databrary.Model.Id.Types
 import Databrary.Model.Identity.Types
@@ -124,8 +127,17 @@ removeSession :: (MonadDB m) => Session -> m Bool
 removeSession tok =
   dbExecute1 [pgSQL|DELETE FROM session WHERE token = ${view tok :: Id Token}|]
 
+removeUploadFile :: (MonadStorage c m) => Upload -> m Bool
+removeUploadFile tok = liftIO . removeFile =<< peeks (uploadFile tok)
+
 removeUpload :: (MonadDB m, MonadStorage c m) => Upload -> m Bool
 removeUpload tok = do
   r <- dbExecute1 [pgSQL|DELETE FROM upload WHERE token = ${view tok :: Id Token}|]
-  when r $ liftIO . removeLink =<< peeks (uploadFile tok)
+  when r $ void $ removeUploadFile tok
   return r
+
+cleanTokens :: (MonadDB m, MonadStorage c m) => m ()
+cleanTokens = do
+  toks <- dbQuery $ ($ nobodySiteAuth) <$> $(makeQuery simpleQueryFlags ("DELETE FROM upload WHERE expires < CURRENT_TIMESTAMP RETURNING " ++) (selectOutput selectUpload))
+  mapM_ removeUploadFile toks
+  dbExecute_ "DELETE FROM token WHERE expires < CURRENT_TIMESTAMP"

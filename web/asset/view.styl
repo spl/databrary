@@ -59,9 +59,11 @@
   margin-right b3
 
 .popup-classification
-  border-top 1px solid green51
   padding-top b1
   margin-top b2
+
+.popup-classification:not(.release-legend)
+  border-top 1px solid green51
 
 .popup-classification > ul
   text-align initial
@@ -81,9 +83,20 @@
 .download-files
   word-break break-all
   
+.download-no-permission
+  color pale
+  font-style oblique
+
+.download-sessions
+  border-top 3px solid green51
+  border-bottom 3px solid green51
+  
+.download-sessions > li:first-of-type, .popup-classification > ul > li
+  border-bottom none
+  margin-bottom b8
 .download-sessions > li
-  border-top 1px solid neutral51
+  border-bottom 1px solid neutral51
   padding-top b8
   padding-bottom b8
-.download-sessions > li:last-of-type
-  border-bottom 1px solid neutral51
+
+  

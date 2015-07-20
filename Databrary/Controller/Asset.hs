@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Databrary.Controller.Asset
   ( getAsset
+  , assetJSONField
   , viewAsset
   , AssetTarget(..)
   , postAsset
@@ -16,7 +17,7 @@ module Databrary.Controller.Asset
 
 import Control.Applicative ((<|>))
 import Control.Exception (try)
-import Control.Monad ((<=<), when, void, guard)
+import Control.Monad ((<=<), void, guard)
 import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.Trans.Class (lift)
 import qualified Data.ByteString as BS
@@ -69,7 +70,6 @@ import Databrary.Controller.Form
 import Databrary.Controller.Volume
 import Databrary.Controller.Slot
 import {-# SOURCE #-} Databrary.Controller.AssetSegment
-import Databrary.Controller.Angular
 import Databrary.View.Asset
 
 getAsset :: Permission -> Id Asset -> AuthActionM AssetSlot
@@ -99,7 +99,6 @@ assetDownloadName a = T.pack (show (assetId a)) : maybeToList (assetName a)
 
 viewAsset :: AppRoute (API, Id Asset)
 viewAsset = action GET (pathAPI </> pathId) $ \(api, i) -> withAuth $ do
-  when (api == HTML) angular
   asset <- getAsset PermissionPUBLIC i
   case api of
     JSON -> okResponse [] =<< assetJSONQuery asset =<< peeks Wai.queryString
@@ -132,10 +131,10 @@ data FileUpload = FileUpload
   , fileUploadProbe :: Maybe AVProbe
   }
 
-deformLookup :: (Monad m, Functor m, Deform a) => FormErrorMessage -> (a -> m (Maybe b)) -> DeformT m (Maybe b)
+deformLookup :: (Monad m, Functor m, Deform f a) => FormErrorMessage -> (a -> m (Maybe b)) -> DeformT f m (Maybe b)
 deformLookup e l = Trav.mapM (deformMaybe' e <=< lift . l) =<< deformNonEmpty deform
 
-detectUpload :: (MonadHasService c m, Has AV c, Has Storage c, MonadIO m) => FileUploadFile -> DeformT m FileUpload
+detectUpload :: (MonadHasService c m, Has AV c, Has Storage c, MonadIO m) => FileUploadFile -> DeformT TempFile m FileUpload
 detectUpload f =
   fd =<< deformMaybe' "Unknown or unsupported file format."
     (getFormatByFilename (fileUploadName f)) where
@@ -178,7 +177,7 @@ processAsset api target = do
         p <- (<|> (lowerBound . segmentRange =<< seg)) <$> deformNonEmpty deform
         Slot c . maybe fullSegment
           (\l -> Segment $ Range.bounded l (l + fromMaybe 0 ((segmentLength =<< seg) <|> dur)))
-          <$> orElseM p (flatMapM (lift . findAssetContainerEnd) (isNothing s && isJust dur ?> c)))
+          <$> orElseM p (Trav.mapM (lift . findAssetContainerEnd) (isNothing s && isJust dur ?> c)))
     return
       ( as
         { slotAsset = a
@@ -226,7 +225,6 @@ postAsset = multipartAction $ action POST (pathAPI </> pathId) $ \(api, ai) -> w
 
 viewAssetEdit :: AppRoute (Id Asset)
 viewAssetEdit = action GET (pathHTML >/> pathId </< "edit") $ \ai -> withAuth $ do
-  angular
   asset <- getAsset PermissionEDIT ai
   blankForm $ htmlAssetForm $ AssetTargetAsset asset
 
@@ -237,7 +235,6 @@ createAsset = multipartAction $ action POST (pathAPI </> pathId </< "asset") $ \
 
 viewAssetCreate :: AppRoute (Id Volume)
 viewAssetCreate = action GET (pathHTML >/> pathId </< "asset") $ \vi -> withAuth $ do
-  angular
   v <- getVolume PermissionEDIT vi
   blankForm $ htmlAssetForm $ AssetTargetVolume v
 
@@ -248,7 +245,6 @@ createSlotAsset = multipartAction $ action POST (pathAPI </> pathSlotId </< "ass
 
 viewSlotAssetCreate :: AppRoute (Id Slot)
 viewSlotAssetCreate = action GET (pathHTML >/> pathSlotId </< "asset") $ \si -> withAuth $ do
-  angular
   s <- getSlot PermissionEDIT Nothing si
   blankForm $ htmlAssetForm $ AssetTargetSlot s
 

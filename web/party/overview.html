@@ -7,7 +7,14 @@
           <a ng-if="::party.checkPermission(page.permission.EDIT)" ng-href="{{::party.editRoute()}}"><span class="green button icon edit"></span></a>
         </h1>
       </hgroup>
-
+      <div>
+        <p ng-if="::page.$location.path() === page.router.profile()">
+          <a ng-href="{{::page.router.party(party.id)}}">Switch to public view</a><br>
+        </p>
+        <p ng-if="::page.$location.path() === page.router.party(page.models.Login.user.id)">
+          <a ng-href="{{::page.router.profile()}}">Switch to my profile</a>
+        </p>
+      </div>
       <div>
         <div frame id="frame-contact" frame-title="party.contact.title" fold>
           <div>
@@ -29,7 +36,7 @@
       </div>
     </div>
 
-    <div class="col-desktop-3 col-tablet-3 col-mobile-6 col-cell">
+    <div class="col-desktop-3 col-tablet-3 col-mobile-3 col-cell">
       <img class="panel-overview-party-thumb" ng-src="{{party.avatarRoute(500)}}">
     </div>
   </div>

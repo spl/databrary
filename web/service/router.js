@@ -88,7 +88,10 @@ app.provider('routerService', [
     /* Add a route to $routeProvider and return a function to get a url given parameters. */
     function makeRoute(route, argNames, handler) {
       if (handler) {
-        $routeProvider.when(getRoute(route, argNames), handler);
+        var path = getRoute(route, argNames);
+        $routeProvider.when(path, handler);
+        if (path.includes('id/:segment'))
+          $routeProvider.when(path.replace('id/:segment', 'id'), handler);
       }
 
       return function (data, params) {
@@ -223,25 +226,31 @@ app.provider('routerService', [
       reloadOnSearch: false,
     });
 
-    var partyView = {
+    routes.profile = makeRoute(controllers.viewProfile, [], {
+      controller: 'party/profile',
+      templateUrl: 'party/profile.html',
+      resolve: {
+        party: [
+          'modelService', function (models) {
+            return models.Login.user.get({parents:'', children:'', volumes:'access'});
+          }
+        ]
+      },
+      reloadOnSearch: false,
+    });
+
+    routes.party = makeRoute(controllers.viewParty, ['id'], {
       controller: 'party/view',
       templateUrl: 'party/view.html',
       resolve: {
         party: [
           'pageService', function (page) {
-            var req = ['access', 'parents', 'children', 'volumes'];
-            if ('id' in page.$route.current.params)
-              return page.models.Party.get(page.$route.current.params.id, req);
-            else
-              return page.models.Login.user.get(req);
+            return page.models.Party.get(page.$route.current.params.id, ['parents', 'children', 'access']);
           }
         ],
       },
       reloadOnSearch: false,
-    };
-
-    routes.profile = makeRoute(controllers.viewProfile, [], partyView);
-    routes.party = makeRoute(controllers.viewParty, ['id'], partyView);
+    });
 
     //
 
@@ -279,7 +288,7 @@ app.provider('routerService', [
         volume: [
           'pageService', function (page) {
             if (!('id' in page.$route.current.params)) {
-              return page.models.Login.user.get({'parents':'access'})
+              return page.models.Login.user.get({parents:'authorization'})
                 .then(function () {
                   return undefined;
                 });
@@ -311,7 +320,7 @@ app.provider('routerService', [
         volume: [
           'pageService', function (page) {
             return page.models.Volume.get(page.$route.current.params.id,
-              {access:'', citation:'', links:'', funding:'', providers:'', consumers:'', top:'', tags:'', excerpts:'', comments:'', records:'', containers:'records', assets:'top'});
+              {access:'', citation:'', links:'', funding:'', top:'', tags:'', excerpts:'', comments:'', records:'', containers:'all'});
           }
         ]
       },
@@ -370,7 +379,7 @@ app.provider('routerService', [
             return (edit ? checkPermission(page.$q, r, page.permission.EDIT) : r)
               .then(function (volume) {
                 return volume.getSlot(page.$route.current.params.id, edit ? '-' : page.$route.current.params.segment,
-                  ['releases', 'records', 'assets', 'excerpts', 'tags', 'comments']);
+                  ['records', 'assets', 'excerpts', 'tags', 'comments']);
               });
           },
         ],
@@ -391,7 +400,7 @@ app.provider('routerService', [
           'pageService', function (page) {
             return page.models.Volume.get(page.$route.current.params.vid)
               .then(function (volume) {
-                return volume.getAsset(page.$route.current.params.id, page.$route.current.params.cid, page.$route.current.params.segment);
+                return volume.getAsset(page.$route.current.params.id, page.$route.current.params.cid, page.$route.current.params.segment, ['container']);
               });
           },
         ]
@@ -409,8 +418,8 @@ app.provider('routerService', [
     routes.volumeThumb = makeRoute(controllers.thumbVolume, ['id', 'size']);
     routes.assetThumb = makeRoute(controllers.thumbAssetSegment, ['cid', 'segment', 'id', 'size']);
     routes.assetDownload = makeRoute(controllers.downloadAssetSegment, ['cid', 'segment', 'id', 'inline']);
-    routes.assetEdit = makeRoute(controllers.viewAssetEdit, ['id']);
-    routes.record = makeRoute(controllers.viewRecord, ['id']);
+
+    $routeProvider.otherwise('/');
 
     //
 

@@ -56,7 +56,7 @@ app.factory('Segment', [
       },
       length: {
         get: function () {
-          return this.u - this.l;
+          return this.u >= this.l ? this.u - this.l : undefined;
         }
       },
       lBounded: {

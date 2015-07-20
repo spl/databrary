@@ -16,6 +16,7 @@ import Databrary.Service.Types (serviceDB)
 import Databrary.Service.DB.Schema (updateDBSchema)
 #endif
 import Databrary.Service.Init (loadConfig, withService)
+import Databrary.Service.Periodic (forkPeriodic)
 import Databrary.Web.Rules (generateWebFiles)
 import Databrary.Action (runAppRoute)
 import Databrary.Routes (routeMap)
@@ -51,4 +52,5 @@ main = do
     schema <- getDataFileName "schema"
     runReaderT (updateDBSchema schema) (serviceDB rc)
 #endif
+    void $ forkPeriodic rc
     runWarp conf rc (runAppRoute routes rc)

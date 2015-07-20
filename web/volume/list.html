@@ -7,15 +7,18 @@
       <article class="volume-list-result cf">
         <h1>
           <span class="icon volume"></span>
-          <a ng-href="{{::volume.route()}}" ng-bind="::name(volume)"></a>
+          <a ng-href="{{::volume.route()}}" ng-bind="::volume.name"></a>
         </h1>
-
-        <div class="volume-list-investigators" ng-if="::page.$location.path() !== '/profile'">
-          <volume-owners></volume-owners>
-          <span class="year" ng-if="::volume.citation && volume.citation.year" ng-bind="::' (' + volume.citation.year + ')'"></span>
+        <div ng-if="::volume.accessPreset != null" class="volume-access-status">
+          <span class="icon" ng-class="::'access'+{{::volume.accessPreset}}"></span>
         </div>
 
-        <div class="volume-list-body" ng-bind="::volume.body.replace('\n', ' ') | truncate:200" ng-if="::page.$location.path() !== '/profile'"></div>
+        <div class="volume-list-investigators">
+          <volume-owners></volume-owners>
+          <span class="year" ng-if="::volume.citation && volume.citation.year && !profile" ng-bind="::' (' + volume.citation.year + ')'"></span>
+        </div>
+
+        <div class="volume-list-body" ng-bind="::volume.body.replace('\n', ' ') | truncate:200"></div>
       </article>
     </li>
   </ul>

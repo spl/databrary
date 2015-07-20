@@ -1,6 +1,7 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeFamilies #-}
 module Databrary.Model.RecordSlot.Types
   ( RecordSlot(..)
+  , recordSlotId
   ) where
 
 import Control.Applicative ((<|>))
@@ -16,10 +17,20 @@ import Databrary.Model.Record.Types
 import Databrary.Model.RecordCategory.Types
 import Databrary.Model.Slot.Types
 
+data RecordSlotId = RecordSlotId
+  { _slotRecordId :: !(Id Record)
+  , _recordSlotId :: !(Id Slot)
+  }
+
+type instance IdType RecordSlot = RecordSlotId
+
 data RecordSlot = RecordSlot
   { slotRecord :: Record
   , recordSlot :: Slot
   }
+
+recordSlotId :: RecordSlot -> Id RecordSlot
+recordSlotId (RecordSlot r s) = Id $ RecordSlotId (recordId r) (slotId s)
 
 instance Has Record RecordSlot where
   view = slotRecord

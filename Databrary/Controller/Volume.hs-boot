@@ -10,4 +10,5 @@ postVolume :: AppRoute (API, Id Volume)
 createVolume :: AppRoute API
 viewVolumeLinks :: AppRoute (Id Volume)
 postVolumeLinks :: AppRoute (API, Id Volume)
+thumbVolume :: AppRoute (Id Volume)
 queryVolumes :: AppRoute API

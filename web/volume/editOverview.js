@@ -32,6 +32,7 @@ app.directive('volumeEditOverviewForm', [
       }
 
       form.save = function () {
+        form.$setSubmitted();
         messages.clear(form);
         if (!form.data.published)
           form.data.citation = {head:''};
@@ -52,10 +53,12 @@ app.directive('volumeEditOverviewForm', [
 
             init(vol);
             form.$setPristine();
+            form.$setUnsubmitted();
 
             if (!volume)
               $location.url(vol.editRoute());
           }, function (res) {
+            form.$setUnsubmitted();
             form.validator.server(res);
           });
       };
@@ -74,6 +77,7 @@ app.directive('volumeEditOverviewForm', [
             form.data.citation = res;
             delete res.title;
 
+            form.validator.server({});
             form.$setDirty();
 
             messages.add({

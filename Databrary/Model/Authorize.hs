@@ -9,6 +9,7 @@ module Databrary.Model.Authorize
   , lookupAuthorization
   , changeAuthorize
   , removeAuthorize
+  , authorizeExpired
   , authorizeJSON
   , lookupAuthorizeActivity
   ) where
@@ -55,12 +56,12 @@ lookupAuthorizedChildren parent al = do
 
 lookupAuthorize :: (MonadDB m, MonadHasIdentity c m) => Party -> Party -> m (Maybe Authorize)
 lookupAuthorize child parent =
-  dbQuery1 $ (\a -> a child parent) <$> $(selectQuery authorizeRow "$WHERE authorize.child = ${partyId child} AND authorize.parent = ${partyId parent}")
+  dbQuery1 $ (\a -> a child parent) <$> $(selectQuery authorizeRow "$WHERE authorize.child = ${partyId child} AND authorize.parent = ${partyId parent} AND (expires IS NULL OR expires > CURRENT_TIMESTAMP)")
 
 lookupAuthorizeParent :: (MonadDB m, MonadHasIdentity c m) => Party -> Id Party -> m (Maybe Authorize)
 lookupAuthorizeParent child parent = do
   ident <- peek
-  dbQuery1 $ $(selectQuery (selectAuthorizeParent 'child 'ident) "$WHERE authorize.parent = ${parent}")
+  dbQuery1 $ $(selectQuery (selectAuthorizeParent 'child 'ident) "$WHERE authorize.parent = ${parent} AND (expires IS NULL OR expires > CURRENT_TIMESTAMP)")
 
 lookupAuthorization :: (MonadDB m, MonadHasIdentity c m) => Party -> Party -> m Authorization
 lookupAuthorization child parent 
@@ -84,6 +85,10 @@ removeAuthorize :: (MonadAudit c m) => Authorize -> m Bool
 removeAuthorize auth = do
   ident <- getAuditIdentity
   dbExecute1 $(deleteAuthorize 'ident 'auth)
+
+authorizeExpired :: Authorize -> Timestamp -> Bool
+authorizeExpired Authorize{ authorizeExpires = Just e } = (e <)
+authorizeExpired _ = const False
 
 authorizeJSON :: Authorize -> JSON.Object
 authorizeJSON Authorize{..} = accessJSON (authorizeAccess authorization)

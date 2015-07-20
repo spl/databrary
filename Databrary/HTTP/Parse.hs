@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Databrary.HTTP.Parse
   ( Content(..)
+  , FileContent
   , parseRequestContent
   ) where
 
@@ -15,7 +16,7 @@ import qualified Data.ByteString.Builder as BSB
 import Data.IORef (newIORef, readIORef, writeIORef)
 import Data.Monoid (mempty)
 import Data.Word (Word64)
-import Network.HTTP.Types (requestEntityTooLarge413, hContentType)
+import Network.HTTP.Types (requestEntityTooLarge413, unsupportedMediaType415, hContentType)
 import Network.Wai
 import Network.Wai.Parse
 import System.IO (Handle)
@@ -45,7 +46,7 @@ _nullChunks next = go 0 where
 
 limitChunks :: Word64 -> ChunkParser a -> ChunkParser a
 limitChunks lim parse next = do
-  len <- newIORef 0
+  len <- liftIO $ newIORef 0
   parse $ do
     n <- readIORef len
     b <- next
@@ -84,14 +85,14 @@ _parseRequestChunks p = liftIO . p =<< peeks requestBody
 limitRequestChunks :: (MonadIO m, MonadAction c m) => Word64 -> ChunkParser a -> m a
 limitRequestChunks lim p = do
   rq <- peek
-  liftIO $ case requestBodyLength rq of
+  case requestBodyLength rq of
     KnownLength l | l > lim -> result requestTooLarge
-    _ -> limitChunks lim p $ requestBody rq
+    _ -> liftIO $ limitChunks lim p $ requestBody rq
 
-data Content
+data Content a
   = ContentForm 
     { contentFormParams :: [Param]
-    , contentFormFiles :: [File TempFile]
+    , contentFormFiles :: [File a]
     }
   | ContentJSON JSON.Value
   | ContentUnknown
@@ -99,25 +100,37 @@ data Content
 maxTextSize :: Word64
 maxTextSize = 1024*1024
 
-parseFormContent :: (MonadIO m, MonadAction c m) => RequestBodyType -> m Content
-parseFormContent t = uncurry ContentForm
-  <$> limitRequestChunks maxTextSize (sinkRequestBody rejectBackEnd t)
+class FileContent a where
+  parseFileContent :: IO BS.ByteString -> AppActionM a
 
-parseFormFileContent :: (MonadIO m, MonadAppAction c m) => (FileInfo BS.ByteString -> Word64) -> RequestBodyType -> m Content
+instance FileContent () where
+  parseFileContent _ = result requestTooLarge
+
+instance FileContent TempFile where
+  parseFileContent = makeTempFile . flip writeChunks
+
+instance FileContent JSON.Value where
+  parseFileContent b = liftIO $ either (result . response unsupportedMediaType415 []) return . AP.eitherResult =<< parserChunks JSON.json b
+
+parseFormContent :: (MonadIO m, MonadAction c m) => RequestBodyType -> m (Content a)
+parseFormContent t = uncurry ContentForm
+  <$> limitRequestChunks maxTextSize (liftIO . sinkRequestBody rejectBackEnd t)
+
+parseFormFileContent :: (MonadIO m, MonadAppAction c m, FileContent a) => (FileInfo BS.ByteString -> Word64) -> RequestBodyType -> m (Content a)
 parseFormFileContent ff rt = do
   app <- peek
   (p, f) <- liftIO $ do
     let be fn fi fb = case ff fi{ fileContent = fn } of
           0 -> result requestTooLarge
-          m -> runReaderT (makeTempFile $ \h -> limitChunks m (writeChunks h) fb) app
+          m -> limitChunks m (\b -> runReaderT (parseFileContent b) app) fb
     sinkRequestBody be rt (requestBody $ appRequest app)
   return $ ContentForm p f
 
-parseJSONContent :: (MonadIO m, MonadAction c m) => m Content
+parseJSONContent :: (MonadIO m, MonadAction c m) => m (Content a)
 parseJSONContent = maybe ContentUnknown ContentJSON . AP.maybeResult
-  <$> limitRequestChunks maxTextSize (parserChunks JSON.json)
+  <$> limitRequestChunks maxTextSize (liftIO . parserChunks JSON.json)
 
-parseRequestContent :: (MonadIO m, MonadAppAction c m) => (BS.ByteString -> Word64) -> m Content
+parseRequestContent :: (MonadIO m, MonadAppAction c m, FileContent a) => (BS.ByteString -> Word64) -> m (Content a)
 parseRequestContent ff = do
   ct <- peeks $ lookupRequestHeader hContentType
   case fmap parseContentType ct of

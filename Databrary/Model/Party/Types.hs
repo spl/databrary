@@ -33,13 +33,12 @@ data Party = Party
   , partyAffiliation :: Maybe T.Text
   , partyURL :: Maybe URI
   , partyAccount :: Maybe Account
-  , partyPermission :: Permission
-  , partyAccess :: Maybe Access
+  , partyPermission :: Permission -- permission current user has over this party
+  , partyAccess :: Maybe Access -- direct authorization this party has granted to current user
   }
 
 data Account = Account
   { accountEmail :: T.Text
-  , accountPasswd :: Maybe BS.ByteString
   , accountParty :: Party
   }
 
@@ -59,6 +58,7 @@ instance Kinded Party where
 -- Access to the site by a (current) account
 data SiteAuth = SiteAuth
   { siteAccount :: Account -- maybe should be Party (for nobody)
+  , accountPasswd :: Maybe BS.ByteString
   , siteAccess :: Access
   }
 
@@ -71,7 +71,6 @@ nobodySiteAuth :: SiteAuth
 nobodySiteAuth = SiteAuth
   { siteAccount = Account
     { accountEmail = "nobody@databrary.org"
-    , accountPasswd = Nothing
     , accountParty = Party
       { partyId = Id (-1)
       , partySortName = "Nobody"
@@ -84,6 +83,7 @@ nobodySiteAuth = SiteAuth
       , partyAccess = Just minBound
       }
     }
+  , accountPasswd = Nothing
   , siteAccess = mempty
   }
 

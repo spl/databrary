@@ -74,7 +74,7 @@ instance Read Segment where
       RP.optional (RP.string "empty")
       return Range.Empty
     rf = do
-      RP.char '-'
+      _ <- RP.char '-'
       return Range.full
     rr :: RP.ReadP (Range.Range Offset)
     rr = do

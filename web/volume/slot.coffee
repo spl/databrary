@@ -1,14 +1,15 @@
 'use strict'
 
 app.controller('volume/slot', [
-  '$scope', '$location', '$sce', '$timeout', 'constantService', 'displayService', 'messageService', 'tooltipService', 'styleService', 'storageService', 'Offset', 'Segment', 'uploadService', 'routerService', 'slot', 'edit',
-  ($scope, $location, $sce, $timeout, constants, display, messages, tooltips, styles, storage, Offset, Segment, uploads, router, slot, editing) ->
+  '$scope', '$location', '$sce', '$timeout', 'constantService', 'modelService', 'displayService', 'messageService', 'tooltipService', 'styleService', 'storageService', 'Offset', 'Segment', 'uploadService', 'routerService', 'slot', 'edit',
+  ($scope, $location, $sce, $timeout, constants, models, display, messages, tooltips, styles, storage, Offset, Segment, uploads, router, slot, editing) ->
     display.title = slot.displayName
     $scope.flowOptions = uploads.flowOptions()
     $scope.slot = slot
     $scope.volume = slot.volume
     $scope.editing = editing # $scope.editing (but not editing) is also a modal (toolbar) indicator
     $scope.form = {} # all ng-forms are put here
+    $scope.authorized = models.Login.isAuthorized()
     $flow = $scope.$flow # not really in this scope
 
     ################################### Base classes/utilities
@@ -186,7 +187,7 @@ app.controller('volume/slot', [
 
       select: (event) ->
         return false if $scope.editing == 'position'
-        ruler.selection = new TimeSegment(if @full then null else @)
+        ruler.selection = new TimeSegment(if @full || !ruler.range.overlaps(@) then null else @)
         if isFinite(@l) && !@contains(ruler.position)
           seekOffset(@l)
         else if @full
@@ -222,7 +223,7 @@ app.controller('volume/slot', [
     finite = (args...) -> args.find(isFinite)
 
     resetRange = () ->
-      for c in [$scope.assets, records, $scope.consents, $scope.tags]
+      for c in [$scope.assets, records, $scope.tags]
         for t in c
           t.reset()
       ruler.selection.reset()
@@ -231,7 +232,7 @@ app.controller('volume/slot', [
     updateRange = () ->
       l = Infinity
       u = -Infinity
-      for c in [$scope.assets, records, $scope.consents]
+      for c in [$scope.assets, records]
         for t in c
           if isFinite(t.l)
             l = t.l if t.l < l
@@ -409,7 +410,7 @@ app.controller('volume/slot', [
         # First, let's make a giant array of all the items we want to compare
         # times against.  Then let's extract all the times for the objects into
         # an even bigger array.
-        for i in $scope.assets.concat(records, $scope.consents) when i isnt this
+        for i in $scope.assets.concat(records) when i isnt this
           # We don't want to have the item snap to itself.
 
           # We want to have all the times that are finite in our array to compare against
@@ -530,9 +531,9 @@ app.controller('volume/slot', [
         @data =
           if @asset
             name: @asset.name
-            classification: (@asset.classification || 0)+''
+            classification: @asset.classification
           else
-            classification: '0'
+            {}
         return
 
       Object.defineProperty @prototype, 'id',
@@ -579,8 +580,9 @@ app.controller('volume/slot', [
         return if @pending # sorry
         @pending = 1
         messages.clear(this)
-        (if @file
-          @data.upload = @file.uniqueIdentifier
+        file = @file if @file?.isComplete()
+        (if file
+          @data.upload = file.uniqueIdentifier
           if @asset then @asset.replace(@data) else slot.createAsset(@data)
         else
           @asset.save(@data)
@@ -590,15 +592,9 @@ app.controller('volume/slot', [
             first = !@asset
             @setAsset(asset)
 
-            messages.add
-              type: 'green'
-              body: constants.message('asset.' + (if @file then (if first then 'upload' else 'replace') else 'update') + '.success', @name) +
-                (if @file && asset.format.transcodable then ' ' + constants.message('asset.upload.transcoding') else '')
-              owner: this
-
-            if @file
-              asset.creation ?= {date: Date.now(), name: @file.file.name}
-              @file.cancel()
+            if file
+              asset.creation ?= {date: Date.now(), name: file.file.name}
+              file.cancel()
               delete @file
               delete @progress
             delete @dirty
@@ -613,8 +609,8 @@ app.controller('volume/slot', [
               body: constants.message('asset.update.error', @name)
               report: res
               owner: this
-            if @file
-              @file.cancel()
+            if file
+              file.cancel()
               delete @file
               delete @progress
               delete @data.upload
@@ -743,7 +739,7 @@ app.controller('volume/slot', [
 
       excerptOptions: () ->
         l = {}
-        r = @asset.release || constants.release.PRIVATE
+        r = @asset.release || 0
         l[0] = constants.message('release.DEFAULT.select') + ' (' + constants.message('release.' + constants.release[r] + '.title') + ')'
         for c, i in constants.release when i > r
           l[i] = constants.message('release.' + c + '.title') + ': ' + constants.message('release.' + c + '.select')
@@ -755,7 +751,7 @@ app.controller('volume/slot', [
         if value == undefined || value == ''
           return
         messages.clear(this)
-        if !@asset.classification && value > (slot.release || constants.release.PRIVATE) && !confirm(constants.message('release.excerpt.warning'))
+        if !@asset.classification? && value > (slot.release || 0) && !confirm(constants.message('release.excerpt.warning'))
           return
         @excerpt.target.setExcerpt(value)
           .then (excerpt) =>
@@ -1001,24 +997,6 @@ app.controller('volume/slot', [
             return
       return
 
-    class Consent extends TimeBar
-      constructor: (c) ->
-        if typeof c == 'object'
-          @release = c.release
-          super(c.segment)
-        else
-          @release = c
-          super(undefined)
-        return
-
-      type: 'consent'
-
-      classes: ->
-        cn = constants.release[@release]
-        cls = [cn, 'hint-release-' + cn]
-        cls.push('slot-release-select') if $scope.current == this
-        cls
-
     class TagName extends TimeBar
       constructor: (name) ->
         @id = name
@@ -1145,14 +1123,6 @@ app.controller('volume/slot', [
     Excerpt.fill()
 
     records = slot.records.map((r) -> new Record(r))
-
-    $scope.consents =
-      if Array.isArray(consents = slot.releases)
-        _.map consents, (c) -> new Consent(c)
-      else if (consents)
-        [new Consent(consents)]
-      else
-        []
 
     $scope.playing = 0
     Record.place()

@@ -104,7 +104,8 @@ app.factory('modelService', [
       function descr(f) {
         return {
           get: function () {
-            return this[sub].hasOwnProperty(f) ? this[sub][f] : undefined;
+            var s = this[sub];
+            return s && s.hasOwnProperty(f) ? s[f] : undefined;
           },
           set: function (v) {
             Object.defineProperty(this, f, {
@@ -141,13 +142,15 @@ app.factory('modelService', [
       email: true,
       institution: true,
       url: true,
-      access: false,
+      authorization: false,
     };
 
     Party.prototype.init = function (init) {
       Model.prototype.init.call(this, init);
+      if ('access' in init)
+        this.access = volumeMakeSubArray(init.access);
       if ('volumes' in init)
-        this.volumes = volumeMakeSubArray(init.volumes);
+        this.volumes = volumeMakeArray(init.volumes);
       if ('parents' in init)
         this.parents = partyMakeSubArray(init.parents);
       if ('children' in init)
@@ -310,8 +313,8 @@ app.factory('modelService', [
       return Login.user.id !== constants.party.NOBODY;
     };
 
-    Login.checkAccess = function (level) {
-      return Login.user.access >= level;
+    Login.checkAuthorization = function (level) {
+      return Login.user.authorization >= level;
     };
 
     Model.prototype.checkPermission = function (level) {
@@ -324,7 +327,7 @@ app.factory('modelService', [
     };
 
     Login.isAuthorized = function () {
-      return Login.isLoggedIn() && Login.checkAccess(constants.permission.PUBLIC);
+      return Login.isLoggedIn() && Login.checkAuthorization(constants.permission.PUBLIC);
     };
 
     Login.prototype.route = function () {
@@ -374,7 +377,7 @@ app.factory('modelService', [
     function Volume(init) {
       this.containers = {_PLACEHOLDER:true};
       this.records = {_PLACEHOLDER:true};
-      this.assets = {_PLACEHOLDER:true};
+      this.assets = {}; // cache only
       Model.call(this, init);
     }
 
@@ -399,8 +402,10 @@ app.factory('modelService', [
 
     Volume.prototype.init = function (init) {
       Model.prototype.init.call(this, init);
-      if ('access' in init)
+      if ('access' in init) {
         this.access = partyMakeSubArray(init.access);
+        volumeAccessPreset(this);
+      }
       if ('records' in init) {
         var rl = init.records;
         for (var ri = 0; ri < rl.length; ri ++)
@@ -413,20 +418,6 @@ app.factory('modelService', [
           containerMake(this, cl[ci]);
         delete this.containers._PLACEHOLDER;
       }
-      if ('assets' in init) {
-        var al = init.assets;
-        for (var ai = 0; ai < al.length; ai ++) {
-          var a = assetMake(this, al[ai]);
-          /* this assumes when we get assets we get all or none for each container: */
-          var c = a.container;
-          if (c) {
-            if (!c.assets)
-              c.assets = {};
-            c.assets[a.id] = a;
-          }
-        }
-        delete this.assets._PLACEHOLDER;
-      }
       if ('top' in init)
         this.top = containerMake(this, init.top);
       if ('excerpts' in init)
@@ -438,6 +429,12 @@ app.factory('modelService', [
     function volumeMake(init) {
       var v = Volume.cache.get(init.id);
       return v ? v.update(init) : Volume.poke(new Volume(init));
+    }
+
+    function volumeMakeArray(l) {
+      for (var i = 0; i < l.length; i ++)
+        l[i] = volumeMake(l[i]);
+      return l;
     }
 
     function volumeMakeSubArray(l) {
@@ -487,7 +484,7 @@ app.factory('modelService', [
       return router.http(router.controllers.createVolume, data)
         .then(function (res) {
           if ((owner = (owner === undefined ? Login.user : partyPeek(owner))))
-            owner.clear('volumes');
+            owner.clear('access', 'volumes');
           return volumeMake(res.data);
         });
     };
@@ -503,6 +500,12 @@ app.factory('modelService', [
       get: function () {
         if ('citation' in this)
           return this.citation ? 'study' : 'dataset';
+      }
+    });
+
+    Object.defineProperty(Volume.prototype, 'displayName', {
+      get: function () {
+        return this.alias !== undefined ? this.alias : this.name;
       }
     });
 
@@ -534,12 +537,34 @@ app.factory('modelService', [
       return Party.search({volume:this.id,query:name});
     };
 
+    function volumeAccessPreset(volume) {
+      if (!volume.access)
+        return;
+      var p = [];
+      var al = volume.access.filter(function (a) {
+        var pi = constants.accessPreset.parties.indexOf(a.party.id);
+        if (pi >= 0)
+          p[pi] = a.children;
+        else
+          return true;
+      });
+      var pi = constants.accessPreset.findIndex(function (preset) {
+        return preset.every(function (s, i) {
+          return preset[i] === (p[i] || 0);
+        });
+      });
+      if (pi >= 0) {
+        volume.access = al;
+        volume.accessPreset = pi;
+      }
+    }
+
     Volume.prototype.accessSave = function (target, data) {
       var v = this;
       return router.http(router.controllers.postVolumeAccess, this.id, target, data)
         .then(function (res) {
           // could update v.access with res.data
-          v.clear('access');
+          v.clear('access', 'accessPreset');
           return v;
         });
     };
@@ -915,10 +940,6 @@ app.factory('modelService', [
       }
     });
 
-    Record.prototype.route = function () {
-      return router.record([this.id]);
-    };
-
     ///////////////////////////////// AssetSlot
 
     // This usually maps to an AssetSegment
@@ -935,7 +956,6 @@ app.factory('modelService', [
 
     AssetSlot.prototype.fields = angular.extend({
       permission: true,
-      release: true,
       excerpt: true,
       context: true
     }, AssetSlot.prototype.fields);
@@ -950,6 +970,12 @@ app.factory('modelService', [
 
     delegate(AssetSlot, 'asset',
         'id', 'container', 'format', 'duration', 'classification', 'name', 'pending');
+
+    Object.defineProperty(AssetSlot.prototype, 'release', {
+      get: function () {
+        return Math.max(this.excerpt != null ? this.excerpt : 0, this.classification != null ? this.classification : (this.container.release || 0));
+      }
+    });
 
     Object.defineProperty(AssetSlot.prototype, 'displayName', {
       get: function () {
@@ -1060,11 +1086,12 @@ app.factory('modelService', [
       return l;
     }
 
-    Volume.prototype.getAsset = function (asset, container, segment) {
+    Volume.prototype.getAsset = function (asset, container, segment, options) {
       var v = this;
+      options = checkOptions(null, options);
       return (container === undefined ?
-          router.http(router.controllers.getAsset, v.id, asset) :
-          router.http(router.controllers.getAssetSegment, container, Segment.format(segment), asset))
+          router.http(router.controllers.getAsset, v.id, asset, options) :
+          router.http(router.controllers.getAssetSegment, v.id, container, Segment.format(segment), asset, options))
         .then(function (res) {
           return assetMake(v, res.data);
         });
@@ -1083,6 +1110,8 @@ app.factory('modelService', [
 
     Asset.prototype.save = function (data) {
       var a = this;
+      if (data.classification === 'undefined')
+        data.classification = '';
       return router.http(router.controllers.postAsset, this.id, data)
         .then(function (res) {
           if ('excerpt' in data) {
@@ -1133,10 +1162,6 @@ app.factory('modelService', [
             a.container.clear('assets');
           return a.update(res.data);
         });
-    };
-
-    Asset.prototype.editRoute = function () {
-      return router.assetEdit([this.id]);
     };
 
     ///////////////////////////////// Comment

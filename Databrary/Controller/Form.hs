@@ -35,6 +35,7 @@ import Databrary.Model.Identity
 import Databrary.Service.Passwd
 import Databrary.Action
 import Databrary.Action.Types
+import Databrary.HTTP.Parse (FileContent)
 import Databrary.HTTP.Form (getFormData, FormData)
 import Databrary.HTTP.Form.Deform
 import Databrary.HTTP.Form.View (runFormView, blankFormView)
@@ -54,21 +55,21 @@ handleForm re = either (result <=< re) return
 handleFormErrors :: (MonadAction c m, MonadIO m) => Maybe (FormErrors -> Html.Html) -> Either FormErrors a -> m a
 handleFormErrors = handleForm . maybe jsonFormErrors htmlFormErrors
 
-runFormWith :: (MonadAppAction q m, MonadIO m) => FormData -> Maybe (q -> FormHtml) -> DeformT m a -> m a
+runFormWith :: (MonadAppAction q m, MonadIO m) => FormData f -> Maybe (q -> FormHtml f) -> DeformT f m a -> m a
 runFormWith fd mf fa = do
   req <- ask
   let fv hv = runFormView (hv req) fd
   handleFormErrors (fv <$> mf) =<< runDeform fa fd
 
-runFormFiles :: (MonadAppAction q m, MonadIO m) => [(BS.ByteString, Word64)] -> Maybe (q -> FormHtml) -> DeformT m a -> m a
+runFormFiles :: (MonadAppAction q m, MonadIO m, FileContent f) => [(BS.ByteString, Word64)] -> Maybe (q -> FormHtml f) -> DeformT f m a -> m a
 runFormFiles fl mf fa = do
   fd <- getFormData fl
   runFormWith fd mf fa
 
-runForm :: (MonadAppAction q m, MonadIO m) => Maybe (q -> FormHtml) -> DeformT m a -> m a
+runForm :: (MonadAppAction q m, MonadIO m) => Maybe (q -> FormHtml ()) -> DeformT () m a -> m a
 runForm = runFormFiles []
 
-blankForm :: ActionData q => (q -> FormHtml) -> Action q
+blankForm :: ActionData q => (q -> FormHtml f) -> Action q
 blankForm hv =
   okResponse [] . blankFormView . hv =<< ask
 
@@ -76,10 +77,10 @@ emailRegex :: Regex.Regex
 emailRegex = Regex.makeRegexOpts Regex.compIgnoreCase Regex.blankExecOpt
   ("^[-a-z0-9!#$%&'*+/=?^_`{|}~.]*@[a-z0-9][a-z0-9\\.-]*[a-z0-9]\\.[a-z][a-z\\.]*[a-z]$" :: String)
 
-emailTextForm :: (Functor m, Monad m) => DeformT m T.Text
+emailTextForm :: (Functor m, Monad m) => DeformT f m T.Text
 emailTextForm = deformRegex "Invalid email address" emailRegex =<< deform
 
-passwordForm :: (MonadIO m, MonadHasPasswd c m) => Account -> DeformT m BS.ByteString
+passwordForm :: (MonadIO m, MonadHasPasswd c m) => Account -> DeformT f m BS.ByteString
 passwordForm acct = do
   p <- "once" .:> do
     p <- deform
@@ -93,12 +94,12 @@ passwordForm acct = do
   pw <- liftIO $ BCrypt.hashPasswordUsingPolicy passwordPolicy p
   deformMaybe' "Error processing password." pw
 
-paginationForm :: (Applicative m, Monad m) => DeformT m (Int32, Int32)
+paginationForm :: (Applicative m, Monad m) => DeformT f m (Int32, Int32)
 paginationForm = (,)
   <$> ("limit" .:> (deformCheck "Invalid limit" (\l -> l > 0 && l <= 129) =<< deform) <|> return 10)
   <*> ("offset" .:> (deformCheck "Invalid offset" (>= 0) =<< deform) <|> return 0)
 
-csrfForm :: (MonadAuthAction q m) => DeformT m ()
+csrfForm :: (MonadAuthAction q m) => DeformT f m ()
 csrfForm = do
   r <- lift checkVerfHeader
   unless r $ do
