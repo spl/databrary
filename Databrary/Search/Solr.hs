@@ -152,8 +152,8 @@ instance ToJSON SolrQuery where
                   "params" .= object [
                         "defType" .= ("edismax" :: String),
                         "q" .= sQquery,
-                        "qf" .= ("text_en^0.6 text_exact^1.5 volume_keywords_ss^10.0 volume_tags_ss^5.0 party_name^5.0" :: String),
-                        "pf" .= ("volume_keywords_ss^10.0 volume_tags_ss^5.0 party_name^5.0" :: String),
+                        {- "qf" .= (volumeQf ++ (" " :: String) ++ containerQf), -}
+                        {- "pf" .= (volumePf ++ (" " :: String) ++ containerPf), -}
                         "ps" .= (3 :: Int),
                         {- "mm" .= (75 :: Int), -}
                         "tie" .= (0.1 :: Float),
@@ -169,8 +169,9 @@ instance ToJSON SolrQuery where
 
 volumeQf = "text_en^0.6 text_exact^1.5 volume_keywords_ss^10.0 volume_tags_ss^5.0 party_name^5.0" :: String
 volumePf = "volume_keywords_ss^10.0 volume_tags_ss^5.0 party_name^5.0" :: String
-containerQf = ""
-containerPf = ""
+containerQf = "container_ethnicity_s^5 container_gender_s^5 container_race_s^5 container_text_t^3" :: String
+containerPf = "container_ethnicity_s^5 container_gender_s^5 container_race_s^5 container_text_t^3" :: String
+
 -- formQuery :: String -> SolrQuery
 -- formQuery q = SolrQuery q
 
@@ -201,7 +202,8 @@ search q offset limit = focusIO $ \hcm -> do
       -- This is hard-coded here so no one can send anything else...
       -- probably not the best.
       let contentType = if cType == "container" then "content_type:container" else "content_type:(volume OR party)"
-      let sQuery = SolrQuery  (if(length queryStr > 0) then queryStr else "*")
+      let modifiedQueryStr = (if(length queryStr > 0) then queryStr else "*") ++ (if(cType == "container") then " OR *" else "")
+      let sQuery = SolrQuery  modifiedQueryStr
                               (contentType ++ (if(length args > 0) then " AND " else " ") ++ args)
                               join limit offset
       request <- generatePostReq sQuery
