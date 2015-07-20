@@ -296,24 +296,18 @@ app.controller('volume/slot', [
       ended: ->
         $scope.playing = 0
 
+        [asset] = _.chain($scope.assets) 
+                   .filter (i) -> i.lt.o >= $scope.asset.segment.u && i.asset.format.type == 'video'
+                   .sortBy (i) -> i.lt.o
+                   .value()
 
-        biggerAssets = _.chain($scope.assets)
-                        .filter (i) -> i.lt.o >= $scope.asset.segment.u && i.asset.format.type == 'video'
-                        .sortBy (i) -> i.lt.o
-                        .value()
-
-        asset = _.first biggerAssets
-        
         asset.choose()
+
         $timeout ->
           $scope.play()
           $scope.playing = 1
-        , 300
-        
-          
-        
-        # This is a sort of "cache" so that we don't repeat results. 
-                # look for something else to play?
+        , 1000
+
         return
 
     for ev, fn of videoEvents
