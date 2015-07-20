@@ -42,6 +42,9 @@ app.controller 'site/search', [
     # List of affiliations (currently unused)
     $scope.affiliations = []
 
+    # Map for volid -> containers, fill in has requested
+    $scope.retrievedContainers = {}
+
     # Number of results of each facet to return.
     # Currently hardcoded to 10.
     $scope.limit = 10
@@ -86,6 +89,15 @@ app.controller 'site/search', [
   # Search handlers
   ###########################
 
+    $scope.searchContainers = (volId) ->
+      console.log("Getting container results for volume:", volId)
+      beforeQuery = $scope.query
+      query = $scope.query + "|type=container|arg=container_volume_id_i:" + volId
+      # query = $scope.query + "|type=container|arg=container_volume_id_i:" + "15"
+      $scope.search(query, volId)
+      $scope.query = beforeQuery
+
+
     # Def searchBox: read the current text in the search box
     # and initiate a search. If blank, return all results.
     $scope.searchBox = ->
@@ -102,7 +114,7 @@ app.controller 'site/search', [
 
     # Def search: the function that is actually calling the search from Haskell.
     # Get the results from Solr and pass them into parseResults.
-    $scope.search = (query = "") ->
+    $scope.search = (query = "", volId = -100) ->
       # This is for if we want to pass an argument into this...
       if query.length > 0
         $scope.query = query
@@ -114,17 +126,30 @@ app.controller 'site/search', [
       # page.$route.current.params.query = $scope.query
       console.log("THE QUERY IS", $scope.query)
       promise = page.router.http(page.router.controllers.postSearch,
-        {"query" : $scope.query + "|type=container", "offset" : $scope.offset, "limit" : $scope.limit})
+        {"query" : $scope.query, "offset" : $scope.offset, "limit" : $scope.limit})
       console.log(promise)
+      console.log("Passed in VolID: ", volId)
       promise.then (res) ->
         console.log("GOT RES:", res)
-        parseResults(res.data)
+        if volId < 0
+          parseResults(res.data)
+        else
+          parseContainerResults(res.data, volId)
 
     # This function will return the larger number of results of the
     # two types. So if there are more volumes than parties, it returns
     # the number of volumes.
     $scope.maxResults = ->
       return Math.max($scope.volumeCount, $scope.partyCount)
+
+
+    parseContainerResults = (res, volId) ->
+      console.log("CONTAINTER RESULTS", res, volId)
+      containers = getResults("container", res)
+      numContainers = getTypeCounts("container", res)
+      $scope.retrievedContainers[volId] = containers?.docs
+      console.log("CONTAINERS:", $scope.retrievedContainers)
+
 
     #################################
     # Parse results, the main workhorse function.
@@ -140,6 +165,7 @@ app.controller 'site/search', [
         # $scope.query = "*"
       console.log("query before anything:", $scope.query)
       console.log("RES:", res)
+
       $scope.partyResults = getResults("party", res)
       $scope.volumeResults = getResults("volume", res)
 

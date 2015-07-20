@@ -36,7 +36,19 @@
               <!-- This is where we return what we want-->
               <a ng-href="volume/{{result.volume_id_i}}">{{result.title_t}}</a><br>
               <span ng-bind="formVolumeResult(result)"></span><br>
-              Keywords: <span ng-repeat="k in result.volume_keywords_ss">{{k + ", "}}</span>
+              Keywords: <span ng-repeat="k in result.volume_keywords_ss">{{k + ", "}}</span><br>
+              <span ng-if="retrievedContainers[result.volume_id_i] === undefined">
+                <a ng-click="searchContainers(result.volume_id_i)">CONTAINERS? YES PLZ</a>
+              </span>
+              <span ng-if="retrievedContainers[result.volume_id_i] !== undefined">
+                <!-- Keywords: <span ng-repeat="k in result.volume_keywords_ss">{{k + ", "}}</span><br> -->
+                <ul>
+                  <li ng-repeat="container in retrievedContainers[result.volume_id_i]">
+                    TEST <a ng-href="test/{{container.container_id_i}}">{{container.container_text_t}}</a>
+                  </li>
+                </ul>
+              </span>
+
             </li>
           </ul>
         </div>
