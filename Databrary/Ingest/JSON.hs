@@ -5,14 +5,16 @@ module Databrary.Ingest.JSON
 
 import Control.Arrow (left)
 import Control.Monad (join, when, unless, void)
-import Control.Monad.Except (ExceptT(..), runExceptT, mapExceptT, throwError, catchError)
+import Control.Monad.Except (ExceptT(..), runExceptT, mapExceptT, catchError)
 import Control.Monad.IO.Class (MonadIO(liftIO))
 import Control.Monad.Trans.Class (lift)
+import Control.Monad.Trans.Reader (ReaderT)
 import qualified Data.Aeson.BetterErrors as JE
 import qualified Data.Attoparsec.ByteString as P
 import qualified Data.ByteString as BS
 import Data.ByteString.Lazy.Internal (defaultChunkSize)
 import qualified Data.Foldable as Fold
+import Data.Function (on)
 import qualified Data.JsonSchema as JS
 import Data.List (find)
 import Data.Maybe (isJust, fromMaybe)
@@ -26,17 +28,15 @@ import System.IO (withBinaryFile, IOMode(ReadMode))
 
 import Paths_databrary
 import Databrary.Ops
-import Databrary.Has (Has, view, MonadHas, focusIO)
+import Databrary.Has (Has, view, focusIO)
 import qualified Databrary.JSON as J
 import Databrary.Files
-import Databrary.Store.Types
 import Databrary.Store.Stage
 import Databrary.Store.Probe
-import Databrary.Store.AV
+import Databrary.Store.Transcode
 import Databrary.Model.Time
 import Databrary.Model.Kind
 import Databrary.Model.Id.Types
-import Databrary.Model.Audit
 import Databrary.Model.Volume
 import Databrary.Model.Container
 import Databrary.Model.Segment
@@ -48,15 +48,12 @@ import Databrary.Model.Metric
 import Databrary.Model.Measure
 import Databrary.Model.RecordSlot
 import Databrary.Model.Asset
-import Databrary.Model.Format
+import Databrary.Model.AssetSlot
 import Databrary.Model.Transcode
 import Databrary.Model.Ingest
+import Databrary.Action.Auth
 
-type IngestT m a = ExceptT T.Text m a
-type IngestParseT m a = JE.ParseT T.Text m a
-
-liftParse :: (Functor m, Monad m) => IngestT m a -> IngestParseT m a
-liftParse f = lift (runExceptT f) >>= either JE.throwCustomError return
+type IngestM a = JE.ParseT T.Text (ReaderT AuthRequest IO) a
 
 jsErr :: (Functor m, Monad m) => Either (V.Vector JS.ValErr) a -> ExceptT [T.Text] m a
 jsErr = ExceptT . return . left V.toList
@@ -71,31 +68,31 @@ loadSchema = do
   g <- ExceptT $ left return <$> JS.fetchRefs JS.draft4 rs mempty
   jsErr $ JS.compileDraft4 g rs
 
-throwPE :: (Functor m, Monad m) => T.Text -> IngestParseT m a
+throwPE :: T.Text -> IngestM a
 throwPE = JE.throwCustomError
 
-inObj :: forall a b m . (Functor m, Kinded a, Has (Id a) a, Show (IdType a)) => a -> IngestParseT m b -> IngestParseT m b
+inObj :: forall a b . (Kinded a, Has (Id a) a, Show (IdType a)) => a -> IngestM b -> IngestM b
 inObj o = JE.mapError $ (<>) $ " for " <> kindOf o <> T.pack (' ' : show (view o :: Id a))
 
-noKey :: (Functor m, Monad m) => T.Text -> IngestParseT m ()
+noKey :: T.Text -> IngestM ()
 noKey k = void $ JE.keyMay k $ throwPE "unhandled value"
 
-asKey :: (Functor m, Monad m) => IngestParseT m IngestKey
+asKey :: IngestM IngestKey
 asKey = JE.asText
 
-asDate :: (Functor m, Monad m) => IngestParseT m Date
+asDate :: IngestM Date
 asDate = JE.withString (maybe (Left "expecting %F") Right . parseTime defaultTimeLocale "%F")
 
-asRelease :: (Functor m, Monad m) => IngestParseT m (Maybe Release)
+asRelease :: IngestM (Maybe Release)
 asRelease = JE.perhaps JE.fromAesonParser
 
-asCategory :: (Functor m, Monad m) => IngestParseT m (Maybe RecordCategory)
+asCategory :: IngestM (Maybe RecordCategory)
 asCategory = JE.perhaps $ do
   JE.withIntegral (maybe (Left "category not found") Right . getRecordCategory . Id) `catchError` \_ -> do
     n <- JE.asText
     fromMaybeM (throwPE "category not found") $ find ((n ==) . recordCategoryName) allRecordCategories
 
-asSegment :: (Functor m, Monad m) => IngestParseT m Segment
+asSegment :: IngestM Segment
 asSegment = JE.fromAesonParser
 
 data StageFile = StageFile
@@ -103,13 +100,13 @@ data StageFile = StageFile
   , stageFileAbs :: FilePath
   }
 
-asStageFile :: (MonadStorage c m) => FilePath -> IngestParseT m StageFile
+asStageFile :: FilePath -> IngestM StageFile
 asStageFile b = do
   r <- (b </>) <$> JE.asString
   a <- fromMaybeM (throwPE "stage file not found") =<< lift (focusIO (stageFile r))
   return $ StageFile r a
 
-ingestJSON :: (MonadAudit c m, MonadStorage c m, MonadHas AV c m) => Volume -> J.Value -> Bool -> Bool -> m (Either [T.Text] [Container])
+ingestJSON :: Volume -> J.Value -> Bool -> Bool -> AuthActionM (Either [T.Text] [Container])
 ingestJSON vol jdata' run overwrite = runExceptT $ do
   schema <- mapExceptT liftIO loadSchema
   jdata <- jsErr $ JS.validate schema jdata'
@@ -117,15 +114,14 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
     then ExceptT $ left (JE.displayError id) <$> JE.parseValueM volume jdata
     else return []
   where
-  check _ Nothing = return Nothing
-  check cur (Just new)
+  check cur new
     | cur == new = return Nothing
     | not overwrite = throwPE $ "conflicting value: " <> T.pack (show new) <> " <> " <> T.pack (show cur)
     | otherwise = return $ Just new
   volume = do
     dir <- JE.keyOrDefault "directory" "" $ stageFileRel <$> asStageFile ""
     _ <- JE.keyMay "name" $ do
-      name <- check (volumeName vol) . Just =<< JE.asText
+      name <- check (volumeName vol) =<< JE.asText
       Fold.forM_ name $ \n -> lift $ changeVolume vol{ volumeName = n }
     JE.key "containers" $ JE.eachInArray (container dir)
   container dir = do
@@ -151,9 +147,9 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
       (\c -> inObj c $ do
         unless (Fold.all (containerId c ==) cid) $ do
           throwPE "id mismatch"
-        top <- fmap join . JE.keyMay "top" $ check (containerTop c) . Just =<< JE.asBool
-        name <- fmap join . JE.keyMay "name" $ check (containerName c) . Just =<< JE.perhaps JE.asText
-        date <- fmap join . JE.keyMay "date" $ check (containerDate c) . Just =<< JE.perhaps asDate
+        top <- fmap join . JE.keyMay "top" $ check (containerTop c) =<< JE.asBool
+        name <- fmap join . JE.keyMay "name" $ check (containerName c) =<< JE.perhaps JE.asText
+        date <- fmap join . JE.keyMay "date" $ check (containerDate c) =<< JE.perhaps asDate
         when (isJust top || isJust name || isJust date) $ lift $ changeContainer c
           { containerTop = fromMaybe (containerTop c) top
           , containerName = fromMaybe (containerName c) name
@@ -163,7 +159,7 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
       =<< lift (lookupIngestContainer vol key)
     inObj c $ do
       _ <- JE.keyMay "release" $ do
-        release <- check (containerRelease c) . Just =<< asRelease
+        release <- check (containerRelease c) =<< asRelease
         Fold.forM_ release $ \r -> do
           o <- lift $ changeRelease (containerSlot c) r
           unless o $ throwPE "update failed"
@@ -174,6 +170,12 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
         unless o $ throwPE "record link failed"
       _ <- JE.key "assets" $ JE.eachInArray $ do
         a <- asset dir
+        as' <- lift $ lookupAssetAssetSlot a
+        s <- Slot c <$> JE.keyOrDefault "position" fullSegment asSegment
+        u <- maybe (return True) (\s' -> isJust <$> on check slotId s' s) $ assetSlot as'
+        when u $ do
+          o <- lift $ changeAssetSlot $ AssetSlot a $ Just s
+          unless o $ throwPE "asset link failed"
         return a
       return c
   record = do
@@ -197,7 +199,7 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
           throwPE "id mismatch"
         _ <- JE.key "category" $ do
           category <- asCategory
-          category' <- (category <$) <$> check (recordCategoryName <$> recordCategory r) (Just $ recordCategoryName <$> category)
+          category' <- (category <$) <$> on check (fmap recordCategoryName) (recordCategory r) category
           Fold.forM_ category' $ \c -> lift $ changeRecord r
             { recordCategory = c
             }
@@ -206,7 +208,7 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
     _ <- inObj r $ JE.forEachInObject $ \m ->
       unless (m `elem` ["id", "key", "category", "position"]) $ do
         metric <- fromMaybeM (throwPE "metric not found") $ find ((m ==) . metricName) allMetrics
-        datum <- maybe return (check . measureDatum) (getMeasure metric (recordMeasures r)) . Just . TE.encodeUtf8 =<< JE.asText
+        datum <- maybe (return . Just) (check . measureDatum) (getMeasure metric (recordMeasures r)) . TE.encodeUtf8 =<< JE.asText
         Fold.forM_ datum $ lift . changeRecordMeasure . Measure r metric
     return r
   asset dir = do
@@ -214,7 +216,7 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
       file <- asStageFile dir
       either throwPE (return . (,) file)
         =<< lift (probeFile (toRawFilePath $ stageFileRel file) (toRawFilePath $ stageFileAbs file))
-    ae <- lift (lookupIngestAsset vol $ stageFileRel file)
+    ae <- lift $ lookupIngestAsset vol $ stageFileRel file
     a <- maybe
       (do
         release <- JE.key "release" asRelease
@@ -228,8 +230,9 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
         return a)
       (\a -> inObj a $ do
         unless (assetBacked a) $ throwPE "ingested asset incomplete"
-        release <- fmap join . JE.keyMay "release" $ check (assetRelease a) . Just =<< asRelease
-        name <- fmap join . JE.keyMay "name" $ check (assetName a) . Just =<< JE.perhaps JE.asText
+        -- compareFiles file =<< getAssetFile -- assume correct
+        release <- fmap join . JE.keyMay "release" $ check (assetRelease a) =<< asRelease
+        name <- fmap join . JE.keyMay "name" $ check (assetName a) =<< JE.perhaps JE.asText
         if (isJust release || isJust name) then lift $ changeAsset a
           { assetRelease = fromMaybe (assetRelease a) release
           , assetName = fromMaybe (assetName a) name
@@ -244,8 +247,11 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
       ProbeVideo _ av -> do
         clip <- JE.keyOrDefault "clip" fullSegment asSegment
         opts <- JE.keyOrDefault "options" defaultTranscodeOptions $ JE.eachInArray JE.asString
-        Just t <- flatMapM
-          (\_ -> lift $ findTranscode a clip opts)
-          ae
+        t <- lift $ fromMaybeM
+          (do
+            t <- addTranscode a clip opts av
+            _ <- startTranscode t
+            return t)
+          =<< flatMapM (\_ -> findTranscode a clip opts) ae
         return $ transcodeAsset t
-    return a
+    return t
