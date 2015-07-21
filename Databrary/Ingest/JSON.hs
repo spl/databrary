@@ -23,6 +23,7 @@ import Data.Time.Format (parseTime)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.Vector as V
+import qualified Database.PostgreSQL.Typed.Range as Range
 import System.Locale (defaultTimeLocale)
 import System.IO (withBinaryFile, IOMode(ReadMode))
 
@@ -88,9 +89,9 @@ asRelease = JE.perhaps JE.fromAesonParser
 
 asCategory :: IngestM (Maybe RecordCategory)
 asCategory = JE.perhaps $ do
-  JE.withIntegral (maybe (Left "category not found") Right . getRecordCategory . Id) `catchError` \_ -> do
-    n <- JE.asText
-    fromMaybeM (throwPE "category not found") $ find ((n ==) . recordCategoryName) allRecordCategories
+  JE.withIntegral (err . getRecordCategory . Id) `catchError` \_ -> do
+    JE.withText (\n -> err $ find ((n ==) . recordCategoryName) allRecordCategories)
+  where err = maybe (Left "category not found") Right
 
 asSegment :: IngestM Segment
 asSegment = JE.fromAesonParser
@@ -171,7 +172,14 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
       _ <- JE.key "assets" $ JE.eachInArray $ do
         a <- asset dir
         as' <- lift $ lookupAssetAssetSlot a
-        s <- Slot c <$> JE.keyOrDefault "position" fullSegment asSegment
+        seg <- JE.keyOrDefault "position" fullSegment $
+          JE.withTextM (\t -> if t == "auto" then Right . Segment . Range.point <$> findAssetContainerEnd c else return $ Left "invalid asset position")
+            `catchError` \_ -> asSegment
+        let seg'
+              | Just p <- Range.getPoint (segmentRange seg)
+              , Just d <- assetDuration a = Segment $ Range.bounded p (p + d)
+              | otherwise = seg
+            s = Slot c seg'
         u <- maybe (return True) (\s' -> isJust <$> on check slotId s' s) $ assetSlot as'
         when u $ do
           o <- lift $ changeAssetSlot $ AssetSlot a $ Just s

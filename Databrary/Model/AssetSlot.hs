@@ -89,7 +89,7 @@ fixAssetSlotDuration as
 
 findAssetContainerEnd :: MonadDB m => Container -> m Offset
 findAssetContainerEnd c = fromMaybe 0 <$>
-  dbQuery1' [pgSQL|SELECT max(upper(segment)) FROM slot_asset WHERE container = ${containerId c}|]
+  dbQuery1' [pgSQL|SELECT max(upper(segment))+'1s' FROM slot_asset WHERE container = ${containerId c}|]
 
 assetSlotJSON :: AssetSlot -> JSON.Object
 assetSlotJSON as@AssetSlot{..} = assetJSON slotAsset JSON..++ catMaybes
