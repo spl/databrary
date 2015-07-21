@@ -7,6 +7,7 @@ module Databrary.Model.Ingest
   , addIngestRecord
   , lookupIngestAsset
   , addIngestAsset
+  , replaceSlotAsset
   ) where
 
 import qualified Data.Text as T
@@ -47,3 +48,7 @@ lookupIngestAsset vol k =
 addIngestAsset :: MonadDB m => Asset -> FilePath -> m ()
 addIngestAsset r k =
   dbExecute1' [pgSQL|INSERT INTO ingest.asset (id, file) VALUES (${assetId r}, ${k})|]
+
+replaceSlotAsset :: MonadDB m => Asset -> Asset -> m Bool
+replaceSlotAsset o n =
+  dbExecute1 [pgSQL|UPDATE slot_asset SET asset = ${assetId n} WHERE asset = ${assetId o}|]

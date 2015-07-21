@@ -166,25 +166,26 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
           unless o $ throwPE "update failed"
       _ <- JE.key "records" $ JE.eachInArray $ do
         r <- record
-        seg <- JE.keyOrDefault "position" fullSegment asSegment
-        o <- lift $ moveRecordSlot (RecordSlot r (Slot c emptySegment)) seg
-        unless o $ throwPE "record link failed"
+        inObj r $ do
+          seg <- JE.keyOrDefault "position" fullSegment asSegment
+          o <- lift $ moveRecordSlot (RecordSlot r (Slot c emptySegment)) seg
+          unless o $ throwPE "record link failed"
       _ <- JE.key "assets" $ JE.eachInArray $ do
         a <- asset dir
-        as' <- lift $ lookupAssetAssetSlot a
-        seg <- JE.keyOrDefault "position" fullSegment $
-          JE.withTextM (\t -> if t == "auto" then Right . Segment . Range.point <$> findAssetContainerEnd c else return $ Left "invalid asset position")
-            `catchError` \_ -> asSegment
-        let seg'
-              | Just p <- Range.getPoint (segmentRange seg)
-              , Just d <- assetDuration a = Segment $ Range.bounded p (p + d)
-              | otherwise = seg
-            s = Slot c seg'
-        u <- maybe (return True) (\s' -> isJust <$> on check slotId s' s) $ assetSlot as'
-        when u $ do
-          o <- lift $ changeAssetSlot $ AssetSlot a $ Just s
-          unless o $ throwPE "asset link failed"
-        return a
+        inObj a $ do
+          as' <- lift $ lookupAssetAssetSlot a
+          seg <- JE.keyOrDefault "position" fullSegment $
+            JE.withTextM (\t -> if t == "auto" then Right . Segment . Range.point <$> findAssetContainerEnd c else return $ Left "invalid asset position")
+              `catchError` \_ -> asSegment
+          let seg'
+                | Just p <- Range.getPoint (segmentRange seg)
+                , Just d <- assetDuration a = Segment $ Range.bounded p (p + d)
+                | otherwise = seg
+              s = Slot c seg'
+          u <- maybe (return True) (\s' -> isJust <$> on check slotId s' s) $ assetSlot as'
+          when u $ do
+            o <- lift $ changeAssetSlot $ AssetSlot a $ Just s
+            unless o $ throwPE "asset link failed"
       return c
   record = do
     rid <- JE.keyMay "id" $ Id <$> JE.asIntegral
@@ -224,6 +225,10 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
       file <- asStageFile dir
       either throwPE (return . (,) file)
         =<< lift (probeFile (toRawFilePath $ stageFileRel file) (toRawFilePath $ stageFileAbs file))
+    orig <- JE.keyMay "replace" $
+      let err = fmap $ maybe (Left "asset not found") Right in
+      JE.withIntegralM (err . lookupVolumeAsset vol . Id) `catchError` \_ ->
+        JE.withStringM (err . lookupIngestAsset vol)
     ae <- lift $ lookupIngestAsset vol $ stageFileRel file
     a <- maybe
       (do
@@ -235,19 +240,23 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
           , assetName = name
           } (Just $ toRawFilePath $ stageFileAbs file)
         lift $ addIngestAsset a (stageFileRel file)
+        Fold.forM_ orig $ \o -> lift $ supersedeAsset o a
         return a)
       (\a -> inObj a $ do
         unless (assetBacked a) $ throwPE "ingested asset incomplete"
         -- compareFiles file =<< getAssetFile -- assume correct
         release <- fmap join . JE.keyMay "release" $ check (assetRelease a) =<< asRelease
         name <- fmap join . JE.keyMay "name" $ check (assetName a) =<< JE.perhaps JE.asText
-        if (isJust release || isJust name) then lift $ changeAsset a
-          { assetRelease = fromMaybe (assetRelease a) release
-          , assetName = fromMaybe (assetName a) name
-          } Nothing
-        else return a)
+        a' <- if isJust release || isJust name
+          then lift $ changeAsset a
+            { assetRelease = fromMaybe (assetRelease a) release
+            , assetName = fromMaybe (assetName a) name
+            } Nothing
+          else return a
+        Fold.forM_ orig $ \o -> lift $ replaceSlotAsset o a'
+        return a')
       ae
-    t <- case probe of
+    t <- inObj a $ case probe of
       ProbePlain _ -> do
         noKey "clip"
         noKey "options"
