@@ -296,17 +296,17 @@ app.controller('volume/slot', [
       ended: ->
         $scope.playing = 0
 
-        [asset] = _.chain($scope.assets) 
+        [asset]= _.chain($scope.assets)
                    .filter (i) -> i.lt.o >= $scope.asset.segment.u && i.asset.format.type == 'video'
                    .sortBy (i) -> i.lt.o
                    .value()
+        if asset?
+          asset.choose()
 
-        asset.choose()
-
-        $timeout ->
-          $scope.play()
-          $scope.playing = 1
-        , 1000
+          $timeout ->
+            $scope.play()
+            $scope.playing = 1
+          , 1000
 
         return
 
