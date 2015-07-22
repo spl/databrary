@@ -7,7 +7,7 @@ module Databrary.Controller.Form
 
   , emailTextForm
   , passwordForm
-  , paginationForm
+  , paginateForm
   , csrfForm
   ) where
 
@@ -20,7 +20,6 @@ import qualified Crypto.BCrypt as BCrypt
 import qualified Data.Aeson as JSON
 import qualified Data.ByteString as BS
 import qualified Data.Foldable as Fold
-import Data.Int (Int32)
 import Data.Monoid ((<>))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -30,6 +29,7 @@ import qualified Text.Blaze.Html5 as Html
 import qualified Text.Regex.Posix as Regex
 
 import Databrary.Has (peeks)
+import Databrary.Model.Paginate
 import Databrary.Model.Party
 import Databrary.Model.Identity
 import Databrary.Service.Passwd
@@ -94,10 +94,11 @@ passwordForm acct = do
   pw <- liftIO $ BCrypt.hashPasswordUsingPolicy passwordPolicy p
   deformMaybe' "Error processing password." pw
 
-paginationForm :: (Applicative m, Monad m) => DeformT f m (Int32, Int32)
-paginationForm = (,)
-  <$> ("limit" .:> (deformCheck "Invalid limit" (\l -> l > 0 && l <= 129) =<< deform) <|> return 25)
-  <*> ("offset" .:> (deformCheck "Invalid offset" (>= 0) =<< deform) <|> return 0)
+paginateForm :: (Applicative m, Monad m) => DeformT f m Paginate
+paginateForm = Paginate
+  <$> get "offset" paginateOffset
+  <*> get "limit" paginateLimit
+  where get t f = t .:> (deformCheck ("invalid " <> t) (\i -> i >= f minBound && i <= f maxBound) =<< deform) <|> return (f def)
 
 csrfForm :: (MonadAuthAction q m) => DeformT f m ()
 csrfForm = do

@@ -4,19 +4,24 @@ module Databrary.View.Register
   , htmlPasswordReset
   ) where
 
+import Data.Monoid (mempty)
+
 import Databrary.Action
 import Databrary.View.Form
 
 import {-# SOURCE #-} Databrary.Controller.Register
 
 htmlRegister :: AuthRequest -> FormHtml f
-htmlRegister req = htmlForm "Register" postRegister HTML req $ do
-  field "prename" $ inputText (Nothing :: Maybe String)
-  field "name" $ inputText (Nothing :: Maybe String)
-  field "email" $ inputText (Nothing :: Maybe String)
-  field "affiliation" $ inputText (Nothing :: Maybe String)
-  field "agreement" $ inputCheckbox False
+htmlRegister = htmlForm "Register" postRegister HTML
+  (do
+    field "prename" $ inputText (Nothing :: Maybe String)
+    field "name" $ inputText (Nothing :: Maybe String)
+    field "email" $ inputText (Nothing :: Maybe String)
+    field "affiliation" $ inputText (Nothing :: Maybe String)
+    field "agreement" $ inputCheckbox False)
+  (const mempty)
 
 htmlPasswordReset :: AuthRequest -> FormHtml f
-htmlPasswordReset req = htmlForm "Password Reset" postPasswordReset HTML req $ do
-  field "email" $ inputText (Nothing :: Maybe String)
+htmlPasswordReset = htmlForm "Password Reset" postPasswordReset HTML
+  (field "email" $ inputText (Nothing :: Maybe String))
+  (const mempty)

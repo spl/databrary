@@ -27,6 +27,7 @@ import Databrary.Has (peek, view)
 import Databrary.Service.DB
 import qualified Databrary.JSON as JSON
 import Databrary.Model.SQL (selectQuery)
+import Databrary.Model.Paginate
 import Databrary.Model.Id
 import Databrary.Model.Permission
 import Databrary.Model.Audit
@@ -79,12 +80,13 @@ volumeJSON v@Volume{..} = JSON.record volumeId $ catMaybes
 data VolumeFilter = VolumeFilter
   { volumeFilterQuery :: Maybe String
   , volumeFilterParty :: Maybe (Id Party)
+  , volumeFilterPaginate :: Paginate
   }
 
 instance Monoid VolumeFilter where
-  mempty = VolumeFilter Nothing Nothing
-  mappend (VolumeFilter q1 p1) (VolumeFilter q2 p2) =
-    VolumeFilter (q1 <> q2) (p1 <|> p2)
+  mempty = VolumeFilter Nothing Nothing def
+  mappend (VolumeFilter q1 p1 p) (VolumeFilter q2 p2 _) =
+    VolumeFilter (q1 <> q2) (p1 <|> p2) p
 
 volumeFilter :: VolumeFilter -> BS.ByteString
 volumeFilter VolumeFilter{..} = BS.concat
@@ -96,16 +98,17 @@ volumeFilter VolumeFilter{..} = BS.concat
   , " ORDER BY "
   , withq volumeFilterQuery (const "ts_rank(ts, query) DESC,")
   , withq volumeFilterParty (const "volume_access.individual DESC,")
-  , "volume.id DESC"
+  , "volume.id DESC "
+  , paginateSQL volumeFilterPaginate
   ]
   where
   withq v f = maybe "" f v
 
-findVolumes :: (MonadHasIdentity c m, MonadDB m) => VolumeFilter -> Int32 -> Int32 -> m [Volume]
-findVolumes pf limit offset = do
+findVolumes :: (MonadHasIdentity c m, MonadDB m) => VolumeFilter -> m [Volume]
+findVolumes pf = do
   ident <- peek
   dbQuery $ unsafeModifyQuery $(selectQuery (selectVolume 'ident) "")
-    (<> volumeFilter pf <> " LIMIT " <> pgLiteralRep limit <> " OFFSET " <> pgLiteralRep offset)
+    (<> volumeFilter pf)
 
 updateVolumeIndex :: MonadDB m => m ()
 updateVolumeIndex =

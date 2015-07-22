@@ -62,12 +62,12 @@ viewContainerEdit :: AppRoute (Maybe (Id Volume), Id Slot)
 viewContainerEdit = action GET (pathHTML >/> pathMaybe pathId </> pathSlotId </< "edit") $ \(vi, ci) -> withAuth $ do
   angular
   c <- getContainer PermissionEDIT vi ci
-  blankForm $ htmlContainerForm (Right c)
+  blankForm $ htmlContainerEdit (Right c)
 
 createContainer :: AppRoute (API, Id Volume)
 createContainer = action POST (pathAPI </> pathId </< "slot") $ \(api, vi) -> withAuth $ do
   vol <- getVolume PermissionEDIT vi
-  bc <- runForm (api == HTML ?> htmlContainerForm (Left vol)) $ do
+  bc <- runForm (api == HTML ?> htmlContainerEdit (Left vol)) $ do
     top <- "top" .:> deform
     containerForm (blankContainer vol)
       { containerTop = top }
@@ -79,7 +79,7 @@ createContainer = action POST (pathAPI </> pathId </< "slot") $ \(api, vi) -> wi
 postContainer :: AppRoute (API, Id Slot)
 postContainer = action POST (pathAPI </> pathSlotId) $ \(api, ci) -> withAuth $ do
   c <- getContainer PermissionEDIT Nothing ci
-  c' <- runForm (api == HTML ?> htmlContainerForm (Right c)) $ containerForm c
+  c' <- runForm (api == HTML ?> htmlContainerEdit (Right c)) $ containerForm c
   changeContainer c'
   when (containerRelease c' /= containerRelease c) $ do
     r <- changeRelease (containerSlot c') (containerRelease c')

@@ -154,7 +154,7 @@ processAsset api target = do
         AssetTargetVolume t -> assetNoSlot $ blankAsset t
         AssetTargetSlot t -> AssetSlot (blankAsset (view t)) (Just t)
         AssetTargetAsset t -> t
-  (as', up') <- runFormFiles [("file", maxAssetSize)] (api == HTML ?> htmlAssetForm target) $ do
+  (as', up') <- runFormFiles [("file", maxAssetSize)] (api == HTML ?> htmlAssetEdit target) $ do
     csrfForm
     file <- "file" .:> deform
     upload <- "upload" .:> deformLookup "Uploaded file not found." lookupUpload
@@ -226,7 +226,7 @@ postAsset = multipartAction $ action POST (pathAPI </> pathId) $ \(api, ai) -> w
 viewAssetEdit :: AppRoute (Id Asset)
 viewAssetEdit = action GET (pathHTML >/> pathId </< "edit") $ \ai -> withAuth $ do
   asset <- getAsset PermissionEDIT ai
-  blankForm $ htmlAssetForm $ AssetTargetAsset asset
+  blankForm $ htmlAssetEdit $ AssetTargetAsset asset
 
 createAsset :: AppRoute (API, Id Volume)
 createAsset = multipartAction $ action POST (pathAPI </> pathId </< "asset") $ \(api, vi) -> withAuth $ do
@@ -236,7 +236,7 @@ createAsset = multipartAction $ action POST (pathAPI </> pathId </< "asset") $ \
 viewAssetCreate :: AppRoute (Id Volume)
 viewAssetCreate = action GET (pathHTML >/> pathId </< "asset") $ \vi -> withAuth $ do
   v <- getVolume PermissionEDIT vi
-  blankForm $ htmlAssetForm $ AssetTargetVolume v
+  blankForm $ htmlAssetEdit $ AssetTargetVolume v
 
 createSlotAsset :: AppRoute (API, Id Slot)
 createSlotAsset = multipartAction $ action POST (pathAPI </> pathSlotId </< "asset") $ \(api, si) -> withAuth $ do
@@ -246,7 +246,7 @@ createSlotAsset = multipartAction $ action POST (pathAPI </> pathSlotId </< "ass
 viewSlotAssetCreate :: AppRoute (Id Slot)
 viewSlotAssetCreate = action GET (pathHTML >/> pathSlotId </< "asset") $ \si -> withAuth $ do
   s <- getSlot PermissionEDIT Nothing si
-  blankForm $ htmlAssetForm $ AssetTargetSlot s
+  blankForm $ htmlAssetEdit $ AssetTargetSlot s
 
 deleteAsset :: AppRoute (API, Id Asset)
 deleteAsset = action DELETE (pathAPI </> pathId) $ \(api, ai) -> withAuth $ do

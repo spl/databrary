@@ -92,6 +92,7 @@ Executable databrary
     posix-paths,
     directory,
     process,
+    data-default-class,
     text,
     base64-bytestring,
     utf8-string,

@@ -11,7 +11,7 @@ module Databrary.Controller.Party
   ) where
 
 import Control.Applicative (Applicative, (<*>), pure, optional)
-import Control.Monad (unless, when, liftM2, void)
+import Control.Monad (unless, when, void)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import Data.Maybe (isJust, fromMaybe)
@@ -109,7 +109,7 @@ viewParty = action GET (pathAPI </> pathPartyTarget) $ \(api, i) -> withAuth $ d
 
 processParty :: API -> Maybe Party -> AuthActionM (Party, Maybe Asset)
 processParty api p = do
-  (p', a) <- runFormFiles [("avatar", maxAvatarSize)] (api == HTML ?> htmlPartyForm p) $ do
+  (p', a) <- runFormFiles [("avatar", maxAvatarSize)] (api == HTML ?> htmlPartyEdit p) $ do
     csrfForm
     name <- "sortname" .:> (deformRequired =<< deform)
     prename <- "prename" .:> deformNonEmpty deform
@@ -144,12 +144,12 @@ viewPartyEdit :: AppRoute PartyTarget
 viewPartyEdit = action GET (pathHTML >/> pathPartyTarget </< "edit") $ \i -> withAuth $ do
   angular
   p <- getParty (Just PermissionADMIN) i
-  blankForm $ htmlPartyForm $ Just p
+  blankForm $ htmlPartyEdit $ Just p
 
 viewPartyCreate :: AppRoute ()
 viewPartyCreate = action GET (pathHTML </< "party" </< "create") $ \() -> withAuth $ do
   checkMemberADMIN
-  blankForm $ htmlPartyForm Nothing
+  blankForm $ htmlPartyEdit Nothing
 
 postParty :: AppRoute (API, PartyTarget)
 postParty = multipartAction $ action POST (pathAPI </> pathPartyTarget) $ \(api, i) -> withAuth $ do
@@ -180,16 +180,16 @@ partySearchForm = PartyFilter
   <*> ("institution" .:> deformNonEmpty deform)
   <*> ("authorize" .:> optional deform)
   <*> pure Nothing
+  <*> paginateForm
 
 queryParties :: AppRoute API
 queryParties = action GET (pathAPI </< "party") $ \api -> withAuth $ do
   when (api == HTML) angular
-  (pf, (limit, offset)) <- runForm (api == HTML ?> htmlPartySearchForm mempty) $
-    liftM2 (,) partySearchForm paginationForm
-  p <- findParties pf limit offset
+  pf <- runForm (api == HTML ?> htmlPartySearch mempty []) partySearchForm
+  p <- findParties pf
   case api of
     JSON -> okResponse [] $ JSON.toJSON $ map partyJSON p
-    HTML -> blankForm $ htmlPartySearchForm pf
+    HTML -> blankForm $ htmlPartySearch pf p
 
 viewAvatar :: AppRoute (Id Party)
 viewAvatar = action GET (pathId </< "avatar") $ \i -> withoutAuth $
