@@ -12,7 +12,7 @@ app.controller('volume/slot', [
     $scope.authorized = models.Login.isAuthorized()
     $flow = $scope.$flow # not really in this scope
 
-    ################################### Base classes/utilities
+    #################################### Base classes/utilities
 
     # Represents a point on the timeline, which can be expressed as "o" (offset time in ms), "x" (pixel X position in client coordinates), or "p" (fractional position on the timeline, may escape [0,1])
     class TimePoint
@@ -245,7 +245,7 @@ app.controller('volume/slot', [
       resetRange()
       return
 
-    ################################### Video/playback controls
+    #  ---- Video/playback controls
 
     $scope.updatePosition = () ->
       seg = (if $scope.editing == 'position' then $scope.current else $scope.asset?.segment)
@@ -295,19 +295,24 @@ app.controller('volume/slot', [
         return
       ended: ->
         $scope.playing = 0
-        return unless $scope.asset && isFinite(p = $scope.asset.segment.u)
-        # look for something else to play:
-        for i in $scope.assets when i.asset && !i.asset.pending && i.asset.format.type == 'video' && i.asset.checkPermission(constants.permission.VIEW) && i.lBounded && i.ut.o > p
-          a = i
-          break
-        return unless a
-        a.choose(true)
+
+        asset = _.chain($scope.assets)
+                   .filter (i) -> i.lt.o >= $scope.asset.segment.u && i.asset.format.type == 'video'
+                   .min (i) -> i.lt.o
+                   .value()
+        if asset?
+          asset.choose()
+
+          $timeout ->
+            $scope.play()
+            $scope.playing = 1
+          , 1000
+
         return
 
     for ev, fn of videoEvents
       videoEvents[ev] = $scope.$lift(fn)
 
-    autoplay = undefined
     @deregisterVideo = (v) ->
       return unless video == v
       video = undefined
@@ -319,12 +324,9 @@ app.controller('volume/slot', [
       video = v
       seekOffset(ruler.position.o)
       v.on(videoEvents)
-      if autoplay
-        autoplay = false
-        video[0].play()
       return
 
-    ################################### Player display
+    #  ---- Player display
 
     playerMinHeight = 200
     viewportMinHeight = 120
@@ -374,14 +376,14 @@ app.controller('volume/slot', [
         setPlayerHeight()
       return
 
-    ################################### Track management
+    #  ---- Track management
 
     stayDirty = (global) ->
       if global || editing && $scope.current && $scope.form.edit && ($scope.current.asset || $scope.current.record) && ($scope.current.dirty = $scope.form.edit.$dirty)
         not confirm(constants.message('navigation.confirmation'))
 
     class TimeBar extends TimeSegment
-      choose: (ap) ->
+      choose: ->
         return false if stayDirty()
 
         $scope.current = this
@@ -399,7 +401,6 @@ app.controller('volume/slot', [
         $scope.playing = 0
         finalizeSelection()
         updatePlayerHeight()
-        autoplay = ap
         true
 
       click: (event) ->
@@ -448,7 +449,7 @@ app.controller('volume/slot', [
     unchoose = TimeBar.prototype.choose.bind(undefined)
     $scope.click = TimeBar.prototype.click.bind(undefined)
 
-    ################################### Selection (temporal) management
+    #  ---- Selection (temporal) management
 
     $scope.setSelectionEnd = (u) ->
       pos = ruler.position.o
@@ -511,7 +512,7 @@ app.controller('volume/slot', [
       else
         ruler.selection
 
-    ################################### Track implementations
+    #  ---- Track implementations
 
     class Asset extends TimeBar
       constructor: (asset) ->
@@ -1125,7 +1126,7 @@ app.controller('volume/slot', [
             body: constants.message('comments.add.error')
             report: e
 
-    ################################### Initialization
+    #  ---- Initialization
 
     $scope.tags = (new Tag(tag) for tagId, tag of slot.tags when (if editing then tag.keyword?.length else tag.coverage?.length))
     $scope.comments = (new Comment(comment) for comment in slot.comments)
