@@ -9,7 +9,6 @@ module Databrary.View.Template
 import Control.Monad (void, when)
 import qualified Data.Foldable as Fold
 import qualified Data.ByteString.Builder as BSB
-import Data.Maybe (isJust)
 import Data.Monoid ((<>))
 import qualified Data.Text as T
 import Data.Version (showVersion)
@@ -33,7 +32,7 @@ import {-# SOURCE #-} Databrary.Controller.Login
 import {-# SOURCE #-} Databrary.Controller.Party
 import Databrary.Controller.Web
 
-htmlHeader :: Maybe BSB.Builder -> Maybe Bool -> H.Html
+htmlHeader :: Maybe BSB.Builder -> JSOpt -> H.Html
 htmlHeader canon hasjs = do
   Fold.forM_ canon $ \c ->
     H.link
@@ -44,7 +43,7 @@ htmlHeader canon hasjs = do
     H.! HA.href (builderValue $ actionURL Nothing webFile (Just $ staticPath ["icons", "favicon.png"]) [])
   H.link
     H.! HA.rel "start"
-    H.! actionLink viewRoot HTML hasjs []
+    H.! actionLink viewRoot HTML hasjs
   Fold.forM_ ["news", "about", "access", "community"] $ \l -> H.link
     H.! HA.rel l
     H.! HA.href ("//databrary.org/" <> l <> ".html")
@@ -91,7 +90,7 @@ htmlFooter = H.footer H.! HA.id "site-footer" H.! HA.class_ "site-footer" $
           H.string $ showVersion version
           "]"
 
-htmlTemplate :: AuthRequest -> Maybe T.Text -> (Maybe Bool -> H.Html) -> H.Html
+htmlTemplate :: AuthRequest -> Maybe T.Text -> (JSOpt -> H.Html) -> H.Html
 htmlTemplate req title body = H.docTypeHtml $ do
   H.head $ do
     htmlHeader canon hasjs
@@ -99,7 +98,7 @@ htmlTemplate req title body = H.docTypeHtml $ do
       Fold.mapM_ (\t -> H.toHtml t >> " || ") title
       "Databrary"
   H.body $ do
-    when (hasjs /= Just True) $ Fold.forM_ canon $ \c -> H.div $ do
+    when (hasjs /= JSEnabled) $ Fold.forM_ canon $ \c -> H.div $ do
       H.preEscapedString "Our site works best with modern browsers (Firefox, Chrome, Safari &ge;6, IE &ge;10, and others). \
         \You are viewing the simple version of our site: some functionality may not be available. \
         \Try switching to the "
@@ -110,13 +109,13 @@ htmlTemplate req title body = H.docTypeHtml $ do
       H.! HA.class_ "toolbar"
       $ do
         H.h1 $ H.a
-          H.! actionLink viewRoot HTML hasjs []
+          H.! actionLink viewRoot HTML hasjs
           $ "Databrary"
         foldIdentity
-          (H.a H.! actionLink viewLogin () hasjs [] $ "login")
+          (H.a H.! actionLink viewLogin () hasjs $ "login")
           (\_ -> do
-            H.a H.! actionLink viewParty (HTML, TargetProfile) hasjs [] $ "profile"
-            actionForm postLogout HTML $
+            H.a H.! actionLink viewParty (HTML, TargetProfile) hasjs $ "profile"
+            actionForm postLogout HTML hasjs $
               H.button
                 H.! HA.type_ "submit"
                 $ "logout")
@@ -126,5 +125,5 @@ htmlTemplate req title body = H.docTypeHtml $ do
     htmlFooter
     return r
   where
-  (hasjs, nojs) = jsURL Nothing (view req)
-  canon = Wai.requestMethod (view req) == methodGet && isJust hasjs ?> nojs
+  (hasjs, nojs) = jsURL JSDefault (view req)
+  canon = Wai.requestMethod (view req) == methodGet && hasjs == JSDefault ?!> nojs

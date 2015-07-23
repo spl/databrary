@@ -19,7 +19,7 @@ htmlContainerForm :: Maybe Container -> FormHtml f
 htmlContainerForm cont = do
   field "name" $ inputText (containerName =<< cont)
   field "date" $ inputDate (containerDate =<< cont)
-  field "release" $ inputEnum (containerRelease =<< cont)
+  field "release" $ inputEnum False (containerRelease =<< cont)
 
 htmlContainerEdit :: Either Volume Container -> AuthRequest -> FormHtml f
 htmlContainerEdit (Left v)  = htmlForm "Create container" createContainer (HTML, volumeId v) (htmlContainerForm Nothing) (const mempty)

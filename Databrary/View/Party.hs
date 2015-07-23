@@ -10,6 +10,7 @@ import qualified Data.ByteString.Char8 as BSC
 import qualified Data.Foldable as Fold
 import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>), mempty)
+import Network.HTTP.Types (toQuery)
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as HA
 
@@ -27,6 +28,7 @@ import Databrary.View.Template
 import Databrary.View.Form
 import Databrary.View.Paginate
 
+import {-# SOURCE #-} Databrary.Controller.Angular
 import {-# SOURCE #-} Databrary.Controller.Party
 import {-# SOURCE #-} Databrary.Controller.Volume
 
@@ -34,7 +36,7 @@ htmlPartyView :: Party -> AuthRequest -> H.Html
 htmlPartyView p req = htmlTemplate req (Just (partyName p)) $ \js -> do
   when (view p >= PermissionEDIT) $
     H.p $
-      H.a H.! actionLink viewPartyEdit (TargetParty (partyId p)) js [] $ "edit"
+      H.a H.! actionLink viewPartyEdit (TargetParty (partyId p)) js $ "edit"
   H.img
     H.! HA.src (builderValue $ actionURL Nothing viewAvatar (partyId p) [])
   H.dl $ do
@@ -51,7 +53,7 @@ htmlPartyView p req = htmlTemplate req (Just (partyName p)) $ \js -> do
     Fold.forM_ (partyORCID p) $ \o -> do
       H.dt "orcid"
       H.dd $ H.a H.! HA.href (H.stringValue $ show $ orcidURL o) $ H.string $ show o
-  H.a H.! actionLink queryVolumes HTML js [("party", Just $ BSC.pack $ show $ partyId p)] $ "volumes"
+  H.a H.! actionLink queryVolumes HTML (toQuery js <> [("party", Just $ BSC.pack $ show $ partyId p)]) $ "volumes"
   return ()
 
 htmlPartyForm :: Maybe Party -> FormHtml TempFile
@@ -71,17 +73,17 @@ htmlPartyEdit t = maybe
   (htmlPartyForm t)
   (const mempty)
 
-htmlPartyList :: Maybe Bool -> [Party] -> H.Html
+htmlPartyList :: JSOpt -> [Party] -> H.Html
 htmlPartyList js pl = H.ul $ forM_ pl $ \p -> H.li $ do
   H.h2
-    $ H.a H.! actionLink viewParty (HTML, TargetParty (partyId p)) js []
+    $ H.a H.! actionLink viewParty (HTML, TargetParty (partyId p)) js
     $ H.text $ partyName p
   Fold.mapM_ H.text $ partyAffiliation p
 
 htmlPartySearchForm :: PartyFilter -> FormHtml f
 htmlPartySearchForm pf = do
   field "query" $ inputText $ partyFilterQuery pf
-  field "authorization" $ inputEnum $ partyFilterAuthorization pf
+  field "authorization" $ inputEnum False $ partyFilterAuthorization pf
   field "institution" $ inputCheckbox $ fromMaybe False $ partyFilterInstitution pf
 
 htmlPartySearch :: PartyFilter -> [Party] -> AuthRequest -> FormHtml f

@@ -35,7 +35,6 @@ import qualified Data.Traversable as Trav
 import qualified Data.Vector as V
 import Data.Word (Word8)
 import Network.HTTP.Types (Query)
-import Network.URI (URI)
 
 object :: [Pair] -> Object
 object = HM.fromList
@@ -67,9 +66,6 @@ a .!? i = Trav.mapM parseJSON $ a V.!? i
 
 instance ToJSON BS.ByteString where
   toJSON = String . TE.decodeUtf8
-
-instance ToJSON URI where
-  toJSON = toJSON . show
 
 instance ToJSON C.Value where
   toJSON (C.Bool b) = Bool b

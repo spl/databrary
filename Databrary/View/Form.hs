@@ -47,6 +47,8 @@ import Databrary.HTTP.Form.View
 import Databrary.View.Html
 import Databrary.View.Template
 
+import {-# SOURCE #-} Databrary.Controller.Angular
+
 type FormHtmlM f = FormViewT f M.MarkupM
 type FormHtml f = FormHtmlM f ()
 
@@ -126,9 +128,9 @@ inputSelect val choices ref dat = H.select
     H.!? (Fold.any (v ==) (dat <|> val), HA.selected "selected")
     $ H.toHtml c) choices
 
-inputEnum :: forall a . DBEnum a => Maybe a -> Field
-inputEnum val =
-  inputSelect (bshow <$> val) $ map (\(x, v) -> (bshow (x :: a), v)) pgEnumValues
+inputEnum :: forall a . DBEnum a => Bool -> Maybe a -> Field
+inputEnum req val =
+  inputSelect (bshow <$> val) $ (if req then id else (("", "") :)) $ map (\(x, v) -> (bshow (x :: a), v)) pgEnumValues
   where bshow = BSC.pack . show . fromEnum
 
 inputDate :: Maybe Date -> Field
@@ -154,10 +156,10 @@ inputHidden val ref dat = H.input
 csrfForm :: AuthRequest -> FormHtml f
 csrfForm = lift . foldIdentity mempty (\s -> inputHidden (byteStringValue $ sessionVerf s) "csverf" Nothing) . view
 
-htmlForm :: T.Text -> AppRoute a -> a -> FormHtml f -> (Maybe Bool -> H.Html) -> AuthRequest -> FormHtml f
+htmlForm :: T.Text -> AppRoute a -> a -> FormHtml f -> (JSOpt -> H.Html) -> AuthRequest -> FormHtml f
 htmlForm title act arg form body req = liftWith $ \run -> do
   htmlTemplate req (Just title) $ \js -> do
-    actionForm act arg $ do
+    actionForm act arg js $ do
       (_, err) <- run $ when (routeMethod act /= methodGet) (csrfForm req) >> form
       errorLists $ allFormErrors err
       H.input

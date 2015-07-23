@@ -20,8 +20,8 @@ htmlAuthorizeForm a = htmlForm
   ("Authorize " `T.append` partyName child)
   postAuthorize (HTML, TargetParty (partyId parent), AuthorizeTarget False (partyId child))
   (do
-    field "site" $ inputEnum $ Just $ accessSite a
-    field "member" $ inputEnum $ Just $ accessMember a
+    field "site" $ inputEnum True $ Just $ accessSite a
+    field "member" $ inputEnum True $ Just $ accessMember a
     field "expires" $ inputText $ Just $ show $ authorizeExpires a
     field "delete" $ inputCheckbox False)
   (const mempty)

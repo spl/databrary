@@ -20,7 +20,7 @@ import {-# SOURCE #-} Databrary.Controller.Asset
 htmlAssetForm :: Maybe Asset -> FormHtml f
 htmlAssetForm asset = do
   field "name" $ inputText (assetName =<< asset)
-  field "classification" $ inputEnum (assetRelease =<< asset)
+  field "classification" $ inputEnum True (assetRelease =<< asset)
   field "file" inputFile
   -- TODO
 

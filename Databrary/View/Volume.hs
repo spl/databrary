@@ -26,6 +26,7 @@ import Databrary.View.Template
 import Databrary.View.Form
 import Databrary.View.Paginate
 
+import {-# SOURCE #-} Databrary.Controller.Angular
 import {-# SOURCE #-} Databrary.Controller.Party
 import {-# SOURCE #-} Databrary.Controller.Volume
 
@@ -33,7 +34,7 @@ htmlVolumeView :: Volume -> AuthRequest -> H.Html
 htmlVolumeView v req = htmlTemplate req (Just (volumeName v)) $ \js -> do
   when (view v >= PermissionEDIT) $
     H.p $
-      H.a H.! actionLink viewVolumeEdit (volumeId v) js [] $ "edit"
+      H.a H.! actionLink viewVolumeEdit (volumeId v) js $ "edit"
   H.img
     H.! HA.src (builderValue $ actionURL Nothing thumbVolume (volumeId v) [])
   H.dl $ do
@@ -42,7 +43,7 @@ htmlVolumeView v req = htmlTemplate req (Just (volumeName v)) $ \js -> do
       H.dd $ H.text a
     forM_ (volumeOwners v) $ \(p, n) -> do
       H.dt "owner"
-      H.dd $ H.a H.! actionLink viewParty (HTML, TargetParty p) js [] $ H.text n
+      H.dd $ H.a H.! actionLink viewParty (HTML, TargetParty p) js $ H.text n
     Fold.forM_ (volumeBody v) $ \b -> do
       H.dt "body"
       H.dd $ H.text b -- format
@@ -71,13 +72,13 @@ htmlVolumeLinksEdit vol links = htmlForm "Edit volume links" postVolumeLinks (HT
     field "url" $ inputText $ fmap show $ citationURL =<< link)
   (const mempty)
 
-htmlVolumeList :: Maybe Bool -> [Volume] -> H.Html
+htmlVolumeList :: JSOpt -> [Volume] -> H.Html
 htmlVolumeList js vl = H.ul $ forM_ vl $ \v -> H.li $ do
   H.h2
-    $ H.a H.! actionLink viewVolume (HTML, volumeId v) js []
+    $ H.a H.! actionLink viewVolume (HTML, volumeId v) js
     $ H.text $ volumeName v
   H.ul $ forM_ (volumeOwners v) $ \(p, o) -> H.li $ do
-    H.a H.! actionLink viewParty (HTML, TargetParty p) js []
+    H.a H.! actionLink viewParty (HTML, TargetParty p) js
       $ H.text o
   Fold.mapM_ (H.p . H.text) $ volumeBody v
 

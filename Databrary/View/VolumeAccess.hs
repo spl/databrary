@@ -19,7 +19,7 @@ htmlVolumeAccessForm a@VolumeAccess{ volumeAccessVolume = vol, volumeAccessParty
   ("Access to " <> volumeName vol <> " for " <> partyName p)
   postVolumeAccess (HTML, (volumeId vol, VolumeAccessTarget (partyId p)))
   (do
-    field "individual" $ inputEnum $ Just $ volumeAccessIndividual a
-    field "children" $ inputEnum $ Just $ volumeAccessChildren a
+    field "individual" $ inputEnum True $ Just $ volumeAccessIndividual a
+    field "children" $ inputEnum True $ Just $ volumeAccessChildren a
     field "delete" $ inputCheckbox False)
   (const mempty)
