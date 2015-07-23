@@ -220,12 +220,6 @@ app.factory('modelService', [
       return router.party([this.id]);
     };
 
-    Object.defineProperty(Party.prototype, 'lastName', {
-      get: function () {
-        return this.name.substr(this.name.lastIndexOf(' ')+1);
-      }
-    });
-
     Party.prototype.editRoute = function (page) {
       var params = {};
       if (page)
