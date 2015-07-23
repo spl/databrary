@@ -81,8 +81,8 @@ headerRow = concatMap $ uncurry $ metricsHeader . maybe "record" (tenc . recordC
 
 metricsRow :: [Metric] -> [Measure] -> [BS.ByteString]
 metricsRow m [] = map (const BS.empty) m
-metricsRow ~mh@(m:h) (d:l) = case compare m dm of
-  LT -> BS.empty : metricsRow h l
+metricsRow ~mh@(m:h) dl@(d:l) = case compare m dm of
+  LT -> BS.empty : metricsRow h dl
   EQ -> measureDatum d : metricsRow h l
   GT -> error "csvMetricsRow" : metricsRow mh l
   where dm = measureMetric d
@@ -104,7 +104,7 @@ csvVolume = action GET (pathId </< "csv") $ \vi -> withAuth $ do
   vol <- getVolume PermissionPUBLIC vi
   crsl <- lookupVolumeContainersRecords vol
   let grm r = r{ recordMeasures = getRecordMeasures r }
-      crl = map (second (map (nubBy ((==) `on` recordId)) . groupBy ((==) `on` recordCategory) . map (grm . slotRecord))) crsl
+      crl = map (second $ map (nubBy ((==) `on` recordId)) . groupBy ((==) `on` recordCategory) . map (grm . slotRecord)) crsl
       hl = foldl' updateHeaders [] $ map snd crl
       cr c r = tshow (containerId c) : tmaybe tenc (containerName c) : tmaybe BSC.pack (formatContainerDate c) : tmaybe tshow (containerRelease c) : dataRow hl r
       hr = "session-id" : "session-name" : "session-date" : "session-release" : headerRow hl
