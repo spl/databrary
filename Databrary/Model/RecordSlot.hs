@@ -59,12 +59,12 @@ lookupVolumeContainersRecordIds v =
 moveRecordSlot :: (MonadAudit c m) => RecordSlot -> Segment -> m Bool
 moveRecordSlot rs@RecordSlot{ recordSlot = s@Slot{ slotSegment = src } } dst = do
   ident <- getAuditIdentity
-  either (const False) ((0 <) . fst)
+  either (const False) id
     <$> case (Range.isEmpty (segmentRange src), Range.isEmpty (segmentRange dst)) of
-    (True,  True) -> return $ Right (0, [])
-    (False, True) -> Right <$> dbRunQuery $(deleteSlotRecord 'ident 'rs)
-    (True,  False) -> dbTryQuery err $(insertSlotRecord 'ident 'rd)
-    (False, False) -> dbTryQuery err $(updateSlotRecord 'ident 'rs 'dst)
+    (True,  True) -> return $ Right False
+    (False, True) -> Right <$> dbExecute1 $(deleteSlotRecord 'ident 'rs)
+    (True,  False) -> dbTryJust err $ dbExecute1 $(insertSlotRecord 'ident 'rd)
+    (False, False) -> dbTryJust err $ dbExecute1 $(updateSlotRecord 'ident 'rs 'dst)
   where
   rd = rs{ recordSlot = s{ slotSegment = dst } }
   err = guard . isExclusionViolation

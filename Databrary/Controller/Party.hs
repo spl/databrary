@@ -4,10 +4,13 @@ module Databrary.Controller.Party
   , viewParty
   , viewPartyEdit
   , viewPartyCreate
+  , viewPartyDelete
   , postParty
   , createParty
-  , queryParties
+  , deleteParty
   , viewAvatar
+  , queryParties
+  , adminParties
   ) where
 
 import Control.Applicative (Applicative, (<*>), pure, optional)
@@ -15,9 +18,10 @@ import Control.Monad (unless, when, void)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import Data.Maybe (isJust, fromMaybe)
-import Data.Monoid (mempty)
+import Data.Monoid ((<>), mempty)
 import qualified Data.Text.Encoding as TE
 import qualified Data.Traversable as Trav
+import Network.HTTP.Types (badRequest400)
 import qualified Network.Wai as Wai
 import Network.Wai.Parse (FileInfo(..))
 
@@ -173,6 +177,28 @@ createParty = multipartAction $ action POST (pathAPI </< "party") $ \api -> with
     JSON -> okResponse [] $ partyJSON p
     HTML -> redirectRouteResponse [] viewParty (api, TargetParty $ partyId p) []
 
+deleteParty :: AppRoute (Id Party)
+deleteParty = action POST (pathHTML >/> pathId </< "delete") $ \i -> withAuth $ do
+  checkMemberADMIN
+  p <- getParty (Just PermissionADMIN) (TargetParty i)
+  r <- removeParty p
+  if r
+    then okResponse [] $ partyName p <> " deleted"
+    else returnResponse badRequest400 [] $ partyName p <> " not deleted"
+
+viewPartyDelete :: AppRoute (Id Party)
+viewPartyDelete = action GET (pathHTML >/> pathId </< "delete") $ \i -> withAuth $ do
+  checkMemberADMIN
+  p <- getParty (Just PermissionADMIN) (TargetParty i)
+  okResponse [] =<< peeks (htmlPartyDelete p)
+
+viewAvatar :: AppRoute (Id Party)
+viewAvatar = action GET (pathId </< "avatar") $ \i -> withoutAuth $
+  maybe
+    (redirectRouteResponse [] webFile (Just $ staticPath ["images", "avatar.png"]) [])
+    (serveAssetSegment False . assetSlotSegment . assetNoSlot)
+    =<< lookupAvatar i
+
 partySearchForm :: (Applicative m, Monad m) => DeformT f m PartyFilter
 partySearchForm = PartyFilter
   <$> ("query" .:> deformNonEmpty deform)
@@ -191,9 +217,9 @@ queryParties = action GET (pathAPI </< "party") $ \api -> withAuth $ do
     JSON -> okResponse [] $ JSON.toJSON $ map partyJSON p
     HTML -> blankForm $ htmlPartySearch pf p
 
-viewAvatar :: AppRoute (Id Party)
-viewAvatar = action GET (pathId </< "avatar") $ \i -> withoutAuth $
-  maybe
-    (redirectRouteResponse [] webFile (Just $ staticPath ["images", "avatar.png"]) [])
-    (serveAssetSegment False . assetSlotSegment . assetNoSlot)
-    =<< lookupAvatar i
+adminParties :: AppRoute ()
+adminParties = action GET ("party" </< "admin") $ \() -> withAuth $ do
+  checkMemberADMIN
+  pf <- runForm (Just $ htmlPartyAdmin mempty []) partySearchForm
+  p <- findParties pf
+  blankForm $ htmlPartyAdmin pf p

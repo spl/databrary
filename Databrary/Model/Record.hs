@@ -62,7 +62,7 @@ changeRecord r = do
 removeRecord :: MonadAudit c m => Record -> m Bool
 removeRecord r = do
   ident <- getAuditIdentity
-  isRight <$> dbTryQuery (guard . isForeignKeyViolation) $(deleteRecord 'ident 'r)
+  isRight <$> dbTryJust (guard . isForeignKeyViolation) (dbExecute1 $(deleteRecord 'ident 'r))
 
 recordJSON :: Record -> JSON.Object
 recordJSON r@Record{..} = JSON.record recordId $ catMaybes

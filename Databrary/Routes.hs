@@ -60,18 +60,22 @@ routeMap = fromRouteList
   , route postPasswordReset
   , route viewLoginToken
   , route postPasswordToken
+  , route resendInvestigator
 
   , route viewParty
   , route postParty
   , route viewPartyEdit
   , route viewPartyCreate
+  , route viewPartyDelete
   , route viewAuthorize
   , route postAuthorize
   , route deleteAuthorize
   , route postAuthorizeNotFound
   , route viewAvatar
   , route createParty
+  , route deleteParty
   , route queryParties
+  , route adminParties
 
   , route viewVolume
   , route postVolume

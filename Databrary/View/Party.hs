@@ -1,8 +1,10 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, RecordWildCards #-}
 module Databrary.View.Party
   ( htmlPartyView
   , htmlPartyEdit
   , htmlPartySearch
+  , htmlPartyAdmin
+  , htmlPartyDelete
   ) where
 
 import Control.Monad (when, forM_)
@@ -31,29 +33,30 @@ import Databrary.View.Paginate
 import {-# SOURCE #-} Databrary.Controller.Angular
 import {-# SOURCE #-} Databrary.Controller.Party
 import {-# SOURCE #-} Databrary.Controller.Volume
+import {-# SOURCE #-} Databrary.Controller.Register
 
 htmlPartyView :: Party -> AuthRequest -> H.Html
-htmlPartyView p req = htmlTemplate req (Just (partyName p)) $ \js -> do
+htmlPartyView p@Party{..} req = htmlTemplate req (Just $ partyName p) $ \js -> do
   when (view p >= PermissionEDIT) $
     H.p $
-      H.a H.! actionLink viewPartyEdit (TargetParty (partyId p)) js $ "edit"
+      H.a H.! actionLink viewPartyEdit (TargetParty partyId) js $ "edit"
   H.img
-    H.! HA.src (builderValue $ actionURL Nothing viewAvatar (partyId p) [])
+    H.! HA.src (builderValue $ actionURL Nothing viewAvatar partyId [])
   H.dl $ do
-    Fold.forM_ (partyAffiliation p) $ \a -> do
+    Fold.forM_ partyAffiliation $ \a -> do
       H.dt "affiliation"
       H.dd $ H.text a
-    Fold.forM_ (partyURL p) $ \u -> do
+    Fold.forM_ partyURL $ \u -> do
       let us = show u
       H.dt "url"
       H.dd $ H.a H.! HA.href (H.stringValue us) $ H.string us
     Fold.forM_ (partyEmail p) $ \e -> do
       H.dt "email"
       H.dd $ H.a H.! HA.href (H.textValue $ "mailto:" <> e) $ H.text e
-    Fold.forM_ (partyORCID p) $ \o -> do
+    Fold.forM_ partyORCID $ \o -> do
       H.dt "orcid"
       H.dd $ H.a H.! HA.href (H.stringValue $ show $ orcidURL o) $ H.string $ show o
-  H.a H.! actionLink queryVolumes HTML (toQuery js <> [("party", Just $ BSC.pack $ show $ partyId p)]) $ "volumes"
+  H.a H.! actionLink queryVolumes HTML (toQuery js <> [("party", Just $ BSC.pack $ show partyId)]) $ "volumes"
   return ()
 
 htmlPartyForm :: Maybe Party -> FormHtml TempFile
@@ -91,3 +94,38 @@ htmlPartySearch pf pl req = htmlForm "Search users" queryParties HTML
   (htmlPartySearchForm pf)
   (\js -> htmlPaginate (htmlPartyList js) (partyFilterPaginate pf) pl (view req))
   req
+
+htmlPartyAdmin :: PartyFilter -> [Party] -> AuthRequest -> FormHtml f
+htmlPartyAdmin pf pl req = htmlForm "party admin" adminParties ()
+  (htmlPartySearchForm pf)
+  (\js -> htmlPaginate
+    (\pl' -> H.table $ do
+      H.thead $
+        H.tr $ do
+          H.th "id"
+          H.th "name"
+          H.th "email"
+          H.th "affiliation"
+          H.th "act"
+      H.tbody $
+        forM_ pl' $ \p@Party{..} -> H.tr $ do
+          H.td $ H.a H.! actionLink viewParty (HTML, TargetParty partyId) js
+            $ H.string $ show partyId
+          H.td $ H.text $ partyName p
+          H.td $ Fold.mapM_ (H.text . accountEmail) partyAccount
+          H.td $ Fold.mapM_ H.text partyAffiliation
+          H.td $ do
+            actionForm resendInvestigator partyId js
+              $ H.input H.! HA.type_ "submit" H.! HA.value "agreement"
+            H.a H.! actionLink viewPartyDelete partyId js
+              $ "delete"
+    )
+    (partyFilterPaginate pf) pl (view req))
+  req
+
+htmlPartyDelete :: Party -> AuthRequest -> H.Html
+htmlPartyDelete p@Party{..} req = htmlTemplate req (Just $ "delete " <> partyName p) $ \js -> do
+  actionForm deleteParty partyId js $ do
+    H.a H.! actionLink viewParty (HTML, TargetParty partyId) js
+      $ H.text $ partyName p
+    H.input H.! HA.type_ "submit" H.! HA.value "delete"

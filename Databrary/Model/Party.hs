@@ -12,6 +12,7 @@ module Databrary.Model.Party
   , changeAccount
   , addParty
   , addAccount
+  , removeParty
   , auditAccountLogin
   , recentAccountLogins
   , partyJSON
@@ -22,6 +23,7 @@ module Databrary.Model.Party
   ) where
 
 import Control.Applicative ((<|>))
+import Control.Exception.Lifted (handleJust)
 import Control.Monad (guard)
 import qualified Data.ByteString as BS
 import Data.Int (Int64)
@@ -108,6 +110,13 @@ addAccount ba@Account{ accountParty = bp } = do
       a = ba{ accountParty = pa }
   dbExecute1' $(insertAccount 'ident 'a)
   return a
+
+removeParty :: MonadAudit c m => Party -> m Bool
+removeParty p = do
+  ident <- getAuditIdentity
+  dbTransaction $ handleJust (guard . isForeignKeyViolation) (\_ -> return False) $ do
+    _ <- dbExecute1 $(deleteAccount 'ident 'p)
+    dbExecute1 $(deleteParty 'ident 'p)
 
 lookupFixedParty :: Id Party -> Identity -> Maybe Party
 lookupFixedParty (Id (-1)) _ = Just nobodyParty
