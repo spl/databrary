@@ -1070,8 +1070,11 @@ app.factory('modelService', [
       if ('id' in init) {
         var a = v.assets[init.id];
         return a ? a.update(init) : new Asset(context, init);
-      } else
+      } else {
+        if (init.asset && 'container' in init && !('container' in init.asset))
+          init.asset.container = init.container;
         return new AssetSlot(context, init);
+      }
     }
 
     function assetMakeArray(context, l) {
