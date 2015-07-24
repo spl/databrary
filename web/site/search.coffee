@@ -88,6 +88,8 @@ app.controller 'site/search', [
   ###########################
   # Search handlers
   ###########################
+    $scope.clearContainers = (volId) ->
+      $scope.retrievedContainers[volId] = undefined
 
     $scope.searchContainers = (volId) ->
       console.log("Getting container results for volume:", volId)
