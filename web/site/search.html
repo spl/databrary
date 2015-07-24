@@ -25,7 +25,7 @@
         <h3>Users</h3>
         <div class="search-party-results">  
           <!-- This is where we return what we want-->
-          <aside class="portrait ng-cloak" ng-repeat="result in partyResults.docs">
+          <aside class="col-desktop-5 col-tablet-4 col-mobile-6 portrait ng-cloak" ng-repeat="result in partyResults.docs">
             <a ng-href="{{::page.router.party([result.party_id_i])}}">
               <figure class="figure-avatar" ng-class="::{inst: party.institution}">
                 <img ng-src="{{::page.router.partyAvatar([result.party_id_i, size || 56], {})}}">
@@ -39,9 +39,11 @@
           </aside>
         </div>
       </div>
+    </div>
+    <div class="row">
       <div ng-if="volumeCount > 0">
         <h3>Volumes</h3>
-        <ul>
+        <ul class="search-volume-results">
           <li ng-repeat="result in volumeResults.docs">
             <!-- This is where we return what we want-->
             <a ng-href="volume/{{result.volume_id_i}}">{{result.title_t}}</a><br>
