@@ -9,7 +9,8 @@
       <label class="option" ng-class="::{disabled:val >= party.authorization}">
         <strong message="auth.site.{{::name}}.title"></strong>: 
         {{'auth.site.'+name | possessive:party}} 
-        <mark ng-if="val >= party.authorization" ng-bind="'auth.site.disabled' | message:('auth.site.'+page.constants.permission[val+1]+'.title' | message)"></mark>
+        <span class="icon info" ng-if="val >= party.authorization" tooltip="'auth.site.disabled' | message:('auth.site.'+page.constants.permission[val+1]+'.title' | message)"></span>
+
       </label>
     </div>
   </fieldset>
