@@ -122,6 +122,7 @@ htmlTemplate req title body = H.docTypeHtml $ do
           $ authIdentity req
     Fold.mapM_ (H.h1 . H.toHtml) title
     r <- body hasjs
+    H.hr
     htmlFooter
     return r
   where
