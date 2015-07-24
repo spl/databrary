@@ -16,7 +16,7 @@
           <li ng-repeat="v in ::vl" ng-class="{'profile-highlight': !!v.selected}">
             <div class="profile-right-icons">
               <span class="icon access1" ng-show="::v.volume.accessPreset" tooltip="'access.preset.title'+v.volume.accessPreset | message"></span>
-              <span class="icon" ng-class="::{'network': v.self.children}" tooltip="'profile.access.extend' | message"></span>
+              <span class="icon" ng-class="::{'network': v.self.children}" tooltip="::v.self.children? 'Your group affiliates have access' : 'Your group affiliates do not have access'"></span>
               <span class="icon user-access" ng-class="::page.constants.permission[v.volume.permission]" tooltip="'access.'+page.constants.permission[v.volume.permission] | message:'You'"></span>
             </div>
             <div class="profile-left-icons hide-mobile">
