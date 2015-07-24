@@ -363,8 +363,7 @@ data AVProbe = AVProbe
 
 -- |Test if this represents a video in standard format.
 avProbeIsVideo :: AVProbe -> Bool
-avProbeIsVideo AVProbe{ avProbeFormat = "mov,mp4,m4a,3gp,3g2,mj2", avProbeStreams = ("h264":s) } =
-  s `isPrefixOf` ["aac"]
+avProbeIsVideo AVProbe{ avProbeFormat = "mov,mp4,m4a,3gp,3g2,mj2", avProbeStreams = ("h264":s) } = s `isPrefixOf` ["aac"]
 avProbeIsVideo _ = False
 
 avProbeLength :: AVProbe -> Maybe Offset

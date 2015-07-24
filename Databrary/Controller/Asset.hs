@@ -16,12 +16,10 @@ module Databrary.Controller.Asset
   ) where
 
 import Control.Applicative ((<|>))
-import Control.Exception (try)
-import Control.Monad ((<=<), void, guard)
+import Control.Monad ((<=<), void)
 import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.Trans.Class (lift)
 import qualified Data.ByteString as BS
-import Data.Foldable as Fold
 import Data.Maybe (fromMaybe, isNothing, isJust, catMaybes, maybeToList)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -59,6 +57,7 @@ import Databrary.Store.Temp
 import Databrary.Store.AV
 import Databrary.Store.Transcode
 import Databrary.Store.Filename
+import Databrary.Store.Probe
 import Databrary.HTTP.Request
 import Databrary.HTTP.Form.Errors
 import Databrary.HTTP.Form.Deform
@@ -127,26 +126,16 @@ fileUploadRemove (FileUploadToken u) = void $ removeUpload u
 
 data FileUpload = FileUpload
   { fileUploadFile :: FileUploadFile
-  , fileUploadFormat :: Format
-  , fileUploadProbe :: Maybe AVProbe
+  , fileUploadProbe :: Probe
   }
 
 deformLookup :: (Monad m, Functor m, Deform f a) => FormErrorMessage -> (a -> m (Maybe b)) -> DeformT f m (Maybe b)
 deformLookup e l = Trav.mapM (deformMaybe' e <=< lift . l) =<< deformNonEmpty deform
 
 detectUpload :: (MonadHasService c m, Has AV c, Has Storage c, MonadIO m) => FileUploadFile -> DeformT TempFile m FileUpload
-detectUpload f =
-  fd =<< deformMaybe' "Unknown or unsupported file format."
-    (getFormatByFilename (fileUploadName f)) where
-  fd fmt = case formatTranscodable fmt of
-    Nothing -> return $ u Nothing
-    Just t | t == videoFormat -> do
-      pr <- lift $ focusIO . ((try .) . avProbe) =<< peeks (fileUploadPath f)
-      case pr of
-        Left e -> fail $ "Could not read video file: " ++ avErrorString e
-        Right p -> return $ u $ Just p
-    _ -> fail "Unhandled format conversion."
-    where u = FileUpload f fmt
+detectUpload u =
+  either deformError' (return . FileUpload u)
+    =<< lift (probeFile (fileUploadName u) =<< peeks (fileUploadPath u))
 
 processAsset :: API -> AssetTarget -> AuthAction
 processAsset api target = do
@@ -166,14 +155,14 @@ processAsset api target = do
         | otherwise -> Nothing <$ deformError "File or upload required."
       _ -> Nothing <$ deformError "Conflicting uploaded files found."
     up <- Trav.mapM detectUpload upfile
-    let fmt = maybe (assetFormat a) fileUploadFormat up
+    let fmt = maybe (assetFormat a) (probeFormat . fileUploadProbe) up
     name <- "name" .:> maybe (assetName a) (TE.decodeUtf8 . dropFormatExtension fmt <$>) <$> deformOptional (deformNonEmpty deform)
     classification <- "classification" .:> fromMaybe (assetRelease a) <$> deformOptional (deformNonEmpty deform)
     slot <-
       "container" .:> (<|> slotContainer <$> s) <$> deformLookup "Container not found." (lookupVolumeContainer (assetVolume a))
       >>= Trav.mapM (\c -> "position" .:> do
         let seg = slotSegment <$> s
-            dur = maybe (assetDuration a) (avProbeLength <=< fileUploadProbe) up
+            dur = maybe (assetDuration a) (probeLength . fileUploadProbe) up
         p <- (<|> (lowerBound . segmentRange =<< seg)) <$> deformNonEmpty deform
         Slot c . maybe fullSegment
           (\l -> Segment $ Range.bounded l (l + fromMaybe 0 ((segmentLength =<< seg) <|> dur)))
@@ -201,10 +190,14 @@ processAsset api target = do
       AssetTargetAsset _ -> supersedeAsset a a'
       _ -> return ()
     te <- peeks transcodeEnabled
-    t <- Trav.mapM (addTranscode a' fullSegment defaultTranscodeOptions) (guard te >> fileUploadProbe up)
-    Fold.mapM_ forkTranscode t
+    t <- case fileUploadProbe up of
+      ProbeVideo _ av | te -> do
+        t <- addTranscode a' fullSegment defaultTranscodeOptions av
+        _ <- forkTranscode t
+        return $ transcodeAsset t
+      _ -> return a'
     return $ fixAssetSlotDuration as'
-      { slotAsset = (maybe a' transcodeAsset t)
+      { slotAsset = t
         { assetName = assetName (slotAsset as')
         }
       })

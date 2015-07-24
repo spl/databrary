@@ -4,6 +4,7 @@ module Databrary.Model.Asset
   , blankAsset
   , assetBacked
   , lookupAsset
+  , lookupVolumeAsset
   , addAsset
   , changeAsset
   , supersedeAsset
@@ -56,6 +57,10 @@ lookupAsset :: (MonadHasIdentity c m, MonadDB m) => Id Asset -> m (Maybe Asset)
 lookupAsset ai = do
   ident <- peek
   dbQuery1 $(selectQuery (selectAsset 'ident) "$WHERE asset.id = ${ai}")
+
+lookupVolumeAsset :: (MonadDB m) => Volume -> Id Asset -> m (Maybe Asset)
+lookupVolumeAsset vol ai = do
+  dbQuery1 $ ($ vol) <$> $(selectQuery selectVolumeAsset "WHERE asset.id = ${ai} AND asset.volume = ${volumeId vol}")
 
 addAsset :: (MonadAudit c m, MonadStorage c m) => Asset -> Maybe RawFilePath -> m Asset
 addAsset ba fp = do

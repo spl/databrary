@@ -3,6 +3,7 @@ module Databrary.Model.Record
   ( module Databrary.Model.Record.Types
   , blankRecord
   , lookupRecord
+  , lookupVolumeRecord
   , lookupVolumeRecords
   , addRecord
   , changeRecord
@@ -44,6 +45,10 @@ lookupRecord :: (MonadHasIdentity c m, MonadDB m) => Id Record -> m (Maybe Recor
 lookupRecord ri = do
   ident <- peek
   dbQuery1 $(selectQuery (selectRecord 'ident) "$WHERE record.id = ${ri}")
+
+lookupVolumeRecord :: MonadDB m => Volume -> Id Record -> m (Maybe Record)
+lookupVolumeRecord vol ri =
+  dbQuery1 $ fmap ($ vol) $(selectQuery selectVolumeRecord "$WHERE record.id = ${ri} AND record.volume = ${volumeId vol}")
 
 lookupVolumeRecords :: MonadDB m => Volume -> m [Record]
 lookupVolumeRecords vol =
