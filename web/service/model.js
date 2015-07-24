@@ -272,6 +272,15 @@ app.factory('modelService', [
         });
     };
 
+    Party.prototype.authorizeRemoveParent = function (target) {
+      var p = this;
+      return router.http(router.controllers.deleteAuthorizeParent, this.id, target)
+        .then(function (res) {
+          p.clear('parents');
+          return p;
+        });
+    };
+
     ///////////////////////////////// Login
 
     function Login(init) {
