@@ -23,7 +23,7 @@
       <!--<p>Showing results {{results.start + 1}} to {{results.start + results.docs.length}}</p>-->
       <div ng-if="partyCount > 0">
         <h3>Users</h3>
-        <ul class="search-party-results">  
+        <div class="search-party-results">  
           <!-- This is where we return what we want-->
           <aside class="portrait ng-cloak" ng-repeat="result in partyResults.docs">
             <a ng-href="{{::page.router.party([result.party_id_i])}}">
@@ -37,7 +37,7 @@
               <span class="portrait-extra" ng-bind="::result.party_affiliation_s"></span>
             </div>
           </aside>
-        </ul>
+        </div>
       </div>
       <div ng-if="volumeCount > 0">
         <h3>Volumes</h3>
@@ -45,8 +45,8 @@
           <li ng-repeat="result in volumeResults.docs">
             <!-- This is where we return what we want-->
             <a ng-href="volume/{{result.volume_id_i}}">{{result.title_t}}</a><br>
-            <span ng-bind="formVolumeResult(result)"></span><br>
-            Keywords: <span ng-repeat="k in result.volume_keywords_ss">{{k + ", "}}</span><br>
+            <span ng-bind="formVolumeResult(result)"></span>
+            <span ng-if="result.volume_keywords_ss.length > 0"><br>Keywords: </span><span ng-repeat="k in result.volume_keywords_ss">{{k + ", "}}</span><br>
             <span class="button neutral mini">
               <a ng-if="retrievedContainers[result.volume_id_i] === undefined" ng-click="searchContainers(result.volume_id_i)">See containers</a>
               <a ng-if="retrievedContainers[result.volume_id_i] !== undefined" ng-click="clearContainers(result.volume_id_i)">Hide</a>
