@@ -33,7 +33,7 @@ data PathParser a where
   PathEmpty :: PathParser ()
   PathAny :: PathParser Path
   PathFixed :: !T.Text -> PathParser ()
-  PathDynamic :: PathDynamic a => PathParser a
+  PathParameter :: PathParameter a => PathParser a
   PathTrans :: (a -> b) -> (b -> a) -> PathParser a -> PathParser b
   PathTuple :: PathParser a -> PathParser b -> PathParser (a, b)
   PathEither :: PathParser a -> PathParser b -> PathParser (Either a b)
@@ -49,7 +49,7 @@ pathParse :: PathParser a -> Path -> Maybe (a, Path)
 pathParse PathEmpty l = Just ((), l)
 pathParse PathAny l = Just (l, [])
 pathParse (PathFixed t) (a:l) = (, l) <$> guard (a == t)
-pathParse PathDynamic (a:l) = (, l) <$> pathDynamic a
+pathParse PathParameter (a:l) = (, l) <$> pathParameter a
 pathParse (PathTrans f _ p) a = first f <$> pathParse p a
 pathParse (PathTuple p q) a = do
   (pr, a') <- pathParse p a
@@ -66,7 +66,7 @@ producePath :: PathParser a -> a -> PathElements
 producePath PathEmpty () = []
 producePath PathAny l = [PathElementAny l]
 producePath (PathFixed t) () = [PathElementFixed t]
-producePath PathDynamic a = [PathElementDynamic a]
+producePath PathParameter a = [PathElementParameter a]
 producePath (PathTrans _ g p) a = producePath p $ g a
 producePath (PathTuple p q) (a, b) = producePath p a ++ producePath q b
 producePath (PathEither p _) (Left a) = producePath p a
@@ -106,8 +106,8 @@ pathCases PathAny = [([PathElementAny undefined], rf)] where
 pathCases (PathFixed t) = [([PathElementFixed t], rf)] where
   rf (PathElementFixed _:l) = Just ((), l)
   rf _ = Nothing
-pathCases d@PathDynamic = [([PathElementDynamic (parserUndef d)], rf)] where
-  rf (PathElementDynamic v:l) = (, l) <$> cast v
+pathCases d@PathParameter = [([PathElementParameter (parserUndef d)], rf)] where
+  rf (PathElementParameter v:l) = (, l) <$> cast v
   rf _ = Nothing
 pathCases (PathTrans f _ p) = second (fmap (first f) .) <$> pathCases p
 pathCases (PathTuple a b) = do
