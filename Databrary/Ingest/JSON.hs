@@ -73,7 +73,7 @@ throwPE :: T.Text -> IngestM a
 throwPE = JE.throwCustomError
 
 inObj :: forall a b . (Kinded a, Has (Id a) a, Show (IdType a)) => a -> IngestM b -> IngestM b
-inObj o = JE.mapError $ (<>) $ " for " <> kindOf o <> T.pack (' ' : show (view o :: Id a))
+inObj o = JE.mapError (<> (" for " <> kindOf o <> T.pack (' ' : show (view o :: Id a))))
 
 noKey :: T.Text -> IngestM ()
 noKey k = void $ JE.keyMay k $ throwPE "unhandled value"
@@ -158,18 +158,21 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
           }
         return c)
       =<< lift (lookupIngestContainer vol key)
+    let s = containerSlot c
     inObj c $ do
       _ <- JE.keyMay "release" $ do
         release <- check (containerRelease c) =<< asRelease
         Fold.forM_ release $ \r -> do
-          o <- lift $ changeRelease (containerSlot c) r
+          o <- lift $ changeRelease s r
           unless o $ throwPE "update failed"
       _ <- JE.key "records" $ JE.eachInArray $ do
         r <- record
         inObj r $ do
-          seg <- JE.keyOrDefault "position" fullSegment asSegment
-          o <- lift $ moveRecordSlot (RecordSlot r (Slot c emptySegment)) seg
-          unless o $ throwPE "record link failed"
+          rs' <- lift $ lookupRecordSlotRecords r s
+          segs <- check (map (slotSegment . recordSlot) rs') . return =<< JE.keyOrDefault "position" fullSegment asSegment
+          Fold.forM_ segs $ \[seg] -> do
+            o <- lift $ moveRecordSlot (RecordSlot r s) seg
+            unless o $ throwPE "record link failed"
       _ <- JE.key "assets" $ JE.eachInArray $ do
         a <- asset dir
         inObj a $ do
@@ -181,10 +184,10 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
                 | Just p <- Range.getPoint (segmentRange seg)
                 , Just d <- assetDuration a = Segment $ Range.bounded p (p + d)
                 | otherwise = seg
-              s = Slot c seg'
-          u <- maybe (return True) (\s' -> isJust <$> on check slotId s' s) $ assetSlot as'
+              ss = Slot c seg'
+          u <- maybe (return True) (\s' -> isJust <$> on check slotId s' ss) $ assetSlot as'
           when u $ do
-            o <- lift $ changeAssetSlot $ AssetSlot a $ Just s
+            o <- lift $ changeAssetSlot $ AssetSlot a $ Just ss
             unless o $ throwPE "asset link failed"
       return c
   record = do

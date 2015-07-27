@@ -4,6 +4,7 @@ module Databrary.Model.RecordSlot
   , lookupRecordSlots
   , lookupSlotRecords
   , lookupContainerRecords
+  , lookupRecordSlotRecords
   , lookupVolumeContainersRecords
   , lookupVolumeContainersRecordIds
   , moveRecordSlot
@@ -45,6 +46,10 @@ lookupSlotRecords (Slot c s) =
 
 lookupContainerRecords :: (MonadDB m) => Container -> m [RecordSlot]
 lookupContainerRecords = lookupSlotRecords . containerSlot
+
+lookupRecordSlotRecords :: (MonadDB m) => Record -> Slot -> m [RecordSlot]
+lookupRecordSlotRecords r (Slot c s) =
+  dbQuery $ ($ c) . ($ r) <$> $(selectQuery selectRecordContainerSlotRecord "WHERE slot_record.record = ${recordId r} AND slot_record.container = ${containerId c} AND slot_record.segment && ${s}")
 
 lookupVolumeContainersRecords :: (MonadDB m) => Volume -> m [(Container, [RecordSlot])]
 lookupVolumeContainersRecords v =
