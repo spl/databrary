@@ -85,7 +85,6 @@ app.controller 'site/search', [
       if doc.citation_t
         res.push doc.citation_t
       # Add more stuff here if we want it
-      console.log doc
       return res.join("\n")
 
   ###########################
@@ -374,12 +373,10 @@ app.controller 'site/search', [
       $scope.originalQuery = "*"
     else
       $scope.originalQuery = params.query
-    console.log(results)
+    console.log("results")
     $scope.offset = parseInt($location.search().offset, 10) || 0
     parseResults(results)
 
-    console.log(results)
-
-
+    console.log results
     return
 ]

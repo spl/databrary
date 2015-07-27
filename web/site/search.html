@@ -46,14 +46,19 @@
             <h1 class="search-volume-result-title"><a ng-href="volume/{{result.volume_id_i}}">{{result.title_t}}</a></h1>
 
             <span ng-bind="formVolumeResult(result)"></span>
-            <span ng-if="result.volume_keywords_ss.length > 0"><br>Keywords: </span><span ng-repeat="k in result.volume_keywords_ss">{{k + ", "}}</span><br>
-            <span class="button neutral mini">
-              <a ng-if="retrievedContainers[result.volume_id_i] === undefined" ng-click="searchContainers(result.volume_id_i)">Expand for more information</a>
-              <a ng-if="retrievedContainers[result.volume_id_i] !== undefined" ng-click="clearContainers(result.volume_id_i)">Hide</a>
-            </span>
+            <span ng-if="result.volume_keywords_ss.length > 0" class="inline-block"><br>Keywords: </span>
+            <ul class="inline-block comma">
+              <li ng-repeat="k in result.volume_keywords_ss">{{k}}</li>
+            </ul>
+
+            <button class="neutral mini">
+              <span ng-if="retrievedContainers[result.volume_id_i] === undefined" ng-click="searchContainers(result.volume_id_i)">Expand</span>
+              <span ng-if="retrievedContainers[result.volume_id_i] !== undefined" ng-click="clearContainers(result.volume_id_i)">Hide</span>
+            </button>
+
             <span ng-if="retrievedContainers[result.volume_id_i] !== undefined">
               <!-- Keywords: <span ng-repeat="k in result.volume_keywords_ss">{{k + ", "}}</span><br> -->
-              <ul ng-if="retrievedContainers[result.volume_id_i].length > 0">
+              <ul class="search-volume-containers" ng-if="retrievedContainers[result.volume_id_i].length > 0">
                 <li ng-repeat="container in retrievedContainers[result.volume_id_i]">
                   <a ng-href="volume/{{result.volume_id_i}}/slot/{{container.container_id_i}}">{{container.container_text_t? container.container_text_t: 'no text'}}</a>
                 </li>
