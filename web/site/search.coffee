@@ -76,9 +76,11 @@ app.controller 'site/search', [
       # If the document is a volume (and has an abstract) push it to the result list
       if doc.abs_t
        # Clip everything after the first 150 characters just for display purposes
-       if doc.abs_t.length > 150
-          doc.abs_t = doc.abs_t[0..150] + "..."
-       res.push doc.abs_t
+       if $scope.retrievedContainers[doc.volume_id_i] == undefined && doc.abs_t.length > 150
+          temp = doc.abs_t[0..150] + "..."
+       else
+          temp = doc.abs_t
+       res.push temp
       # If the document is a volume (and has a citation) also push it to the result list
       if doc.citation_t
         res.push doc.citation_t
@@ -88,6 +90,8 @@ app.controller 'site/search', [
   ###########################
   # Search handlers
   ###########################
+    $scope.clearContainers = (volId) ->
+      $scope.retrievedContainers[volId] = undefined
 
     $scope.searchContainers = (volId) ->
       console.log("Getting container results for volume:", volId)
@@ -378,12 +382,10 @@ app.controller 'site/search', [
       $scope.originalQuery = "*"
     else
       $scope.originalQuery = params.query
-    console.log(results)
+    console.log("results")
     $scope.offset = parseInt($location.search().offset, 10) || 0
     parseResults(results)
 
-    console.log(results)
-
-
+    console.log results
     return
 ]
