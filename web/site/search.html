@@ -15,7 +15,7 @@
       <select multiple="multiple" size="10" ng-model="selectedFilter" ng-options="s for s in filterDisplay" ng-click="filterBoxClick()"></select>
       <!-- <select multiple="multiple" size="10" ng-model="selectedVolume" ng-options="result.title_t for result in results.docs"></select> -->
     </div> 
-    <div class="col-desktop-10 col-tablet-6 col-mobile-6"     
+    <div class="col-desktop-10 col-tablet-6 col-mobile-6">     
       <p>Number of results found: {{totalCount}}</p>
       <span ng-if="suggestedQuery.length > 0">
         <p>Did you mean <a ng-click="search(suggestedQuery)">{{suggestedQuery}}</a>?</p>
@@ -23,7 +23,7 @@
       <!--<p>Showing results {{results.start + 1}} to {{results.start + results.docs.length}}</p>-->
       <div ng-if="partyCount > 0">
         <h3>Users</h3>
-        <div class="search-party-results">  
+        <div class="row search-party-results">  
           <!-- This is where we return what we want-->
           <aside class="col-desktop-5 col-tablet-4 col-mobile-6 portrait ng-cloak" ng-repeat="result in partyResults.docs">
             <a ng-href="{{::page.router.party([result.party_id_i])}}">
@@ -31,7 +31,6 @@
                 <img ng-src="{{::page.router.partyAvatar([result.party_id_i, size || 56], {})}}">
               </figure>
             </a>
-
             <div class="portrait-info">
               <a class="portrait-name" ng-href="{{::page.router.party([result.party_id_i])}}" ng-bind="::result.party_pre_name_s + ' ' + result.party_name_s"></a>
               <span class="portrait-extra" ng-bind="::result.party_affiliation_s"></span>
@@ -39,18 +38,18 @@
           </aside>
         </div>
       </div>
-    </div>
-    <div class="row">
       <div ng-if="volumeCount > 0">
         <h3>Volumes</h3>
-        <ul class="search-volume-results">
+        <ul class="row search-volume-results">
           <li ng-repeat="result in volumeResults.docs">
             <!-- This is where we return what we want-->
             <a ng-href="volume/{{result.volume_id_i}}">{{result.title_t}}</a><br>
-            <span ng-bind="formVolumeResult(result)"></span>
+
+            <span ng-if="retrievedContainers[result.volume_id_i] === undefined" ng-bind="formVolumeResult(result)"></span>
+            <span ng-if="retrievedContainers[result.volume_id_i] !== undefined" ng-bind="result.abs_t"></span>
             <span ng-if="result.volume_keywords_ss.length > 0"><br>Keywords: </span><span ng-repeat="k in result.volume_keywords_ss">{{k + ", "}}</span><br>
             <span class="button neutral mini">
-              <a ng-if="retrievedContainers[result.volume_id_i] === undefined" ng-click="searchContainers(result.volume_id_i)">See containers</a>
+              <a ng-if="retrievedContainers[result.volume_id_i] === undefined" ng-click="searchContainers(result.volume_id_i)">Expand for more information</a>
               <a ng-if="retrievedContainers[result.volume_id_i] !== undefined" ng-click="clearContainers(result.volume_id_i)">Hide</a>
             </span>
             <span ng-if="retrievedContainers[result.volume_id_i] !== undefined">
