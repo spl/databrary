@@ -85,6 +85,7 @@ app.controller 'site/search', [
       if doc.citation_t
         res.push doc.citation_t
       # Add more stuff here if we want it
+      console.log doc
       return res.join("\n")
 
   ###########################

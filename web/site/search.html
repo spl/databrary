@@ -53,9 +53,9 @@
             </span>
             <span ng-if="retrievedContainers[result.volume_id_i] !== undefined">
               <!-- Keywords: <span ng-repeat="k in result.volume_keywords_ss">{{k + ", "}}</span><br> -->
-              <ul>
+              <ul ng-if="retrievedContainers[result.volume_id_i].length > 0">
                 <li ng-repeat="container in retrievedContainers[result.volume_id_i]">
-                  TEST <a ng-href="test/{{container.container_id_i}}">{{container.container_text_t}}</a>
+                  <a ng-href="volume/{{result.volume_id_i}}/slot/{{container.container_id_i}}">{{container.container_text_t? container.container_text_t: 'no text'}}</a>
                 </li>
               </ul>
             </span>
