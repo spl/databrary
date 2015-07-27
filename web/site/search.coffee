@@ -1,8 +1,8 @@
 'use strict'
 
 app.controller 'site/search', [
-  '$scope', '$location', 'displayService', 'results', 'pageService'
-  ($scope, $location, display, results, page) ->
+  '$scope', '$location', 'displayService', 'results', 'pageService', 'solrModelService',
+  ($scope, $location, display, results, page, solrModel) ->
     console.log("results")
     console.log(results)
 
@@ -165,6 +165,7 @@ app.controller 'site/search', [
         # $scope.query = "*"
       console.log("query before anything:", $scope.query)
       console.log("RES:", res)
+      createModels(results)
 
       $scope.partyResults = getResults("party", res)
       $scope.volumeResults = getResults("volume", res)
@@ -360,8 +361,16 @@ app.controller 'site/search', [
         $scope.query = addArgToQuery($scope.originalQuery, "party_is_authorized_b", "true")
       console.log("Query after filter", $scope.query)
 
+    createModels = (res) ->
+      parties = getResults("party", res)
+      console.log("PARTIES", parties)
+      partyModels = (new solrModel.SolrParty(p) for p in parties.docs)
+      # partyModels = new solrModel.SolrParty(parties.docs[0])
+      console.log("PARTY TIME", parties, partyModels)
 
-    # Code for the initial load
+
+
+    # Code for the initial loado
     params = $location.search()
     $scope.query = params.query
     console.log("INITIAL QUERY:", $scope.query)

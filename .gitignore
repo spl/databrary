@@ -18,3 +18,12 @@
 /solr/solrInstance/
 /solr/solrData/
 /solr/solrInstall/
+.idea
+/dbrary/
+/logs/
+/macros/
+/media/
+/project/
+/target/
+.DS_Store
+*.swp
