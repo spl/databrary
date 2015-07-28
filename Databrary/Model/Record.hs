@@ -14,7 +14,6 @@ module Databrary.Model.Record
 import Control.Applicative ((<$>))
 import Control.Monad (guard)
 import Data.Either (isRight)
-import Data.Maybe (catMaybes)
 
 import Databrary.Has (peek, view)
 import Databrary.Service.DB
@@ -36,7 +35,7 @@ blankRecord :: Volume -> Record
 blankRecord vol = Record
   { recordId = error "blankRecord"
   , recordVolume = vol
-  , recordCategory = Nothing
+  , recordCategory = head allRecordCategories
   , recordRelease = Nothing
   , recordMeasures = []
   }
@@ -70,8 +69,8 @@ removeRecord r = do
   isRight <$> dbTryJust (guard . isForeignKeyViolation) (dbExecute1 $(deleteRecord 'ident 'r))
 
 recordJSON :: Record -> JSON.Object
-recordJSON r@Record{..} = JSON.record recordId $ catMaybes
-  [ -- Just $ "volume" JSON..= volumeId recordVolume
-    ("category" JSON..=) <$> fmap recordCategoryId recordCategory
-  , Just $ "measures" JSON..= JSON.Object (measuresJSON $ getRecordMeasures r)
+recordJSON r@Record{..} = JSON.record recordId
+  [ -- "volume" JSON..= volumeId recordVolume
+    "category" JSON..= recordCategoryId recordCategory
+  , "measures" JSON..= JSON.Object (measuresJSON $ getRecordMeasures r)
   ]

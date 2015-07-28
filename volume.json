@@ -103,7 +103,7 @@
         "key": {"type": "string"},
         "category": {
           "description": "Types of records that are relevant for data organization.",
-          "enum": [null, "pilot", "exclusion", "participant", "condition", "task", "group", "context"]
+          "enum": ["pilot", "exclusion", "participant", "condition", "task", "group", "context"]
         },
         "position": {"$ref": "#/definitions/segment"},
         "ID": {"type": "string"},

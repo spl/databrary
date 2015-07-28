@@ -54,7 +54,7 @@ createRecord = action POST (pathAPI </> pathId </< "record") $ \(api, vi) -> wit
   vol <- getVolume PermissionEDIT vi
   br <- runForm (api == HTML ?> htmlRecordForm vol) $ do
     csrfForm
-    cat <- "category" .:> (flatMapM ((`orElseM` Nothing <$ deformError "No such record category.") . getRecordCategory) =<< deformNonEmpty deform)
+    cat <- "category" .:> (deformMaybe' "No such record category." . getRecordCategory =<< deform)
     return (blankRecord vol)
       { recordCategory = cat
       }

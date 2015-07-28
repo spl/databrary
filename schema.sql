@@ -663,7 +663,7 @@ INSERT INTO "record_category" ("id", "name") VALUES (-100, 'context');
 CREATE TABLE "record" (
 	"id" serial NOT NULL Primary Key,
 	"volume" integer NOT NULL References "volume",
-	"category" smallint References "record_category" ON UPDATE CASCADE ON DELETE SET NULL
+	"category" smallint NOT NULL References "record_category" ON UPDATE CASCADE ON DELETE SET NULL
 );
 CREATE INDEX ON "record" ("volume");
 COMMENT ON TABLE "record" IS 'Sets of metadata measurements organized into or applying to a single cohesive unit.  These belong to the object(s) they''re attached to, which are expected to be within a single volume.';
@@ -720,6 +720,13 @@ INSERT INTO "record_template" VALUES (-700, -700, true);
 INSERT INTO "record_template" VALUES (-100, -180, true);
 INSERT INTO "record_template" VALUES (-100, -140, true);
 INSERT INTO "record_template" VALUES (-100, -150, true);
+
+CREATE TABLE "volume_metric" (
+	"volume" integer NOT NULL References "volume",
+	"category" smallint NOT NULL References "record_category" ON UPDATE CASCADE ON DELETE CASCADE,
+	"metric" integer NOT NULL References "metric" ON UPDATE CASCADE ON DELETE CASCADE,
+	Primary Key ("volume", "category", "metric")
+);
 
 CREATE TABLE "measure_abstract" ( -- ABSTRACT
 	"record" integer NOT NULL References "record" ON DELETE CASCADE,
@@ -825,7 +832,7 @@ COMMENT ON VIEW "measures" IS 'All measures for each record aggregated into a si
 CREATE TABLE "record_measures" (
 	"id" integer NOT NULL Primary Key References "record" ON UPDATE CASCADE ON DELETE CASCADE,
 	"volume" integer NOT NULL,
-	"category" smallint,
+	"category" smallint NOT NULL,
 	"measures" text[] NOT NULL Default '{}'
 );
 CREATE INDEX ON "record_measures" ("volume");

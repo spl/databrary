@@ -45,6 +45,9 @@ import Databrary.Model.Citation.CrossRef
 import Databrary.Model.Funding
 import Databrary.Model.Container
 import Databrary.Model.Record
+import Databrary.Model.RecordCategory
+import Databrary.Model.Metric
+import Databrary.Model.VolumeMetric
 import Databrary.Model.RecordSlot
 import Databrary.Model.Slot
 import Databrary.Model.Asset
@@ -135,7 +138,7 @@ volumeJSONField vol "containers" o = do
     then leftJoin (\(c, _) (_, SlotId a _) -> containerId c == a) cl <$> lookupVolumeAssetSlotIds vol
     else return $ nope cl
   rm <- if records then snd <$> cacheVolumeRecords vol else return HM.empty
-  let rjs c (s, r) = recordSlotJSON $ RecordSlot (HML.lookupDefault (Record r vol Nothing Nothing []) r rm) (Slot c s)
+  let rjs c (s, r) = recordSlotJSON $ RecordSlot (HML.lookupDefault (blankRecord vol){ recordId = r } r rm) (Slot c s)
       ajs c (a, SlotId _ s) = assetSlotJSON $ AssetSlot a (Just (Slot c s))
   return $ Just $ JSON.toJSON $ map (\((c, rl), al) -> containerJSON c
     JSON..+? (records ?> "records" JSON..= map (rjs c) rl)
@@ -150,6 +153,8 @@ volumeJSONField vol "top" _ =
 volumeJSONField vol "records" _ = do
   (l, _) <- cacheVolumeRecords vol
   return $ Just $ JSON.toJSON $ map recordJSON l
+volumeJSONField vol "metrics" _ = do
+  Just . JSON.toJSON . JSON.object . map (T.pack . show . recordCategoryId *** JSON.toJSON . map metricId) <$> lookupVolumeMetrics vol
 volumeJSONField o "excerpts" _ =
   Just . JSON.toJSON . map (\e -> sc (view e) $ excerptJSON e) <$> lookupVolumeExcerpts o
   where

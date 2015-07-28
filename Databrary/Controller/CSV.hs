@@ -33,7 +33,7 @@ import Databrary.Controller.Volume
 
 type Records = [[Record]]
 type Metrics = [[Metric]]
-type Header = (Maybe RecordCategory, Metrics)
+type Header = (RecordCategory, Metrics)
 type Headers = [Header]
 
 tshow :: Show a => a -> BS.ByteString
@@ -77,7 +77,7 @@ metricsHeader p ml = mh 0 ml where
     i' = succ i :: Integer
 
 headerRow :: Headers -> [BS.ByteString]
-headerRow = concatMap $ uncurry $ metricsHeader . maybe "record" (tenc . recordCategoryName)
+headerRow = concatMap $ uncurry $ metricsHeader . tenc . recordCategoryName
 
 metricsRow :: [Metric] -> [Measure] -> [BS.ByteString]
 metricsRow m [] = map (const BS.empty) m
