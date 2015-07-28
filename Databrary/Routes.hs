@@ -17,6 +17,7 @@ import Databrary.Controller.Funding
 import Databrary.Controller.Container
 import Databrary.Controller.Slot
 import Databrary.Controller.Record
+import Databrary.Controller.Metric
 import Databrary.Controller.Citation
 import Databrary.Controller.Upload
 import Databrary.Controller.Format
@@ -112,6 +113,9 @@ routeMap = fromRouteList
   , route deleteRecord
   , route postRecordSlot
   , route deleteRecordSlot
+
+  , route postVolumeMetric
+  , route deleteVolumeMetric
 
   , route queryTags
   , route postTag

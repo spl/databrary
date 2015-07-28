@@ -24,6 +24,7 @@ import Databrary.Controller.Funding
 import Databrary.Controller.Container
 import Databrary.Controller.Slot
 import Databrary.Controller.Record
+import Databrary.Controller.Metric
 import Databrary.Controller.Citation
 import Databrary.Controller.Upload
 import Databrary.Controller.Format
@@ -115,6 +116,11 @@ jsRoutes = mconcat
   , jsRoute "postRecordMeasure" postRecordMeasure (JSON, record, metric)
   , jsRoute "postRecordSlot" postRecordSlot (JSON, slot, record)
 
+  , jsRoute "addVolumeMetric" postVolumeMetric (volume, (category, Just metric))
+  , jsRoute "addVolumeMetrics" postVolumeMetric (volume, (category, Nothing))
+  , jsRoute "deleteVolumeMetric" deleteVolumeMetric (volume, (category, Just metric))
+  , jsRoute "deleteVolumeMetrics" deleteVolumeMetric (volume, (category, Nothing))
+
   , jsRoute "getAsset" viewAsset (JSON, asset)
   , jsRoute "getAssetSegment" viewAssetSegment (JSON, Just volume, slot, asset)
   , jsRoute "postAsset" postAsset (JSON, asset)
@@ -141,6 +147,7 @@ jsRoutes = mconcat
   container = containerSlotId (Id 0)
   asset = Id 0
   record = Id 0
+  category = Id 0
   metric = Id 0
   funder = Id 0
   tag = TagName ""

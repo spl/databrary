@@ -45,8 +45,6 @@ import Databrary.Model.Citation.CrossRef
 import Databrary.Model.Funding
 import Databrary.Model.Container
 import Databrary.Model.Record
-import Databrary.Model.RecordCategory
-import Databrary.Model.Metric
 import Databrary.Model.VolumeMetric
 import Databrary.Model.RecordSlot
 import Databrary.Model.Slot
@@ -154,7 +152,7 @@ volumeJSONField vol "records" _ = do
   (l, _) <- cacheVolumeRecords vol
   return $ Just $ JSON.toJSON $ map recordJSON l
 volumeJSONField vol "metrics" _ = do
-  Just . JSON.toJSON . JSON.object . map (T.pack . show . recordCategoryId *** JSON.toJSON . map metricId) <$> lookupVolumeMetrics vol
+  Just . JSON.toJSON . JSON.object . map (T.pack . show *** JSON.toJSON) <$> lookupVolumeMetrics vol
 volumeJSONField o "excerpts" _ =
   Just . JSON.toJSON . map (\e -> sc (view e) $ excerptJSON e) <$> lookupVolumeExcerpts o
   where
