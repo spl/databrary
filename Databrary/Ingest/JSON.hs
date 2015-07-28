@@ -177,7 +177,7 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
         a <- asset dir
         inObj a $ do
           as' <- lift $ lookupAssetAssetSlot a
-          seg <- JE.keyOrDefault "position" fullSegment $
+          seg <- JE.keyOrDefault "position" (maybe fullSegment slotSegment $ assetSlot as') $
             JE.withTextM (\t -> if t == "auto" then Right . Segment . Range.point <$> findAssetContainerEnd c else return $ Left "invalid asset position")
               `catchError` \_ -> asSegment
           let seg'
