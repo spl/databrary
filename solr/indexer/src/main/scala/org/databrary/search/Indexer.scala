@@ -7,6 +7,10 @@ import org.json4s.{JsonAST, NoTypeHints}
 import org.json4s.native.Serialization
 import org.json4s.native.Serialization.{read, write}
 import org.json4s.JsonDSL._
+import org.postgresql.jdbc4.Jdbc4Array
+import scala.collection.convert.wrapAll._
+import scala.collection.convert.decorateAll._
+import scala.collection.mutable
 
 
 /**
@@ -64,7 +68,8 @@ object Indexer {
 
     object SQLVolume extends SQLSyntaxSupport[SQLVolume] {
       def apply(rs: WrappedResultSet): SQLVolume = new SQLVolume(
-        rs.long("id"), rs.string("name"), rs.string("body"), rs.string("alias"), rs.stringOpt("citation"), rs.intOpt("year"), rs.stringOpt("url"))
+      // TODO add volume owners here
+        rs.long("id"), rs.string("name"), rs.string("body"), rs.string("alias"), rs.stringOpt("citation"), rs.intOpt("year"), rs.stringOpt("url"), rs.arrayOpt("owners"))
     }
 
     object SQLVolumeText extends SQLSyntaxSupport[SQLVolumeText] {
@@ -106,10 +111,11 @@ object Indexer {
      */
     val sQLVolumes = sql"""
          SELECT id, name, body, alias, volume_citation.head AS citation, volume_citation.url AS url,
-         volume_citation.year AS year
+         volume_citation.year AS year, owners
          FROM volume
          LEFT JOIN volume_citation ON volume.id = volume_citation.volume
          LEFT JOIN volume_access ON volume.id = volume_access.volume
+         LEFT JOIN volume_owners ON volume.id = volume_owners.volume
          WHERE volume_access.children > 'NONE' AND volume_access.party = -1 AND volume.id > 0
     """.map(x => SQLVolume(x)).list().apply().map(x => x.volumeId -> x).toMap
 
@@ -347,14 +353,25 @@ object Indexer {
   }
 
   def createVolumeDocument(vol: SQLVolume) = {
+    println(vol.owners)
+    val (ownerIds, ownerNames) = if(vol.owners.isDefined) {
+      val ids = Some(vol.owners.get.getArray().asInstanceOf[Array[String]].map(x => x.split(":")(0).toInt).toSeq)
+      val names = Some(vol.owners.get.getArray().asInstanceOf[Array[String]].map(x => x.split(":")(1)).toSeq)
+      (ids, names)
+    } else {
+      (None, None)
+    }
+    println(ownerIds)
+    println(ownerNames)
     new JsonDocument(content_type = ContentTypes.VOLUME, volume_id_i = Some(vol.volumeId.toInt),
       abs_t = Some(vol.abs), title_t = Some(vol.title), alias_s = Some(vol.alias), citation_t = vol.cite,
       citation_url_s = vol.citeUrl, citation_year_i = vol.citeYear, volume_has_excerpt_b = Some(vol.hasExcerpt),
       volume_has_sessions_b = Some(vol.hasSessions),
       volume_keywords_ss = if(vol.keywords != null) Some(("boost" -> 3.0 ) ~ ("value" -> Option(vol.keywords))) else None,
       volume_tags_ss = if(vol.tags != null) Some(("boost" -> 2.0 ) ~ ("value" -> Option(vol.tags))) else None,
-      volume_all_text_t = Option(vol.allText)
-
+      volume_all_text_t = Option(vol.allText),
+      volume_owner_ids_is = ownerIds,
+      volume_owner_names_ss = ownerNames
     )
   }
 
@@ -414,7 +431,7 @@ object Indexer {
   case class Sentence(volId: Long, text: Option[String])
 
   case class SQLVolume(volumeId: Long, title: String = "", abs: String = "", alias: String = "", cite: Option[String] = None,
-                       citeYear: Option[Int] = None, citeUrl: Option[String] = None,
+                       citeYear: Option[Int] = None, citeUrl: Option[String] = None, owners: Option[java.sql.Array] = None,
                        var hasExcerpt: Boolean = false,
                        var hasSessions: Boolean = false,
                        var tags: Seq[String] = null,
@@ -497,6 +514,8 @@ object Indexer {
                           volume_keywords_ss: Option[JsonAST.JObject] = None,
                           volume_tags_ss: Option[JsonAST.JObject] = None,
                           volume_all_text_t: Option[String] = None,
+                          volume_owner_names_ss: Option[Seq[String]] = None,
+                          volume_owner_ids_is: Option[Seq[Int]] = None,
                           alias_s: Option[String] = None,
                           title_t: Option[String] = None,
                           abs_t: Option[String] = None,

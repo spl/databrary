@@ -51,6 +51,7 @@ app.factory('solrModelService', [
       doi: true,
       creation: true,
       owners: true,
+      ownerIds: true,
       citation: false,
       links: false,
       funding: false,
@@ -99,6 +100,8 @@ app.factory('solrModelService', [
         "volume_tags_ss": "tags",
         "alias_s": "alias",
         "volume_keywords_ss": "keywords",
+        "volume_owner_names_ss": "owners",
+        "volume_owner_ids_is": "ownerIds",
       };
 
       // Rewrite solrVals to use the solrKeynames names
