@@ -18,14 +18,28 @@ app.factory('solrModelService', [
         else if (fields[f])
           delete this[f];
       }
-      return(init);
+      // return(init);
     };
 
     // ---------------------------- SolrSlot
+    function SolrSlot(init) {
+      SolrModel.call(this, init);
+    }
+
+    SolrSlot.prototype.fields = {
+      release: true,
+      tags: false,
+      releases: false,
+    };
+
+    SolrSlot.prototype.init = function (init) {
+      SolrModel.prototype.init.call(this, init);
+    };
 
     // ---------------------------- SolrVolume
     function SolrVolume(init) {
-      this.init(init);
+      // this.init(init);
+      SolrModel.call(this, init);
     }
 
     SolrVolume.prototype.fields = {
@@ -44,12 +58,13 @@ app.factory('solrModelService', [
     };
 
     SolrVolume.prototype.init = function (init) {
-      SolrModel.prototype.init(init);
+      SolrModel.prototype.init.call(this, init);
     };
 
     // ---------------------------- SolrParty
     function SolrParty(init) {
-      this.init(init);
+      // this.init(init);
+      SolrModel.call(this, init);
     }
 
     SolrParty.prototype.fields = {
@@ -67,7 +82,7 @@ app.factory('solrModelService', [
     };
 
     SolrParty.prototype.init = function (init) {
-      SolrModel.prototype.init(init);
+      SolrModel.prototype.init.call(this, init);
     };
 
     function solrFieldRewrite(solrVals) {
@@ -154,7 +169,8 @@ app.factory('solrModelService', [
     };
 
     return {
-      SolrParty: SolrParty
+      SolrParty: SolrParty,
+      SolrVolume: SolrVolume
     };
   }
 

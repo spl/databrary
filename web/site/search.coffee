@@ -367,10 +367,13 @@ app.controller 'site/search', [
 
     createModels = (res) ->
       parties = getResults("party", res)
+      volumes = getResults("volume", res)
       console.log("PARTIES", parties)
       partyModels = (new solrModel.SolrParty(p) for p in parties.docs)
+      volumeModels = (new solrModel.SolrVolume(v) for v in volumes.docs)
       # partyModels = new solrModel.SolrParty(parties.docs[0])
       console.log("PARTY TIME", parties, partyModels)
+      console.log("VOLUME TIME", volumes, volumeModels)
 
 
 
