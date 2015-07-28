@@ -94,7 +94,7 @@ app.factory('solrModelService', [
         "party_affiliation_s": "affiliation",
         "party_id_i": "id",
         "volume_id_i": "id",
-        "volume_title_t": "name",
+        "title_t": "name",
         "abs_t": "body",
         "citation_t": "citation",
         "volume_tags_ss": "tags",
