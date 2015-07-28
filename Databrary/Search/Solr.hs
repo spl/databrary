@@ -11,24 +11,20 @@ import Data.Map
 import Control.Applicative
 import Control.Monad (mzero)
 import Control.Monad.IO.Class (MonadIO)
-import Control.Exception (handle)
 import GHC.Generics
-import Network.HTTP.Types (hAccept, hContentType, ok200)
-import System.Environment
 import Databrary.HTTP.Client
 
 import qualified Network.HTTP.Client as HC
 import qualified Data.Attoparsec.ByteString as P
 import qualified Data.ByteString as BS
 
-import qualified Data.ByteString.Lazy.Char8 as L
-import Control.Monad.IO.Class (liftIO)
-
 import Databrary.Has (MonadHas, focusIO)
 import qualified Databrary.Search.Query as Q
 
 
+solrServer :: String
 solrServer = "http://localhost/solr/Databrary/query"
+solrPort :: Int
 solrPort = 8983
 
 

@@ -31,11 +31,11 @@ tryUpdateOrInsert err upd ins = dbTransaction uoi where
     | isUniqueViolation e = Just Nothing
     | otherwise = Just <$> err e
   uoi = do
-    u <- dbTryQuery err upd
+    u <- dbTryJust err $ dbRunQuery upd
     case u of
       Right (0, _) -> do
         _ <- dbExecuteSimple "SAVEPOINT pre_insert"
-        i <- dbTryQuery err' ins
+        i <- dbTryJust err' $ dbRunQuery ins
         case i of
           Left Nothing -> do
             _ <- dbExecuteSimple "ROLLBACK TO SAVEPOINT pre_insert"
@@ -53,7 +53,7 @@ updateOrInsert upd ins = dbTransaction uoi where
       then return u
       else do
         _ <- dbExecuteSimple "SAVEPOINT pre_insert"
-        i <- dbTryQuery (guard . ("23505" ==) . pgErrorCode) ins
+        i <- dbTryJust (guard . ("23505" ==) . pgErrorCode) $ dbRunQuery ins
         either (\() -> do
           _ <- dbExecuteSimple "ROLLBACK TO SAVEPOINT pre_insert"
           uoi)

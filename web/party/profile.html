@@ -7,6 +7,7 @@
       <div ng-repeat="vl in ::volumes" ng-if="::vl.length">
         <div class="profile-section-header">
           <span ng-bind="::'profile.volumes.'+vl.type+'.title' | message:vl.parent.party.name"></span> 
+          <a ng-if="::vl.type === 'individual' && party.authorization >= page.constants.permission.EDIT || vl.parent.parent.member >= page.constants.permission.ADMIN" ng-href="{{page.router.volumeCreate([vl.parent.party.id])}}" class="button mini">Create volume</a>
           <div class="profile-additional" ng-if="::!!vl.parent">
             <span ng-bind="('auth.member.'+page.constants.permission[vl.parent.parent.member]+'.title' | message)+': '+('auth.member.'+page.constants.permission[vl.parent.parent.member] | message:'their')"></span>
           </div>
@@ -14,9 +15,9 @@
         <ul>
           <li ng-repeat="v in ::vl" ng-class="{'profile-highlight': !!v.selected}">
             <div class="profile-right-icons">
-              <span class="icon access1" ng-show="::v.volume.accessPreset"></span>
+              <span class="icon access1" ng-show="::v.volume.accessPreset" tooltip="'access.preset.title'+v.volume.accessPreset | message"></span>
+              <span class="icon" ng-class="::{'network': v.self.children}" tooltip="::v.self.children? 'Your group affiliates have access' : 'Your group affiliates do not have access'"></span>
               <span class="icon user-access" ng-class="::page.constants.permission[v.volume.permission]" tooltip="'access.'+page.constants.permission[v.volume.permission] | message:'You'"></span>
-              <span class="icon" ng-class="::{'network': v.self.children}" tooltip="'profile.access.extend' | message"></span>
             </div>
             <div class="profile-left-icons hide-mobile">
               <span ng-click="v.select()" class="icon" ng-class="v.class()"></span>
@@ -34,7 +35,8 @@
 
       <div class="profile-section" ng-if="::parties.parents.length">
         <div class="profile-section-header">
-          <span ng-bind="::'profile.parties.'+parties.parents.type+'.title' | message"></span> 
+          <span ng-bind="::'profile.parties.'+parties.parents.type+'.title' | message"></span>
+          <a ng-href="{{::party.editRoute('apply')}}" class="button icon edit neutral"></a>
         </div>
         <ul>
           <li ng-repeat="p in ::parties.parents" ng-class="{'profile-highlight': !!p.selected}">
@@ -59,6 +61,7 @@
       <div class="profile-section" ng-if="::parties.children.length">
         <div class="profile-section-header">
           <span>Affiliates</span>
+          <a ng-href="{{::party.editRoute('grant')}}" class="button icon edit neutral"></a>
         </div>
         <div ng-repeat="(member, cl) in ::parties.children track by member" ng-if="::cl.length">
           <div class="profile-subsection-header">
@@ -85,7 +88,7 @@
       </div>
       <div class="profile-section hide-mobile" ng-if="::parties.collaborators.length">
         <div class="profile-section-header">
-          <span ng-bind="::'profile.parties.'+parties.collaborators.type+'.title' | message"></span> 
+          <span ng-bind="::'profile.parties.'+parties.collaborators.type+'.title' | message"></span>
           <span class="icon info" tooltip="::'profile.parties.'+parties.collaborators.type+'.definition' | message"></span>
         </div>
         <ul>

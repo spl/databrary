@@ -4,13 +4,16 @@ module Databrary.Controller.Ingest
   , postIngest
   ) where
 
-import qualified Data.ByteString as BS
+import qualified Data.Aeson as JSON
+import qualified Data.Text as T
 import System.Posix.FilePath (takeExtension)
+import Network.HTTP.Types (badRequest400)
 import Network.Wai.Parse (FileInfo(..))
 
 import Databrary.Model.Id
 import Databrary.Model.Permission
 import Databrary.Model.Volume
+import Databrary.Model.Container
 import Databrary.Ingest.JSON
 import Databrary.HTTP.Path.Parser
 import Databrary.HTTP.Form.Deform
@@ -41,7 +44,7 @@ postIngest = multipartAction $ action POST (pathId </< "ingest") $ \vi -> withAu
         fileContentType f `elem` ["text/json", "application/json"] || takeExtension (fileName f) == ".json")
       =<< deform)
     return (json, run, overwrite)
-  l <- if r
-    then ingestJSON v (fileContent j) o
-    else return []
-  okResponse [] BS.empty
+  either
+    (returnResponse badRequest400 [] . T.unlines)
+    (okResponse [] . JSON.toJSON . map containerJSON)
+    =<< ingestJSON v (fileContent j) r o

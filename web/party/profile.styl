@@ -46,7 +46,19 @@
   font-line f1
   font-weight bold
   border-bottom 1px dotted neutral
-
+  .button:not(.icon)
+    font-size 12px
+    line-height 12px
+    padding-top b8
+    padding-bottom b8
+    background-color white
+  .icon, .button, .button:hover
+    margin 0 0 0 8px
+  .button.icon, .button.icon:hover
+    width 16px
+    height 16px
+    padding 0
+  
 .profile-subsection-header
   margin-top b4
   font-size b2
@@ -54,7 +66,7 @@
   font-weight bold
   .icon
     size b2
-
+    
 .profile-additional
   font-size b2
   line-height b2

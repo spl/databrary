@@ -4,20 +4,24 @@ module Databrary.Controller.Party
   , viewParty
   , viewPartyEdit
   , viewPartyCreate
+  , viewPartyDelete
   , postParty
   , createParty
-  , queryParties
+  , deleteParty
   , viewAvatar
+  , queryParties
+  , adminParties
   ) where
 
 import Control.Applicative (Applicative, (<*>), pure, optional)
-import Control.Monad (unless, when, liftM2, void)
+import Control.Monad (unless, when, void)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import Data.Maybe (isJust, fromMaybe)
-import Data.Monoid (mempty)
+import Data.Monoid ((<>), mempty)
 import qualified Data.Text.Encoding as TE
 import qualified Data.Traversable as Trav
+import Network.HTTP.Types (badRequest400)
 import qualified Network.Wai as Wai
 import Network.Wai.Parse (FileInfo(..))
 
@@ -109,7 +113,7 @@ viewParty = action GET (pathAPI </> pathPartyTarget) $ \(api, i) -> withAuth $ d
 
 processParty :: API -> Maybe Party -> AuthActionM (Party, Maybe Asset)
 processParty api p = do
-  (p', a) <- runFormFiles [("avatar", maxAvatarSize)] (api == HTML ?> htmlPartyForm p) $ do
+  (p', a) <- runFormFiles [("avatar", maxAvatarSize)] (api == HTML ?> htmlPartyEdit p) $ do
     csrfForm
     name <- "sortname" .:> (deformRequired =<< deform)
     prename <- "prename" .:> deformNonEmpty deform
@@ -144,12 +148,12 @@ viewPartyEdit :: AppRoute PartyTarget
 viewPartyEdit = action GET (pathHTML >/> pathPartyTarget </< "edit") $ \i -> withAuth $ do
   angular
   p <- getParty (Just PermissionADMIN) i
-  blankForm $ htmlPartyForm $ Just p
+  blankForm $ htmlPartyEdit $ Just p
 
 viewPartyCreate :: AppRoute ()
 viewPartyCreate = action GET (pathHTML </< "party" </< "create") $ \() -> withAuth $ do
   checkMemberADMIN
-  blankForm $ htmlPartyForm Nothing
+  blankForm $ htmlPartyEdit Nothing
 
 postParty :: AppRoute (API, PartyTarget)
 postParty = multipartAction $ action POST (pathAPI </> pathPartyTarget) $ \(api, i) -> withAuth $ do
@@ -173,23 +177,20 @@ createParty = multipartAction $ action POST (pathAPI </< "party") $ \api -> with
     JSON -> okResponse [] $ partyJSON p
     HTML -> redirectRouteResponse [] viewParty (api, TargetParty $ partyId p) []
 
-partySearchForm :: (Applicative m, Monad m) => DeformT f m PartyFilter
-partySearchForm = PartyFilter
-  <$> ("query" .:> deformNonEmpty deform)
-  <*> ("authorization" .:> optional deform)
-  <*> ("institution" .:> deformNonEmpty deform)
-  <*> ("authorize" .:> optional deform)
-  <*> pure Nothing
+deleteParty :: AppRoute (Id Party)
+deleteParty = action POST (pathHTML >/> pathId </< "delete") $ \i -> withAuth $ do
+  checkMemberADMIN
+  p <- getParty (Just PermissionADMIN) (TargetParty i)
+  r <- removeParty p
+  if r
+    then okResponse [] $ partyName p <> " deleted"
+    else returnResponse badRequest400 [] $ partyName p <> " not deleted"
 
-queryParties :: AppRoute API
-queryParties = action GET (pathAPI </< "party") $ \api -> withAuth $ do
-  when (api == HTML) angular
-  (pf, (limit, offset)) <- runForm (api == HTML ?> htmlPartySearchForm mempty) $
-    liftM2 (,) partySearchForm paginationForm
-  p <- findParties pf limit offset
-  case api of
-    JSON -> okResponse [] $ JSON.toJSON $ map partyJSON p
-    HTML -> blankForm $ htmlPartySearchForm pf
+viewPartyDelete :: AppRoute (Id Party)
+viewPartyDelete = action GET (pathHTML >/> pathId </< "delete") $ \i -> withAuth $ do
+  checkMemberADMIN
+  p <- getParty (Just PermissionADMIN) (TargetParty i)
+  okResponse [] =<< peeks (htmlPartyDelete p)
 
 viewAvatar :: AppRoute (Id Party)
 viewAvatar = action GET (pathId </< "avatar") $ \i -> withoutAuth $
@@ -197,3 +198,28 @@ viewAvatar = action GET (pathId </< "avatar") $ \i -> withoutAuth $
     (redirectRouteResponse [] webFile (Just $ staticPath ["images", "avatar.png"]) [])
     (serveAssetSegment False . assetSlotSegment . assetNoSlot)
     =<< lookupAvatar i
+
+partySearchForm :: (Applicative m, Monad m) => DeformT f m PartyFilter
+partySearchForm = PartyFilter
+  <$> ("query" .:> deformNonEmpty deform)
+  <*> ("authorization" .:> optional deform)
+  <*> ("institution" .:> deformNonEmpty deform)
+  <*> ("authorize" .:> optional deform)
+  <*> pure Nothing
+  <*> paginateForm
+
+queryParties :: AppRoute API
+queryParties = action GET (pathAPI </< "party") $ \api -> withAuth $ do
+  when (api == HTML) angular
+  pf <- runForm (api == HTML ?> htmlPartySearch mempty []) partySearchForm
+  p <- findParties pf
+  case api of
+    JSON -> okResponse [] $ JSON.toJSON $ map partyJSON p
+    HTML -> blankForm $ htmlPartySearch pf p
+
+adminParties :: AppRoute ()
+adminParties = action GET ("party" </< "admin") $ \() -> withAuth $ do
+  checkMemberADMIN
+  pf <- runForm (Just $ htmlPartyAdmin mempty []) partySearchForm
+  p <- findParties pf
+  blankForm $ htmlPartyAdmin pf p

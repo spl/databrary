@@ -15,7 +15,7 @@ import Databrary.HTTP.Route
 import Databrary.Web.Types
 import Databrary.Web.Generate
 
-import {-# SOURCE #-} Databrary.Routes
+import {-# SOURCE #-} Databrary.Routes.JS
 
 jsRoute :: BS.ByteString -> Route r a -> a -> B.Builder
 jsRoute n r v = B.char7 '\n' <> quoteByteString '"' n

@@ -295,12 +295,19 @@ app.controller('volume/slot', [
         return
       ended: ->
         $scope.playing = 0
-        # look for something else to play?
+        return unless $scope.asset && isFinite(p = $scope.asset.segment.u)
+        # look for something else to play:
+        for i in $scope.assets when i.asset && !i.asset.pending && i.asset.format.type == 'video' && i.asset.checkPermission(constants.permission.VIEW) && i.lBounded && i.ut.o > p
+          a = i
+          break
+        return unless a
+        a.choose(true)
         return
 
     for ev, fn of videoEvents
       videoEvents[ev] = $scope.$lift(fn)
 
+    autoplay = undefined
     @deregisterVideo = (v) ->
       return unless video == v
       video = undefined
@@ -312,6 +319,9 @@ app.controller('volume/slot', [
       video = v
       seekOffset(ruler.position.o)
       v.on(videoEvents)
+      if autoplay
+        autoplay = false
+        video[0].play()
       return
 
     ################################### Player display
@@ -371,7 +381,7 @@ app.controller('volume/slot', [
         not confirm(constants.message('navigation.confirmation'))
 
     class TimeBar extends TimeSegment
-      choose: ->
+      choose: (ap) ->
         return false if stayDirty()
 
         $scope.current = this
@@ -389,6 +399,7 @@ app.controller('volume/slot', [
         $scope.playing = 0
         finalizeSelection()
         updatePlayerHeight()
+        autoplay = ap
         true
 
       click: (event) ->

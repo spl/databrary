@@ -7,11 +7,14 @@ app.directive('authGrantForm', [
       var auth = $scope.auth;
       var form = $scope.authGrantForm;
 
-      form.data = {
-        site: auth.site,
-        member: auth.member,
-        expires: auth.expires && page.$filter('date')(auth.expires, 'yyyy-MM-dd')
-      };
+      function fill() {
+        form.data = {
+          site: auth.site,
+          member: auth.member,
+          expires: auth.expires && page.$filter('date')(auth.expires, 'yyyy-MM-dd')
+        };
+      }
+      fill();
 
       if (auth.new)
         form.$setDirty();
@@ -42,7 +45,7 @@ app.directive('authGrantForm', [
 
       form.save = function () {
         page.messages.clear(form);
-        return party.authorizeSave(auth.party.id, form.data).then(function () {
+        return party.authorizeSave(auth.party.id, form.data).then(function (res) {
           form.validator.server({});
           page.messages.add({
             body: page.constants.message('auth.grant.save.success'),
@@ -51,6 +54,10 @@ app.directive('authGrantForm', [
           });
 
           delete auth.new;
+          auth.site = res.site;
+          auth.member = res.member;
+          auth.expires = res.expires;
+          fill();
           form.$setPristine();
         }, function (res) {
           form.validator.server(res);

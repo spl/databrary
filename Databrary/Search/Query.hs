@@ -117,7 +117,7 @@ filterJoin _ = Nothing
 
 --
 filterTerm :: QueryPart -> Maybe [QueryPart]
-filterTerm (QuerySearchTerm x) = Just $ map QuerySearchTerm $ splitOn " " x
+filterTerm (QuerySearchTerm x) = Just $ map QuerySearchTerm $ words x
 filterTerm _ = Nothing
 
 filterContentType :: QueryPart -> Maybe QueryPart

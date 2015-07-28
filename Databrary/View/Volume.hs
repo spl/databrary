@@ -1,14 +1,14 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, RecordWildCards #-}
 module Databrary.View.Volume
   ( htmlVolumeView
-  , htmlVolumeForm
-  , htmlVolumeLinksForm
-  , htmlVolumeSearchForm
+  , htmlVolumeEdit
+  , htmlVolumeLinksEdit
+  , htmlVolumeSearch
   ) where
 
 import Control.Monad (when, forM_)
 import qualified Data.Foldable as Fold
-import Data.Monoid ((<>))
+import Data.Monoid ((<>), mempty)
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as HA
 
@@ -24,7 +24,9 @@ import Databrary.Controller.Paths
 import Databrary.View.Html
 import Databrary.View.Template
 import Databrary.View.Form
+import Databrary.View.Paginate
 
+import {-# SOURCE #-} Databrary.Controller.Angular
 import {-# SOURCE #-} Databrary.Controller.Party
 import {-# SOURCE #-} Databrary.Controller.Volume
 
@@ -32,7 +34,7 @@ htmlVolumeView :: Volume -> AuthRequest -> H.Html
 htmlVolumeView v req = htmlTemplate req (Just (volumeName v)) $ \js -> do
   when (view v >= PermissionEDIT) $
     H.p $
-      H.a H.! actionLink viewVolumeEdit (volumeId v) js [] $ "edit"
+      H.a H.! actionLink viewVolumeEdit (volumeId v) js $ "edit"
   H.img
     H.! HA.src (builderValue $ actionURL Nothing thumbVolume (volumeId v) [])
   H.dl $ do
@@ -41,7 +43,7 @@ htmlVolumeView v req = htmlTemplate req (Just (volumeName v)) $ \js -> do
       H.dd $ H.text a
     forM_ (volumeOwners v) $ \(p, n) -> do
       H.dt "owner"
-      H.dd $ H.a H.! actionLink viewParty (HTML, TargetParty p) js [] $ H.text n
+      H.dd $ H.a H.! actionLink viewParty (HTML, TargetParty p) js $ H.text n
     Fold.forM_ (volumeBody v) $ \b -> do
       H.dt "body"
       H.dd $ H.text b -- format
@@ -49,9 +51,8 @@ htmlVolumeView v req = htmlTemplate req (Just (volumeName v)) $ \js -> do
       H.dt "doi"
       H.dd $ byteStringHtml d
 
-htmlVolumeForm :: Maybe Volume -> Maybe Citation -> AuthRequest -> FormHtml f
-htmlVolumeForm vol cite req = f req $ do
-  csrfForm req
+htmlVolumeForm :: Maybe Volume -> Maybe Citation -> FormHtml f
+htmlVolumeForm vol cite = do
   field "name" $ inputText $ volumeName <$> vol
   field "alias" $ inputText $ volumeAlias =<< vol
   field "body" $ inputTextarea $ volumeBody =<< vol
@@ -59,22 +60,30 @@ htmlVolumeForm vol cite req = f req $ do
     field "head" $ inputText $ citationHead <$> cite
     field "url" $ inputText $ fmap show $ citationURL =<< cite
     field "year" $ inputText $ fmap show $ citationYear =<< cite
-  where
-  f = maybe
-    (htmlForm "Create volume" createVolume HTML)
-    (\v -> htmlForm
-      ("Edit " <> volumeName v)
-      postVolume (HTML, volumeId v))
-    vol
 
-htmlVolumeLinksForm :: Volume -> [Citation] -> AuthRequest -> FormHtml f
-htmlVolumeLinksForm vol links req = htmlForm "Edit volume links" postVolumeLinks (HTML, volumeId vol) req $ do
-  csrfForm req
-  withSubFormsViews links $ \link -> do
+htmlVolumeEdit :: Maybe (Volume, Maybe Citation) -> AuthRequest -> FormHtml f
+htmlVolumeEdit Nothing = htmlForm "Create volume" createVolume HTML (htmlVolumeForm Nothing Nothing) (const mempty)
+htmlVolumeEdit (Just (v, cite)) = htmlForm ("Edit " <> volumeName v) postVolume (HTML, volumeId v) (htmlVolumeForm (Just v) cite) (const mempty)
+
+htmlVolumeLinksEdit :: Volume -> [Citation] -> AuthRequest -> FormHtml f
+htmlVolumeLinksEdit vol links = htmlForm "Edit volume links" postVolumeLinks (HTML, volumeId vol)
+  (withSubFormsViews links $ \link -> do
     field "head" $ inputText $ citationHead <$> link
-    field "url" $ inputText $ fmap show $ citationURL =<< link
+    field "url" $ inputText $ fmap show $ citationURL =<< link)
+  (const mempty)
 
-htmlVolumeSearchForm :: VolumeFilter -> AuthRequest -> FormHtml f
-htmlVolumeSearchForm vf req = htmlForm "Search volumes" queryVolumes HTML req $ do
-  csrfForm req
-  field "query" $ inputText $ volumeFilterQuery vf
+htmlVolumeList :: JSOpt -> [Volume] -> H.Html
+htmlVolumeList js vl = H.ul $ forM_ vl $ \v -> H.li $ do
+  H.h2
+    $ H.a H.! actionLink viewVolume (HTML, volumeId v) js
+    $ H.text $ volumeName v
+  H.ul $ forM_ (volumeOwners v) $ \(p, o) -> H.li $ do
+    H.a H.! actionLink viewParty (HTML, TargetParty p) js
+      $ H.text o
+  Fold.mapM_ (H.p . H.text) $ volumeBody v
+
+htmlVolumeSearch :: VolumeFilter -> [Volume] -> AuthRequest -> FormHtml f
+htmlVolumeSearch VolumeFilter{..} vl req = htmlForm "Volume search" queryVolumes HTML
+  (field "query" $ inputText volumeFilterQuery)
+  (\js -> htmlPaginate (htmlVolumeList js) volumeFilterPaginate vl (view req))
+  req

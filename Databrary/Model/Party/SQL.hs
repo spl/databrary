@@ -9,6 +9,8 @@ module Databrary.Model.Party.SQL
   , updateAccount
   , insertParty
   , insertAccount
+  , deleteParty
+  , deleteAccount
   ) where
 
 import Control.Applicative ((<|>))
@@ -146,3 +148,17 @@ insertAccount ident a = auditInsert ident "account"
   (accountKeys as ++ accountSets as)
   Nothing
   where as = nameRef a
+
+deleteParty :: TH.Name -- ^ @'AuditIdentity'
+  -> TH.Name -- ^ @'Party'@
+  -> TH.ExpQ -- ^ @()@
+deleteParty ident p = auditDelete ident "party"
+  (whereEq $ partyKeys (nameRef p))
+  Nothing
+
+deleteAccount :: TH.Name -- ^ @'AuditIdentity'
+  -> TH.Name -- ^ @'Party'@
+  -> TH.ExpQ -- ^ @()@
+deleteAccount ident p = auditDelete ident "account"
+  (whereEq $ partyKeys (nameRef p))
+  Nothing

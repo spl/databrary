@@ -220,12 +220,6 @@ app.factory('modelService', [
       return router.party([this.id]);
     };
 
-    Object.defineProperty(Party.prototype, 'lastName', {
-      get: function () {
-        return this.name.substr(this.name.lastIndexOf(' ')+1);
-      }
-    });
-
     Party.prototype.editRoute = function (page) {
       var params = {};
       if (page)
@@ -265,7 +259,7 @@ app.factory('modelService', [
       return router.http(router.controllers.postAuthorize, this.id, target, data)
         .then(function (res) {
           p.clear('children');
-          return p;
+          return res.data;
         });
     };
 
@@ -274,6 +268,15 @@ app.factory('modelService', [
       return router.http(router.controllers.deleteAuthorize, this.id, target)
         .then(function (res) {
           p.clear('children');
+          return p;
+        });
+    };
+
+    Party.prototype.authorizeRemoveParent = function (target) {
+      var p = this;
+      return router.http(router.controllers.deleteAuthorizeParent, this.id, target)
+        .then(function (res) {
+          p.clear('parents');
           return p;
         });
     };
@@ -1076,8 +1079,11 @@ app.factory('modelService', [
       if ('id' in init) {
         var a = v.assets[init.id];
         return a ? a.update(init) : new Asset(context, init);
-      } else
+      } else {
+        if (init.asset && 'container' in init && !('container' in init.asset))
+          init.asset.container = init.container;
         return new AssetSlot(context, init);
+      }
     }
 
     function assetMakeArray(context, l) {

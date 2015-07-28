@@ -3,6 +3,7 @@ module Databrary.Model.Record
   ( module Databrary.Model.Record.Types
   , blankRecord
   , lookupRecord
+  , lookupVolumeRecord
   , lookupVolumeRecords
   , addRecord
   , changeRecord
@@ -45,6 +46,10 @@ lookupRecord ri = do
   ident <- peek
   dbQuery1 $(selectQuery (selectRecord 'ident) "$WHERE record.id = ${ri}")
 
+lookupVolumeRecord :: MonadDB m => Volume -> Id Record -> m (Maybe Record)
+lookupVolumeRecord vol ri =
+  dbQuery1 $ fmap ($ vol) $(selectQuery selectVolumeRecord "$WHERE record.id = ${ri} AND record.volume = ${volumeId vol}")
+
 lookupVolumeRecords :: MonadDB m => Volume -> m [Record]
 lookupVolumeRecords vol =
   dbQuery $ fmap ($ vol) $(selectQuery selectVolumeRecord "$WHERE record.volume = ${volumeId vol}")
@@ -62,7 +67,7 @@ changeRecord r = do
 removeRecord :: MonadAudit c m => Record -> m Bool
 removeRecord r = do
   ident <- getAuditIdentity
-  isRight <$> dbTryQuery (guard . isForeignKeyViolation) $(deleteRecord 'ident 'r)
+  isRight <$> dbTryJust (guard . isForeignKeyViolation) (dbExecute1 $(deleteRecord 'ident 'r))
 
 recordJSON :: Record -> JSON.Object
 recordJSON r@Record{..} = JSON.record recordId $ catMaybes

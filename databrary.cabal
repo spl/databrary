@@ -23,13 +23,12 @@ data-files:
   web/*.min.js,
   web/icons/*.ico,
   web/icons/*.png,
+  web/icons/*.svg,
   web/icons/release/*.svg,
   web/images/*.png,
   web/images/elements/*.svg,
   web/images/filetype/16px/*.svg,
   web/images/grants/*.png,
-  web/images/icon/*.png,
-  web/images/icon/*.svg,
   web/images/logo/*.png,
   web/images/logo/*.svg,
   web/images/social/16px/*.png,
@@ -56,12 +55,14 @@ Flag sandbox
 Executable schemabrary
   main-is: Databrary/Setup/DB.hs
   default-language: Haskell2010
-  Build-depends:
+  build-depends:
     base == 4.7.*,
     bytestring >= 0.10,
     transformers == 0.4.*,
     transformers-base,
     mtl >= 2.2.1,
+    monad-control >= 1,
+    lifted-base,
     template-haskell,
     filepath,
     directory,
@@ -75,13 +76,15 @@ Executable databrary
   other-modules: Databrary.Store.AV
   c-sources: Databrary/Store/avFrame.c
 
-  Build-depends:
+  build-depends:
     base == 4.7.*,
     bytestring >= 0.10,
     containers,
     transformers == 0.4.*,
     transformers-base,
     mtl >= 2.2.1,
+    monad-control >= 1,
+    lifted-base,
     template-haskell,
     th-lift,
     th-lift-instances,
@@ -93,6 +96,7 @@ Executable databrary
     posix-paths,
     directory,
     process,
+    data-default-class,
     text,
     base64-bytestring,
     utf8-string,
@@ -117,8 +121,6 @@ Executable databrary
     cryptohash,
     entropy,
     resourcet,
-    exceptions,
-    monad-control >= 1,
     streaming-commons,
     blaze-builder >= 0.4,
     blaze-markup,
@@ -129,6 +131,8 @@ Executable databrary
     mime-mail,
     fast-logger,
     digest,
+    hjsonschema,
+    aeson-better-errors > 0.9.0,
     split
 
   if flag(tls)
@@ -148,5 +152,4 @@ Executable databrary
 
   pkgconfig-depends: libavformat, libswscale, libavcodec, libavutil
   extra-libraries: crack
-
   build-tools: npm

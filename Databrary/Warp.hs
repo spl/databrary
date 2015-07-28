@@ -13,7 +13,9 @@ import qualified Data.Traversable as Trav
 import Data.Version (showVersion)
 import qualified Network.Wai as Wai
 import qualified Network.Wai.Handler.Warp as Warp
+#ifdef VERSION_warp_tls
 import qualified Network.Wai.Handler.WarpTLS as WarpTLS
+#endif
 
 import Paths_databrary (version)
 import Databrary.Service.Types
@@ -25,7 +27,7 @@ runWarp conf rc app = do
 #ifdef VERSION_warp_tls
   key <- C.lookup conf "ssl.key"
   let certs c = C.convert c <|> return <$> C.convert c
-      run (Just k) (Just (cert:chain)) = WarpTLS.runTLS $ WarpTLS.tlsSettingsChain cert chain k
+      run (Just k) (Just (cert:chain)) = WarpTLS.runTLS (WarpTLS.tlsSettingsChain cert chain k)
       run _ _ = Warp.runSettings
   cert <- C.lookup conf "ssl.cert"
   run key (certs =<< cert)

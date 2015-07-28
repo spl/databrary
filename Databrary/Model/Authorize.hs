@@ -42,7 +42,7 @@ selfAuthorize p =
 
 filterAll :: PGQuery a b => Bool -> a -> a
 filterAll True = id
-filterAll False = (`unsafeModifyQuery` (<> "WHERE expires IS NULL OR expires > CURRENT_TIMESTAMP"))
+filterAll False = (`unsafeModifyQuery` (<> "WHERE (expires IS NULL OR expires > CURRENT_TIMESTAMP) AND (site > 'PUBLIC' OR member > 'NONE')"))
 
 lookupAuthorizedParents :: (MonadDB m, MonadHasIdentity c m) => Party -> Bool -> m [Authorize]
 lookupAuthorizedParents child al = do

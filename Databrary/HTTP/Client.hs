@@ -16,8 +16,6 @@ import qualified Data.ByteString.Char8 as BSC
 import qualified Network.HTTP.Client as HC
 import Network.HTTP.Types (hAccept, hContentType, ok200)
 
-import Databrary.Has (MonadHas, peek)
-
 type HTTPClient = HC.Manager
 
 initHTTPClient :: IO HTTPClient

@@ -96,7 +96,7 @@ postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarge
           site <- "site" .:> deform
           member <- "member" .:> deform
           expires <- "expires" .:> (deformCheck "Expiration must be within two years." (Fold.all (\e -> su || e > minexp && e <= maxexp))
-            =<< (<|> (su ?!> maxexp)) <$> deformOptional deform)
+            =<< (<|> (su ?!> maxexp)) <$> deformNonEmpty deform)
           return $ Authorize (Authorization (Access site member) child parent) $ fmap (`UTCTime` 43210) expires
       maybe (Fold.mapM_ removeAuthorize c) changeAuthorize a
       when (Fold.any ((PermissionPUBLIC <) . accessSite) a && Fold.all ((PermissionPUBLIC >=) . accessSite) c) $

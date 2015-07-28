@@ -9,5 +9,8 @@ viewParty :: AppRoute (API, PartyTarget)
 viewPartyEdit :: AppRoute PartyTarget
 postParty :: AppRoute (API, PartyTarget)
 createParty :: AppRoute API
-queryParties :: AppRoute API
+deleteParty :: AppRoute (Id Party)
+viewPartyDelete :: AppRoute (Id Party)
 viewAvatar :: AppRoute (Id Party)
+queryParties :: AppRoute API
+adminParties :: AppRoute ()

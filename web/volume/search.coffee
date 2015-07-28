@@ -3,7 +3,7 @@
 app.controller 'volume/search', [
   '$scope', '$location', 'displayService', 'volumes',
   ($scope, $location, display, volumes) ->
-    limit = 12 # server-side default
+    limit = 25-1 # server-side default
     offset = parseInt($location.search().offset, 10) || 0
     display.title = 'Search'
     $scope.volumes = volumes

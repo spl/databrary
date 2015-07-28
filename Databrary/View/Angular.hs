@@ -8,6 +8,7 @@ import qualified Data.Aeson.Encode as JSON
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Char8 as BSC
+import Data.Default.Class (def)
 import Data.Maybe (isJust)
 import Data.Monoid (mempty, (<>))
 import qualified Text.Blaze.Html5 as H
@@ -34,7 +35,7 @@ webURL p = builderValue $ actionURL Nothing webFile (Just $ StaticPath p) []
 htmlAngular :: Maybe [WebFilePath] -> BSB.Builder -> AuthRequest -> H.Html
 htmlAngular debug nojs auth = H.docTypeHtml H.! ngAttribute "app" "databraryModule" $ do
   H.head $ do
-    htmlHeader Nothing Nothing
+    htmlHeader Nothing def
     H.noscript $
       H.meta
         H.! HA.httpEquiv "Refresh"

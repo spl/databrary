@@ -1,6 +1,7 @@
 {-# LANGUAGE TemplateHaskell, OverloadedStrings #-}
 module Databrary.Model.RecordSlot.SQL
-  ( selectContainerSlotRecord
+  ( selectRecordContainerSlotRecord
+  , selectContainerSlotRecord
   , selectRecordSlotRecord
   , selectVolumeSlotRecord
   , selectVolumeSlotMaybeRecord

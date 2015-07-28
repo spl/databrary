@@ -3,6 +3,7 @@ module Databrary.Service.Periodic
   ) where
 
 import Control.Concurrent (ThreadId, forkFinally, threadDelay)
+import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Reader (runReaderT)
 import Data.Fixed (Fixed(..), Micro)
 import Data.Time.Clock (UTCTime(..), diffUTCTime, getCurrentTime)
@@ -11,7 +12,6 @@ import Data.Time.LocalTime (TimeOfDay(TimeOfDay), timeOfDayToTime)
 import Databrary.Has (view, focusIO)
 import Databrary.Service.Types
 import Databrary.Service.Log
-import Databrary.Model.Time
 import Databrary.Model.Token
 import Databrary.Model.Volume
 
@@ -23,8 +23,9 @@ threadDelay' (MkFixed t)
   m' = toInteger m
   m = maxBound
 
-daily :: Timestamp -> Service -> IO ()
-daily t = runReaderT $ do
+daily :: Service -> IO ()
+daily = runReaderT $ do
+  t <- liftIO getCurrentTime
   focusIO $ logMsg t "running daily cleanup"
   cleanTokens
   updateVolumeIndex
@@ -39,7 +40,7 @@ runPeriodic rc = do
   loop t = do
     n <- getCurrentTime
     threadDelay' $ realToFrac $ diffUTCTime t n
-    daily n rc
+    daily rc
     loop $ d t
 
 forkPeriodic :: Service -> IO ThreadId

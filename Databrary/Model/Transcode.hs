@@ -7,6 +7,7 @@ module Databrary.Model.Transcode
   , lookupActiveTranscodes
   , addTranscode
   , updateTranscode
+  , findTranscode
   ) where
 
 import qualified Data.ByteString as BS
@@ -28,6 +29,7 @@ import Databrary.Model.Audit
 import Databrary.Model.Id
 import Databrary.Model.Party
 import Databrary.Model.Segment
+import Databrary.Model.Volume.Types
 import Databrary.Model.Format
 import Databrary.Model.Asset
 import Databrary.Model.Transcode.Types
@@ -86,3 +88,8 @@ updateTranscode tc pid logs = do
     { transcodeProcess = pid
     , transcodeLog = l
     }) r
+
+findTranscode :: MonadDB m => Asset -> Segment -> TranscodeArgs -> m (Maybe Transcode)
+findTranscode orig seg opts =
+  dbQuery1 $ ($ orig) <$> $(selectQuery selectOrigTranscode "WHERE transcode.orig = ${assetId orig} AND transcode.segment = ${seg} AND transcode.options = ${map Just opts} AND asset.volume = ${volumeId $ assetVolume orig}")
+
