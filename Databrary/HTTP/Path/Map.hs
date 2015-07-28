@@ -23,29 +23,29 @@ import Data.Typeable (Typeable, typeRep)
 
 import Databrary.HTTP.Path.Types
 
-data PathDynamicRep where
-  PathDynamicRep :: PathDynamic a => !(Proxy a) -> PathDynamicRep
+data PathParameterRep where
+  PathParameterRep :: PathParameter a => !(Proxy a) -> PathParameterRep
 
-instance Eq PathDynamicRep where
-  PathDynamicRep a == PathDynamicRep b = typeRep a == typeRep b
+instance Eq PathParameterRep where
+  PathParameterRep a == PathParameterRep b = typeRep a == typeRep b
 
-instance Ord PathDynamicRep where
-  PathDynamicRep a `compare` PathDynamicRep b = typeRep a `compare` typeRep b
+instance Ord PathParameterRep where
+  PathParameterRep a `compare` PathParameterRep b = typeRep a `compare` typeRep b
 
-instance Hashable PathDynamicRep where
-  hashWithSalt s (PathDynamicRep d) = hashWithSalt s $ typeRep d
+instance Hashable PathParameterRep where
+  hashWithSalt s (PathParameterRep d) = hashWithSalt s $ typeRep d
 
 proxy :: a -> Proxy a
 proxy _ = Proxy
 
-pathDynamicRep :: PathDynamic a => a -> PathDynamicRep
-pathDynamicRep = PathDynamicRep . proxy
+pathParameterRep :: PathParameter a => a -> PathParameterRep
+pathParameterRep = PathParameterRep . proxy
 
 data PathMap a
   = PathMap
   { pathMapNull :: !(Maybe a)
   , pathMapFixed :: !(HM.HashMap T.Text (PathMap a))
-  , pathMapDynamic :: !(M.Map PathDynamicRep (PathMap a))
+  , pathMapParameter :: !(M.Map PathParameterRep (PathMap a))
   }
   | PathMapAny
   { _pathMapAny :: a
@@ -72,15 +72,15 @@ lookup (e:p) m@(PathMap _ f d)
   | T.null e = lookup p m
   | otherwise = ld (M.toList d) where
   ld [] = Nothing
-  ld ((PathDynamicRep r,m'):l)
-    | Just a <- pathDynamicAs r e = first (PathElementDynamic a :) <$> lookup p m'
+  ld ((PathParameterRep r,m'):l)
+    | Just a <- pathParameterAs r e = first (PathElementParameter a :) <$> lookup p m'
     | otherwise = ld l
 lookup p (PathMapAny a) = Just ([PathElementAny p], a)
 
 singleton :: PathElements -> a -> PathMap a
 singleton [] a = PathMap (Just a) HM.empty M.empty
 singleton (PathElementFixed e:l) a = PathMap Nothing (HM.singleton e (singleton l a)) M.empty
-singleton (PathElementDynamic e:l) a = PathMap Nothing HM.empty (M.singleton (pathDynamicRep e) (singleton l a))
+singleton (PathElementParameter e:l) a = PathMap Nothing HM.empty (M.singleton (pathParameterRep e) (singleton l a))
 singleton (PathElementAny _:_) a = PathMapAny a
 
 unionMaybe :: Maybe a -> Maybe a -> Maybe a
@@ -103,7 +103,7 @@ insert :: PathElements -> a -> PathMap a -> PathMap a
 insert [] a p@PathMap{ pathMapNull = n } = p{ pathMapNull = unionMaybe (Just a) n }
 insert (PathElementFixed e:l) a p@PathMap{ pathMapFixed = f } =
   p{ pathMapFixed = HM.insertWith (const $ insert l a) e (singleton l a) f }
-insert (PathElementDynamic e:l) a p@PathMap{ pathMapDynamic = d } =
-  p{ pathMapDynamic = M.insertWith (const $ insert l a) (pathDynamicRep e) (singleton l a) d }
+insert (PathElementParameter e:l) a p@PathMap{ pathMapParameter = d } =
+  p{ pathMapParameter = M.insertWith (const $ insert l a) (pathParameterRep e) (singleton l a) d }
 insert (PathElementAny _:_) a m = unionAny a m
 insert _ _ _ = throw PathMapConflict

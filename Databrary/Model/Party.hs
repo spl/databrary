@@ -12,6 +12,7 @@ module Databrary.Model.Party
   , changeAccount
   , addParty
   , addAccount
+  , removeParty
   , auditAccountLogin
   , recentAccountLogins
   , partyJSON
@@ -22,6 +23,7 @@ module Databrary.Model.Party
   ) where
 
 import Control.Applicative ((<|>))
+import Control.Exception.Lifted (handleJust)
 import Control.Monad (guard)
 import qualified Data.ByteString as BS
 import Data.Int (Int64)
@@ -40,6 +42,7 @@ import qualified Databrary.JSON as JSON
 import Databrary.HTTP.Request
 import Databrary.Model.Id
 import Databrary.Model.SQL
+import Databrary.Model.Paginate
 import Databrary.Model.Permission
 import Databrary.Model.Audit
 import Databrary.Model.Audit.SQL
@@ -108,6 +111,13 @@ addAccount ba@Account{ accountParty = bp } = do
   dbExecute1' $(insertAccount 'ident 'a)
   return a
 
+removeParty :: MonadAudit c m => Party -> m Bool
+removeParty p = do
+  ident <- getAuditIdentity
+  dbTransaction $ handleJust (guard . isForeignKeyViolation) (\_ -> return False) $ do
+    _ <- dbExecute1 $(deleteAccount 'ident 'p)
+    dbExecute1 $(deleteParty 'ident 'p)
+
 lookupFixedParty :: Id Party -> Identity -> Maybe Party
 lookupFixedParty (Id (-1)) _ = Just nobodyParty
 lookupFixedParty (Id 0) i = Just rootParty{ partyAccess = accessMember i > PermissionNONE ?> view i }
@@ -145,12 +155,13 @@ data PartyFilter = PartyFilter
   , partyFilterInstitution :: Maybe Bool
   , partyFilterAuthorize :: Maybe (Id Party)
   , partyFilterVolume :: Maybe Volume
+  , partyFilterPaginate :: Paginate
   }
 
 instance Monoid PartyFilter where
-  mempty = PartyFilter Nothing Nothing Nothing Nothing Nothing
-  mappend (PartyFilter q1 a1 i1 p1 v1) (PartyFilter q2 a2 i2 p2 v2) =
-    PartyFilter (q1 <> q2) (a1 <|> a2) (i1 <|> i2) (p1 <|> p2) (v1 <|> v2)
+  mempty = PartyFilter Nothing Nothing Nothing Nothing Nothing def
+  mappend (PartyFilter q1 a1 i1 p1 v1 p) (PartyFilter q2 a2 i2 p2 v2 _) =
+    PartyFilter (q1 <> q2) (a1 <|> a2) (i1 <|> i2) (p1 <|> p2) (v1 <|> v2) p
 
 partyFilter :: PartyFilter -> Identity -> BS.ByteString
 partyFilter PartyFilter{..} ident = BS.concat
@@ -161,7 +172,8 @@ partyFilter PartyFilter{..} ident = BS.concat
   , withq partyFilterInstitution (\i -> if i then " AND account.id IS NULL" else " AND account.password IS NOT NULL")
   , withq partyFilterAuthorize (\a -> let i = pgSafeLiteral a in " AND party.id <> " <> i <> " AND id NOT IN (SELECT child FROM authorize WHERE parent = " <> i <> " UNION SELECT parent FROM authorize WHERE child = " <> i <> ")")
   , withq partyFilterVolume (\v -> " AND id NOT IN (SELECT party FROM volume_access WHERE volume = " <> pgSafeLiteral (volumeId v) <> ")")
-  , " ORDER BY name, prename"
+  , " ORDER BY name, prename "
+  , paginateSQL partyFilterPaginate
   ]
   where
   withq v f = maybe "" f v
@@ -170,11 +182,11 @@ partyFilter PartyFilter{..} ident = BS.concat
     | showEmail ident = "(COALESCE(prename || ' ', '') || name || COALESCE(' ' || email, ''))"
     | otherwise = "(COALESCE(prename || ' ', '') || name)"
 
-findParties :: (MonadHasIdentity c m, MonadDB m) => PartyFilter -> Int32 -> Int32 -> m [Party]
-findParties pf limit offset = do
+findParties :: (MonadHasIdentity c m, MonadDB m) => PartyFilter -> m [Party]
+findParties pf = do
   ident <- peek
   dbQuery $ unsafeModifyQuery $(selectQuery (selectParty 'ident) "")
-    (<> partyFilter pf ident <> " LIMIT " <> pgLiteralRep limit <> " OFFSET " <> pgLiteralRep offset)
+    (<> partyFilter pf ident)
 
 lookupAvatar :: MonadDB m => Id Party -> m (Maybe Asset)
 lookupAvatar p =

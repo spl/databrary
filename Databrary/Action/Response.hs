@@ -68,7 +68,7 @@ instance ResponseData TL.Text where
 
 instance ResponseData JSON.Value where
   response s h =
-    response s ((hContentType, "text/json;charset=utf-8") : h) . JSON.encode
+    response s ((hContentType, "application/json") : h) . JSON.encode
 
 instance ResponseData JSON.Object where
   response s h = response s h . JSON.Object

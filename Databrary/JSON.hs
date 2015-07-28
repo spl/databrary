@@ -11,6 +11,7 @@ module Databrary.JSON
   , (.++)
   , (.!)
   , (.!?)
+  , eitherJSON
   , Query
   , jsonQuery
   , escapeByteString
@@ -35,7 +36,6 @@ import qualified Data.Traversable as Trav
 import qualified Data.Vector as V
 import Data.Word (Word8)
 import Network.HTTP.Types (Query)
-import Network.URI (URI)
 
 object :: [Pair] -> Object
 object = HM.fromList
@@ -65,11 +65,15 @@ a .! i = maybe (fail $ "index " ++ show i ++ " out of range") parseJSON $ a V.!?
 (.!?) :: FromJSON a => Array -> Int -> Parser (Maybe a)
 a .!? i = Trav.mapM parseJSON $ a V.!? i
 
+resultToEither :: Result a -> Either String a
+resultToEither (Error e) = Left e
+resultToEither (Success a) = Right a
+
+eitherJSON :: FromJSON a => Value -> Either String a
+eitherJSON = resultToEither . fromJSON
+
 instance ToJSON BS.ByteString where
   toJSON = String . TE.decodeUtf8
-
-instance ToJSON URI where
-  toJSON = toJSON . show
 
 instance ToJSON C.Value where
   toJSON (C.Bool b) = Bool b

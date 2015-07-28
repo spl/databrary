@@ -1,6 +1,7 @@
 {-# LANGUAGE CPP, OverloadedStrings #-}
 module Databrary.Controller.Angular
-  ( jsURL
+  ( JSOpt(..)
+  , jsURL
   , angular
   ) where
 
@@ -8,9 +9,10 @@ import Control.Arrow (second)
 import Control.Monad (when)
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import qualified Data.ByteString.Builder as BSB
+import Data.Default.Class (Default(..))
 import qualified Data.Foldable as Fold
-import Data.Maybe (fromMaybe)
-import Network.HTTP.Types (hUserAgent)
+import Data.Monoid (Monoid(..))
+import Network.HTTP.Types (hUserAgent, QueryLike(..))
 import qualified Network.Wai as Wai
 import qualified Text.Regex.Posix as Regex
 
@@ -24,27 +26,52 @@ import Databrary.HTTP (encodePath')
 import Databrary.HTTP.Request
 import Databrary.View.Angular
 
-jsURL :: Maybe Bool -> Wai.Request -> (Maybe Bool, BSB.Builder)
+data JSOpt
+  = JSDisabled
+  | JSDefault
+  | JSEnabled
+  deriving (Eq, Ord)
+
+instance Default JSOpt where
+  def = JSDefault
+
+instance Monoid JSOpt where
+  mempty = JSDefault
+  mappend JSDefault j = j
+  mappend j _ = j
+
+instance QueryLike JSOpt where
+  toQuery JSDisabled = [("js", Just "0")]
+  toQuery JSDefault = []
+  toQuery JSEnabled = [("js", Just "1")]
+
+jsEnable :: Bool -> JSOpt
+jsEnable False = JSDisabled
+jsEnable True = JSEnabled
+
+jsURL :: JSOpt -> Wai.Request -> (JSOpt, BSB.Builder)
 jsURL js req =
-  second (encodePath' (Wai.pathInfo req) . maybe id (\v -> (("js", Just (if v then "1" else "0")) :)) js)
+  second (encodePath' (Wai.pathInfo req) . (toQuery js ++))
   $ unjs $ Wai.queryString req where
-  unjs [] = (Nothing, [])
-  unjs (("js",v):q) = (Just (boolParameterValue v), snd $ unjs q)
+  unjs [] = (JSDefault, [])
+  unjs (("js",v):q) = (jsEnable (boolParameterValue v), snd $ unjs q)
   unjs (x:q) = second (x:) $ unjs q
 
 browserBlacklist :: Regex.Regex
 browserBlacklist = Regex.makeRegex
   ("^Mozilla/.* \\(.*\\<(MSIE [0-9]\\.[0-9]|AppleWebKit/.* Version/[0-5]\\..* Safari/)" :: String)
 
-angularEnable :: Wai.Request -> Bool
-angularEnable = not . Fold.any (Regex.matchTest browserBlacklist) . lookupRequestHeader hUserAgent
+angularEnable :: JSOpt -> Wai.Request -> Bool
+angularEnable JSDisabled = const False
+angularEnable JSDefault = not . Fold.any (Regex.matchTest browserBlacklist) . lookupRequestHeader hUserAgent
+angularEnable JSEnabled = const True
 
 angular :: (MonadIO m, MonadAuthAction q m) => m ()
 angular = do
   auth <- peek
   let req = view auth
-      (js, nojs) = jsURL (Just False) req
-      js' = fromMaybe (angularEnable req) js
+      (js, nojs) = jsURL JSDisabled req
+      js' = angularEnable js req
   when js' $ do
     debug <-
 #ifdef DEVEL

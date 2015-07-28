@@ -16,6 +16,7 @@ module Databrary.View.Form
   ) where
 
 import Control.Applicative ((<|>))
+import Control.Monad (when)
 import Control.Monad.Reader (reader)
 import Control.Monad.Trans.Class (lift)
 import Control.Monad.Trans.Control (liftWith)
@@ -26,6 +27,7 @@ import Data.Maybe (fromMaybe)
 import Data.Monoid (mempty)
 import qualified Data.Text as T
 import Data.Time.Format (formatTime)
+import Network.HTTP.Types (methodGet)
 import qualified Text.Blaze.Internal as M
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as HA
@@ -38,17 +40,17 @@ import Databrary.Model.Time
 import Databrary.Model.Token
 import Databrary.Model.Identity
 import Databrary.Action
+import Databrary.HTTP.Route (routeMethod)
 import Databrary.HTTP.Form
 import Databrary.HTTP.Form.Errors
 import Databrary.HTTP.Form.View
 import Databrary.View.Html
 import Databrary.View.Template
 
+import {-# SOURCE #-} Databrary.Controller.Angular
+
 type FormHtmlM f = FormViewT f M.MarkupM
 type FormHtml f = FormHtmlM f ()
-
-liftFormHtml :: (M.MarkupM FormErrors -> H.Html) -> FormHtml f -> FormHtml f
-liftFormHtml h f = liftWith $ \run -> h (snd <$> run f)
 
 pathId :: FormHtmlM f H.AttributeValue
 pathId = reader (byteStringValue . formPathBS)
@@ -126,9 +128,9 @@ inputSelect val choices ref dat = H.select
     H.!? (Fold.any (v ==) (dat <|> val), HA.selected "selected")
     $ H.toHtml c) choices
 
-inputEnum :: forall a . DBEnum a => Maybe a -> Field
-inputEnum val =
-  inputSelect (bshow <$> val) $ map (\(x, v) -> (bshow (x :: a), v)) pgEnumValues
+inputEnum :: forall a . DBEnum a => Bool -> Maybe a -> Field
+inputEnum req val =
+  inputSelect (bshow <$> val) $ (if req then id else (("", "") :)) $ map (\(x, v) -> (bshow (x :: a), v)) pgEnumValues
   where bshow = BSC.pack . show . fromEnum
 
 inputDate :: Maybe Date -> Field
@@ -154,11 +156,12 @@ inputHidden val ref dat = H.input
 csrfForm :: AuthRequest -> FormHtml f
 csrfForm = lift . foldIdentity mempty (\s -> inputHidden (byteStringValue $ sessionVerf s) "csverf" Nothing) . view
 
-htmlForm :: T.Text -> AppRoute a -> a -> AuthRequest -> FormHtml f -> FormHtml f
-htmlForm title act arg req = liftFormHtml $ \form ->
-  htmlTemplate req (Just title) $ \_ ->
-    actionForm act arg $ do
-      err <- form
+htmlForm :: T.Text -> AppRoute a -> a -> FormHtml f -> (JSOpt -> H.Html) -> AuthRequest -> FormHtml f
+htmlForm title act arg form body req = liftWith $ \run -> do
+  htmlTemplate req (Just title) $ \js -> do
+    actionForm act arg js $ do
+      (_, err) <- run $ when (routeMethod act /= methodGet) (csrfForm req) >> form
       errorLists $ allFormErrors err
       H.input
         H.! HA.type_ "submit"
+    body js

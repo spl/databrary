@@ -1,6 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 module Databrary.Model.Transcode.SQL
-  ( selectTranscode
+  ( selectOrigTranscode
+  , selectTranscode
   ) where
 
 import qualified Data.ByteString as BS
@@ -20,18 +21,25 @@ import Databrary.Model.Asset.SQL
 import Databrary.Model.Segment
 import Databrary.Model.Transcode.Types
 
-makeTranscode :: Segment -> [Maybe String] -> Maybe Timestamp -> Maybe Int32 -> Maybe BS.ByteString -> SiteAuth -> (Volume -> Asset) -> (Volume -> Asset) -> (Permission -> Volume) -> Transcode
-makeTranscode s f t p l u a o vp =
-  Transcode (a v) u (o v) s (map (fromMaybe (error "NULL transcode options")) f) t p l
-  where v = vp PermissionADMIN
+makeOrigTranscode :: Segment -> [Maybe String] -> Maybe Timestamp -> Maybe Int32 -> Maybe BS.ByteString -> SiteAuth -> (Volume -> Asset) -> Asset -> Transcode
+makeOrigTranscode s f t p l u a o =
+  Transcode (a $ assetVolume o) u o s (map (fromMaybe (error "NULL transcode options")) f) t p l
 
-selectTranscode :: Selector -- ^ @'Transcode'@
-selectTranscode = selectJoin 'id
-  [ selectColumns 'makeTranscode "transcode" ["segment", "options", "start", "process", "log"]
+selectOrigTranscode :: Selector -- ^ @'Asset' -> 'Transcode'@
+selectOrigTranscode = selectJoin 'id
+  [ selectColumns 'makeOrigTranscode "transcode" ["segment", "options", "start", "process", "log"]
   , joinOn "transcode.owner = party.id"
     selectSiteAuth
   , joinOn "transcode.asset = asset.id"
     selectVolumeAsset
+  ]
+
+makeTranscode :: (Asset -> Transcode) -> (Volume -> Asset) -> (Permission -> Volume) -> Transcode
+makeTranscode t o vp = t $ o $ vp PermissionADMIN
+
+selectTranscode :: Selector -- ^ @'Transcode'@
+selectTranscode = selectJoin 'makeTranscode
+  [ selectOrigTranscode
   , joinOn "transcode.orig = orig.id"
     $ selectVolumeAsset `fromAlias` "orig"
   , selectMap (`TH.AppE` TH.ListE [])

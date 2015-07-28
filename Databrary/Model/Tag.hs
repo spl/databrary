@@ -46,9 +46,9 @@ addTag n =
   dbQuery1' $ (`Tag` n) <$> [pgSQL|!SELECT get_tag(${n})|]
 
 addTagUse :: MonadDB m => TagUse -> m Bool
-addTagUse t =
-  either (const False) ((0 <) . fst) <$> dbTryQuery (guard . isExclusionViolation)
-    (if tagKeyword t
+addTagUse t = either (const False) id <$> do
+  dbTryJust (guard . isExclusionViolation)
+    $ dbExecute1 (if tagKeyword t
       then $(insertTagUse True 't)
       else $(insertTagUse False 't))
 

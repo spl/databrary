@@ -9,13 +9,15 @@
           <span class="icon volume"></span>
           <a ng-href="{{::volume.route()}}" ng-bind="::volume.name"></a>
         </h1>
+        <!--
         <div ng-if="::volume.accessPreset != null" class="volume-access-status">
           <span class="icon" ng-class="::'access'+{{::volume.accessPreset}}"></span>
         </div>
+        -->
 
         <div class="volume-list-investigators">
           <volume-owners></volume-owners>
-          <span class="year" ng-if="::volume.citation && volume.citation.year && !profile" ng-bind="::' (' + volume.citation.year + ')'"></span>
+          <span class="year" ng-if="::volume.citation && volume.citation.year" ng-bind="::' (' + volume.citation.year + ')'"></span>
         </div>
 
         <div class="volume-list-body" ng-bind="::volume.body.replace('\n', ' ') | truncate:200"></div>

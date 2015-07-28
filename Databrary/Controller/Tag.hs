@@ -26,7 +26,7 @@ _tagNameForm :: (Functor m, Monad m) => DeformT f m TagName
 _tagNameForm = deformMaybe' "Invalid tag name." . validateTag =<< deform
 
 queryTags :: AppRoute TagName
-queryTags = action GET (pathJSON >/> "tags" >/> PathDynamic) $ \t ->
+queryTags = action GET (pathJSON >/> "tags" >/> PathParameter) $ \t ->
   okResponse [] . toJSON . map tagName =<< findTags t
 
 tagResponse :: API -> TagUse -> AuthAction

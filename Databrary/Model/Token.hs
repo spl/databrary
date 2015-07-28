@@ -60,7 +60,7 @@ lookupUpload tok = do
   auth <- peek
   dbQuery1 $ fmap ($ auth) $(selectQuery selectUpload "$!WHERE upload.token = ${tok} AND expires > CURRENT_TIMESTAMP AND upload.account = ${view auth :: Id Party}")
 
-createToken :: (MonadHasService c m, MonadDB m) => (Id Token -> DBTransaction a) -> m a
+createToken :: (MonadHasService c m, MonadDB m) => (Id Token -> DBM a) -> m a
 createToken insert = do
   e <- peek
   let loop = do

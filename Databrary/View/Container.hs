@@ -1,10 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Databrary.View.Container
-  ( htmlContainerForm
+  ( htmlContainerEdit
   ) where
 
 import Data.Maybe (fromMaybe)
-import Data.Monoid ((<>))
+import Data.Monoid ((<>), mempty)
 
 import Databrary.Action.Auth
 import Databrary.Action
@@ -15,15 +15,12 @@ import Databrary.View.Form
 
 import {-# SOURCE #-} Databrary.Controller.Container
 
-htmlContainerForm :: Either Volume Container -> AuthRequest -> FormHtml f
-htmlContainerForm targ req = f req $ do
-  csrfForm req
+htmlContainerForm :: Maybe Container -> FormHtml f
+htmlContainerForm cont = do
   field "name" $ inputText (containerName =<< cont)
   field "date" $ inputDate (containerDate =<< cont)
-  field "release" $ inputEnum (containerRelease =<< cont)
-  where
-  cont = either (const Nothing) Just targ
-  f = either
-    (\v -> htmlForm "Create container" createContainer (HTML, volumeId v))
-    (\c -> htmlForm ("Edit container " <> fromMaybe "" (containerName c)) postContainer (HTML, containerSlotId $ containerId c))
-    targ
+  field "release" $ inputEnum False (containerRelease =<< cont)
+
+htmlContainerEdit :: Either Volume Container -> AuthRequest -> FormHtml f
+htmlContainerEdit (Left v)  = htmlForm "Create container" createContainer (HTML, volumeId v) (htmlContainerForm Nothing) (const mempty)
+htmlContainerEdit (Right c) = htmlForm ("Edit container " <> fromMaybe "" (containerName c)) postContainer (HTML, containerSlotId $ containerId c) (htmlContainerForm $ Just c) (const mempty)

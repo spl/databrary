@@ -4,6 +4,7 @@ module Databrary.Controller.Register
   , postPasswordReset
   , viewRegister
   , postRegister
+  , resendInvestigator
   ) where
 
 import qualified Data.ByteString.Builder as BSB
@@ -17,6 +18,8 @@ import Databrary.Action
 import Databrary.Action.Auth
 import Databrary.Service.Mail
 import Databrary.Static.Fillin
+import Databrary.Model.Permission
+import Databrary.Model.Id
 import Databrary.Model.Party
 import Databrary.Model.Identity
 import Databrary.Model.Token
@@ -24,6 +27,7 @@ import Databrary.HTTP.Form.Deform
 import Databrary.HTTP.Path.Parser
 import Databrary.Controller.Paths
 import Databrary.Controller.Form
+import Databrary.Controller.Permission
 import Databrary.Controller.Party
 import Databrary.Controller.Token
 import Databrary.Controller.Angular
@@ -79,6 +83,14 @@ postRegister = action POST (pathAPI </< "user" </< "register") $ \api -> without
   date <- peek
   focusIO $ staticSendInvestigator (view auth) date
   okResponse [] $ "Your confirmation email has been sent to '" <> accountEmail reg <> "'."
+
+resendInvestigator :: AppRoute (Id Party)
+resendInvestigator = action POST (pathHTML >/> pathId </< "investigator") $ \i -> withAuth $ do
+  checkMemberADMIN
+  p <- getParty (Just PermissionREAD) (TargetParty i)
+  date <- peek
+  focusIO $ staticSendInvestigator p date
+  okResponse [] ("sent" :: String)
 
 viewPasswordReset :: AppRoute ()
 viewPasswordReset = action GET (pathHTML </< "user" </< "password") $ \() -> withoutAuth $ do

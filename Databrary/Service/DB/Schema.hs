@@ -5,6 +5,7 @@ module Databrary.Service.DB.Schema
 
 import Control.Applicative ((<$>))
 import Control.Arrow (first, second)
+import Control.Exception.Lifted (tryJust)
 import Control.Monad (guard)
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import qualified Data.ByteString.Lazy as BSL
@@ -36,7 +37,7 @@ confirm s = liftIO $ do
     ('Y':_) -> return ()
     _ -> schemaError "Schema update aborted."
 
-sqlFile :: (MonadDB m, MonadIO m) => FilePath -> m ()
+sqlFile :: FilePath -> DBM ()
 sqlFile f = do
   sql <- liftIO $ BSL.readFile f
   dbExecute_ sql
@@ -57,29 +58,30 @@ diffs xa@(x:xl) ya@(y:yl) = case compare x y of
 checkDNE :: PGError -> Maybe ()
 checkDNE = (guard . ("42P01" ==) . pgErrorCode)
 
-updateDBSchema :: (MonadDB m, MonadIO m) => FilePath -> m ()
+updateDBSchema :: FilePath -> DBM ()
 updateDBSchema dir = do
   sl <- maybe (schemaError $ "Base schema " ++ show base ++ " not found") return
     =<< schemaList <$> liftIO (getDirectoryContents dir)
 
-  lr <- dbTryQuery checkDNE
+  lr <- tryJust checkDNE $ dbQuery
     $ pgDecodeRep . head <$> rawPGSimpleQuery "SELECT name FROM schema ORDER BY name"
   dl <- case lr of
     Left _ -> do
-      pr <- dbTryQuery checkDNE
+      pr <- tryJust checkDNE $ dbQuery1'
         $ pgDecodeRep . head <$> rawPGSimpleQuery "SELECT max(id) FROM play_evolutions WHERE state = 'applied'"
       case pr of
         Left _ -> do
           confirm "No schema found. Initialize?"
           sqlFile base
-        Right (_, [n]) | n == playEvolution -> do
-          confirm "Migrate from play to schema?"
-          -- dbExecute_ "DROP TABLE play_evolutions"
-        Right (_, l) ->
-          schemaError ("Play evolutions found but not up to date (expecting " ++ show playEvolution ++ " got " ++ show l ++ ")")
+        Right n
+          | n == playEvolution ->
+            confirm "Migrate from play to schema?"
+            -- dbExecute_ "DROP TABLE play_evolutions"
+          | otherwise ->
+            schemaError ("Play evolutions found but not up to date (expecting " ++ show playEvolution ++ " got " ++ show n ++ ")")
       dbExecute_ $ "CREATE TABLE schema (name varchar(64) Primary Key, applied timestamptz NOT NULL Default now())"
       return []
-    Right (_, l) -> return l
+    Right l -> return l
 
   case diffs sl dl of
     (l, []) -> mapM_ apply l

@@ -4,6 +4,7 @@ module Databrary.Model.RecordSlot
   , lookupRecordSlots
   , lookupSlotRecords
   , lookupContainerRecords
+  , lookupRecordSlotRecords
   , lookupVolumeContainersRecords
   , lookupVolumeContainersRecordIds
   , moveRecordSlot
@@ -46,6 +47,10 @@ lookupSlotRecords (Slot c s) =
 lookupContainerRecords :: (MonadDB m) => Container -> m [RecordSlot]
 lookupContainerRecords = lookupSlotRecords . containerSlot
 
+lookupRecordSlotRecords :: (MonadDB m) => Record -> Slot -> m [RecordSlot]
+lookupRecordSlotRecords r (Slot c s) =
+  dbQuery $ ($ c) . ($ r) <$> $(selectQuery selectRecordContainerSlotRecord "WHERE slot_record.record = ${recordId r} AND slot_record.container = ${containerId c} AND slot_record.segment && ${s}")
+
 lookupVolumeContainersRecords :: (MonadDB m) => Volume -> m [(Container, [RecordSlot])]
 lookupVolumeContainersRecords v =
   map (second catMaybes) . groupTuplesBy ((==) `on` containerId) <$>
@@ -59,12 +64,12 @@ lookupVolumeContainersRecordIds v =
 moveRecordSlot :: (MonadAudit c m) => RecordSlot -> Segment -> m Bool
 moveRecordSlot rs@RecordSlot{ recordSlot = s@Slot{ slotSegment = src } } dst = do
   ident <- getAuditIdentity
-  either (const False) ((0 <) . fst)
+  either (const False) id
     <$> case (Range.isEmpty (segmentRange src), Range.isEmpty (segmentRange dst)) of
-    (True,  True) -> return $ Right (0, [])
-    (False, True) -> Right <$> dbRunQuery $(deleteSlotRecord 'ident 'rs)
-    (True,  False) -> dbTryQuery err $(insertSlotRecord 'ident 'rd)
-    (False, False) -> dbTryQuery err $(updateSlotRecord 'ident 'rs 'dst)
+    (True,  True) -> return $ Right False
+    (False, True) -> Right <$> dbExecute1 $(deleteSlotRecord 'ident 'rs)
+    (True,  False) -> dbTryJust err $ dbExecute1 $(insertSlotRecord 'ident 'rd)
+    (False, False) -> dbTryJust err $ dbExecute1 $(updateSlotRecord 'ident 'rs 'dst)
   where
   rd = rs{ recordSlot = s{ slotSegment = dst } }
   err = guard . isExclusionViolation

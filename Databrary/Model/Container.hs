@@ -79,7 +79,7 @@ removeContainer c = do
   top <- dbQuery1' [pgSQL|SELECT id FROM container WHERE volume = ${volumeId $ containerVolume c} AND top ORDER BY id LIMIT 1|]
   if top == containerId c
     then return False
-    else isRight <$> dbTryQuery (guard . isForeignKeyViolation) $(deleteContainer 'ident 'c)
+    else isRight <$> dbTryJust (guard . isForeignKeyViolation) (dbExecute1 $(deleteContainer 'ident 'c))
 
 formatContainerDate :: Container -> Maybe String
 formatContainerDate c = formatTime defaultTimeLocale fmt <$> containerDate c where

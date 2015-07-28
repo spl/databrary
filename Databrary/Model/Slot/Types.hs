@@ -18,7 +18,7 @@ import Databrary.Model.Container.Types
 data SlotId = SlotId
   { slotContainerId :: !(Id Container)
   , slotSegmentId :: !Segment
-  } deriving (Show)
+  } deriving (Eq, Show)
 
 type instance IdType Slot = SlotId
 
