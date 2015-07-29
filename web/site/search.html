@@ -46,8 +46,8 @@
             <h1 class="search-volume-result-title"><a ng-href="volume/{{result.volume_id_i}}">{{result.title_t}}</a></h1>
 
             <span ng-bind="formVolumeResult(result)"></span>
-            <span ng-if="result.volume_keywords_ss.length > 0" class="inline-block"><br>Keywords: </span>
-            <ul class="inline-block comma">
+            <ul class="inline-block comma search-volume-result-keywords">
+              <li ng-if="result.volume_keywords_ss.length > 0">Keywords: </li>
               <li ng-repeat="k in result.volume_keywords_ss">{{k}}</li>
             </ul>
 

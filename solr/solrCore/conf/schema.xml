@@ -290,12 +290,18 @@
 
    <copyField source="*_s" dest="text"/>
    <copyField source="*_t" dest="text"/>
+    <copyField source="*_ss" dest="text"/>
+    <copyField source="*_ts" dest="text"/>
 
     <copyField source="*_s" dest="text_en"/>
+    <copyField source="*_ss" dest="text_en"/>
+    <copyField source="*_ts" dest="text_en"/>
     <copyField source="*_t" dest="text_en"/>
 
     <copyField source="*_s" dest="text_exact"/>
+    <copyField source="*_ss" dest="text_exact"/>
     <copyField source="*_t" dest="text_exact"/>
+    <copyField source="*_ts" dest="text_exact"/>
    <!-- Create a string version of author for faceting -->
    <!--<copyField source="author" dest="author_s"/>-->
 
