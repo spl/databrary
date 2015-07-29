@@ -15,6 +15,11 @@
       <select multiple="multiple" ng-model="selectedFilter" ng-options="s for s in filterDisplay" ng-click="filterBoxClick()"></select>
       <label>Age Range</label>
       <input type="range" min=0 max=1000 step=1></input>
+      <select>
+        <option>days</option>
+        <option>months</option>
+        <option>years</option>
+      </select>
       <!-- <select multiple="multiple" size="10" ng-model="selectedVolume" ng-options="result.title_t for result in results.docs"></select> -->
     </div> 
     <div class="col-desktop-12 col-tablet-7 col-mobile-6">     
