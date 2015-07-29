@@ -42,7 +42,11 @@
         <ul class="row search-volume-results">
           <li ng-repeat="result in volumeResults.docs">
             <!-- This is where we return what we want-->
-            <h1 class="search-volume-result-title"><a ng-href="volume/{{result.volume_id_i}}">{{result.title_t}}</a></h1>
+            <h1 class="search-volume-result-title">
+              <span ng-if="retrievedContainers[result.volume_id_i] === undefined" ng-click="searchContainers(result.volume_id_i)" class="icon radio"></span>
+              <span ng-if="retrievedContainers[result.volume_id_i] !== undefined" ng-click="clearContainers(result.volume_id_i)" class="icon radio-selected"></span>
+              <a ng-href="volume/{{result.volume_id_i}}">{{result.title_t}}</a>
+            </h1>
 
             <div ng-bind="formVolumeResult(result)"></div>
 
@@ -52,11 +56,6 @@
                 <li ng-repeat="k in result.volume_keywords_ss">{{k}}</li>
               </ul>
             </div>
-
-            <button class="neutral mini">
-              <span ng-if="retrievedContainers[result.volume_id_i] === undefined" ng-click="searchContainers(result.volume_id_i)">Expand</span>
-              <span ng-if="retrievedContainers[result.volume_id_i] !== undefined" ng-click="clearContainers(result.volume_id_i)">Hide</span>
-            </button>
 
             <span ng-if="retrievedContainers[result.volume_id_i] !== undefined">
               <!-- Keywords: <span ng-repeat="k in result.volume_keywords_ss">{{k + ", "}}</span><br> -->
