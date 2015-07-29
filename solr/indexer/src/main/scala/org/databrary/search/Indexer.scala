@@ -2,11 +2,11 @@ package org.databrary.search
 
 import java.io.{File, PrintWriter}
 
-import org.joda.time.{DateTimeZone, Duration, DateTime}
-import org.json4s.{JsonAST, NoTypeHints}
-import org.json4s.native.Serialization
-import org.json4s.native.Serialization.{read, write}
+import org.joda.time.{DateTime, Duration}
 import org.json4s.JsonDSL._
+import org.json4s.native.Serialization
+import org.json4s.native.Serialization.write
+import org.json4s.{JsonAST, NoTypeHints}
 
 
 /**
@@ -19,13 +19,53 @@ object Indexer {
 
   implicit val formats = Serialization.formats(NoTypeHints)
 
-  /*
-  Case class definitions for working with the database. These let us intake information coming back from the DB
-  as objects, which lets us easily create the JSON documents later.
-   */
+  object SQLParty extends SQLSyntaxSupport[SQLParty] {
+    def apply(rs: WrappedResultSet): SQLParty = new SQLParty(
+      rs.long("id"), rs.string("name"), rs.string("prename"), rs.string("affiliation"))
+  }
 
-  def convertVolumeIntoJson(vol: Volume): Unit = {
+  object SQLContainer extends SQLSyntaxSupport[SQLContainer] {
+    def apply(rs: WrappedResultSet): SQLContainer = new SQLContainer(
+      rs.long("id"), rs.long("volume"), rs.string("name"),
+      if (rs.dateOpt("date").isDefined) Some(rs.date("date").toJodaDateTime) else None, rs.stringOpt("release")
+    )
+  }
 
+  object SQLContainerText extends SQLSyntaxSupport[SQLContainerText] {
+    def apply(rs: WrappedResultSet): SQLContainerText = new SQLContainerText(
+      rs.long("id"), rs.longOpt("metric"), rs.stringOpt("txt")
+    )
+  }
+
+  object SQLVolume extends SQLSyntaxSupport[SQLVolume] {
+    def apply(rs: WrappedResultSet): SQLVolume = new SQLVolume(
+      // TODO add volume owners here
+      rs.long("id"), rs.string("name"), rs.string("body"), rs.string("alias"), rs.stringOpt("citation"), rs.intOpt("year"), rs.stringOpt("url"), rs.arrayOpt("owners"))
+  }
+
+  object SQLVolumeText extends SQLSyntaxSupport[SQLVolumeText] {
+    def apply(rs: WrappedResultSet): SQLVolumeText = new SQLVolumeText(
+      rs.long("volume"), rs.string("text"))
+  }
+
+  object SQLExcerpt extends SQLSyntaxSupport[SQLRecord] {
+    def apply(rs: WrappedResultSet): SQLExcerpt = new SQLExcerpt(
+      rs.long("asset"), rs.string("segment"), rs.stringOpt("release")
+    )
+  }
+
+  object SQLMetric extends SQLSyntaxSupport[SQLMetric] {
+    def apply(rs: WrappedResultSet): SQLMetric = new SQLMetric(
+      rs.long("id"), rs.string("name"), rs.stringOpt("assumed"), rs.arrayOpt("options")
+    )
+  }
+
+  object ResultsContainer extends SQLSyntaxSupport[Sentence] {
+    def apply(rs: WrappedResultSet): ResultsContainer = new ResultsContainer(
+      rs.long("volumeId"), rs.long("containerId"), rs.long("recordId"), rs.string("volumeName"), rs.string("body"), rs.string("alias"),
+      rs.string("containerName"), rs.stringOpt("containerDate"), rs.stringOpt("datum_date"), rs.doubleOpt("datum_number"),
+      rs.stringOpt("datum_text"), rs.stringOpt("segment")
+    )
   }
 
   def main(args: Array[String]) {
@@ -41,75 +81,16 @@ object Indexer {
 
     // Database information.
     ConnectionPool.singleton(s"jdbc:postgresql://$dbHost:$dbPort/$dbName", dbUser, dbPw)
-
-
-
-    object SQLParty extends SQLSyntaxSupport[SQLParty] {
-      def apply(rs: WrappedResultSet): SQLParty = new SQLParty(
-        rs.long("id"), rs.string("name"), rs.string("prename"), rs.string("affiliation"))
-    }
-
-    object SQLContainer extends SQLSyntaxSupport[SQLContainer] {
-      def apply(rs: WrappedResultSet): SQLContainer = new SQLContainer(
-        rs.long("id"), rs.long("volume"), rs.string("name"),
-        if (rs.dateOpt("date").isDefined) Some(rs.date("date").toJodaDateTime) else None, rs.stringOpt("release")
-      )
-    }
-
-    object SQLContainerText extends SQLSyntaxSupport[SQLContainerText] {
-      def apply(rs: WrappedResultSet): SQLContainerText = new SQLContainerText(
-        rs.long("id"), rs.longOpt("metric"), rs.stringOpt("txt")
-      )
-    }
-
-    object SQLVolume extends SQLSyntaxSupport[SQLVolume] {
-      def apply(rs: WrappedResultSet): SQLVolume = new SQLVolume(
-        rs.long("id"), rs.string("name"), rs.string("body"), rs.string("alias"), rs.stringOpt("citation"), rs.intOpt("year"), rs.stringOpt("url"))
-    }
-
-    object SQLVolumeText extends SQLSyntaxSupport[SQLVolumeText] {
-      def apply(rs: WrappedResultSet): SQLVolumeText = new SQLVolumeText(
-        rs.long("volume"), rs.string("text"))
-    }
-
-    object SQLRecord extends SQLSyntaxSupport[SQLRecord] {
-      def apply(rs: WrappedResultSet): SQLRecord = new SQLRecord(
-        rs.long("record"), rs.long("container"), if (rs.dateOpt("measureDate").isDefined) Some(rs.date("measureDate").toJodaDateTime) else None,
-        if (rs.dateOpt("measureDate").isDefined && rs.dateOpt("containerDate").isDefined)
-          Some(new Duration(rs.date("measureDate").toJodaDateTime, rs.date("containerDate").toJodaDateTime))
-        else None)
-    }
-
-    object SQLExcerpt extends SQLSyntaxSupport[SQLRecord] {
-      def apply(rs: WrappedResultSet): SQLExcerpt = new SQLExcerpt(
-        rs.long("asset"), rs.string("segment"), rs.stringOpt("release")
-      )
-    }
-
-    object SQLMetric extends SQLSyntaxSupport[SQLMetric] {
-      def apply(rs: WrappedResultSet): SQLMetric = new SQLMetric(
-        rs.long("id"), rs.string("name"), rs.stringOpt("assumed"), rs.arrayOpt("options")
-      )
-    }
-
-    object ResultsContainer extends SQLSyntaxSupport[Sentence] {
-      def apply(rs: WrappedResultSet): ResultsContainer = new ResultsContainer(
-        rs.long("volumeId"), rs.long("containerId"), rs.long("recordId"), rs.string("volumeName"), rs.string("body"), rs.string("alias"),
-        rs.string("containerName"), rs.stringOpt("containerDate"), rs.stringOpt("datum_date"), rs.doubleOpt("datum_number"),
-        rs.stringOpt("datum_text"), rs.stringOpt("segment")
-      )
-    }
-
-
     /*
     Extract all of the volumes from the DB
      */
     val sQLVolumes = sql"""
          SELECT id, name, body, alias, volume_citation.head AS citation, volume_citation.url AS url,
-         volume_citation.year AS year
+         volume_citation.year AS year, owners
          FROM volume
          LEFT JOIN volume_citation ON volume.id = volume_citation.volume
          LEFT JOIN volume_access ON volume.id = volume_access.volume
+         LEFT JOIN volume_owners ON volume.id = volume_owners.volume
          WHERE volume_access.children > 'NONE' AND volume_access.party = -1 AND volume.id > 0
     """.map(x => SQLVolume(x)).list().apply().map(x => x.volumeId -> x).toMap
 
@@ -221,11 +202,20 @@ object Indexer {
     /*
     These are methods that extract each type of segment into scala objects.
      */
+
     object SQLSegmentTag extends SQLSyntaxSupport[SQLSegmentTag] {
       // We need a lookup function for getting the other information that we need out of this thing
       def apply(rs: WrappedResultSet): SQLSegmentTag = new SQLSegmentTag(
         sQLContainerVolumeLookup(rs.long("container").toInt).volumeId, rs.long("container"), rs.string("segment"), rs.stringOpt("tag")
       )
+    }
+
+    object SQLRecord extends SQLSyntaxSupport[SQLRecord] {
+      def apply(rs: WrappedResultSet): SQLRecord = new SQLRecord(
+        rs.long("record"), rs.long("container"), sQLContainerVolumeLookup(rs.long("container")).volumeId, if (rs.dateOpt("measureDate").isDefined) Some(rs.date("measureDate").toJodaDateTime) else None,
+        if (rs.dateOpt("measureDate").isDefined && rs.dateOpt("containerDate").isDefined)
+          Some(new Duration(rs.date("measureDate").toJodaDateTime, rs.date("containerDate").toJodaDateTime))
+        else None)
     }
 
     /*
@@ -260,6 +250,7 @@ object Indexer {
     //
     //    // We now want to go a step further and get all of the segments, i.e., all of the records/measures
 
+    // TODO bring in person here
     val sQLSegmentTags = sql"""
       SELECT container, segment, tag.name AS tag FROM tag_use, tag WHERE tag = id
       """.map(x => SQLSegmentTag(x)).list().apply().filter(x => x.volumeId > 0)
@@ -347,19 +338,31 @@ object Indexer {
   }
 
   def createVolumeDocument(vol: SQLVolume) = {
+    val (ownerIds, ownerNames) = if (vol.owners.isDefined) {
+      val ids = Some(vol.owners.get.getArray().asInstanceOf[Array[String]].map(x => x.split(":")(0).toInt).toSeq)
+      val names = Some(vol.owners.get.getArray().asInstanceOf[Array[String]].map(x => x.split(":")(1)).toSeq)
+      (ids, names)
+    } else {
+      (None, None)
+    }
+
     new JsonDocument(content_type = ContentTypes.VOLUME, volume_id_i = Some(vol.volumeId.toInt),
       abs_t = Some(vol.abs), title_t = Some(vol.title), alias_s = Some(vol.alias), citation_t = vol.cite,
       citation_url_s = vol.citeUrl, citation_year_i = vol.citeYear, volume_has_excerpt_b = Some(vol.hasExcerpt),
       volume_has_sessions_b = Some(vol.hasSessions),
       volume_keywords_ss = if(vol.keywords != null) Some(("boost" -> 3.0 ) ~ ("value" -> Option(vol.keywords))) else None,
       volume_tags_ss = if(vol.tags != null) Some(("boost" -> 2.0 ) ~ ("value" -> Option(vol.tags))) else None,
-      volume_all_text_t = Option(vol.allText)
+      volume_all_text_t = Option(vol.allText),
+      volume_owner_ids_is = ownerIds,
+      volume_owner_names_ss = ownerNames
 
     )
   }
 
   def createContainerDocument(container: SQLContainer) = {
-    new JsonDocument(content_type = ContentTypes.CONTAINER, container_volume_id_i = Some(container.volumeId.toInt),
+    new JsonDocument(content_type = ContentTypes.CONTAINER,
+      volume_id_i = Some(container.volumeId.toInt),
+      container_volume_id_i = Some(container.volumeId.toInt),
       container_id_i = Some(container.containerId.toInt),
       container_date_tdt = None, // This should never be set for privacy reasons
       container_name_t = Some(container.name), container_age_td = container.age,
@@ -376,28 +379,39 @@ object Indexer {
   }
 
   def createRecordDocument(record: SQLRecord) = {
-    new JsonDocument(content_type = ContentTypes.RECORD, record_container_i = Some(record.containerId.toInt),
+    new JsonDocument(content_type = ContentTypes.RECORD,
+      volume_id_i = Some(record.volumeId.toInt),
+      record_container_i = Some(record.containerId.toInt),
       record_id_i = Some(record.recordId.toInt),
       record_date_tdt = None
     )
   }
 
   def createSegmentTagDocument(segment: SQLSegmentTag) = {
-    new JsonDocument(content_type = ContentTypes.SEGMENT_TAG, segment_volume_id_i = Some(segment.volumeId.toInt),
-      segment_container_id_i = Some(segment.containerId.toInt), segment_tags_ss = Some(segment.tags.get.split(","))
+    new JsonDocument(content_type = ContentTypes.SEGMENT_TAG,
+      volume_id_i = Some(segment.volumeId.toInt),
+      segment_volume_id_i = Some(segment.volumeId.toInt),
+      segment_container_id_i = Some(segment.containerId.toInt),
+      segment_tags_ss = Some(segment.tags.get.split(","))
     )
   }
 
   def createSegmentAssetDocument(segment: SQLSegmentAsset) = {
-    new JsonDocument(content_type = ContentTypes.SEGMENT_ASSET, segment_volume_id_i = Some(segment.volumeId.toInt),
-      segment_container_id_i = Some(segment.containerId.toInt), segment_asset_i = Some(segment.asset.toInt),
+    new JsonDocument(content_type = ContentTypes.SEGMENT_ASSET,
+      volume_id_i = Some(segment.volumeId.toInt),
+      segment_volume_id_i = Some(segment.volumeId.toInt),
+      segment_container_id_i = Some(segment.containerId.toInt),
+      segment_asset_i = Some(segment.asset.toInt),
       segment_asset_name_s = Some(segment.assetName)
     )
   }
 
   def createSegmentRecordDocument(segment: SQLSegmentRecord) = {
-    new JsonDocument(content_type = ContentTypes.SEGMENT_RECORD, segment_volume_id_i = Some(segment.volumeId.toInt),
-      segment_container_id_i = Some(segment.containerId.toInt), segment_record_id_i = Some(segment.record.toInt),
+    new JsonDocument(content_type = ContentTypes.SEGMENT_RECORD,
+      volume_id_i = Some(segment.volumeId.toInt),
+      segment_volume_id_i = Some(segment.volumeId.toInt),
+      segment_container_id_i = Some(segment.containerId.toInt),
+      segment_record_id_i = Some(segment.record.toInt),
       record_text_t = segment.datum, record_metric = Some(segment.metric)
     )
   }
@@ -411,10 +425,11 @@ object Indexer {
     )
   }
 
+
   case class Sentence(volId: Long, text: Option[String])
 
   case class SQLVolume(volumeId: Long, title: String = "", abs: String = "", alias: String = "", cite: Option[String] = None,
-                       citeYear: Option[Int] = None, citeUrl: Option[String] = None,
+                       citeYear: Option[Int] = None, citeUrl: Option[String] = None, owners: Option[java.sql.Array] = None,
                        var hasExcerpt: Boolean = false,
                        var hasSessions: Boolean = false,
                        var tags: Seq[String] = null,
@@ -433,7 +448,7 @@ object Indexer {
 
   case class Container(containerId: Long, volumeId: Long, name: String, date: Option[DateTime], release: Option[String], records: Seq[Record], hasExcerpt: Boolean)
 
-  case class SQLRecord(recordId: Long, containerId: Long, date: Option[DateTime], age: Option[Duration])
+  case class SQLRecord(recordId: Long, containerId: Long, volumeId: Long, date: Option[DateTime], age: Option[Duration])
 
   case class Record(recordId: Long, containerId: Long, date: Option[DateTime], age: Option[Duration])
 
@@ -497,6 +512,8 @@ object Indexer {
                           volume_keywords_ss: Option[JsonAST.JObject] = None,
                           volume_tags_ss: Option[JsonAST.JObject] = None,
                           volume_all_text_t: Option[String] = None,
+                          volume_owner_names_ss: Option[Seq[String]] = None,
+                          volume_owner_ids_is: Option[Seq[Int]] = None,
                           alias_s: Option[String] = None,
                           title_t: Option[String] = None,
                           abs_t: Option[String] = None,
