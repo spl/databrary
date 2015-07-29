@@ -670,7 +670,7 @@ COMMENT ON TABLE "record" IS 'Sets of metadata measurements organized into or ap
 
 SELECT audit.CREATE_TABLE ('record');
 
-CREATE TYPE data_type AS ENUM ('text', 'numeric', 'date');
+CREATE TYPE data_type AS ENUM ('text', 'numeric', 'date', 'void');
 COMMENT ON TYPE data_type IS 'Types of measurement data corresponding to measure_* tables.';
 
 CREATE TABLE "metric" (
@@ -685,6 +685,7 @@ ALTER TABLE "metric"
 	ALTER "name" SET STORAGE EXTERNAL;
 COMMENT ON TABLE "metric" IS 'Types of measurements for data stored in measure_$type tables.';
 COMMENT ON COLUMN "metric"."options" IS '(Suggested) options for text enumerations, not enforced.';
+INSERT INTO "metric" ("id", "name", "release", "type") VALUES (-1000, 'indicator', 'PUBLIC', 'void');
 INSERT INTO "metric" ("id", "name", "release", "type") VALUES (-900, 'ID', 'EXCERPTS', 'text');
 INSERT INTO "metric" ("id", "name", "release", "type", "options") VALUES (-700, 'reason', 'EXCERPTS', 'text', ARRAY['Did not meet inclusion criteria','Procedural/experimenter error','Withdrew/fussy/tired','Outlier']);
 INSERT INTO "metric" ("id", "name", "release", "type") VALUES (-650, 'summary', 'PUBLIC', 'text');
@@ -720,6 +721,7 @@ INSERT INTO "record_template" VALUES (-700, -700, true);
 INSERT INTO "record_template" VALUES (-100, -180, true);
 INSERT INTO "record_template" VALUES (-100, -140, true);
 INSERT INTO "record_template" VALUES (-100, -150, true);
+INSERT INTO "record_template" VALUES (-800, -1000);
 
 CREATE TABLE "volume_metric" (
 	"volume" integer NOT NULL References "volume",
