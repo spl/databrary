@@ -1,6 +1,7 @@
 /dist/
 /log/
 /store/
+/stage/
 /cache/
 /tmp/
 /upload/
