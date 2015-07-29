@@ -115,7 +115,7 @@ app.factory('solrModelService', [
 
       if(solrValsRewrite.prename !== undefined) {
         solrValsRewrite.name = solrValsRewrite.prename + " " + solrValsRewrite.sortname;
-      } else {
+      } else if (solrValsRewrite.party_id_i !== undefined) {
         solrValsRewrite.name = solrValsRewrite.sortname;
       }
 
