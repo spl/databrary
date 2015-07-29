@@ -929,17 +929,13 @@ app.factory('modelService', [
     Object.defineProperty(Record.prototype, 'displayName', {
       get: function () {
         var cat = constants.category[this.category];
-        var idents = cat && cat.ident || [constants.metricName.ID.id];
+        var idents = cat.ident || [constants.metricName.ID.id];
         var ident = [];
         for (var i = 0; i < idents.length; i ++)
           if (idents[i] in this.measures)
             ident.push(this.measures[idents[i]]);
 
-        ident = ident.length && ident.join(', ');
-        cat = cat && cat.name;
-        if (cat && ident)
-          return cat + ' ' + ident;
-        return cat || ident || '[' + this.id + ']';
+        return cat.name + ' ' + ident.join(', ');
       }
     });
 

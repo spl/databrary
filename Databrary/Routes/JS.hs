@@ -117,9 +117,9 @@ jsRoutes = mconcat
   , jsRoute "postRecordSlot" postRecordSlot (JSON, slot, record)
 
   , jsRoute "addVolumeMetric" postVolumeMetric (volume, (category, Just metric))
-  , jsRoute "addVolumeMetrics" postVolumeMetric (volume, (category, Nothing))
+  , jsRoute "addVolumeCategory" postVolumeMetric (volume, (category, Nothing))
   , jsRoute "deleteVolumeMetric" deleteVolumeMetric (volume, (category, Just metric))
-  , jsRoute "deleteVolumeMetrics" deleteVolumeMetric (volume, (category, Nothing))
+  , jsRoute "deleteVolumeCategory" deleteVolumeMetric (volume, (category, Nothing))
 
   , jsRoute "getAsset" viewAsset (JSON, asset)
   , jsRoute "getAssetSegment" viewAssetSegment (JSON, Just volume, slot, asset)

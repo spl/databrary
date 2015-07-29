@@ -1,10 +1,10 @@
 {-# LANGUAGE TemplateHaskell, QuasiQuotes #-}
 module Databrary.Model.VolumeMetric
   ( lookupVolumeMetrics
-  , addVolumeTemplateMetrics
+  , addVolumeCategory
   , addVolumeMetric
   , removeVolumeMetric
-  , removeVolumeMetrics
+  , removeVolumeCategory
   ) where
 
 import Control.Exception.Lifted (handleJust)
@@ -27,8 +27,8 @@ lookupVolumeMetrics v =
   {- map (getRecordCategory' *** map getMetric') . -} groupTuplesBy (==) <$>
   dbQuery $(selectQuery selectVolumeMetric "$WHERE volume = ${volumeId v} ORDER BY category, metric")
 
-addVolumeTemplateMetrics :: (MonadDB m) => Volume -> Id RecordCategory -> m [Id Metric]
-addVolumeTemplateMetrics v c =
+addVolumeCategory :: (MonadDB m) => Volume -> Id RecordCategory -> m [Id Metric]
+addVolumeCategory v c =
   dbQuery [pgSQL|INSERT INTO volume_metric SELECT ${volumeId v}, category, metric FROM record_template WHERE category = ${c} RETURNING metric|]
   
 addVolumeMetric :: (MonadDB m) => Volume -> Id RecordCategory -> Id Metric -> m Bool
@@ -40,6 +40,6 @@ removeVolumeMetric :: (MonadDB m) => Volume -> Id RecordCategory -> Id Metric ->
 removeVolumeMetric v c m =
   dbExecute1 [pgSQL|DELETE FROM volume_metric WHERE volume = ${volumeId v} AND category = ${c} AND metric = ${m}|]
 
-removeVolumeMetrics :: (MonadDB m) => Volume -> Id RecordCategory -> m Int
-removeVolumeMetrics v c =
+removeVolumeCategory :: (MonadDB m) => Volume -> Id RecordCategory -> m Int
+removeVolumeCategory v c =
   dbExecute [pgSQL|DELETE FROM volume_metric WHERE volume = ${volumeId v} AND category = ${c}|]

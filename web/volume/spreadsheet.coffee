@@ -123,11 +123,6 @@ app.directive 'spreadsheet', [
             template: if Top then ['name'] else ['name', 'date', 'release']
             sort: -10000
             fixed: true
-          0:
-            id: 0
-            name: 'record'
-            not: 'No record'
-            template: [constants.metricName.ID.id]
           asset:
             id: 'asset'
             name: 'file'
@@ -137,7 +132,7 @@ app.directive 'spreadsheet', [
             fixed: true
         constants.deepFreeze(pseudoCategory)
         getCategory = (c) ->
-          pseudoCategory[c || 0] || constants.category[c]
+          pseudoCategory[c] || constants.category[c]
 
         class Info
           # Represents everything we know about a specific cell.  Properties:
@@ -279,7 +274,7 @@ app.directive 'spreadsheet', [
             record = rr.record
             # temporary workaround for half-built volume inclusions:
             continue unless record
-            c = record.category || 0
+            c = record.category
 
             # populate depends:
             if Depends[record.id]
@@ -312,7 +307,7 @@ app.directive 'spreadsheet', [
 
         populateRecord = (i, record) ->
           Counts[i] = {slot: 0}
-          Counts[i][record.category || 0] = 1
+          Counts[i][record.category] = 1
 
           populateRecordData(i, 0, record)
 
@@ -320,7 +315,7 @@ app.directive 'spreadsheet', [
           i = 0
 
           records = {}
-          for r, record of volume.records when (record.category || 0) == Key.id
+          for r, record of volume.records when record.category == Key.id
             populateRecord(i, record)
             records[r] = i++
           Counts[count = i] = {slot: 0}
@@ -379,7 +374,6 @@ app.directive 'spreadsheet', [
             if Editing
               $scope.categories = (c for ci, c of constants.category when ci not of Data)
               $scope.categories.sort(bySortId)
-              $scope.categories.push(pseudoCategory[0]) unless 0 of Data
               Array.prototype.push.apply($scope.views, $scope.categories)
           else
             $scope.categories = []
@@ -992,7 +986,7 @@ app.directive 'spreadsheet', [
                   rs = []
                   mf = (r) -> (m) -> r.measures[m]
                   for ri, r of volume.records
-                    if (r.category || 0) == info.c && !Depends[ri]?[info.i]
+                    if r.category == info.c && !Depends[ri]?[info.i]
                       rs.push
                         r:r
                         v:(r.measures[info.metric.id] ? '').toLowerCase()
@@ -1020,7 +1014,7 @@ app.directive 'spreadsheet', [
                 new: 'Create new ' + c.name
                 remove: c.not
               for ri, r of volume.records
-                if (r.category || 0) == c.id && (!Depends[ri]?[info.i] || ri == editInput.value)
+                if r.category == c.id && (!Depends[ri]?[info.i] || ri == editInput.value)
                   editScope.options[ri] = r.displayName
               # detect special cases: singleton or unitary records
               for mi of Data[c.id]
@@ -1039,7 +1033,7 @@ app.directive 'spreadsheet', [
                 for o in m.options
                   found = false
                   for ri, r of volume.records
-                    if (r.category || 0) == c.id && r.measures[m.id] == o
+                    if r.category == c.id && r.measures[m.id] == o
                       found = true
                       break
                   editScope.options['add_'+m.id+'_'+o] = o unless found
