@@ -51,6 +51,7 @@ app.factory('solrModelService', [
       doi: true,
       creation: true,
       owners: true,
+      ownerIds: true,
       citation: false,
       links: false,
       funding: false,
@@ -93,12 +94,14 @@ app.factory('solrModelService', [
         "party_affiliation_s": "affiliation",
         "party_id_i": "id",
         "volume_id_i": "id",
-        "volume_title_t": "name",
+        "title_t": "name",
         "abs_t": "body",
         "citation_t": "citation",
         "volume_tags_ss": "tags",
         "alias_s": "alias",
         "volume_keywords_ss": "keywords",
+        "volume_owner_names_ss": "owners",
+        "volume_owner_ids_is": "ownerIds",
       };
 
       // Rewrite solrVals to use the solrKeynames names

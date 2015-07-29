@@ -136,6 +136,8 @@
     <field name="volume_tags_ss" type="string" indexed="true" stored="true" multiValued="true" omitNorms="false" />
     <field name="volume_keywords_ss" type="text_en_splitting" indexed="true" stored="true" multiValued="true" omitNorms="false" />
     <field name="volume_all_text_t" type="text_en_splitting" indexed="true" stored="true" />
+    <field name="volume_owner_names_ss" type="string" indexed="true" stored="true" multiValued="true" omitNorms="false" />
+    <field name="volume_owner_ids_is" type="int" indexed="true" stored="true" multiValued="true" omitNorms="false" />
 
 
     <!-- CONTAINER FIELDS -->
