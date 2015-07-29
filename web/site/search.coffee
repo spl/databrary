@@ -374,6 +374,7 @@ app.controller 'site/search', [
       # partyModels = new solrModel.SolrParty(parties.docs[0])
       console.log("PARTY TIME", parties, partyModels)
       console.log("VOLUME TIME", volumes, volumeModels)
+      return [partyModels, volumeModels]
 
 
 

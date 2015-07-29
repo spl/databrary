@@ -274,6 +274,7 @@ Names of the different types of content we have inside of Solr
         rs.string("containerName"), rs.stringOpt("containerDate"), rs.stringOpt("datum_date"), rs.doubleOpt("datum_number"),
         rs.stringOpt("datum_text"), rs.stringOpt("segment")
       )
+    }
 
       /*
     Extract all of the volumes from the DB
@@ -619,7 +620,7 @@ Names of the different types of content we have inside of Solr
         party_is_authorized_b = Some(party.isAuthorized)
       )
     }
-  }
+  
 }
 
 
