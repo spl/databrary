@@ -119,7 +119,6 @@ app.directive 'spreadsheet', [
         Cols = []       # [] Array over metrics :: {category: Category, metric: Metric} (flattened version of Groups)
         Rows = []       # [i] :: Row
         Order = []      # Permutation Array of Row in display order
-        Depends = {}    # [Record_id][Row] :: Count
         Foot = undefined # DOM Element tr
         Expanded = undefined # Info
 
@@ -135,7 +134,7 @@ app.directive 'spreadsheet', [
             Rows[@i] = this
             return
 
-          add: (c, d, i) ->
+          add: (c, d) ->
             if v = this[c]
               if Array.isArray(v)
                 n = v.push(d) - 1
@@ -145,9 +144,16 @@ app.directive 'spreadsheet', [
             else
               this[c] = d
               n = 0
-            if i?
-              obj(Depends, i)[@i] = n
             n
+
+          list: (c) ->
+            if v = this[c]
+              if Array.isArray(v)
+                v
+              else
+                [v]
+            else
+              []
 
           count: (c) ->
             if v = this[c]
@@ -161,9 +167,20 @@ app.directive 'spreadsheet', [
           get: (c, n) ->
             if v = this[c]
               if Array.isArray(v)
-                v[n || 0] # XXX or v[n]
+                v[n || 0]
               else if !n
                 v
+
+          set: (c, n, d) ->
+            n ||= 0
+            if n || Array.isArray(this[c])
+              if d?
+                this[c].splice(n, 1, d)
+              else
+                this[c].splice(n, 1)
+            else
+              this[c] = d
+            return
 
           Object.defineProperty @prototype, 'key',
             get: -> @get(Key.id)
@@ -299,7 +316,7 @@ app.directive 'spreadsheet', [
 
           $scope.groups = Groups = cats.map (category) ->
             metrics = (category.metrics || volume.metrics[category.id]).map(getMetric)
-            if constants.metricName.birthdate in metrics
+            if !Editing && constants.metricName.birthdate in metrics
               (slot || metrics).push(pseudoMetric.age)
             if slot && category.id == 'slot'
               metrics.push.apply metrics, slot
@@ -331,15 +348,14 @@ app.directive 'spreadsheet', [
             slot: s
             id: s.id
             name: s.name
+            date: s.date
             release: s.release+''
           d
 
         populateRecordData = (r) ->
-          d =
-            record: r
-            id: r.id
-          for m, v of r.measures
-            d[m] = v
+          d = Object.create(r.measures)
+          d.record = r
+          d.id = r.id
           d
 
         populateAssetData = (a) ->
@@ -360,9 +376,9 @@ app.directive 'spreadsheet', [
             continue unless record
 
             d = populateRecordData(record)
-            if !Editing && 'age' of rr
+            if 'age' of rr
               d.age = rr.age
-            row.add(record.category, d, record.id)
+            row.add(record.category, d)
 
           for assetId, asset of slot.assets
             row.add('asset', populateAssetData(asset))
@@ -385,26 +401,26 @@ app.directive 'spreadsheet', [
 
           nor = undefined
           for s, slot of volume.containers when Top != !slot.top
+            recs = slot.records
             any = false
-            for rr in slot.records when (row = records[rr.id])
+            for rr in recs when (row = records[rr.id])
               d = populateSlotData(slot)
-              if !Editing && 'age' of rr
+              if 'age' of rr
                 d.age = rr.age
-              d.summary = (rrr.record.displayName for rrr in slot.records when rrr.id != rr.id).join(', ')
-              row.add('slot', d, slot.id)
+              d.summary = (rrr.record.displayName for rrr in recs when rrr.id != rr.id).join(', ')
+              row.add('slot', d)
               any = true
             unless any
               nor ||= new Row()
               d = populateSlotData(slot)
-              d.summary = (rrr.record.displayName for rrr in slot.records).join(', ')
-              nor.add('slot', d, slot.id)
+              d.summary = (rrr.record.displayName for rrr in recs).join(', ')
+              nor.add('slot', d)
               
         # Call all populate functions
         populate = ->
           bySlot = Key == pseudoCategory.slot
           populateCols(bySlot)
           Rows = []
-          Depends = {}
           if bySlot
             populateSlots()
           else
@@ -492,8 +508,6 @@ app.directive 'spreadsheet', [
           info.m = info.cols.start
           if typeof info.metric.id == 'number'
             info.id = ID+'-'+info.i+'_'+info.cols.start+(if info.hasOwnProperty('n') then '_'+info.n else '')
-            info.v = undefined
-            info.d = undefined
             generateCell(info)
             info.tr.insertBefore(info.cell, td)
             if width > 1
@@ -574,6 +588,7 @@ app.directive 'spreadsheet', [
           info.tr = Foot
           info.cols = Groups[0]
           info.category = Key
+          info.slot = undefined
           td = info.tr.appendChild(document.createElement('td'))
           td.setAttribute("colspan", info.cols.metrics.length)
           td.className = 'null'
@@ -749,25 +764,13 @@ app.directive 'spreadsheet', [
             record = rr?.record
             o = info.d
             if record
-              r = record.id
-              info.n = inc(Counts[info.i], info.c) unless info.record
-
-              for m, rcm of Data[info.c]
-                v = if m of record then record[m] else record.measures[m]
-                if v == undefined
-                  delete rcm[info.n][info.i] if info.n of rcm
-                else
-                  arr(rcm, info.n)[info.i] = v
-              # TODO this may necessitate regenerating column headers
+              r = populateRecordData(record)
+              if o
+                info.row.set(info.c, info.n, r)
+              else
+                info.n = info.row.add(info.c, r)
             else
-              t = --Counts[info.i][info.c]
-              for m, rcm of Data[info.c]
-                for n in [info.n+1..rcm.length-1] by 1
-                  arr(rcm, n-1)[info.i] = arr(rcm, n)[info.i]
-                delete rcm[t][info.i] if t of rcm
-
-            delete Depends[o.id][info.i] if o
-            obj(Depends, r)[info.i] = info.n if record
+              info.row.set(info.c, info.n, undefined)
 
             collapse()
             generateRow(info.i)
@@ -779,16 +782,11 @@ app.directive 'spreadsheet', [
 
         updateDatum = (info, v) ->
           info.v = v
-          rcm = Data[info.c][info.metric.id]
-          if info.c == Key.id || info.c == 'asset'
-            arr(rcm, info.n)[info.i] = v
+          if info.fixed
+            info.d[info.metric.id] = v
             generateText(info)
           else
-            for i, n of Depends[info.d.id]
-              arr(rcm, n)[i] = v
-              # TODO age may have changed... not clear how to update.
-            l = TBody.getElementsByClassName(info.p + info.d.id + '_' + info.metric.id)
-            for li in l
+            for li in TBody.getElementsByClassName(info.p + info.d.id + '_' + info.metric.id)
               info.cell = li
               generateText(info)
           return
@@ -973,7 +971,7 @@ app.directive 'spreadsheet', [
                   rs = []
                   mf = (r) -> (m) -> r.measures[m]
                   for ri, r of volume.records
-                    if r.category == info.c && !Depends[ri]?[info.i]
+                    if r.category == info.c && !info.row.list(info.c).some((d) -> d.id == ri)
                       rs.push
                         r:r
                         v:(r.measures[info.metric.id] ? '').toLowerCase()
@@ -1001,7 +999,7 @@ app.directive 'spreadsheet', [
                 new: 'Create new ' + c.name
                 remove: c.not
               for ri, r of volume.records
-                if r.category == c.id && (!Depends[ri]?[info.i] || ri == editInput.value)
+                if r.category == c.id && (!info.row.list(info.c).some((d) -> d.id == ri) || ri == editInput.value)
                   editScope.options[ri] = r.displayName
               # detect special cases: singleton or unitary records
               for mi of Data[c.id]
