@@ -153,7 +153,7 @@
     <field name="record_volume_id_i" type="int" indexed="true" stored="true"/>
     <field name="record_container_i" type="int" indexed="true" stored="true"/>
     <field name="record_date_tdt" type="tdate" indexed="true" stored="true"/>
-    <field name="record_text_t" type="text_en_splitting" indexed="true" stored="true"/>
+    <field name="record_text_s" type="string" indexed="true" stored="true"/>
     <field name="record_num_d" type="double" indexed="true" stored="true"/>
     <field name="record_metric" type="string" indexed="true" stored="true"/>
 

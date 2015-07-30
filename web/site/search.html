@@ -21,25 +21,25 @@
         <option>years</option>
       </select>
       <!-- <select multiple="multiple" size="10" ng-model="selectedVolume" ng-options="result.title_t for result in results.docs"></select> -->
-    </div> 
-    <div class="col-desktop-12 col-tablet-7 col-mobile-6">     
+    </div>
+    <div class="col-desktop-12 col-tablet-7 col-mobile-6">
       <p>Number of results found: {{totalCount}}</p>
       <span ng-if="suggestedQuery.length > 0">
         <p>Did you mean <a ng-click="search(suggestedQuery)">{{suggestedQuery}}</a>?</p>
       </span>
       <div ng-if="partyCount > 0">
         <h3>Users</h3>
-        <div class="row search-party-results">  
+        <div class="row search-party-results">
           <!-- This is where we return what we want-->
-          <aside class="col-desktop-5 col-tablet-4 col-mobile-6 portrait ng-cloak" ng-repeat="result in partyResults.docs">
-            <a ng-href="{{::page.router.party([result.party_id_i])}}">
+          <aside class="col-desktop-5 col-tablet-4 col-mobile-6 portrait ng-cloak" ng-repeat="result in partyModels">
+            <a ng-href="{{::page.router.party([result.id])}}">
               <figure class="figure-avatar" ng-class="::{inst: party.institution}">
-                <img ng-src="{{::page.router.partyAvatar([result.party_id_i, size || 56], {})}}">
+                <img ng-src="{{::page.router.partyAvatar([result.id, size || 56], {})}}">
               </figure>
             </a>
             <div class="portrait-info">
-              <a class="portrait-name" ng-href="{{::page.router.party([result.party_id_i])}}" ng-bind="::result.party_pre_name_s + ' ' + result.party_name_s"></a>
-              <span class="portrait-extra" ng-bind="::result.party_affiliation_s"></span>
+              <a class="portrait-name" ng-href="{{::page.router.party([result.id])}}" ng-bind="::result.prename + ' ' + result.sortname"></a>
+              <span class="portrait-extra" ng-bind="::result.affiliation"></span>
             </div>
           </aside>
         </div>
@@ -47,12 +47,12 @@
       <div ng-if="volumeCount > 0">
         <h3>Volumes</h3>
         <ul class="row search-volume-results">
-          <li ng-repeat="result in volumeResults.docs">
+          <li ng-repeat="result in volumeModels">
             <!-- This is where we return what we want-->
             <h1 class="search-volume-result-title">
-              <span ng-if="retrievedContainers[result.volume_id_i] === undefined" ng-click="searchContainers(result.volume_id_i)" class="icon radio"></span>
-              <span ng-if="retrievedContainers[result.volume_id_i] !== undefined" ng-click="clearContainers(result.volume_id_i)" class="icon radio-selected"></span>
-              <a ng-href="volume/{{result.volume_id_i}}">{{result.title_t}}</a>
+              <span ng-if="retrievedContainers[result.id] === undefined" ng-click="searchContainers(result.id)" class="icon radio"></span>
+              <span ng-if="retrievedContainers[result.id] !== undefined" ng-click="clearContainers(result.id)" class="icon radio-selected"></span>
+              <a ng-href="volume/{{result.id}}">{{result.name}}</a>
             </h1>
 
             <div ng-bind="formVolumeResult(result)"></div>
@@ -60,14 +60,14 @@
             <div class="search-volume-result-keywords" ng-if="result.volume_keywords_ss.length > 0">
               <span>Keywords: </span>
               <ul class="inline-block comma">
-                <li ng-repeat="k in result.volume_keywords_ss">{{k}}</li>
+                <li ng-repeat="k in result.tags">{{k}}</li>
               </ul>
             </div>
 
-            <span ng-if="retrievedContainers[result.volume_id_i] !== undefined">
+            <span ng-if="retrievedContainers[result.id] !== undefined">
               <!-- Keywords: <span ng-repeat="k in result.volume_keywords_ss">{{k + ", "}}</span><br> -->
-              <ul class="search-volume-containers" ng-if="retrievedContainers[result.volume_id_i].length > 0">
-                <li ng-repeat="container in retrievedContainers[result.volume_id_i]">
+              <ul class="search-volume-containers" ng-if="retrievedContainers[result.id].length > 0">
+                <li ng-repeat="container in retrievedContainers[result.id]">
                   <a ng-href="volume/{{result.volume_id_i}}/slot/{{container.container_id_i}}">{{container.container_text_t? container.container_text_t: 'no text'}}</a>
                 </li>
               </ul>
