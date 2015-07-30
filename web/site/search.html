@@ -14,7 +14,7 @@
       <select multiple="multiple" ng-model="selectedType" ng-options="t for t in typeDisplay" ng-click="partyVolBoxClick()"></select>
       <select multiple="multiple" ng-model="selectedFilter" ng-options="s for s in filterDisplay" ng-click="filterBoxClick()"></select>
       <label>Age Range</label>
-      <input type="range" min=0 max=1000 step=1></input>
+      <input type="range" min=0 max=1000 value=500 step=1></input>
       <select>
         <option>days</option>
         <option>months</option>
@@ -64,14 +64,15 @@
               </ul>
             </div>
 
-            <span ng-if="retrievedContainers[result.id] !== undefined">
-              <!-- Keywords: <span ng-repeat="k in result.volume_keywords_ss">{{k + ", "}}</span><br> -->
-              <ul class="search-volume-containers" ng-if="retrievedContainers[result.id].length > 0">
+            <div >
+
+            <div class="search-volume-containers" ng-if="retrievedContainers[result.id] !== undefined">
+              <ul ng-if="retrievedContainers[result.id].length > 0">
                 <li ng-repeat="container in retrievedContainers[result.id]">
                   <a ng-href="volume/{{result.volume_id_i}}/slot/{{container.container_id_i}}">{{container.container_text_t? container.container_text_t: 'no text'}}</a>
                 </li>
               </ul>
-            </span>
+            </div>
 
           </li>
         </ul>
