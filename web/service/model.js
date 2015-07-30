@@ -399,6 +399,7 @@ app.factory('modelService', [
       links: false,
       funding: false,
       tags: false,
+      metrics: false,
       // consumers: false,
       // producers: false,
     };
