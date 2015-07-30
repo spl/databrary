@@ -2,12 +2,12 @@
   <div class="wrap">
     <div class="row">
       <div class="col">
-        <h3>
+        <h1 class="panel-title smaller">
           <span>Search </span>
           <ng-form isolate>
             <input class="search-input" type="search" ng-model="searchBoxQuery" key-enter="searchBox()"/>
           </ng-form>
-        </h3>
+        </h1>
       </div>
     </div>
     <div class="search-filter col-desktop-3 col-tablet-2 col-mobile-6">
@@ -22,7 +22,7 @@
       </select>
       <!-- <select multiple="multiple" size="10" ng-model="selectedVolume" ng-options="result.title_t for result in results.docs"></select> -->
     </div> 
-    <div class="col-desktop-12 col-tablet-7 col-mobile-6">     
+    <div class="search-results col-desktop-12 col-tablet-7 col-mobile-6">     
       <p>Number of results found: {{totalCount}}</p>
       <span ng-if="suggestedQuery.length > 0">
         <p>Did you mean <a ng-click="search(suggestedQuery)">{{suggestedQuery}}</a>?</p>
