@@ -55,7 +55,21 @@ Names of the different types of content we have inside of Solr
 
   case class Container(containerId: Long, volumeId: Long, name: String, date: Option[DateTime], release: Option[String], records: Seq[Record], hasExcerpt: Boolean)
 
-  case class SQLRecord(recordId: Long, containerId: Long, volumeId: Long, date: Option[DateTime], age: Option[Duration] = None)
+  case class SQLRecord(
+                       var recordId: Option[Int] = None,
+                       var containerId: Option[Int] = None,
+                       var volumeId: Option[Int] = None,
+                       var segment: Option[String] = None,
+                       var state: Option[String] = None,
+                       var ethnicity: Option[String] = None,
+                       var gender: Option[String] = None,
+                       var language: Option[String] = None,
+                       var race: Option[String] = None,
+                       var setting: Option[String] = None,
+                       var country: Option[String] = None,
+                       var age: Option[Double] = None,
+                       var text: String = ""
+                      )
 
   case class Record(recordId: Long, containerId: Long, date: Option[DateTime], age: Option[Duration])
 
@@ -67,7 +81,13 @@ Names of the different types of content we have inside of Solr
 
   case class SQLSegmentTag(volumeId: Long, containerId: Long, segment: String, tags: Option[String])
 
-  case class SQLSegmentRecord(volumeId: Long, containerId: Long, segment: String, record: Long, metric: String, datum: Option[String])
+  case class SQLSegmentRecord(volumeId: Long,
+                              containerId: Long,
+                              segment: String,
+                              record: Long,
+                              var metric: String,
+                              var datum: Option[String]
+                             )
 
   case class SQLSegmentRelease(volumeId: Long, containerId: Long, segment: String, release: String)
 
@@ -142,11 +162,22 @@ Names of the different types of content we have inside of Solr
                           container_race_s: Option[String] = None,
                           container_setting_s: Option[String] = None,
                           container_country_s: Option[String] = None,
-                          record_id_i: Option[Int] = None, record_volume_id_i: Option[Int] = None,
-                          record_container_i: Option[Int] = None, record_date_tdt: Option[String] = None,
+                          record_id_i: Option[Int] = None,
+                          record_volume_id_i: Option[Int] = None,
+                          record_container_i: Option[Int] = None,
+                          record_state_s: Option[String] = None,
+                          record_ethnicity_s: Option[String] = None,
+                          record_gender_s: Option[String] = None,
+                          record_language_s: Option[String] = None,
+                          record_race_s: Option[String] = None,
+                          record_setting_s: Option[String] = None,
+                          record_country_s: Option[String] = None,
+                          record_date_tdt: Option[String] = None,
+                          record_age_td: Option[Double] = None,
                           record_text_t: Option[String] = None,
                           record_num_d: Option[Double] = None,
                           record_metric: Option[String] = None,
+                          record_segment_s: Option[String] = None,
                           segment_volume_id_i: Option[Int] = None, segment_record_id_i: Option[Int] = None,
                           segment_container_id_i: Option[Int] = None,
                           segment_start_tl: Option[Long] = None, segment_end_tl: Option[Long] = None,
@@ -183,7 +214,8 @@ Names of the different types of content we have inside of Solr
   object SQLVolume extends SQLSyntaxSupport[SQLVolume] {
     def apply(rs: WrappedResultSet): SQLVolume = new SQLVolume(
       // TODO add volume owners here
-      rs.long("id"), rs.string("name"), rs.string("body"), rs.string("alias"), rs.stringOpt("citation"), rs.intOpt("year"), rs.stringOpt("url"), rs.arrayOpt("owners"))
+      rs.long("id"), rs.string("name"), rs.string("body"), rs.string("alias"),
+      rs.stringOpt("citation"), rs.intOpt("year"), rs.stringOpt("url"), rs.arrayOpt("owners"))
   }
 
   object SQLVolumeText extends SQLSyntaxSupport[SQLVolumeText] {
@@ -404,15 +436,6 @@ Names of the different types of content we have inside of Solr
           sQLContainerVolumeLookup(rs.long("container").toInt).volumeId, rs.long("container"), rs.string("segment"), rs.stringOpt("tag")
         )
       }
-
-      object SQLRecord extends SQLSyntaxSupport[SQLRecord] {
-        def apply(rs: WrappedResultSet): SQLRecord = new SQLRecord(
-          rs.long("record"), rs.long("container"), sQLContainerVolumeLookup(rs.long("container")).volumeId, if (rs.dateOpt("measureDate").isDefined) Some(rs.date("measureDate").toJodaDateTime) else None,
-          if (rs.dateOpt("measureDate").isDefined && rs.dateOpt("containerDate").isDefined)
-            Some(new Duration(rs.date("measureDate").toJodaDateTime, rs.date("containerDate").toJodaDateTime))
-          else None)
-      }
-
       /*
       Ditto for segment records
      */
@@ -435,16 +458,6 @@ Names of the different types of content we have inside of Solr
         )
       }
 
-
-      val sQLRecords = sql"""
-        SELECT container.id AS container, record.id AS record, container.date AS containerDate, measure_date.datum AS measureDate FROM container, slot_record, record, measure_date
-              WHERE container.id = slot_record.container AND record.id = slot_record.record
-              AND measure_date.record = record.id
-              """.map(x => SQLRecord(x)).list().apply().filter(x => sQLContainerVolumeLookup(x.containerId).volumeId > 0)
-        .groupBy(x => x.containerId).map(x => x._1 -> x._2)
-      //
-      //    // We now want to go a step further and get all of the segments, i.e., all of the records/measures
-
       // TODO bring in person here
       val sQLSegmentTags = sql"""
       SELECT container, segment, tag.name AS tag FROM tag_use, tag WHERE tag = id
@@ -466,23 +479,34 @@ Names of the different types of content we have inside of Solr
       val sQLSegmentRecords = sql"""
          SELECT container, segment, slot_record.record AS record, metric.name AS metric, datum
          FROM slot_record, measure as measure_all, metric
-         WHERE measure_all.record = slot_record.record AND measure_all.metric = metric.id AND metric.release >= 'EXCERPTS'
-         """.map(x => SQLSegmentRecord(x)).list().apply().filter(x => x.volumeId > 0)
+         WHERE measure_all.record = slot_record.record AND measure_all.metric = metric.id
+          AND (metric.release >= 'EXCERPTS' OR metric.name = 'birthdate')
+         """.map(x => SQLSegmentRecord(x)).list().apply().filter(x => x.volumeId > 0).groupBy(x => x.record)
 
+      val sQLSlotRecords = sQLSegmentRecords.map { x =>
+        val recordId = x._1
+        val measures = x._2
+        val slotRecord = new SQLRecord()
 
-      sql"""
-         SELECT container, segment, slot_record.record AS record, metric.name AS metric, datum
-         FROM slot_record, measure as measure_all, metric
-         WHERE measure_all.record = slot_record.record AND measure_all.metric = metric.id AND metric.name = 'birthdate'
-       """.map(x => SQLSegmentRecord(x)).list().apply().foreach { x =>
-        if (sQLContainers.contains(x.containerId)) {
-          sQLContainers(x.containerId).age =
-            if (sQLContainers(x.containerId).date.isDefined && x.datum.isDefined && x.metric == "birthdate")
-              Some(new Duration(new DateTime(x.datum.get), sQLContainers(x.containerId).date.get).getStandardDays)
-            else None
+        measures.foreach{ y =>
+          slotRecord.containerId = Some(y.containerId.toInt)
+          slotRecord.volumeId = Some(y.volumeId.toInt)
+          slotRecord.recordId = Some(y.record.toInt)
+          slotRecord.segment = Some(y.segment)
+          y.metric match {
+            case "race" => slotRecord.race = y.datum
+            case "ethnicity" => slotRecord.ethnicity = y.datum
+            case "gender" => slotRecord.gender = y.datum
+            case "state" => slotRecord.state = y.datum
+            case "setting" => slotRecord.setting = y.datum
+            case "language" => slotRecord.language = y.datum
+            case "country" => slotRecord.country = y.datum
+            case "birthdate" => slotRecord.age = Some((new Duration(new DateTime(y.datum.get), sQLContainers(y.containerId).date.get).getStandardDays))
+            case _ => slotRecord.text = slotRecord.text + " " + y.datum.getOrElse("")
+          }
         }
+        slotRecord
       }
-
 
       val sQLSegmentAssets = sql"""
         SELECT container, slot_asset.segment, asset.id AS asset, asset.name AS name, asset.duration AS duration, asset.release AS release, volume, excerpt.segment AS excerpt
@@ -514,8 +538,8 @@ Names of the different types of content we have inside of Solr
      */
       val jsonDocuments = sQLVolumes.map(x => createVolumeDocument(x._2)) ++
         sQLContainers.map(x => createContainerDocument(x._2)) ++
-        sQLRecords.flatMap(x => x._2.map(y => createRecordDocument(y))) ++
-        sQLSegmentRecords.map(x => createSegmentRecordDocument(x)) ++
+        sQLSlotRecords.map(x => createRecordDocument(x)) ++
+//        sQLSegmentRecords.map(x => createSegmentRecordDocument(x)) ++
         sQLSegmentAssets.map(x => createSegmentAssetDocument(x)) ++
         sQLSegmentTags.map(x => createSegmentTagDocument(x)) ++
         sQLParties.map(x => createPartyDocument(x))
@@ -560,8 +584,7 @@ Names of the different types of content we have inside of Solr
         volume_id_i = Some(container.volumeId.toInt),
         container_volume_id_i = Some(container.volumeId.toInt),
         container_id_i = Some(container.containerId.toInt),
-        container_date_tdt = None, // This should never be set for privacy reasons
-        container_name_t = Some(container.name), container_age_td = container.age,
+        container_name_t = Some(container.name),
         container_has_excerpt_b = Some(container.hasExcerpt),
         container_text_t = container.text,
         container_country_s = container.country,
@@ -576,10 +599,19 @@ Names of the different types of content we have inside of Solr
 
     def createRecordDocument(record: SQLRecord) = {
       new JsonDocument(content_type = ContentTypes.RECORD,
-        volume_id_i = Some(record.volumeId.toInt),
-        record_container_i = Some(record.containerId.toInt),
-        record_id_i = Some(record.recordId.toInt),
-        record_date_tdt = None
+        volume_id_i = record.volumeId,
+        record_container_i = record.containerId,
+        record_id_i = record.recordId,
+        record_age_td = record.age,
+        record_text_t = Some(record.text),
+        record_country_s = record.country,
+        record_gender_s = record.gender,
+        record_language_s = record.language,
+        record_state_s = record.state,
+        record_ethnicity_s = record.ethnicity,
+        record_race_s = record.race,
+        record_setting_s = record.setting,
+        record_segment_s = record.segment
       )
     }
 
@@ -602,7 +634,10 @@ Names of the different types of content we have inside of Solr
       )
     }
 
-    def createSegmentRecordDocument(segment: SQLSegmentRecord) = {
+    def createSegmentRecordDocument(segment: SQLSegmentRecord, containers: Map[Long, Indexer.SQLContainer]) = {
+      val age = if (segment.metric == "age"){
+
+      }
       new JsonDocument(content_type = ContentTypes.SEGMENT_RECORD,
         volume_id_i = Some(segment.volumeId.toInt),
         segment_volume_id_i = Some(segment.volumeId.toInt),

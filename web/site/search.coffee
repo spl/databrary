@@ -70,20 +70,20 @@ app.controller 'site/search', [
 
     # Def formVolumeResult:
     # This is a helper function that concats parts of a volume into a string.
-    $scope.formVolumeResult = (doc) ->
+    $scope.formVolumeResult = (volumeModel) ->
       # Form everything except the title, which we'll do in HTML so we can make it the link
       res = []
-      # If the document is a volume (and has an abstract) push it to the result list
-      if doc.abs_t
+      # If the volumeModelument is a volume (and has an abstract) push it to the result list
+      if volumeModel.body
        # Clip everything after the first 150 characters just for display purposes
-       if $scope.retrievedContainers[doc.volume_id_i] == undefined && doc.abs_t.length > 150
-          temp = doc.abs_t[0..150] + "..."
+       if $scope.retrievedContainers[volumeModel.id] == undefined && volumeModel.body.length > 150
+          temp = volumeModel.body[0..150] + "..."
        else
-          temp = doc.abs_t
+          temp = volumeModel.body
        res.push temp
-      # If the document is a volume (and has a citation) also push it to the result list
-      if doc.citation_t
-        res.push doc.citation_t
+      # If the volumeModelument is a volume (and has a citation) also push it to the result list
+      if volumeModel.citation
+        res.push volumeModel.citation
       # Add more stuff here if we want it
       return res.join("\n")
 
@@ -169,7 +169,7 @@ app.controller 'site/search', [
         # $scope.query = "*"
       console.log("query before anything:", $scope.query)
       console.log("RES:", res)
-      createModels(results)
+      [$scope.partyModels, $scope.volumeModels] = createModels(results)
 
       $scope.partyResults = getResults("party", res)
       $scope.volumeResults = getResults("volume", res)
@@ -375,6 +375,15 @@ app.controller 'site/search', [
       console.log("PARTY TIME", parties, partyModels)
       console.log("VOLUME TIME", volumes, volumeModels)
       return [partyModels, volumeModels]
+
+    searchAge = (volume, query, ageMin, ageMax) ->
+      a = 0
+
+    searchSex = (volume, query, sex) ->
+      a = 0
+
+    searchTags = (query, tag, user="") ->
+      a = 0
 
 
 
