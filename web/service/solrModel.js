@@ -27,9 +27,18 @@ app.factory('solrModelService', [
     }
 
     SolrSlot.prototype.fields = {
-      release: true,
+      release: false,
+      segment: true,
       tags: false,
       releases: false,
+      gender: false,
+      race: false,
+      age: false,
+      ethnicity: false,
+      text: false,
+      containerId: true,
+      volumeId: true,
+      recordId: true
     };
 
     SolrSlot.prototype.init = function (init) {
@@ -102,6 +111,14 @@ app.factory('solrModelService', [
         "volume_keywords_ss": "keywords",
         "volume_owner_names_ss": "owners",
         "volume_owner_ids_is": "ownerIds",
+        "record_id_i": "recordId",
+        "record_container_i": "containerId",
+        "record_ethnicity_s": "ethnicity",
+        "record_gender_s": "gender",
+        "record_race_s": "race",
+        "record_age_td": "age",
+        "record_segment_s": "segment",
+        "record_text_t": "text",
       };
 
       // Rewrite solrVals to use the solrKeynames names
