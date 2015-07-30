@@ -608,7 +608,8 @@ Names of the different types of content we have inside of Solr
         segment_volume_id_i = Some(segment.volumeId.toInt),
         segment_container_id_i = Some(segment.containerId.toInt),
         segment_record_id_i = Some(segment.record.toInt),
-        record_text_t = segment.datum, record_metric = Some(segment.metric)
+        record_text_t = segment.datum,
+        record_metric = Some(segment.metric)
       )
     }
 
@@ -620,7 +621,7 @@ Names of the different types of content we have inside of Solr
         party_is_authorized_b = Some(party.isAuthorized)
       )
     }
-  
+
 }
 
 
