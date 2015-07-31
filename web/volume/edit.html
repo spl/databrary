@@ -29,6 +29,10 @@
             <volume-edit-access-form></volume-edit-access-form>
           </wizard-step>
 
+          <wizard-step name="design" ng-if="::!!volume">
+            <volume-design></volume-design>
+          </wizard-step>
+
           <wizard-step name="materials" ng-if="::!!volume">
             <spreadsheet edit top></spreadsheet>
           </wizard-step>

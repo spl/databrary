@@ -21,7 +21,9 @@ app.factory('constantService', [
     constants.releases = Object.keys(constants.release);
     invertArray(constants.permission);
     invertArray(constants.release);
+    constants.categories = _.sortBy(constants.category, 'id');
     constants.categoryName = _.indexBy(constants.category, 'name');
+    constants.metrics = _.sortBy(constants.metric, 'id');
     constants.metricName = _.indexBy(constants.metric, 'name');
 
     /* convenient aliases: */

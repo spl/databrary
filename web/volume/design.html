@@ -1,0 +1,14 @@
+<ng-form name="volumeDesign">
+  <ul>
+    <li ng-repeat="c in ::page.constants.categories track by c.id">
+      <input type="checkbox" ng-model="volumeDesign[c.id].on" ng-change="volumeDesign.change(c.id)">
+      <span ng-bind="::c.name"></span>
+      <ul ng-if="volumeDesign[c.id].on">
+        <li ng-repeat="m in ::page.constants.metrics track by m.id" ng-if="::m.name != 'indicator'">
+          <input type="checkbox" ng-disabled="::c.ident.includes(m.id)" ng-model="volumeDesign[c.id][m.id]" ng-change="volumeDesign.change(c.id, m.id)">
+          <span ng-bind="::m.name"></span>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</ng-form>

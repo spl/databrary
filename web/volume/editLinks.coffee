@@ -1,10 +1,10 @@
 'use strict'
 
 app.directive 'volumeEditLinksForm', [
-  'pageService',
-  (page) ->
-    restrict: 'E',
-    templateUrl: 'volume/editLinks.html',
+  'constantService', 'messageService',
+  (constants, messages) ->
+    restrict: 'E'
+    templateUrl: 'volume/editLinks.html'
     link: ($scope) ->
       volume = $scope.volume
       form = $scope.volumeEditLinksForm
@@ -31,16 +31,16 @@ app.directive 'volumeEditLinksForm', [
         form.$setDirty()
 
       form.save = () ->
-        page.messages.clear(form)
+        messages.clear(form)
         data = _.filter form.data, (ref) -> !ref.removed && (ref.head || ref.url)
         form.$setSubmitted()
         volume.saveLinks(data).then(() ->
             form.validator.server {}
             update()
 
-            page.messages.add
+            messages.add
               type: 'green'
-              body: page.constants.message('volume.edit.success')
+              body: constants.message('volume.edit.success')
               owner: form
 
             form.$setPristine()
@@ -50,8 +50,8 @@ app.directive 'volumeEditLinksForm', [
             form.$setUnsubmitted()
             form.validator.server res
 
-            page.messages.addError
-              body: page.constants.message('volume.edit.error')
+            messages.addError
+              body: constants.message('volume.edit.error')
               report: res
               owner: form
             return

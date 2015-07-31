@@ -597,6 +597,32 @@ app.factory('modelService', [
         });
     };
 
+    Volume.prototype.setVolumeMetrics = function (c, m, on) {
+      var v = this;
+      return router.http(m == null ?
+          on ? router.controllers.addVolumeCategory : router.controllers.deleteVolumeCategory :
+          on ? router.controllers.addVolumeMetric   : router.controllers.deleteVolumeMetric,
+          this.id, c, m)
+        .then(function (res) {
+          var d = res.data;
+          if ('metrics' in v) {
+            if (m == null)
+              if (on)
+                v.metrics[c] = d;
+              else
+                delete v.metrics[c];
+            else {
+              v.metrics[c].remove(m);
+              if (on) {
+                v.metrics[c].push(m);
+                v.metrics[c].sort();
+              }
+            }
+          }
+          return d;
+        });
+    };
+
     ///////////////////////////////// Container/Slot
     // This does not handle cross-volume inclusions
 
