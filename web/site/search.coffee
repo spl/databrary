@@ -390,6 +390,8 @@ app.controller 'site/search', [
       # arg = "|arg=record_tag_s:[#{ ageMin } TO #{ ageMax }]"
       # return query + arg
 
+    
+    $scope.selectedAge = 700
 
 
     # Code for the initial loado
