@@ -385,6 +385,8 @@ app.controller 'site/search', [
     searchTags = (query, tag, user="") ->
       a = 0
 
+    
+    $scope.selectedAge = 700
 
 
     # Code for the initial loado
