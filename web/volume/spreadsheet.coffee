@@ -274,7 +274,8 @@ app.directive 'spreadsheet', [
             asset: ->
               @d?.asset
             v: ->
-              @d?[@metric.id]
+              if d = @d
+                d[@metric.id]
 
           property = (v, f) ->
             get: f
@@ -333,14 +334,7 @@ app.directive 'spreadsheet', [
               start: si
             }
           $scope.cols = Cols
-          if slot
-            $scope.categories = []
-          else
-            $scope.views = (g.category for g in Groups when g.category.id != 'asset')
-            if Editing
-              $scope.categories = (c for ci, c of constants.category when ci not of volume.metrics)
-              $scope.categories.sort(bySortId)
-              Array.prototype.push.apply($scope.views, $scope.categories)
+          $scope.views = (g.category for g in Groups when g.category.id != 'asset')
           return
 
         populateSlotData = (s) ->
@@ -494,21 +488,13 @@ app.directive 'spreadsheet', [
             cell.classList.add(cls + '_' + info.metric.id)
           return
 
-        # Add a td element to tr r with value c and id i
-        generateCell = (info) ->
-          info.cell = info.tr.appendChild(document.createElement('td'))
-          if info.v == null
-            info.cell.className = 'null'
-          else
-            generateText(info)
-          return
-
         generateAdd = (info, td) ->
           width = info.cols.metrics.length
           info.m = info.cols.start
           if typeof info.metric.id == 'number' && info.metric.name != 'indicator'
             info.id = ID+'-'+info.i+'_'+info.cols.start+(if info.hasOwnProperty('n') then '_'+info.n else '')
-            generateCell(info)
+            info.cell = info.tr.appendChild(document.createElement('td'))
+            generateText(info)
             info.tr.insertBefore(info.cell, td)
             if width > 1
               td.setAttribute("colspan", width-1)
@@ -553,7 +539,8 @@ app.directive 'spreadsheet', [
           for mi in [0..l-1] by 1
             info.m = info.cols.start+mi
             info.id = pre + (info.cols.start+mi) + post
-            generateCell(info)
+            info.cell = info.tr.appendChild(document.createElement('td'))
+            generateText(info)
           return
 
         # Fill out Rows[i].
@@ -657,7 +644,11 @@ app.directive 'spreadsheet', [
           else
             c = col.category.id
             m = col.metric.id
-            sort (i) -> Rows[i].get(c)?[m]
+            sort (i) ->
+              if d = Rows[i].get(c)
+                d[m]
+              else
+                null
             currentSort = col
             currentSortDirection = false
           fill()
@@ -888,16 +879,6 @@ app.directive 'spreadsheet', [
                 if v != info.d?.id
                   setRecord(info, volume.records[v])
               return
-            when 'metric'
-              if value != undefined
-                # TODO
-                populate()
-              return
-            when 'category'
-              if value != undefined
-                # TODO
-                populate()
-              return
             when 'options'
               # force completion of the first match
               # this completely prevents people from using prefixes of options but maybe that's reasonable
@@ -1015,17 +996,6 @@ app.directive 'spreadsheet', [
                         found = true
                         break
                     editScope.options['add_'+m.id+'_'+o] = o unless found
-            when 'category'
-              editScope.type = 'metric'
-              editInput.value = undefined
-              editScope.options = []
-              for mi, m of constants.metric when !(mi of Data[info.c])
-                editScope.options.push(m)
-              editScope.options.sort(bySortId)
-            when 'head'
-              editScope.type = 'category'
-              editInput.value = undefined
-              editScope.options = $scope.categories
             else
               return
 
@@ -1158,18 +1128,6 @@ app.directive 'spreadsheet', [
               match[0]
             else
               ({text:o, select: editSelect, default: input && i==0} for o, i in match)
-
-        $scope.clickAdd = ($event) ->
-          unselect()
-          edit({cell:$event.target, t:'head'})
-          false
-
-        $scope.clickCategoryAdd = ($event, col) ->
-          unselect()
-          edit({cell:document.getElementById(ID+'-category_'+col.category.id), t:'category', c:col.category.id})
-          $event.stopPropagation()
-          $scope.tabOptionsClick = undefined
-          false
 
         $scope.clickMetric = sortBy
 
