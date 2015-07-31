@@ -90,15 +90,16 @@ app.controller 'site/search', [
   ###########################
   # Search handlers
   ###########################
-    $scope.clearContainers = (volId) ->
-      $scope.retrievedContainers[volId] = undefined
+    $scope.clearContainers = (vol) ->
+      $scope.retrievedContainers[vol.id] = undefined
 
-    $scope.searchContainers = (volId) ->
-      console.log("Getting container results for volume:", volId)
+    $scope.searchContainers = (vol) ->
+      console.log("Getting container results for volume:", vol.id)
       beforeQuery = $scope.query
-      query = $scope.query + "|type=container|arg=container_volume_id_i:" + volId
+      query = $scope.query + "|type=container"
+      query = searchVolume(vol, query)
       # query = $scope.query + "|type=container|arg=container_volume_id_i:" + "15"
-      $scope.search(query, volId)
+      $scope.search(query, vol.id)
       $scope.query = beforeQuery
 
 
@@ -149,8 +150,8 @@ app.controller 'site/search', [
 
     parseContainerResults = (res, volId) ->
       console.log("CONTAINTER RESULTS", res, volId)
-      containers = getResults("container", res)
-      numContainers = getTypeCounts("container", res)
+      containers = createModels(res).records
+      numContainers = getTypeCounts("record", res)
       $scope.retrievedContainers[volId] = containers?.docs
       console.log("CONTAINERS:", $scope.retrievedContainers)
 
@@ -169,10 +170,9 @@ app.controller 'site/search', [
         # $scope.query = "*"
       console.log("query before anything:", $scope.query)
       console.log("RES:", res)
-      [$scope.partyModels, $scope.volumeModels] = createModels(results)
-
-      $scope.partyResults = getResults("party", res)
-      $scope.volumeResults = getResults("volume", res)
+      models = createModels(results)
+      $scope.partyModels = models.parties
+      $scope.volumeModels = models.volumes
 
       # Set the number of parties and volumes returned.
       $scope.partyCount = getTypeCounts("party", res)
@@ -185,17 +185,8 @@ app.controller 'site/search', [
       $scope.typeDisplay = [$scope.partyDisplayStr + " (" + ($scope.partyCount || 0) + ")",
         $scope.volumeDisplayStr + " (" + ($scope.volumeCount || 0) + ")"]
 
-      console.log("PARTY RESULTS", $scope.partyResults)
       console.log("SUGGESTED QUERY", $scope.suggestedQuery)
-
-      # Code for extracting user affiliations for filtering, unused.
-      # if $scope.partyCount
-        # $scope.affiliations = (c.party_affiliation_s for c in $scope.partyResults.docs)
-      # else
-        # $scope.affiliations = ["No people found"]
-
       $scope.totalCount = $scope.partyCount + $scope.volumeCount
-
 
       # Set up pagination
       $scope.minPage = 1
@@ -278,12 +269,6 @@ app.controller 'site/search', [
     getPartyFilterBoxOpts = ->
       opts = [$scope.selectSessionStr, $scope.selectHighlightStr]
       return opts
-
-    searchContainersForVolume = (volId) ->
-      # Place holder for getting the list of containers for a volume
-      # We need to do this in such a way where we dont erase the
-      # search results that we already have
-      temp = 0
 
     updateFilterBoxOptions = ->
       console.log("SELTYPE", $scope.selectedType)
@@ -368,22 +353,42 @@ app.controller 'site/search', [
     createModels = (res) ->
       parties = getResults("party", res)
       volumes = getResults("volume", res)
-      console.log("PARTIES", parties)
+      slots = getResults("record", res)
       partyModels = if parties?.docs then (new solrModel.SolrParty(p) for p in parties.docs) else []
       volumeModels = if volumes?.docs then (new solrModel.SolrVolume(v) for v in volumes.docs) else []
-      # partyModels = new solrModel.SolrParty(parties.docs[0])
+      recordModels = if records?.docs then (new solrModel.SolrSlot(s) for s in slots.docs) else []
       console.log("PARTY TIME", parties, partyModels)
       console.log("VOLUME TIME", volumes, volumeModels)
-      return [partyModels, volumeModels]
+      return { parties: partyModels, volumes: volumeModels, records: recordModels }
+
+    searchVolume = (volume, query) ->
+      arg = "|arg=volume_id_i:#{ volume.id }"
+      return query + arg
 
     searchAge = (volume, query, ageMin, ageMax) ->
-      a = 0
+      query = searchVolume(volume, query)
+      arg = "|arg=record_age_td:[#{ ageMin } TO #{ ageMax }]"
+      return query + arg
 
     searchSex = (volume, query, sex) ->
-      a = 0
+      query = searchVolume(volume, query)
+      arg = "|arg=record_gender_s:[#{ sex }]"
+      return query + arg
 
-    searchTags = (query, tag, user="") ->
-      a = 0
+    searchSetting = (volume, query, setting) ->
+      query = searchVolume(volume, query)
+      arg = "|arg=record_setting_s:[#{ setting }]"
+      return query + arg
+
+    searchRace = (volume, query, race) ->
+      query = searchVolume(volume, query)
+      arg = "|arg=record_race_s:[#{ race }]"
+      return query + arg
+
+    # searchTags = (query, tag, user="") ->
+      # query = searchVolume(volume, query)
+      # arg = "|arg=record_tag_s:[#{ ageMin } TO #{ ageMax }]"
+      # return query + arg
 
 
 

@@ -15,7 +15,7 @@
       <div>Type
         <span ng-repeat="t in typeDisplay" ng-click="partyVolBoxClick()" ng-bind="::t"></span>
       </div>
-      
+
       <div>Filter
         <span ng-repeat="s in filterDisplay" ng-click="filterBoxClick()" ng-bind="::s"></span>
       </div>
@@ -29,8 +29,8 @@
         <option>months</option>
         <option>years</option>
       </select>
-    </div> 
-    <div class="search-results col-desktop-12 col-tablet-7 col-mobile-6">     
+    </div>
+    <div class="search-results col-desktop-12 col-tablet-7 col-mobile-6">
       <p>Number of results found: {{totalCount}}</p>
       <span ng-if="suggestedQuery.length > 0">
         <p>Did you mean <a ng-click="search(suggestedQuery)">{{suggestedQuery}}</a>?</p>
@@ -56,8 +56,8 @@
         <ul class="row search-volume-results">
           <li ng-repeat="result in volumeModels">
             <h1 class="search-volume-result-title">
-              <span ng-if="retrievedContainers[result.id] === undefined" ng-click="searchContainers(result.id)" class="icon radio"></span>
-              <span ng-if="retrievedContainers[result.id] !== undefined" ng-click="clearContainers(result.id)" class="icon radio-selected"></span>
+              <span ng-if="retrievedContainers[result.id] === undefined" ng-click="searchContainers(result)" class="icon radio"></span>
+              <span ng-if="retrievedContainers[result.id] !== undefined" ng-click="clearContainers(result)" class="icon radio-selected"></span>
               <a ng-href="volume/{{result.id}}">{{result.name}}</a>
             </h1>
 

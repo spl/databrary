@@ -120,6 +120,7 @@ instance FromJSON SolrResponse where
                                       <*> o .: "spellcheck"
   parseJSON _ = mzero
 
+
 data SolrQuery = SolrQuery {
    solrQuery :: String,
    solrArgs :: String,
@@ -197,8 +198,10 @@ search q offset limit = focusIO $ \hcm -> do
       let (queryStr, args, join, cType) = Q.queryToString query
       -- This is hard-coded here so no one can send anything else...
       -- probably not the best.
-      let contentType = if cType == "container" then "content_type:container" else "content_type:(volume OR party)"
-      let modifiedQueryStr = (if(length queryStr > 0) then queryStr else "*") ++ (if(cType == "container") then " OR *" else "")
+      let contentType = if cType == "container" then "content_type:record" else "content_type:(volume OR party)"
+      let modifiedQueryStr = (if(cType == "container") then "{!join from=volume_id_i to=volume_id_i} " else "")
+                                                      ++ (if(length queryStr > 0) then queryStr else "*")
+                                                      ++ (if(cType == "container") then " OR *" else "")
       let sQuery = SolrQuery  modifiedQueryStr
                               (contentType ++ (if(length args > 0) then " AND " else " ") ++ args)
                               join limit offset
