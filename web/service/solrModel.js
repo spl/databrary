@@ -190,7 +190,8 @@ app.factory('solrModelService', [
 
     return {
       SolrParty: SolrParty,
-      SolrVolume: SolrVolume
+      SolrVolume: SolrVolume,
+      SolrSlot: SolrSlot
     };
   }
 

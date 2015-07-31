@@ -150,10 +150,12 @@ app.controller 'site/search', [
 
     parseContainerResults = (res, volId) ->
       console.log("CONTAINTER RESULTS", res, volId)
-      containers = createModels(res).records
+      models = createModels(res)
+      console.log(models)
+      containers = models.records
       numContainers = getTypeCounts("record", res)
-      $scope.retrievedContainers[volId] = containers?.docs
-      console.log("CONTAINERS:", $scope.retrievedContainers)
+      $scope.retrievedContainers[volId] = containers
+      console.log("CONTAINERS:", containers, $scope.retrievedContainers)
 
 
     #################################
@@ -356,9 +358,10 @@ app.controller 'site/search', [
       slots = getResults("record", res)
       partyModels = if parties?.docs then (new solrModel.SolrParty(p) for p in parties.docs) else []
       volumeModels = if volumes?.docs then (new solrModel.SolrVolume(v) for v in volumes.docs) else []
-      recordModels = if records?.docs then (new solrModel.SolrSlot(s) for s in slots.docs) else []
+      recordModels = if slots?.docs then (new solrModel.SolrSlot(s) for s in slots.docs) else []
       console.log("PARTY TIME", parties, partyModels)
       console.log("VOLUME TIME", volumes, volumeModels)
+      console.log("RECORD TIME", slots, recordModels)
       return { parties: partyModels, volumes: volumeModels, records: recordModels }
 
     searchVolume = (volume, query) ->
@@ -390,7 +393,7 @@ app.controller 'site/search', [
       # arg = "|arg=record_tag_s:[#{ ageMin } TO #{ ageMax }]"
       # return query + arg
 
-    
+
     $scope.selectedAge = 700
 
 
