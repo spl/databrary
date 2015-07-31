@@ -474,8 +474,8 @@ app.directive 'spreadsheet', [
               cn = constants.release[v]
               cell.className = cn + ' release icon hint-release-' + cn
               v = ''
-            when 'id'
-              if v?
+            when constants.metricName.indicator.id
+              if info.d
                 cell.className = 'icon ' + if Editing && Key.id != info.c then 'trash' else 'bullet'
                 v = ''
             when 'age'
@@ -506,7 +506,7 @@ app.directive 'spreadsheet', [
         generateAdd = (info, td) ->
           width = info.cols.metrics.length
           info.m = info.cols.start
-          if typeof info.metric.id == 'number'
+          if typeof info.metric.id == 'number' && info.metric.name != 'indicator'
             info.id = ID+'-'+info.i+'_'+info.cols.start+(if info.hasOwnProperty('n') then '_'+info.n else '')
             generateCell(info)
             info.tr.insertBefore(info.cell, td)
@@ -541,13 +541,11 @@ app.directive 'spreadsheet', [
 
         # Add all the measure tds to row i for count n, record r
         generateRecord = (info) ->
-          ms = info.cols.metrics
-          return unless l = ms.length
-          t = info.count
+          return unless l = info.cols.metrics.length # impossible?
           if td = generateMultiple(info)
             unless info.hasOwnProperty('n')
               cls = info.p
-              for n in [0..t-1] by 1
+              for n in [0..info.count-1] by 1
                 td.classList.add(cls + info.row.get(info.c, n).id)
             return
           pre = ID + '-' + info.i + '_'
@@ -887,7 +885,7 @@ app.directive 'spreadsheet', [
                   saveDatum(info, v) if r
                   return
               else if !isNaN(v = parseInt(value, 10))
-                if v != info.d.id
+                if v != info.d?.id
                   setRecord(info, volume.records[v])
               return
             when 'metric'
@@ -951,13 +949,13 @@ app.directive 'spreadsheet', [
                 $location.url(info.slot.editRoute({asset:info.d.id}))
                 return
               return if info.slot?.id == volume.top.id
-              m = info.metric.id
-              if m == 'id'
+              if info.metric.name == 'indicator'
                 # trash/bullet: remove
                 setRecord(info, null) if info.category != Key
                 return
               return if info.metric.readonly
               editScope.type = info.metric.type
+              m = info.metric.id
               if info.c == 'slot'
                 v = info.slot?[m]
                 v += '' if m == 'release'
@@ -1001,27 +999,22 @@ app.directive 'spreadsheet', [
               for ri, r of volume.records
                 if r.category == c.id && (!info.row.list(info.c).some((d) -> d.id == ri) || ri == editInput.value)
                   editScope.options[ri] = r.displayName
+              ms = info.cols.metrics
               # detect special cases: singleton or unitary records
-              for mi of Data[c.id]
-                mm = constants.metric[mi]
-                if !m
-                  m = mm
-                else if mm
-                  m = null
-                  break
-              if m == undefined && Object.keys(editScope.options).length > 2
-                # singleton: id only, existing record(s)
-                delete editScope.options['new']
-              else if m && m.options
-                # unitary: single metric with options
-                delete editScope.options['new']
-                for o in m.options
-                  found = false
-                  for ri, r of volume.records
-                    if r.category == c.id && r.measures[m.id] == o
-                      found = true
-                      break
-                  editScope.options['add_'+m.id+'_'+o] = o unless found
+              if ms.length == 1
+                if ms[0].name == 'indicator' && Object.keys(editScope.options).length > 2
+                  # singleton: id only, existing record(s)
+                  delete editScope.options['new']
+                else if ms[0].options
+                  # unitary: single metric with options
+                  delete editScope.options['new']
+                  for o in m.options
+                    found = false
+                    for ri, r of volume.records
+                      if r.category == c.id && r.measures[m.id] == o
+                        found = true
+                        break
+                    editScope.options['add_'+m.id+'_'+o] = o unless found
             when 'category'
               editScope.type = 'metric'
               editInput.value = undefined
