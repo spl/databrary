@@ -156,7 +156,7 @@ app.controller('party/register', [
       for (var si = $scope.steps.length-1; si >= 0; si --) {
         var step = $scope.steps[si];
         step.complete = !!a;
-        if ((step.allow = !!s[step.name]))
+        if (!(step.disabled = !s[step.name]))
           a = a || step;
       }
       if (a)

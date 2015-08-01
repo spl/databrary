@@ -1,10 +1,10 @@
 'use strict';
 
-app.directive('wizardStep', [
+app.directive('wizardPage', [
   function () {
     return {
       restrict: 'E',
-      templateUrl: 'site/wizardStep.html',
+      templateUrl: 'site/wizardPage.html',
       require: '^wizard',
       scope: {},
       transclude: true,
@@ -14,10 +14,11 @@ app.directive('wizardStep', [
           $scope.id = wizard.name + '-' + $scope.name;
         },
         post: function ($scope, $element, $attrs, wizard) {
-          $scope.$scope = $scope.$$childHead;
+          $scope.complete = true;
           wizard.addStep($scope);
         }
       }
     };
   }
 ]);
+
