@@ -393,8 +393,20 @@ app.controller 'site/search', [
       # arg = "|arg=record_tag_s:[#{ ageMin } TO #{ ageMax }]"
       # return query + arg
 
-
-    $scope.selectedAge = 700
+    $ -> 
+      $('#slider-range').slider
+        range: true
+        min: 0
+        max: 500
+        values: [
+          75
+          300
+        ]
+        slide: (event, ui) ->
+          $('#amount').val '$' + ui.values[0] + ' - $' + ui.values[1]
+          return
+      $('#amount').val $('#slider-range').slider('values', 0) + ' - ' + $('#slider-range').slider('values', 1)
+      return
 
 
     # Code for the initial loado

@@ -26,11 +26,12 @@
    
 .search-party-results
   padding-bottom b1
-  border-bottom neutral dotted 1px
+  border-top neutral dotted 1px
   .portrait
     padding b2
     
 .search-volume-results
+  border-top neutral dotted 1px
   padding b2
   h1
     font-size b1
@@ -62,3 +63,20 @@
   color neutral13
   ul > li:first-of-type:before
     content none
+    
+// needs to be cleaned up    
+.ui-slider-horizontal
+  height b2
+.ui-widget-content
+  border neutral53 solid 1px 
+  background-color white
+  color #333 
+.ui-widget-header
+  background #ccc  
+.ui-slider-range
+  position absolute
+  z-index 1
+  font-size 0.7em
+  display inline-block
+  border 0
+  background-color red

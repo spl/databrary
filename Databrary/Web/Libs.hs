@@ -15,6 +15,7 @@ import Databrary.Web.Generate
 jsLibs :: [(FilePath, FilePath)]
 jsLibs =
   [ ("jquery",              "bower_components/jquery/dist")
+  , ("jquery-ui",           "bower_components/jquery-ui")
   , ("angular",             "bower_components/angular")
   , ("angular-route",       "bower_components/angular-route")
   , ("ng-flow-standalone",  "bower_components/ng-flow/dist")
