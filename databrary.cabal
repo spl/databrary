@@ -1,5 +1,5 @@
 Name:                databrary
-Version:             0
+Version:             1
 Synopsis:            Databrary
 Description:         An experimental rewrite of Databrary (http://databrary.org, http://github.com/databrary/databrary) in Haskell.
 License:             GPL-3
@@ -36,7 +36,7 @@ data-files:
 
 Source-Repository head
   Type:	git
-  Location: https://github.com/dylex/databrary
+  Location: https://github.com/databrary/databrary
 
 Flag tls
   description: Enable TLS/SSL https connections
