@@ -79,7 +79,7 @@ app.directive('fundingGrantForm', [
 
       form.awardRemove = function (i) {
         form.data.awards[i] = i === form.data.awards.length-1 ? '' : null;
-        if (i === 0 && !form.data.awards.some(keep))
+        if (!form.data.awards.some(keep))
           return form.remove();
         form.awardChange();
         form.$setDirty();
