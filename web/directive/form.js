@@ -14,16 +14,30 @@ app.directive('ngForm', [
       var controls = [];
 
       function checkDirty() {
-        if (controls.every(function (control) {
-            return control.$pristine;
-          })) {
-          /* effectively call form.$setPristine, without the controls. */
-          $animate.removeClass($element, 'ng-dirty');
-          $animate.addClass($element, 'ng-pristine');
-          form.$dirty = false;
-          form.$pristine = true;
-        }
+        if (!(form.$dirty || form.$submitted) || controls.some(function (control) {
+            return control.$dirty;
+          }))
+            return;
+        /* effectively call form.$setPristine, without the child controls. */
+        $animate.setClass($element, 'ng-pristine', 'ng-dirty ng-submitted');
+        form.$dirty = false;
+        form.$pristine = true;
+        form.$submitted = false;
+        if (form.$$parentForm.subformControl)
+          form.$$parentForm.subformControl.$setPristine();
       }
+
+      // This method sets the form state back to its unsubitted state
+      form.$setUnsubmitted = function () {
+        if (!form.$submitted || controls.some(function (control) {
+          return control.$submitted;
+        }))
+          return;
+        $animate.removeClass($element, 'ng-submitted');
+        form.$submitted = false;
+        if (form.$$parentForm.$setUnsubmitted)
+          form.$$parentForm.$setUnsubmitted();
+      };
 
       var $addControl = form.$addControl;
       var $removeControl = form.$removeControl;
@@ -33,20 +47,6 @@ app.directive('ngForm', [
         if ('$pristine' in control)
           controls.push(control);
         return $addControl(control);
-      };
-
-      // This method sets the form state back to its unsubitted state
-      form.$setUnsubmitted = function () {
-        if (controls.some(function (control) {
-          return control.$submitted;
-        }))
-          return;
-        // remove the angular helper classes that `setSubmit` creates.
-        $animate.removeClass($element, 'ng-submitted');
-        // actually set the state of the form.
-        form.$submitted = false;
-        if (form.$$parentForm.$setUnsubmitted)
-          form.$$parentForm.$setUnsubmitted();
       };
 
       form.$removeControl = function (control) {

@@ -581,8 +581,15 @@ app.factory('modelService', [
       var v = this;
       return router.http(router.controllers.postVolumeFunding, this.id, funder, data)
         .then(function (res) {
-          // res.data could replace/add v.funding[X]
-          v.clear('funding');
+          var d = res.data;
+          if (v.funding) {
+            var i = v.funding.findIndex(function (f) {
+              return f.funder.id == d.funder.id;
+            });
+            if (i < 0)
+              i = v.funding.length;
+            v.funding[i] = d;
+          }
           return v;
         });
     };
@@ -591,8 +598,11 @@ app.factory('modelService', [
       var v = this;
       return router.http(router.controllers.deleteVolumeFunder, this.id, funder)
         .then(function (res) {
-          // could just remove v.funding[X]
-          v.clear('funding');
+          if (v.funding) {
+            v.funding = v.funding.filter(function (f) {
+              return f.funder.id != funder;
+            });
+          }
           return v.update(res.data);
         });
     };

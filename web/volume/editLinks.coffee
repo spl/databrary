@@ -44,7 +44,6 @@ app.directive 'volumeEditLinksForm', [
               owner: form
 
             form.$setPristine()
-            form.$setUnsubmitted()
             return
           , (res) ->
             form.$setUnsubmitted()

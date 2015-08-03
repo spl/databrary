@@ -7,10 +7,10 @@
     </fieldset>
     <label message="funding.awards"></label>
 
-    <div ng-repeat="award in fundingGrantForm.data.awards track by $index" ng-show="award !== null">
+    <div ng-repeat="award in fundingGrantForm.data.awards track by $index" ng-if="award !== null">
       <validator name="funding.awards[{{$index}}]" noclientval>
         <input type="text" name="funding.awards[{{$index}}]" ng-model="fundingGrantForm.data.awards[$index]" placeholder="{{::'funding.awards.placeholder' | message}}" ng-change="fundingGrantForm.awardChange()">
-        <button ng-click="fundingGrantForm.awardRemove($index)" class="icon trash mini pull">        </button>
+        <button ng-click="fundingGrantForm.awardRemove($index)" class="icon trash mini pull"></button>
       </validator>
     </div>
   </fieldset>

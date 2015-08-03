@@ -12,13 +12,9 @@ app.directive('partyEditGrantForm', [
 
       form.saveAll = function () {
         form.$setSubmitted();
-        var formPromises = subforms.map(function (subform) {
+        subforms.foreach(function (subform) {
           if (subform.$dirty)
             subform.save(false);
-        });
-
-        $q.all(formPromises).finally(function(){
-          form.$setUnsubmitted();
         });
       };
 

@@ -17,7 +17,6 @@ app.directive('authApplyForm', [
       var saveAuth = function () {
         form.$setSubmitted();
         party.authorizeApply(auth.party.id, form.data).then(function () {
-          form.$setUnsubmitted();
           form.validator.server({});
           form.$setPristine();
           delete auth.new;

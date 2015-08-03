@@ -30,7 +30,6 @@ app.directive('partyEditAccountForm', [
               owner: form
             });
 
-            form.$setUnsubmitted();
             init();
             form.$setPristine();
           }, function (res) {

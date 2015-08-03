@@ -26,7 +26,6 @@ app.directive 'volumeDesign', [
         volume.setVolumeMetrics(c, m, if m? then form[c][m] else form[c].on).then(() ->
             init()
             form.$setPristine()
-            form.$setUnsubmitted()
             return
           , (res) ->
             init()

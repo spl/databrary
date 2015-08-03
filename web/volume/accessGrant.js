@@ -35,7 +35,6 @@ app.directive('accessGrantForm', [
 
         form.$setSubmitted();
         volume.accessSave(access.party.id, form.data).then(function () {
-          form.$setUnsubmitted();
           messages.add({
             body: constants.message('access.grant.save.success'),
             type: 'green',
@@ -64,7 +63,6 @@ app.directive('accessGrantForm', [
         }
         form.$setSubmitted();
         volume.accessRemove(access.party.id).then(function () {
-          form.$setUnsubmitted();
           messages.add({
             body: constants.message('access.grant.remove.success'),
             type: 'green',
