@@ -62,19 +62,28 @@ CREATE SCHEMA public;
 EOF
 }
 
+record () {
+	if [[ $1 = 0 ]] ; then
+		runsql <<EOF
+CREATE TABLE schema (name varchar(64) Primary Key, applied timestamptz NOT NULL Default now());
+EOF
+	else
+		runsql <<EOF
+INSERT INTO schema (name) VALUES ('$1');
+EOF
+	fi
+}
+
 schema () {
 	if [[ -z $1 ]] ; then
 		runsql $schema.sql
+		for s in $schema/*.sql ; do
+			s=${s%.sql}
+			s=${s#$schema/}
+			record $s
+		done
 	else
-		if [[ $1 = 0 ]] ; then
-			runsql <<EOF
-CREATE TABLE schema (name varchar(64) Primary Key, applied timestamptz NOT NULL Default now());
-EOF
-		else
-			runsql <<EOF
-INSERT INTO schema (name) VALUES ('$1');
-EOF
-		fi
+		record $1
 		if [[ $1 = *_root ]] ; then
 			runsql $schema/$1.sql -U ${db[super]:-postgres}
 		else
