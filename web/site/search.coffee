@@ -130,17 +130,17 @@ app.controller 'site/search', [
         $scope.query = query
         $scope.originalQuery = query
       # return page.router.http(page.router.controllers.postSearch, page.$route.current.params)
-      console.log("prev results", results)
-      # $scope.query = $scope.query.replace /;/g, "\%3B"
-      console.log("query:", $scope.query)
-      # page.$route.current.params.query = $scope.query
-      console.log("THE QUERY IS", $scope.query)
+      # console.log("prev results", results)
+      # # $scope.query = $scope.query.replace /;/g, "\%3B"
+      # console.log("query:", $scope.query)
+      # # page.$route.current.params.query = $scope.query
+      # console.log("THE QUERY IS", $scope.query)
       promise = page.router.http(page.router.controllers.postSearch,
         {"query" : $scope.query, "offset" : $scope.offset, "limit" : $scope.limit})
-      console.log(promise)
-      console.log("Passed in VolID: ", volId)
+      # console.log(promise)
+      # console.log("Passed in VolID: ", volId)
       promise.then (res) ->
-        console.log("GOT RES:", res)
+        # console.log("GOT RES:", res)
         if volId < 0
           parseResults(res.data)
         else
@@ -298,6 +298,12 @@ app.controller 'site/search', [
 
     # Perform a new search for people or volumes only... NOTE: does not do anything yet
     # TODO Either make this do something useful or remove the search part of it
+    $scope.partyVolBoxClick_temp = (t) ->
+      if t.includes($scope.volumeDisplayStr) || t.includes($scope.partyDisplayStr)
+        $scope.query = $scope.originalQuery
+        $scope.search()
+      console.log(t, $scope.filterDisplay)
+
     $scope.partyVolBoxClick = ->
       console.log($scope.selectedType, $scope.selectedType.join(" "))
       if $scope.selectedType.join(" ").includes($scope.volumeDisplayStr)

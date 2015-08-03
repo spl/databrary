@@ -12,8 +12,9 @@
     </div>
     <div class="search-filter col-desktop-3 col-tablet-2 col-mobile-6">
       <!--gcwork in progress-->
-      <div>Type
-        <span ng-repeat="t in typeDisplay" ng-click="partyVolBoxClick()" ng-bind="::t"></span>
+      <div>
+        <span><b>Results</b></span><br>
+        <span ng-repeat="t in typeDisplay" ng-click="partyVolBoxClick_temp(t)" ng-bind="::t"></span>
       </div>
 
       <div>Filter
@@ -21,7 +22,7 @@
       </div>
       <!--gcwork in progress-->
       <select multiple="multiple" ng-model="selectedType" ng-options="t for t in typeDisplay" ng-click="partyVolBoxClick()"></select>
-      <select multiple="multiple" ng-model="selectedFilter" ng-options="s for s in filterDisplay" ng-click="filterBoxClick()" ng-if="filterDisplay"></select>
+      <select multiple="multiple" ng-model="selectedFilter" ng-options="s for s in filterDisplay" ng-click="filterBoxClick()"></select>
       <label>Age Range</label>
       <input type="text" id="age" style="border:0;box-shadow:none;">
       <div id="age-slider" ng-mouseup="updateAgeRange()"></div>
