@@ -2,7 +2,7 @@
   <h4 class="view-title smaller" message="auth.parents.title"></h4>
   <p class="view-subtitle" message="auth.parents.subtitle"></p>
 
-  <article id="network-parent-{{::parent.id}}" class="permission-auth cf" ng-repeat="parent in party.parents">
+  <article id="network-parent-{{::parent.id}}" class="permission-auth cf" ng-repeat="parent in party.parents" ng-if="::!isAdmin || isAdmin && (parent.member || parent.site)">
     <div class="row">
       <div class="network-avatar col-desktop-1 col-tablet-1 col-mobile-1">
         <figure class="figure-avatar" fill ng-class="::{inst: parent.party.institution}">
