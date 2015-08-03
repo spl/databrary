@@ -1,5 +1,3 @@
-ALTER TYPE data_type ADD VALUE 'void';
-
 ALTER TABLE "record" ALTER "category" SET NOT NULL;
 ALTER TABLE "record_measures" ALTER "category" SET NOT NULL;
 
