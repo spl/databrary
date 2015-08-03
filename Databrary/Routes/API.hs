@@ -14,16 +14,19 @@ import Paths_databrary (version)
 import Databrary.HTTP.Route
 import Databrary.HTTP.Path.Swagger
 import Databrary.Model.Id.Types
+{-
 import Databrary.Model.Segment
 import Databrary.Model.Slot.Types
 import Databrary.Model.Tag.Types
+-}
 import Databrary.Action
 import Databrary.Controller.Paths
 import Databrary.Controller.Root
 import Databrary.Controller.Login
+import Databrary.Controller.Party
+{-
 import Databrary.Controller.Register
 import Databrary.Controller.Token
-import Databrary.Controller.Party
 import Databrary.Controller.Authorize
 import Databrary.Controller.Volume
 import Databrary.Controller.VolumeAccess
@@ -45,6 +48,7 @@ import Databrary.Controller.Audit
 import Databrary.Controller.Transcode
 import Databrary.Controller.Ingest
 import Databrary.Controller.Web
+-}
 
 op :: T.Text -> Route r a -> a -> [T.Text] -> (T.Text, Object)
 op i r a p = (swaggerPath (routePath r) a p, HM.singleton (T.toLower (TE.decodeLatin1 (routeMethod r))) $ object
