@@ -21,15 +21,15 @@
       </div>
       <!--gcwork in progress-->
       <select multiple="multiple" ng-model="selectedType" ng-options="t for t in typeDisplay" ng-click="partyVolBoxClick()"></select>
-      <select multiple="multiple" ng-model="selectedFilter" ng-options="s for s in filterDisplay" ng-click="filterBoxClick()"></select>
+      <select multiple="multiple" ng-model="selectedFilter" ng-options="s for s in filterDisplay" ng-click="filterBoxClick()" ng-if="filterDisplay"></select>
       <label>Age Range</label>
       <input type="text" id="amount" readonly style="border:0;box-shadow:none;">
       <div id="slider-range"></div>
-      <select>
+<!--       <select>
         <option>days</option>
         <option>months</option>
         <option>years</option>
-      </select>
+      </select> -->
     </div>
     <div class="search-results col-desktop-12 col-tablet-7 col-mobile-6">
       <p class="search-results-count">Number of results found: {{totalCount}}</p>

@@ -65,18 +65,34 @@
     content none
     
 // needs to be cleaned up    
+.ui-slider
+  width 150px
+  position relative
 .ui-slider-horizontal
   height b2
-.ui-widget-content
   border neutral53 solid 1px 
+.ui-slider-range
+  height 10px
+.ui-widget-content
   background-color white
   color #333 
 .ui-widget-header
   background #ccc  
 .ui-slider-range
   position absolute
+  top 0px
   z-index 1
   font-size 0.7em
   display inline-block
   border 0
   background-color red
+.ui-slider-handle
+  position absolute
+  border 1px neutral13 solid
+  background-color neutral
+  width 6px
+  height 16px
+  margin-left -3px
+  margin-top -3px
+  z-index 2
+  
