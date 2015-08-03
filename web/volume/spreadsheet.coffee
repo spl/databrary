@@ -117,9 +117,8 @@ app.directive 'spreadsheet', [
 
         Groups = []     # [] Array over categories :: {category: Category, metrics[]: Array of Metric}
         Cols = []       # [] Array over metrics :: {category: Category, metric: Metric} (flattened version of Groups)
-        Rows = []       # [i] :: Row
+        Rows = []       # [i] :: Row (-1 => foot)
         Order = []      # Permutation Array of Row in display order
-        Foot = undefined # DOM Element tr
         Expanded = undefined # Info
 
 
@@ -414,6 +413,7 @@ app.directive 'spreadsheet', [
         populate = ->
           bySlot = Key == pseudoCategory.slot
           populateCols(bySlot)
+          foot = Rows[-1]
           Rows = []
           if bySlot
             populateSlots()
@@ -423,6 +423,7 @@ app.directive 'spreadsheet', [
             Order = if Rows.length then [0..Rows.length-1] else []
           $(TBody).empty()
           Expanded = undefined
+          Rows[-1] = foot if foot
           generate()
           return
 
@@ -564,16 +565,15 @@ app.directive 'spreadsheet', [
           return
 
         generateFoot = ->
-          info = new Info(-1)
-          if Foot
-            $(Foot).empty()
+          if row = Rows[-1]
+            $(Rows[-1].tr).empty()
           else
-            Foot = TFoot.appendChild(document.createElement('tr'))
-            Foot.id = ID + '_add'
-          info.tr = Foot
+            row = new Row(-1)
+            row.tr = TFoot.appendChild(document.createElement('tr'))
+            row.tr.id = ID + '_add'
+          info = new Info(row.i)
           info.cols = Groups[0]
           info.category = Key
-          info.slot = undefined
           td = info.tr.appendChild(document.createElement('td'))
           td.setAttribute("colspan", info.cols.metrics.length)
           td.className = 'null'
