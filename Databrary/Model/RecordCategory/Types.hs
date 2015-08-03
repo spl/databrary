@@ -20,6 +20,7 @@ type instance IdType RecordCategory = Int16
 data RecordCategory = RecordCategory
   { recordCategoryId :: Id RecordCategory
   , recordCategoryName :: T.Text
+  , recordCategoryDescription :: Maybe T.Text
   , recordCategoryTemplate :: [(Metric, Bool)]
   }
 
