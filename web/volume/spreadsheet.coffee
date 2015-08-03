@@ -1051,7 +1051,7 @@ app.directive 'spreadsheet', [
             while true
               c = if event.shiftKey then c.previousSibling else c.nextSibling
               return unless c && i = parseId(c)
-              break unless !info.t && info.metric.id == 'id' # skip "delete" actions
+              break unless i.category?.id == 'asset' || i.metric?.name == 'indicator' # skip "delete" actions
             select(i)
 
           return
