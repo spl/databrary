@@ -23,8 +23,8 @@
       <select multiple="multiple" ng-model="selectedType" ng-options="t for t in typeDisplay" ng-click="partyVolBoxClick()"></select>
       <select multiple="multiple" ng-model="selectedFilter" ng-options="s for s in filterDisplay" ng-click="filterBoxClick()" ng-if="filterDisplay"></select>
       <label>Age Range</label>
-      <input type="text" id="amount" readonly style="border:0;box-shadow:none;">
-      <div id="slider-range"></div>
+      <input type="text" id="age" style="border:0;box-shadow:none;">
+      <div id="age-slider" ng-mouseup="updateAgeRange()"></div>
 <!--       <select>
         <option>days</option>
         <option>months</option>

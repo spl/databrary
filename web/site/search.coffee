@@ -53,6 +53,11 @@ app.controller 'site/search', [
     # Name of the currently selected filter.
     currentFilter = ""
 
+    ageRangeMin = 0
+    ageRangeMax = 0
+
+    # 
+
 
   ###########################
   # Functions for transforming a document into strings
@@ -393,21 +398,23 @@ app.controller 'site/search', [
       # arg = "|arg=record_tag_s:[#{ ageMin } TO #{ ageMax }]"
       # return query + arg
 
+    # age range slider wip
     $ -> 
-      $('#slider-range').slider
+      $('#age-slider').slider
         range: true
         min: 0
         max: 500
-        values: [
-          75
-          300
-        ]
         slide: (event, ui) ->
-          $('#amount').val ui.values[0] + ' - ' + ui.values[1] + ' days'
+          $('#age').val ui.values[0] + ' - ' + ui.values[1] + ' days'
           return
-      $('#amount').val $('#slider-range').slider('values', 0) + ' - ' + $('#slider-range').slider('values', 1) + ' days'
+      $('#age').val $('#age-slider').slider('values', 0) + ' - ' + $('#age-slider').slider('values', 1) + ' days'
       return
 
+    $scope.updateAgeRange = ->
+      ageMin = $('#age-slider').slider('values', 0) 
+      ageMax = $('#age-slider').slider('values', 1)
+      console.log ageMin, ageMax
+      return
 
     # Code for the initial loado
     params = $location.search()
