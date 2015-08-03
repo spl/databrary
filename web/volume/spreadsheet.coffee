@@ -676,6 +676,7 @@ app.directive 'spreadsheet', [
           cell.classList.add('saving')
           run.then (res) ->
               cell.classList.remove('saving')
+              $scope.form.$setPristine()
               res
             , (res) ->
               cell.classList.remove('saving')
@@ -1166,7 +1167,6 @@ app.directive 'spreadsheet', [
 
         $scope.setKey($attrs.key)
         return
-
 
     ]
     }
