@@ -688,14 +688,14 @@ ALTER TABLE "metric"
 COMMENT ON TABLE "metric" IS 'Types of measurements for data stored in measure_$type tables.';
 COMMENT ON COLUMN "metric"."options" IS '(Suggested) options for text enumerations, not enforced.';
 INSERT INTO "metric" ("id", "name", "release", "type") VALUES (-1000, 'indicator', 'PUBLIC', 'void');
-INSERT INTO "metric" ("id", "name", "release", "type", "description") VALUES (-900, 'ID', 'EXCERPTS', 'text', 'A primary, unique, anonimized identifier, label, or name');
+INSERT INTO "metric" ("id", "name", "release", "type", "description") VALUES (-900, 'ID', 'EXCERPTS', 'text', 'A primary, unique, anonymized identifier, label, or name');
 INSERT INTO "metric" ("id", "name", "release", "type", "options", "description") VALUES (-700, 'reason', 'EXCERPTS', 'text', ARRAY['Did not meet inclusion criteria','Procedural/experimenter error','Withdrew/fussy/tired','Outlier'], 'A reason for a label (often for an exclusion)');
 INSERT INTO "metric" ("id", "name", "release", "type", "description") VALUES (-650, 'summary', 'PUBLIC', 'text', 'A short, one-line summary of this label');
-INSERT INTO "metric" ("id", "name", "release", "type", "description") VALUES (-600, 'description', 'PUBLIC', 'text', 'A longer explaination or description of this label');
+INSERT INTO "metric" ("id", "name", "release", "type", "description") VALUES (-600, 'description', 'PUBLIC', 'text', 'A longer explanation or description of this label');
 INSERT INTO "metric" ("id", "name", "type", "description") VALUES (-590, 'birthdate', 'date', 'The date of birth of an individual, or start/inception date for other labels (used with session date to calculate age)');
 INSERT INTO "metric" ("id", "name", "release", "type", "options", "description") VALUES (-580, 'gender', 'EXCERPTS', 'text', ARRAY['Female','Male'], '"Male", "Female", or any other relevant gender label');
 INSERT INTO "metric" ("id", "name", "release", "type", "options", "description") VALUES (-550, 'race', 'EXCERPTS', 'text', ARRAY['American Indian or Alaska Native','Asian','Native Hawaiian or Other Pacific Islander','Black or African American','White','Multiple'], 'Usually as categorized by NIH');
-INSERT INTO "metric" ("id", "name", "release", "type", "options", "description") VALUES (-540, 'ethnicity', 'EXCERPTS', 'text', ARRAY['Not Hispanic or Latino','Hispanic or Latino'], 'Usually as categorized by NIH (Hispanic/Non-hispanic)');
+INSERT INTO "metric" ("id", "name", "release", "type", "options", "description") VALUES (-540, 'ethnicity', 'EXCERPTS', 'text', ARRAY['Not Hispanic or Latino','Hispanic or Latino'], 'Usually as categorized by NIH (Hispanic/Non-Hispanic)');
 INSERT INTO "metric" ("id", "name", "type", "assumed", "description") VALUES (-520, 'disability', 'text', 'typical', 'Any developmental, physical, or mental disability (assumed typical by default)');
 INSERT INTO "metric" ("id", "name", "release", "type", "assumed", "description") VALUES (-510, 'language', 'EXCERPTS', 'text', 'English', 'Primary language relevant to this label, spoken by this participant, or used in this context (assumed English by default)');
 INSERT INTO "metric" ("id", "name", "release", "type", "options", "description") VALUES (-180, 'setting', 'PUBLIC', 'text', ARRAY['Lab','Home','Classroom','Outdoor','Clinic'], 'The physical context of this label');
