@@ -306,10 +306,7 @@ app.controller 'site/search', [
 
     $scope.partyVolBoxClick = ->
       console.log($scope.selectedType, $scope.selectedType.join(" "))
-      if $scope.selectedType.join(" ").includes($scope.volumeDisplayStr)
-        $scope.query = $scope.originalQuery
-        $scope.search()
-      if $scope.selectedType.join(" ").includes($scope.partyDisplayStr)
+      if $scope.selectedType.join(" ").includes($scope.volumeDisplayStr) || $scope.selectedType.join(" ").includes($scope.partyDisplayStr)
         $scope.query = $scope.originalQuery
         $scope.search()
       console.log($scope.selectedType, $scope.filterDisplay)
