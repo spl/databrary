@@ -37,10 +37,7 @@ agePrefix = "age:"
 
 -- Type for all of our documents
 data DocType = Container | Record | Volume | AssetSegment | TagSegment | Segment | Unknown
-{-data QueryJoin = QueryJoin {queryJoin :: String}-}
-{-data QueryArg = QueryArg {queryArg :: String}-}
-{-data QuerySearchTerm = QuerySearchTerm {querySearchTerm :: String}-}
-data QueryPart = QueryArg String String | QueryJoin String String
+data QueryPart = QueryArg String String | QueryJoin String String String
                     | QuerySearchTerm String | QueryLimit Int | QueryStart Int
                     | QueryType String deriving Show
 
@@ -112,7 +109,7 @@ filterArg _ = Nothing
 
 
 filterJoin :: QueryPart -> Maybe QueryPart
-filterJoin (QueryJoin x y) = Just $ QueryJoin x y
+filterJoin (QueryJoin x y z) = Just $ QueryJoin x y z
 filterJoin _ = Nothing
 
 --
@@ -151,10 +148,10 @@ parseQueryPart x
 
 -- Joins look like join=type,type and we just want the types
 parseQueryJoin :: String -> QueryPart
-parseQueryJoin x = QueryJoin arg1 arg2
+parseQueryJoin x = QueryJoin arg1 arg2 filter
                      where
                         args = splitOn "," $ concat $ drop 1 $ splitOn "=" x
-                        [arg1,arg2] = args
+                        [arg1,arg2, filter] = args
 
 -- Args looks like arg=argname:value
 parseQueryArg :: String -> QueryPart
@@ -194,7 +191,7 @@ joinToString qp = do
          Just q -> joinToString' q
 
 joinToString' :: QueryPart -> String
-joinToString' (QueryJoin j1 j2) = "{!join from=" ++ j1 ++ " to=" ++  j2 ++ "} "
+joinToString' (QueryJoin j1 j2 j3) = "{!join from=" ++ j1 ++ " to=" ++  j2 ++ "}" ++ j3 ++ " "
 joinToString' _ = ""
 
 argsToString :: Maybe [QueryPart] -> String
@@ -212,7 +209,7 @@ termsToString :: Maybe [QueryPart] -> String
 termsToString qp = do
       case qp of
          Nothing -> ""
-         Just q -> intercalate " AND " (map termsToString' q)
+         Just q -> intercalate " " (map termsToString' q)
 
 termsToString' :: QueryPart -> String
 termsToString' (QuerySearchTerm t1) = t1

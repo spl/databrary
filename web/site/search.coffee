@@ -56,7 +56,7 @@ app.controller 'site/search', [
     ageRangeMin = 0
     ageRangeMax = 0
 
-    # 
+    #
 
 
   ###########################
@@ -129,18 +129,10 @@ app.controller 'site/search', [
       if query.length > 0
         $scope.query = query
         $scope.originalQuery = query
-      # return page.router.http(page.router.controllers.postSearch, page.$route.current.params)
-      # console.log("prev results", results)
-      # # $scope.query = $scope.query.replace /;/g, "\%3B"
-      # console.log("query:", $scope.query)
-      # # page.$route.current.params.query = $scope.query
-      # console.log("THE QUERY IS", $scope.query)
       promise = page.router.http(page.router.controllers.postSearch,
         {"query" : $scope.query, "offset" : $scope.offset, "limit" : $scope.limit})
-      # console.log(promise)
-      # console.log("Passed in VolID: ", volId)
       promise.then (res) ->
-        # console.log("GOT RES:", res)
+        console.log("GOT RES:", res)
         if volId < 0
           parseResults(res.data)
         else
@@ -177,7 +169,7 @@ app.controller 'site/search', [
         # $scope.query = "*"
       console.log("query before anything:", $scope.query)
       console.log("RES:", res)
-      models = createModels(results)
+      models = createModels(res)
       $scope.partyModels = models.parties
       $scope.volumeModels = models.volumes
 
@@ -224,6 +216,7 @@ app.controller 'site/search', [
       updateFilterBoxOptions()
 
       $scope.number = 1 + ($scope.offset / $scope.limit)
+      $scope.query = $scope.originalQuery
 
 ################################
 # End parse results
@@ -379,23 +372,20 @@ app.controller 'site/search', [
       arg = "|arg=volume_id_i:#{ volume.id }"
       return query + arg
 
-    searchAge = (volume, query, ageMin, ageMax) ->
-      query = searchVolume(volume, query)
-      arg = "|arg=record_age_td:[#{ ageMin } TO #{ ageMax }]"
+    searchAge = (query, ageMin, ageMax) ->
+      # arg = "|arg=record_age_td:[#{ ageMin } TO #{ ageMax }]"
+      arg = "|join=volume_id_i,volume_id_i,record_age_td:[#{ ageMin } TO #{ ageMax }]"
       return query + arg
 
     searchSex = (volume, query, sex) ->
-      query = searchVolume(volume, query)
       arg = "|arg=record_gender_s:[#{ sex }]"
       return query + arg
 
     searchSetting = (volume, query, setting) ->
-      query = searchVolume(volume, query)
       arg = "|arg=record_setting_s:[#{ setting }]"
       return query + arg
 
     searchRace = (volume, query, race) ->
-      query = searchVolume(volume, query)
       arg = "|arg=record_race_s:[#{ race }]"
       return query + arg
 
@@ -405,7 +395,7 @@ app.controller 'site/search', [
       # return query + arg
 
     # age range slider wip
-    $ -> 
+    $ ->
       $('#age-slider').slider
         range: true
         min: 0
@@ -417,9 +407,12 @@ app.controller 'site/search', [
       return
 
     $scope.updateAgeRange = ->
-      ageMin = $('#age-slider').slider('values', 0) 
+      ageMin = $('#age-slider').slider('values', 0)
       ageMax = $('#age-slider').slider('values', 1)
       console.log ageMin, ageMax
+      $scope.query = searchAge($scope.query, ageMin, ageMax)
+      console.log $scope.query
+      $scope.search()
       return
 
     # Code for the initial loado

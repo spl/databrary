@@ -132,7 +132,7 @@ instance ToJSON SolrQuery where
       toJSON ( SolrQuery sQquery sArgs sJoin sQlimit sQstart ) =
          object [
                   "limit" .= sQlimit,
-                  "filter" .= sArgs,
+                  "filter" .= [sJoin, sArgs],
                   "facet" .= object [
                     "content_type" .= object [
                         "terms" .= object [
@@ -149,6 +149,7 @@ instance ToJSON SolrQuery where
                   "params" .= object [
                         "defType" .= ("edismax" :: String),
                         "q" .= sQquery,
+                        "q.op" .= ("AND" :: String),
                         "qf" .= (volumeQf ++ (" " :: String) ++ containerQf),
                         "pf" .= (volumePf ++ (" " :: String) ++ containerPf),
                         "ps" .= (3 :: Int),
