@@ -56,6 +56,10 @@ app.controller 'site/search', [
     ageRangeMin = 0
     ageRangeMax = 0
 
+    highlightFilter = false
+    sessionFilter = false
+    partyFilter = false
+
     #
 
 
@@ -148,6 +152,18 @@ app.controller 'site/search', [
           $scope.query = searchAge($scope.query, ageRangeMin, ageRangeMax, false)
         else
           $scope.query = searchAge($scope.query, ageRangeMin, ageRangeMax)
+
+      if sessionFilter
+        $scope.query = searchSession($scope.query)
+
+      if highlightFilter
+        $scope.query = searchHighlight($scope.query)
+
+      if partyFilter
+        $scope.query = searchParties($scope.query)
+
+      # Party search?
+
 
       # Send the search
       promise = page.router.http(page.router.controllers.postSearch,
@@ -326,49 +342,23 @@ app.controller 'site/search', [
       console.log("FILTER BOX CLICKED", $scope.selectedFilter)
       if $scope.selectedType.join(" ").includes($scope.volumeDisplayStr)
         if $scope.selectSessionStr in $scope.selectedFilter
-          filterBySession()
+          sessionFilter = true
+        else
+          sessionFilter = false
         if $scope.selectHighlightStr in $scope.selectedFilter
-          filterByHighlight()
+          highlightFilter = true
+        else
+          highlightFilter = false
       if $scope.selectedType.join(" ").includes($scope.partyDisplayStr)
-        # $scope.partyFilterBoxClick()
-        filterParties($scope.selectedFilter)
+        partyFilter = true
         console.log("FILTERING BY PARTY")
+      else
+        partyFilter = false
       $scope.offset = 0 # Reset the offset
       $scope.search()
 
     addArgToQuery = (query, arg, val) ->
       return query + "|arg=" + arg + ":\"" + val + "\""
-
-
-    $scope.partyFilterBoxClick = ->
-      filterByAffiliation()
-
-    filterByAffiliation = ->
-      $scope.query = $scope.originalQuery + "|arg=party_affiliation_s:\"" + $scope.selectedFilter + "\""
-
-      # funcs = {"session" : filterBySession, "highlight" : filterByHighlight}
-
-    # Now we want to rerun the search but only return vols w/ highlights
-    filterByHighlight = ->
-      $scope.requireHighlight = true
-      $scope.query = $scope.originalQuery + "|arg=volume_has_excerpt_b:true"
-
-    filterBySession = ->
-      $scope.requireSession = true
-      $scope.query = $scope.originalQuery + "|arg=volume_has_sessions_b:true"
-
-    filterParties = (filterName) ->
-      console.log("Filtering parties by", filterName)
-      if filterName.join(" ").includes("All")
-        # Select all parties
-        $scope.query = $scope.originalQuery # TODO should this do something else?
-      else if filterName.join(" ").includes("Institution")
-        # Select institutions
-        $scope.query = addArgToQuery($scope.originalQuery, "party_is_institution_b", "true")
-      else if filterName.join(" ").includes("Authorized")
-        # Select authorized users only
-        $scope.query = addArgToQuery($scope.originalQuery, "party_is_authorized_b", "true")
-      console.log("Query after filter", $scope.query)
 
     createModels = (res) ->
       parties = getResults("party", res)
@@ -381,6 +371,32 @@ app.controller 'site/search', [
       console.log("VOLUME TIME", volumes, volumeModels)
       console.log("RECORD TIME", slots, recordModels)
       return { parties: partyModels, volumes: volumeModels, records: recordModels }
+
+    searchAffiliation = (query) ->
+      return addArgToQuery(query, "party_affiliation_s", $scope.selectedFilter)
+
+    # Now we want to rerun the search but only return vols w/ highlights
+    searchHighlight = (query) ->
+      $scope.requireHighlight = true
+      return addArgToQuery(query,"volume_has_excerpt_b", "true")
+
+    searchSession = (query) ->
+      $scope.requireSession = true
+      return addArgToQuery(query, "volume_has_sessions_b", "true")
+
+    searchParties = (query) ->
+      filterName = $scope.selectedFilter
+      console.log("Filtering parties by", filterName)
+      if filterName.join(" ").includes("All")
+        # Select all parties
+        query = query # TODO should this do something else?
+      else if filterName.join(" ").includes("Institution")
+        # Select institutions
+        query = addArgToQuery(query, "party_is_institution_b", "true")
+      else if filterName.join(" ").includes("Authorized")
+        # Select authorized users only
+        query = addArgToQuery(query, "party_is_authorized_b", "true")
+      return query
 
     searchVolume = (volume, query) ->
       arg = "|arg=volume_id_i:#{ volume.id }"
