@@ -344,8 +344,12 @@ app.controller 'site/search', [
       console.log($scope.selectedType, $scope.selectedType.join(" "))
       if $scope.selectedType.join(" ").includes($scope.volumeDisplayStr)
         volumeFilter = true
+      else
+        volumeFilter = false
       if $scope.selectedType.join(" ").includes($scope.partyDisplayStr)
         partyFilter = true
+      else
+        partyFilter = false
       $scope.search()
       console.log($scope.selectedType, $scope.filterDisplay)
 
