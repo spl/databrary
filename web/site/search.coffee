@@ -123,9 +123,9 @@ app.controller 'site/search', [
 
       if $scope.searchBoxQuery? and $scope.searchBoxQuery.length > 0
         if $location.search()["debug"]?
-          $location.search("query=" + $scope.searchBoxQuery + "&debug=1").replace()
+          $location.search("query=" + $scope.searchBoxQuery + "&debug=1")
         else
-          $location.search("query=" + $scope.searchBoxQuery).replace()
+          $location.search("query=" + $scope.searchBoxQuery)
       # $location.replace($location.search, $scope.searchBoxQuery)
 
       # Handle user clearing search box and hitting enter
@@ -480,6 +480,12 @@ app.controller 'site/search', [
       console.log ageRangeMin, ageRangeMax
       $scope.search()
       return
+
+    $scope.$on('$routeUpdate',() ->
+      $scope.query = $location.search().query
+      $scope.searchBoxQuery = $scope.query
+      $scope.search()
+    )
 
     # Code for the initial loado
     params = $location.search()
