@@ -59,6 +59,7 @@ app.controller 'site/search', [
     highlightFilter = false
     sessionFilter = false
     partyFilter = false
+    volumeFilter = false
 
     #
 
@@ -161,6 +162,9 @@ app.controller 'site/search', [
 
       if partyFilter
         $scope.query = searchParties($scope.query)
+
+      if volumeFilter
+        $scope.query = searchVolumes($scope.query)
 
       # Party search?
 
@@ -325,16 +329,24 @@ app.controller 'site/search', [
     # Perform a new search for people or volumes only... NOTE: does not do anything yet
     # TODO Either make this do something useful or remove the search part of it
     $scope.partyVolBoxClick_temp = (t) ->
-      if t.includes($scope.volumeDisplayStr) || t.includes($scope.partyDisplayStr)
-        $scope.query = $scope.originalQuery
-        $scope.search()
+      if t.includes($scope.volumeDisplayStr)
+        volumeFilter = true
+      else
+        volumeFilter = false
+      if t.includes($scope.partyDisplayStr)
+        partyFilter = true
+      else
+        partyFilter = false
+      $scope.search()
       console.log(t, $scope.filterDisplay)
 
     $scope.partyVolBoxClick = ->
       console.log($scope.selectedType, $scope.selectedType.join(" "))
-      if $scope.selectedType.join(" ").includes($scope.volumeDisplayStr) || $scope.selectedType.join(" ").includes($scope.partyDisplayStr)
-        $scope.query = $scope.originalQuery
-        $scope.search()
+      if $scope.selectedType.join(" ").includes($scope.volumeDisplayStr)
+        volumeFilter = true
+      if $scope.selectedType.join(" ").includes($scope.partyDisplayStr)
+        partyFilter = true
+      $scope.search()
       console.log($scope.selectedType, $scope.filterDisplay)
 
     # Action to do something when a filter option is clicked
@@ -384,18 +396,27 @@ app.controller 'site/search', [
       $scope.requireSession = true
       return addArgToQuery(query, "volume_has_sessions_b", "true")
 
+    searchVolumes = (query) ->
+      return addArgToQuery(query, "content_type", "volume")
+
+    searchParty = (query) ->
+      return addArgToQuery(query, "content_type", "party")
+
     searchParties = (query) ->
       filterName = $scope.selectedFilter
       console.log("Filtering parties by", filterName)
-      if filterName.join(" ").includes("All")
-        # Select all parties
-        query = query # TODO should this do something else?
-      else if filterName.join(" ").includes("Institution")
-        # Select institutions
-        query = addArgToQuery(query, "party_is_institution_b", "true")
-      else if filterName.join(" ").includes("Authorized")
-        # Select authorized users only
-        query = addArgToQuery(query, "party_is_authorized_b", "true")
+      if filterName? and filterName.length > 0
+        if filterName.join(" ").includes("All")
+          # Select all parties
+          query = searchParty(query)
+        else if filterName.join(" ").includes("Institution")
+          # Select institutions
+          query = addArgToQuery(query, "party_is_institution_b", "true")
+        else if filterName.join(" ").includes("Authorized")
+          # Select authorized users only
+          query = addArgToQuery(query, "party_is_authorized_b", "true")
+      else
+        query = searchParty(query)
       return query
 
     searchVolume = (volume, query) ->
