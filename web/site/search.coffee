@@ -121,6 +121,13 @@ app.controller 'site/search', [
       console.log("The search box was :", $scope.searchBoxQuery)
       console.log("The original query was :", $scope.originalQuery)
 
+      if $scope.searchBoxQuery? and $scope.searchBoxQuery.length > 0
+        if $location.search()["debug"]?
+          $location.search("query=" + $scope.searchBoxQuery + "&debug=1").replace()
+        else
+          $location.search("query=" + $scope.searchBoxQuery).replace()
+      # $location.replace($location.search, $scope.searchBoxQuery)
+
       # Handle user clearing search box and hitting enter
       if $scope.searchBoxQuery? and $scope.searchBoxQuery != ""
         $scope.originalQuery = $scope.searchBoxQuery
