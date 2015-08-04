@@ -132,7 +132,11 @@ app.controller 'site/search', [
 
       # Set the currently selected filter options here
       if ageRangeMin > 0 or ageRangeMax > 0
-        $scope.query = searchAge($scope.query, ageRangeMin, ageRangeMax)
+        if volId > 0
+          $scope.query = searchAge($scope.query, ageRangeMin, ageRangeMax, false)
+        else
+          $scope.query = searchAge($scope.query, ageRangeMin, ageRangeMax)
+
 
       console.log("QUERY IS: ", $scope.query)
 
@@ -376,9 +380,12 @@ app.controller 'site/search', [
       arg = "|arg=volume_id_i:#{ volume.id }"
       return query + arg
 
-    searchAge = (query, ageMin, ageMax) ->
+    searchAge = (query, ageMin, ageMax, join=true) ->
       # arg = "|arg=record_age_td:[#{ ageMin } TO #{ ageMax }]"
-      arg = "|join=volume_id_i,volume_id_i,record_age_td:[#{ ageMin } TO #{ ageMax }]"
+      if join
+        arg = "|join=volume_id_i,volume_id_i,record_age_td:[#{ ageMin } TO #{ ageMax }]"
+      else
+        arg = "|arg=record_age_td:[#{ ageMin } TO #{ ageMax }]"
       return query + arg
 
     searchSex = (volume, query, sex) ->
