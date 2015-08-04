@@ -86,7 +86,7 @@
       <div frame id="frame-funding" frame-title="volume.funding.title" fold>
         <dl class="panel-overview-volume-funds" ng-repeat="funding in ::volume.funding">
           <dt ng-bind="::funding.funder.name"></dt>
-          <dd ng-repeat="award in ::funding.awards" ng-bind="::award"></dd>
+          <dd ng-repeat="award in ::funding.awards track by $index" ng-bind="::award"></dd>
         </dl>
       </div>
     </div>
