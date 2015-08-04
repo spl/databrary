@@ -1,4 +1,4 @@
-<ng-form name="volumeDesign">
+<ng-form name="volumeDesign" class="volume-design">
   <ul>
     <li ng-repeat="c in ::page.constants.categories track by c.id">
       <input type="checkbox" ng-model="volumeDesign[c.id].on" ng-change="volumeDesign.change(c.id)">
@@ -10,7 +10,7 @@
           <span ng-if="m.release != null" class="icon release" ng-class="::page.constants.release[m.release]"></span>
           <span ng-bind="::m.name" class="b"></span>: 
           <span ng-bind="::m.description"></span> 
-          <span ng-if="::m.assumed">(assumed "{{::m.assumed}}" by default)
+          <span ng-if="::m.assumed">(assumed "{{::m.assumed}}" by default)</span>
         </li>
       </ul>
     </li>
