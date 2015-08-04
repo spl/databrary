@@ -73,7 +73,7 @@ partyJSONField p "parents" o = do
   now <- peek
   fmap (Just . JSON.toJSON) . mapM (\a -> do
     let ap = authorizeParent (authorization a)
-    acc <- if auth then Just . accessSite <$> lookupAuthorization ap rootParty else return Nothing
+    acc <- if auth && authorizeActive a now then Just . accessSite <$> lookupAuthorization ap rootParty else return Nothing
     return $ (if admin then authorizeJSON a else mempty)
       JSON..+ ("party" JSON..= (partyJSON ap JSON..+? (("authorization" JSON..=) <$> acc)))
       JSON..+? (admin && authorizeExpired a now ?> "expired" JSON..= True))

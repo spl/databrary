@@ -49,7 +49,7 @@ postVolumeAccess = action POST (pathAPI </> pathId </> pathVolumeAccessTarget) $
       { volumeAccessIndividual = individual
       , volumeAccessChildren = children
       }
-  _ <- changeVolumeAccess a'
+  r <- changeVolumeAccess a'
   case api of
-    JSON -> okResponse [] $ JSON.Object $ volumeAccessJSON a
+    JSON -> okResponse [] $ JSON.Object $ volumeAccessPartyJSON (if r then a' else a)
     HTML -> redirectRouteResponse [] viewVolumeAccess arg []
