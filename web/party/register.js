@@ -86,13 +86,13 @@ app.controller('party/register', [
         var form = $scope.authSearchForm = step.$scope.authSearchForm;
         form.data = {};
 
-        form.selectFn = function (found) {
+        step.$scope.authSearchSelectFn = function (found) {
           $scope.auth.party = found;
           delete $scope.auth.query;
           $scope.proceed();
         };
 
-        form.notFoundFn = function (query) {
+        step.$scope.authSearchNotFoundFn = function (query) {
           delete $scope.auth.party;
           $scope.auth.query = query;
           $scope.proceed();
@@ -102,12 +102,12 @@ app.controller('party/register', [
       request: function (step) {
         var form = $scope.authApplyForm = step.$scope.authApplyForm;
         form.sent = false;
-        form.successFn = function () {
+        step.$scope.authApplySuccessFn = function () {
           form.sent = true;
           updateUserAuth();
         };
 
-        form.cancelFn = function () {
+        step.$scope.authApplyCancelFn = function () {
           delete $scope.auth.party;
           delete $scope.auth.query;
           $scope.proceed();

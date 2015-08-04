@@ -22,14 +22,14 @@ app.directive 'authSearchForm', [
           return
 
       select = (found) -> ->
-        form.selectFn(found)
+        $scope.authSearchSelectFn(found, form)
         form.$setPristine()
         ''
 
       notfound =
         text: constants.message('auth.notfound')
         select: ->
-          form.notFoundFn(form.nameVal, form)
+          $scope.authSearchNotFoundFn(form.nameVal, form)
           form.$setPristine()
           ''
 
@@ -41,8 +41,8 @@ app.directive 'authSearchForm', [
               form.validator.server {}
 
               l = _.map data, (found) ->
-                    text: found.name
-                    select:select found
+                text: found.name
+                select: select(found)
 
               l.push notfound
               l
@@ -54,8 +54,6 @@ app.directive 'authSearchForm', [
           name:
             tips: constants.message('auth.search.name.help'),
         , true
-
-      $scope.$emit('authSearchForm-init', form)
 
       return
 ]
