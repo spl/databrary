@@ -129,6 +129,13 @@ app.controller 'site/search', [
       if query.length > 0
         $scope.query = query
         $scope.originalQuery = query
+
+      # Set the currently selected filter options here
+      if ageRangeMin > 0 or ageRangeMax > 0
+        $scope.query = searchAge($scope.query, ageRangeMin, ageRangeMax)
+
+      console.log("QUERY IS: ", $scope.query)
+
       promise = page.router.http(page.router.controllers.postSearch,
         {"query" : $scope.query, "offset" : $scope.offset, "limit" : $scope.limit})
       promise.then (res) ->
@@ -404,11 +411,9 @@ app.controller 'site/search', [
       return
 
     $scope.updateAgeRange = ->
-      ageMin = $('#age-slider').slider('values', 0)
-      ageMax = $('#age-slider').slider('values', 1)
-      console.log ageMin, ageMax
-      $scope.query = searchAge($scope.query, ageMin, ageMax)
-      console.log $scope.query
+      ageRangeMin = $('#age-slider').slider('values', 0)
+      ageRangeMax = $('#age-slider').slider('values', 1)
+      console.log ageRangeMin, ageRangeMax
       $scope.search()
       return
 
