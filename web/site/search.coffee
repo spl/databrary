@@ -421,6 +421,9 @@ app.controller 'site/search', [
         slide: (event, ui) ->
           $('#age').val ui.values[0] + ' - ' + ui.values[1] + ' days'
           return
+        stop: (event, ui) ->
+          $scope.updateAgeRange()
+          return
       $('#age').val $('#age-slider').slider('values', 0) + ' - ' + $('#age-slider').slider('values', 1) + ' days'
       return
 
