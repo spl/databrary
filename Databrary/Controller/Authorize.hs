@@ -102,7 +102,35 @@ postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarge
       when (Fold.any ((PermissionPUBLIC <) . accessSite) a && Fold.all ((PermissionPUBLIC >=) . accessSite) c) $
         sendMail (maybe id (:) (Right <$> partyAccount child) authaddr)
           "Databrary authorization approved"
-          $ BSL.fromChunks ["You have been authorized for Databrary access by ", TE.encodeUtf8 (partyName parent), ".\n"]
+          $ BSL.fromChunks
+          [ "You have been authorized for Databrary access by ", TE.encodeUtf8 (partyName parent), ".\n\
+            \and can now access all the shared data in the library.  You can see how to\n\
+            \conduct procedures, find illustrative videos for teaching, increase citations\n\
+            \to your work, and repurpose videos to ask new questions outside the scope of\n\
+            \the original study.  Databrary's unique 'upload-as-you-go' data management\n\
+            \functionality enables easy and efficient data management.  Moreover, Databrary\n\
+            \provides secure backup and long-term preservation of your videos and associated\n\
+            \data.\n\
+            \\n\
+            \We want to let you know about some resources that may help you get started.\n\
+            \We've developed a template Databrary Release form for obtaining informed\n\
+            \consent for sharing from participants, which can be found here:\n\
+            \  http://databrary.org/access/policies/release-template.html\n\
+            \It's completely adaptable and can be added to new or existing IRB protocols.\n\
+            \\n\
+            \Our data management features allow you to manage, organize, and preserve your\n\
+            \videos and associated metadata in a secure web-based library.  You can upload\n\
+            \data and video files as soon as they are collected so that they are organized\n\
+            \and securely backed-up.  Data remains private and accessible only to lab members\n\
+            \and collaborators until you are ready to share with the Databrary community.\n\
+            \When data are organized and uploaded, sharing is as easy as a click of a\n\
+            \button!  We also have lots of information and helpful tips in our User Guide:\n\
+            \  http://databrary.org/access/guide\n\
+            \\n\
+            \Our support team is dedicated to providing assistance to the Databrary\n\
+            \community.  Please contact us at support@databrary.org with any questions or for\n\
+            \help getting started.\n"
+          ]
       return a
   case api of
     JSON -> maybe (emptyResponse noContent204 []) (okResponse [] . JSON.Object . authorizeJSON) a
