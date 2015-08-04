@@ -106,7 +106,6 @@ app.controller 'site/search', [
       beforeQuery = $scope.query
       query = $scope.query + "|type=container"
       query = searchVolume(vol, query)
-      # query = $scope.query + "|type=container|arg=container_volume_id_i:" + "15"
       $scope.search(query, vol.id)
       $scope.query = beforeQuery
 
@@ -116,10 +115,13 @@ app.controller 'site/search', [
     $scope.searchBox = ->
       console.log("The search box was :", $scope.searchBoxQuery)
       console.log("The original query was :", $scope.originalQuery)
+
+      # Handle user clearing search box and hitting enter
       if $scope.searchBoxQuery? and $scope.searchBoxQuery != ""
         $scope.originalQuery = $scope.searchBoxQuery
       else
         $scope.originalQuery = "*"
+
       $scope.query = $scope.originalQuery
       $scope.offset = 0
       console.log("NEW SEARCH:", $scope.query)
@@ -147,9 +149,7 @@ app.controller 'site/search', [
         else
           $scope.query = searchAge($scope.query, ageRangeMin, ageRangeMax)
 
-
-      console.log("QUERY IS: ", $scope.query)
-
+      # Send the search
       promise = page.router.http(page.router.controllers.postSearch,
         {"query" : $scope.query, "offset" : $scope.offset, "limit" : $scope.limit})
       promise.then (res) ->
@@ -186,10 +186,7 @@ app.controller 'site/search', [
         $scope.query = "*"
         $scope.search()
         return
-      # if !$scope.query? or !$scope.query or $scope.query == "" or $scope.query == "null" or $scope.query == "false" or $scope.query == "undefined"
-        # $scope.query = "*"
-      console.log("query before anything:", $scope.query)
-      console.log("RES:", res)
+
       models = createModels(res)
       $scope.partyModels = models.parties
       $scope.volumeModels = models.volumes
@@ -262,7 +259,6 @@ app.controller 'site/search', [
       return res?.facets?.content_type?.buckets[idx].count ? 0
 
     findResult = (typeName, res) ->
-      console.log("RESULT IS", res)
       if res != null
         groups = (group.groupValue for group in res.grouped.content_type.groups)
         return groups.indexOf(typeName)
