@@ -179,7 +179,7 @@ app.controller 'site/search', [
     # all of the params for use in the html.
     # ##############################
     parseResults = (res) ->
-      if res == "null"
+      if res == "null" or !res?
         $scope.query = "*"
         $scope.search()
         return
@@ -438,9 +438,7 @@ app.controller 'site/search', [
     params = $location.search()
     $scope.query = params.query
     console.log("INITIAL QUERY:", $scope.query)
-    if !params.query?
-      $scope.originalQuery = "*"
-    else
+    if params.query?
       $scope.originalQuery = params.query
     $scope.searchBoxQuery = $scope.originalQuery
     console.log("results")
