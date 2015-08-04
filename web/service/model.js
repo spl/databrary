@@ -241,11 +241,27 @@ app.factory('modelService', [
       return Party.search(param);
     };
 
+    function subPartyUpdate(list, auth) {
+      if (!list)
+        return;
+      auth.party = partyMake(auth.party);
+      var i = list.findIndex(function (a) {
+        return a.party.id === auth.party.id;
+      });
+      if ('site' in auth || 'member' in auth || auth.individual || auth.children)
+        if (i >= 0)
+          list.splice(i, 1, auth);
+        else
+          list.push(auth);
+      else if (i >= 0)
+        list.splice(i, 1);
+    }
+
     Party.prototype.authorizeApply = function (target, data) {
       var p = this;
       return router.http(router.controllers.postAuthorizeApply, this.id, target, data)
         .then(function (res) {
-          p.clear('parents');
+          subPartyUpdate(p.parents, res.data);
           return p;
         });
     };
@@ -258,7 +274,7 @@ app.factory('modelService', [
       var p = this;
       return router.http(router.controllers.postAuthorize, this.id, target, data)
         .then(function (res) {
-          p.clear('children');
+          subPartyUpdate(p.children, res.data);
           return res.data;
         });
     };
@@ -267,7 +283,7 @@ app.factory('modelService', [
       var p = this;
       return router.http(router.controllers.deleteAuthorize, this.id, target)
         .then(function (res) {
-          p.clear('children');
+          subPartyUpdate(p.children, res.data);
           return p;
         });
     };
@@ -276,7 +292,7 @@ app.factory('modelService', [
       var p = this;
       return router.http(router.controllers.deleteAuthorizeParent, this.id, target)
         .then(function (res) {
-          p.clear('parents');
+          subPartyUpdate(p.parents, res.data);
           return p;
         });
     };
@@ -567,8 +583,8 @@ app.factory('modelService', [
       var v = this;
       return router.http(router.controllers.postVolumeAccess, this.id, target, data)
         .then(function (res) {
-          // could update v.access with res.data
-          v.clear('access', 'accessPreset');
+          subPartyUpdate(v.access, res.data);
+          volumeAccessPreset(v);
           return v;
         });
     };

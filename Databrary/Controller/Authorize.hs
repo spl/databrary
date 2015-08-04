@@ -105,7 +105,7 @@ postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarge
           $ BSL.fromChunks ["You have been authorized for Databrary access by ", TE.encodeUtf8 (partyName parent), ".\n"]
       return a
   case api of
-    JSON -> maybe (emptyResponse noContent204 []) (okResponse [] . JSON.Object . authorizeJSON) a
+    JSON -> okResponse [] $ JSON.Object $ Fold.foldMap authorizeJSON a JSON..+ ("party" JSON..= partyJSON o)
     HTML -> redirectRouteResponse [] viewAuthorize arg []
 
 deleteAuthorize :: AppRoute (API, PartyTarget, AuthorizeTarget)
@@ -115,7 +115,7 @@ deleteAuthorize = action DELETE (pathAPI </>> pathPartyTarget </> pathAuthorizeT
   let (child, parent) = if app then (p, o) else (o, p)
   _ <- removeAuthorize $ Authorize (Authorization mempty child parent) Nothing
   case api of
-    JSON -> emptyResponse noContent204 []
+    JSON -> okResponse [] $ JSON.object ["party" JSON..= partyJSON o]
     HTML -> redirectRouteResponse [] viewAuthorize arg []
 
 postAuthorizeNotFound :: AppRoute (API, PartyTarget)
