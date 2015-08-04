@@ -95,6 +95,9 @@ app.controller 'site/search', [
   ###########################
   # Search handlers
   ###########################
+    clearAllContainers = ->
+      $scope.retrievedContainers = {}
+
     $scope.clearContainers = (vol) ->
       $scope.retrievedContainers[vol.id] = undefined
 
@@ -126,9 +129,13 @@ app.controller 'site/search', [
     # Get the results from Solr and pass them into parseResults.
     $scope.search = (query = "", volId = -100) ->
       # This is for if we want to pass an argument into this...
-      if query.length > 0
+      if query.length > 0 and volId < 0
         $scope.query = query
         $scope.originalQuery = query
+      else if query.length > 0
+        $scope.query = query
+
+      clearAllContainers()
 
       # Set the currently selected filter options here
       if ageRangeMin > 0 or ageRangeMax > 0
