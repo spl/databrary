@@ -121,13 +121,6 @@ app.controller 'site/search', [
       console.log("The search box was :", $scope.searchBoxQuery)
       console.log("The original query was :", $scope.originalQuery)
 
-      if $scope.searchBoxQuery? and $scope.searchBoxQuery.length > 0
-        if $location.search()["debug"]?
-          $location.search("query=" + $scope.searchBoxQuery + "&debug=1")
-        else
-          $location.search("query=" + $scope.searchBoxQuery)
-      # $location.replace($location.search, $scope.searchBoxQuery)
-
       # Handle user clearing search box and hitting enter
       if $scope.searchBoxQuery? and $scope.searchBoxQuery != ""
         $scope.originalQuery = $scope.searchBoxQuery
@@ -139,6 +132,7 @@ app.controller 'site/search', [
       console.log("NEW SEARCH:", $scope.query)
       $scope.search()
 
+
     # Def search: the function that is actually calling the search from Haskell.
     # Get the results from Solr and pass them into parseResults.
     $scope.search = (query = "", volId = -100) ->
@@ -146,8 +140,17 @@ app.controller 'site/search', [
       if query.length > 0 and volId < 0
         $scope.query = query
         $scope.originalQuery = query
+        $scope.searchBoxQuery = query
       else if query.length > 0
         $scope.query = query
+
+      if $scope.searchBoxQuery? and $scope.searchBoxQuery.length > 0
+        if $location.search()["debug"]?
+          $location.search("query=" + $scope.searchBoxQuery + "&debug=1")
+        else
+          $location.search("query=" + $scope.searchBoxQuery)
+      else
+        $location.search("")
 
       if !$scope.query?
         $scope.query = "*"
