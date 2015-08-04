@@ -439,6 +439,7 @@ app.controller 'site/search', [
       $scope.originalQuery = "*"
     else
       $scope.originalQuery = params.query
+    $scope.searchBoxQuery = $scope.originalQuery
     console.log("results")
     $scope.offset = parseInt($location.search().offset, 10) || 0
     parseResults(results)
