@@ -135,6 +135,9 @@ app.controller 'site/search', [
       else if query.length > 0
         $scope.query = query
 
+      if !$scope.query?
+        $scope.query = "*"
+
       clearAllContainers()
 
       # Set the currently selected filter options here
