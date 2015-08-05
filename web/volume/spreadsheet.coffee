@@ -35,10 +35,14 @@ app.directive 'spreadsheet', [
         0
 
     pseudoMetric =
+      top: # slot
+        id: 'top'
+        name: 'materials'
+        type: 'bool'
+        sort: -8500
       name: # slot, asset
         id: 'name'
         name: 'name'
-        display: ' '
         type: 'text'
         sort: -9000
       date: # slot
@@ -61,7 +65,6 @@ app.directive 'spreadsheet', [
       summary: # slot
         id: 'summary'
         name: 'summary'
-        display: ' '
         type: 'text'
         sort: 10000
         readonly: true
@@ -79,7 +82,8 @@ app.directive 'spreadsheet', [
         volume = $scope.volume
 
         Editing = $scope.editing = $attrs.edit != undefined
-        Top = $scope.top = 'top' of $attrs
+        Top = $scope.top = $attrs.top != undefined
+        Top ||= undefined if Editing
         ID = $scope.id = $attrs.id ? if Top then 'sst' else 'ss'
         Limit = $attrs.limit
         Key = undefined
@@ -89,7 +93,7 @@ app.directive 'spreadsheet', [
             id: 'slot'
             name: if Top then 'materials' else 'session'
             not: 'No ' + (if Top then 'materials' else 'sessions')
-            metrics: if Top then ['name'] else ['name', 'date', 'release']
+            metrics: if Top then ['name'] else if Top == false then ['name', 'date', 'release'] else ['top', 'name', 'date', 'release']
             fixed: true
           asset:
             id: 'asset'
@@ -340,6 +344,7 @@ app.directive 'spreadsheet', [
           d =
             slot: s
             id: s.id
+            top: s.top
             name: s.name
             date: s.date
             release: s.release+''
@@ -432,6 +437,7 @@ app.directive 'spreadsheet', [
         # Add or replace the text contents of cell c for measure/type m with value v
         generateText = (info) ->
           $(cell = info.cell).empty()
+          cell.className = ''
           v = info.v
           slot = info.slot
           stop = slot?.id == volume.top.id
@@ -468,13 +474,18 @@ app.directive 'spreadsheet', [
             when 'release'
               cn = constants.release[v]
               cell.className = cn + ' release icon hint-release-' + cn
+              if slot.top
+                cell.classList.add('null')
               v = ''
-            when constants.metricName.indicator.id
-              if info.d
-                cell.className = 'icon ' + if Editing && Key.id != info.c then 'trash' else 'bullet'
-                v = ''
+            when 'date'
+              if slot.top
+                cell.classList.add('null')
             when 'age'
               v = display.formatAge(v)
+            else
+              if (info.metric.type == 'void' && info.d) || (info.metric.type == 'bool' && v)
+                cell.className = 'icon ' + if Editing && Key.id != info.c then 'trash' else 'bullet'
+              v = ''
           if info.metric.long
             cell.classList.add('white-space-pre')
           if v?
@@ -492,7 +503,7 @@ app.directive 'spreadsheet', [
         generateAdd = (info, td) ->
           width = info.cols.metrics.length
           info.m = info.cols.start
-          if typeof info.metric.id == 'number' && info.metric.name != 'indicator'
+          if typeof info.metric.id == 'number' && info.metric.type != 'void'
             info.id = ID+'-'+info.i+'_'+info.cols.start+(if info.hasOwnProperty('n') then '_'+info.n else '')
             info.cell = info.tr.appendChild(document.createElement('td'))
             generateText(info)
@@ -785,7 +796,7 @@ app.directive 'spreadsheet', [
           if info.c == 'slot'
             data = {}
             data[info.metric.id] = v ? ''
-            return if info.slot[info.metric.id]+'' == v
+            return if `info.slot[info.metric.id] == v`
             saveRun info.cell, info.slot.save(data).then () ->
               updateDatum(info, v)
               return
@@ -939,6 +950,7 @@ app.directive 'spreadsheet', [
               editScope.type = info.metric.type
               m = info.metric.id
               if info.c == 'slot'
+                return if info.slot?.top && (m == 'date' || m == 'release')
                 v = info.slot?[m]
                 v += '' if m == 'release'
               else if info.c == 'asset' # not reached
@@ -984,7 +996,7 @@ app.directive 'spreadsheet', [
               ms = info.cols.metrics
               # detect special cases: singleton or unitary records
               if ms.length == 1
-                if ms[0].name == 'indicator' && Object.keys(editScope.options).length > 2
+                if ms[0].type == 'void' && Object.keys(editScope.options).length > 2
                   # singleton: id only, existing record(s)
                   delete editScope.options['new']
                 else if ms[0].options

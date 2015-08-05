@@ -102,7 +102,7 @@ checkAsset a = dataPermission a > PermissionNONE && assetBacked (view a)
 
 zipContainer :: AppRoute (Maybe (Id Volume), Id Slot)
 zipContainer = action GET (pathMaybe pathId </> pathSlotId </< "zip") $ \(vi, ci) -> withAuth $ do
-  c <- getContainer PermissionPUBLIC vi ci
+  c <- getContainer PermissionPUBLIC vi ci True
   z <- containerZipEntry c . filter checkAsset =<< lookupContainerAssets c
   auditSlotDownload (not $ zipEmpty z) (containerSlot c)
   zipResponse ("databrary-" <> BSC.pack (show (volumeId (containerVolume c))) <> "-" <> BSC.pack (show (containerId c))) [z]

@@ -4,6 +4,7 @@
   <textarea ng-switch-when="long" name="edit" ng-model="input.value" ng-blur="unedit($event)" key-tab="unedit($event)" key-escape="unedit(false)"></textarea>
   <input ng-switch-when="date" name="edit" input-date ng-model="input.value" key-enter="unedit($event)" ng-blur="unedit($event)" key-tab="unedit($event)" key-escape="unedit(false)" placeholder="YYYY-MM-DD"/>
   <input ng-switch-when="number" name="edit" type="text" ng-model="input.value" key-enter="unedit($event)" ng-blur="unedit($event)" key-tab="unedit($event)" key-escape="unedit(false)"/>
+  <input ng-switch-when="bool" name="edit" type="checkbox" ng-model="input.value" ng-true-value="'true'" key-enter="unedit($event)" ng-blur="unedit($event)" key-tab="unedit($event)" key-escape="unedit(false)"/>
   <input-completer ng-switch-when="options" input-name="edit" ng-model="input.value" min="0" completer="optionsCompleter($input)" submit="unedit($event)" key-escape="unedit(false)"></input-completer>
   <select ng-switch-when="release" name="edit" ng-model="input.value" ng-options="c as 'release.'+constants.release[c]+'.title' | message for c in ::constants.releases" key-tab="unedit($event)" key-escape="unedit(false)"></select>
   <select ng-switch-when="record" name="edit" ng-model="input.value" ng-options="id as label for (id, label) in options" key-tab="unedit($event)" key-escape="unedit(false)"></select>

@@ -9,7 +9,7 @@ module Databrary.Controller.Container
   , containerDownloadName
   ) where
 
-import Control.Monad (when, mfilter)
+import Control.Monad (when, unless, mfilter)
 import Data.Maybe (fromMaybe, maybeToList)
 import qualified Data.Text as T
 import Network.HTTP.Types (StdMethod(DELETE), noContent204, conflict409)
@@ -35,9 +35,14 @@ import Databrary.Controller.Volume
 import {-# SOURCE #-} Databrary.Controller.Slot
 import Databrary.View.Container
 
-getContainer :: Permission -> Maybe (Id Volume) -> Id Slot -> AuthActionM Container
-getContainer p mv (Id (SlotId i s))
-  | segmentFull s = checkPermission p =<< maybeAction . maybe id (\v -> mfilter $ (v ==) . view) mv =<< lookupContainer i
+getContainer :: Permission -> Maybe (Id Volume) -> Id Slot -> Bool -> AuthActionM Container
+getContainer p mv (Id (SlotId i s)) top
+  | segmentFull s = do
+    c <- checkPermission p =<< maybeAction . maybe id (\v -> mfilter $ (v ==) . view) mv =<< lookupContainer i
+    unless top $ do
+      t <- lookupVolumeTopContainer (containerVolume c)
+      guardAction (containerId c /= containerId t) notFoundResponse
+    return c
   | otherwise = result =<< notFoundResponse
 
 containerDownloadName :: Container -> [T.Text]
@@ -50,10 +55,12 @@ containerForm :: Container -> DeformActionM () AuthRequest Container
 containerForm c = do
   csrfForm
   name <- "name" .:> deformOptional (deformNonEmpty deform)
+  top <- "top" .:> deformOptional deform
   date <- "date" .:> deformOptional (deformNonEmpty deform)
   release <- "release" .:> deformOptional (deformNonEmpty deform)
   return c
     { containerName = fromMaybe (containerName c) name
+    , containerTop = fromMaybe (containerTop c) top
     , containerDate = fromMaybe (containerDate c) date
     , containerRelease = fromMaybe (containerRelease c) release
     }
@@ -61,16 +68,13 @@ containerForm c = do
 viewContainerEdit :: AppRoute (Maybe (Id Volume), Id Slot)
 viewContainerEdit = action GET (pathHTML >/> pathMaybe pathId </> pathSlotId </< "edit") $ \(vi, ci) -> withAuth $ do
   angular
-  c <- getContainer PermissionEDIT vi ci
+  c <- getContainer PermissionEDIT vi ci False
   blankForm $ htmlContainerEdit (Right c)
 
 createContainer :: AppRoute (API, Id Volume)
 createContainer = action POST (pathAPI </> pathId </< "slot") $ \(api, vi) -> withAuth $ do
   vol <- getVolume PermissionEDIT vi
-  bc <- runForm (api == HTML ?> htmlContainerEdit (Left vol)) $ do
-    top <- "top" .:> deform
-    containerForm (blankContainer vol)
-      { containerTop = top }
+  bc <- runForm (api == HTML ?> htmlContainerEdit (Left vol)) $ containerForm (blankContainer vol)
   c <- addContainer bc
   case api of
     JSON -> okResponse [] $ containerJSON c
@@ -78,7 +82,7 @@ createContainer = action POST (pathAPI </> pathId </< "slot") $ \(api, vi) -> wi
 
 postContainer :: AppRoute (API, Id Slot)
 postContainer = action POST (pathAPI </> pathSlotId) $ \(api, ci) -> withAuth $ do
-  c <- getContainer PermissionEDIT Nothing ci
+  c <- getContainer PermissionEDIT Nothing ci False
   c' <- runForm (api == HTML ?> htmlContainerEdit (Right c)) $ containerForm c
   changeContainer c'
   when (containerRelease c' /= containerRelease c) $ do
@@ -92,7 +96,7 @@ postContainer = action POST (pathAPI </> pathSlotId) $ \(api, ci) -> withAuth $ 
 deleteContainer :: AppRoute (API, Id Slot)
 deleteContainer = action DELETE (pathAPI </> pathSlotId) $ \(api, ci) -> withAuth $ do
   guardVerfHeader
-  c <- getContainer PermissionEDIT Nothing ci
+  c <- getContainer PermissionEDIT Nothing ci False
   r <- removeContainer c
   guardAction r $ case api of
     JSON -> returnResponse conflict409 [] (containerJSON c)
