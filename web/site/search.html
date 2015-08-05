@@ -77,7 +77,7 @@
             <div class="search-volume-containers" ng-if="retrievedContainers[result.id] !== undefined">
               <ul ng-if="retrievedContainers[result.id].length > 0">
                 <li ng-repeat="container in retrievedContainers[result.id]">
-                  <a ng-href="volume/{{result.volume_id_i}}/slot/{{container.container_id_i}}">{{container.age? container.age: "no age"}} {{container.text? container.text: 'no text'}}</a>
+                  <a ng-href="{{::page.router.slot([container.id, container.recordId, container.segment])}}">{{container.age? container.age: "no age"}} {{container.text? container.text: 'no text'}}</a>
                 </li>
               </ul>
             </div>

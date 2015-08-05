@@ -37,7 +37,7 @@ app.factory('solrModelService', [
       ethnicity: false,
       text: false,
       containerId: true,
-      volumeId: true,
+      id: true, // Note: this is the volume id
       recordId: true
     };
 
