@@ -112,6 +112,8 @@ app.controller 'site/search', [
       $scope.selectedType = ""
       $scope.selectedVolume = ""
       $scope.filterDisplay = []
+      ageRangeMin = 0
+      ageRangeMax = 0
 
     $scope.clearContainers = (vol) ->
       $scope.retrievedContainers[vol.id] = undefined
