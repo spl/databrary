@@ -484,7 +484,9 @@ app.directive 'spreadsheet', [
             else
               if (info.metric.type == 'void' && info.d) || (info.metric.type == 'bool' && v)
                 cell.className = 'icon ' + if Editing && Key.id != info.c then 'trash' else 'bullet'
-              v = ''
+                v = ''
+              else if info.metric.type == 'bool'
+                v = ''
           if info.metric.long
             cell.classList.add('white-space-pre')
           if v?
