@@ -103,6 +103,16 @@ app.controller 'site/search', [
     clearAllContainers = ->
       $scope.retrievedContainers = {}
 
+    resetFilters = ->
+      highlightFilter = false
+      sessionFilter = false
+      partyFilter = false
+      volumeFilter = false
+      $scope.selectedFilter = ""
+      $scope.selectedType = ""
+      $scope.selectedVolume = ""
+      $scope.filterDisplay = []
+
     $scope.clearContainers = (vol) ->
       $scope.retrievedContainers[vol.id] = undefined
 
@@ -126,6 +136,8 @@ app.controller 'site/search', [
         $scope.originalQuery = $scope.searchBoxQuery
       else
         $scope.originalQuery = "*"
+
+      resetFilters()
 
       $scope.query = $scope.originalQuery
       $scope.offset = 0
