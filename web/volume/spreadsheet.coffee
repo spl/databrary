@@ -344,7 +344,7 @@ app.directive 'spreadsheet', [
           d =
             slot: s
             id: s.id
-            top: s.top
+            top: !!s.top
             name: s.name
             date: s.date
             release: s.release+''
@@ -474,12 +474,12 @@ app.directive 'spreadsheet', [
             when 'release'
               cn = constants.release[v]
               cell.className = cn + ' release icon hint-release-' + cn
-              if slot.top
-                cell.classList.add('null')
+              #if slot.top
+              #  cell.classList.add('null')
               v = ''
             when 'date'
-              if slot.top
-                cell.classList.add('null')
+              #if slot.top
+              #  cell.classList.add('null')
             when 'age'
               v = display.formatAge(v)
             else
@@ -783,7 +783,7 @@ app.directive 'spreadsheet', [
 
         updateDatum = (info, v) ->
           info.v = v
-          if info.fixed
+          if info.category.fixed
             info.d[info.metric.id] = v
             generateText(info)
           else
@@ -795,6 +795,7 @@ app.directive 'spreadsheet', [
         saveDatum = (info, v) ->
           if info.c == 'slot'
             data = {}
+            v = !!v if info.metric.type == 'bool'
             data[info.metric.id] = v ? ''
             return if `info.slot[info.metric.id] == v`
             saveRun info.cell, info.slot.save(data).then () ->
