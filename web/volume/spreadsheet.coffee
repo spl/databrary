@@ -122,6 +122,7 @@ app.directive 'spreadsheet', [
         Groups = []     # [] Array over categories :: {category: Category, metrics[]: Array of Metric}
         Cols = []       # [] Array over metrics :: {category: Category, metric: Metric} (flattened version of Groups)
         Rows = []       # [i] :: Row (-1 => foot)
+        Cats = {}       # Set of used categories
         Order = []      # Permutation Array of Row in display order
         Expanded = undefined # Info
 
@@ -138,6 +139,7 @@ app.directive 'spreadsheet', [
             return
 
           add: (c, d) ->
+            Cats[c] = true
             if v = this[c]
               if Array.isArray(v)
                 n = v.push(d) - 1
@@ -308,7 +310,10 @@ app.directive 'spreadsheet', [
           Cols = []
           if slot
             slot = undefined
-            cats = Object.keys(volume.metrics).sort(byNumber).map((i) -> constants.category[i])
+            cats = Object.keys(volume.metrics)
+            unless Editing
+              cats = cats.filter((i) -> Cats[i])
+            cats = cats.sort(byNumber).map((i) -> constants.category[i])
             if Top
               cats.unshift(pseudoCategory.asset)
             else
@@ -416,11 +421,9 @@ app.directive 'spreadsheet', [
               
         # Call all populate functions
         populate = ->
-          bySlot = Key == pseudoCategory.slot
-          populateCols(bySlot)
           foot = Rows[-1]
           Rows = []
-          if bySlot
+          if bySlot = Key == pseudoCategory.slot
             populateSlots()
           else
             populateRecords()
@@ -429,6 +432,7 @@ app.directive 'spreadsheet', [
           $(TBody).empty()
           Expanded = undefined
           Rows[-1] = foot if foot
+          populateCols(bySlot)
           generate()
           return
 
@@ -474,12 +478,7 @@ app.directive 'spreadsheet', [
             when 'release'
               cn = constants.release[v]
               cell.className = cn + ' release icon hint-release-' + cn
-              #if slot.top
-              #  cell.classList.add('null')
               v = ''
-            when 'date'
-              #if slot.top
-              #  cell.classList.add('null')
             when 'age'
               v = display.formatAge(v)
             else
