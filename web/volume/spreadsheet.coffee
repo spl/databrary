@@ -37,9 +37,12 @@ app.directive 'spreadsheet', [
     pseudoMetric =
       top: # slot
         id: 'top'
-        name: 'materials'
-        type: 'bool'
-        sort: -8500
+        name: 'type'
+        type: 'top'
+        sort: -10000
+        options:
+          false: 'session'
+          true: 'materials'
       name: # slot, asset
         id: 'name'
         name: 'name'
@@ -91,8 +94,8 @@ app.directive 'spreadsheet', [
         pseudoCategory =
           slot:
             id: 'slot'
-            name: if Top then 'materials' else 'session'
-            not: 'No ' + (if Top then 'materials' else 'sessions')
+            name: if Top? then pseudoMetric.top.options[Top] else 'folder'
+            not: 'No ' + (if Top then 'materials' else if Top == false then 'sessions' else 'folders')
             metrics: if Top then ['name'] else if Top == false then ['name', 'date', 'release'] else ['top', 'name', 'date', 'release']
             fixed: true
           asset:
@@ -478,14 +481,17 @@ app.directive 'spreadsheet', [
             when 'release'
               cn = constants.release[v]
               cell.className = cn + ' release icon hint-release-' + cn
+              cell.classList.add('null') if slot?.top
               v = ''
+            when 'date'
+              cell.classList.add('null') if slot?.top
             when 'age'
               v = display.formatAge(v)
+            when 'top'
+              v = info.metric.options[v]
             else
-              if (info.metric.type == 'void' && info.d) || (info.metric.type == 'bool' && v)
+              if info.metric.type == 'void' && info.d
                 cell.className = 'icon ' + if Editing && Key.id != info.c then 'trash' else 'bullet'
-                v = ''
-              else if info.metric.type == 'bool'
                 v = ''
           if info.metric.long
             cell.classList.add('white-space-pre')
@@ -796,7 +802,7 @@ app.directive 'spreadsheet', [
         saveDatum = (info, v) ->
           if info.c == 'slot'
             data = {}
-            v = !!v if info.metric.type == 'bool'
+            v = v == 'true' if info.metric.id == 'top'
             data[info.metric.id] = v ? ''
             return if `info.slot[info.metric.id] == v`
             saveRun info.cell, info.slot.save(data).then () ->
@@ -944,21 +950,23 @@ app.directive 'spreadsheet', [
                 $location.url(info.slot.editRoute({asset:info.d.id}))
                 return
               return if info.slot?.id == volume.top.id
-              if info.metric.name == 'indicator'
+              m = info.metric
+              if m.name == 'indicator'
                 # trash/bullet: remove
                 setRecord(info, null) if info.category != Key
                 return
-              return if info.metric.readonly
-              editScope.type = info.metric.type
-              m = info.metric.id
+              return if m.readonly
+              editScope.type = m.type
+              mi = m.id
+              editScope.options = m.options
               if info.c == 'slot'
-                return if info.slot?.top && (m == 'date' || m == 'release')
-                v = info.slot?[m]
-                v += '' if m == 'release'
+                return if info.slot?.top && (mi == 'date' || mi == 'release')
+                v = info.slot?[mi]
+                v = !!v if mi == 'top'
               else if info.c == 'asset' # not reached
-                v = info.asset[m]
+                v = info.asset[mi]
               else
-                v = info.record?.measures[m]
+                v = info.record?.measures[mi]
                 if info.col.first && info.category != Key
                   editScope.type = 'ident'
                   editScope.info = info
@@ -968,13 +976,12 @@ app.directive 'spreadsheet', [
                     if r.category == info.c && !info.row.list(info.c).some((d) -> d.id == ri)
                       rs.push
                         r:r
-                        v:(r.measures[info.metric.id] ? '').toLowerCase()
+                        v:(r.measures[mi] ? '').toLowerCase()
                         d:recordDescription(r)
                   editScope.records = rs.sort((a, b) -> byMagic(a.v, b.v))
-                else if info.metric.options
+                else if m.options
                   editScope.type = 'options'
-                  editScope.options = info.metric.options
-                else if info.metric.long
+                else if m.long
                   editScope.type = 'long'
               editInput.value = (v ? '')+''
             when 'add'
@@ -1004,13 +1011,13 @@ app.directive 'spreadsheet', [
                 else if ms[0].options
                   # unitary: single metric with options
                   delete editScope.options['new']
-                  for o in m.options
+                  for o in ms[0].options
                     found = false
                     for ri, r of volume.records
                       if r.category == c.id && r.measures[m.id] == o
                         found = true
                         break
-                    editScope.options['add_'+m.id+'_'+o] = o unless found
+                    editScope.options['add_'+ms[0].id+'_'+o] = o unless found
             else
               return
 
