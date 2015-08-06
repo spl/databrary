@@ -87,6 +87,7 @@ routeMap = fromRouteList
   , route postContainer
   , route deleteContainer
   , route zipContainer
+  , route thumbSlot
 
   , route viewFormats
 
