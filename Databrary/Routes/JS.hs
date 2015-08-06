@@ -61,6 +61,7 @@ jsRoutes = mconcat
 
   , jsRoute "viewSlot" viewSlot (HTML, (Just volume, slot))
   , jsRoute "viewSlotEdit" viewContainerEdit (Just volume, container)
+  , jsRoute "thumbSlot" thumbSlot (Just volume, slot)
 
   , jsRoute "viewRecord" viewRecord (HTML, record)
 

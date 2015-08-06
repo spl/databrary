@@ -3,6 +3,7 @@ module Databrary.Controller.Slot
   ( getSlot
   , viewSlot
   , slotDownloadName
+  , thumbSlot
   ) where
 
 import Control.Monad (when, mfilter)
@@ -21,6 +22,7 @@ import Databrary.Model.Permission
 import Databrary.Model.Volume
 import Databrary.Model.Container
 import Databrary.Model.Slot
+import Databrary.Model.Asset
 import Databrary.Model.AssetSlot
 import Databrary.Model.Excerpt
 import Databrary.Model.Record
@@ -34,6 +36,8 @@ import Databrary.Controller.Paths
 import Databrary.Controller.Permission
 import Databrary.Controller.Angular
 import Databrary.Controller.Container
+import Databrary.Controller.Web
+import {-# SOURCE #-} Databrary.Controller.AssetSegment
 
 getSlot :: Permission -> Maybe (Id Volume) -> Id Slot -> AuthActionM Slot
 getSlot p mv i =
@@ -70,3 +74,13 @@ viewSlot = action GET (pathAPI </> pathMaybe pathId </> pathSlotId) $ \(api, (vi
   case api of
     JSON -> okResponse [] =<< slotJSONQuery c =<< peeks Wai.queryString
     HTML -> okResponse [] $ BSC.pack $ show $ containerId $ slotContainer c -- TODO
+
+thumbSlot :: AppRoute (Maybe (Id Volume), Id Slot)
+thumbSlot = action GET (pathMaybe pathId </> pathSlotId </< "thumb") $ \(vi, i) -> withAuth $ do
+  s <- getSlot PermissionPUBLIC vi i
+  e <- lookupSlotThumb s
+  q <- peeks Wai.queryString
+  maybe
+    (redirectRouteResponse [] webFile (Just $ staticPath ["images", "draft.png"]) q)
+    (\as -> redirectRouteResponse [] downloadAssetSegment (slotId $ view as, assetId $ view as) q)
+    e
