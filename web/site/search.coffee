@@ -418,7 +418,7 @@ app.controller 'site/search', [
     # Now we want to rerun the search but only return vols w/ highlights
     searchHighlight = (query) ->
       $scope.requireHighlight = true
-      return addArgToQuery(query,"volume_has_excerpt_b", "true")
+      return addArgToQuery(query, "has_excerpt_b", "true")
 
     searchSession = (query) ->
       $scope.requireSession = true

@@ -1,5 +1,4 @@
 {-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
-
 module Databrary.Search.Solr
 ( search,
   SolrResponse
@@ -12,13 +11,13 @@ import Control.Applicative
 import Control.Monad (mzero)
 import Control.Monad.IO.Class (MonadIO)
 import GHC.Generics
-import Databrary.HTTP.Client
 
 import qualified Network.HTTP.Client as HC
 import qualified Data.Attoparsec.ByteString as P
 import qualified Data.ByteString as BS
 
 import Databrary.Has (MonadHas, focusIO)
+import Databrary.HTTP.Client
 import qualified Databrary.Search.Query as Q
 
 

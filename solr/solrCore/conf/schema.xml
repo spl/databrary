@@ -131,31 +131,19 @@
     <field name="citation_url_s" type="string" indexed="true" stored="true" />
     <field name="citation_t" type="text_en_splitting" indexed="true" stored="true" />
     <field name="citation_year_i" type="int" indexed="true" stored="true" />
-    <field name="volume_has_excerpt_b" type="boolean" indexed="true" stored="true" />
+    <field name="has_excerpt_b" type="boolean" indexed="true" stored="true" />
     <field name="volume_has_sessions_b" type="boolean" indexed="true" stored="true" />
-    <field name="volume_tags_ss" type="string" indexed="true" stored="true" multiValued="true" omitNorms="false" />
-    <field name="volume_keywords_ss" type="text_en_splitting" indexed="true" stored="true" multiValued="true" omitNorms="false" />
-    <field name="volume_all_text_t" type="text_en_splitting" indexed="true" stored="true" />
+    <field name="tags_ss" type="string" indexed="true" stored="true" multiValued="true" omitNorms="false" />
+    <field name="keywords_ss" type="text_en_splitting" indexed="true" stored="true" multiValued="true" omitNorms="false" />
     <field name="volume_owner_names_ss" type="string" indexed="true" stored="true" multiValued="true" omitNorms="false" />
     <field name="volume_owner_ids_is" type="int" indexed="true" stored="true" multiValued="true" omitNorms="false" />
 
-
     <!-- CONTAINER FIELDS -->
     <field name="container_id_i" type="int" indexed="true" stored="true"/>
-    <field name="container_volume_id_i" type="int" indexed="true" stored="true"/>
     <field name="container_name_t" type="text_en_splitting" indexed="true" stored="true"/>
-    <field name="container_age_td" type="tdouble" indexed="true" stored="true"/>
-    <field name="container_keywords_ss" type="string" indexed="true" stored="true" multiValued="true" />
-    <field name="container_has_excerpt_b" type="boolean" indexed="true" stored="true" />
 
     <!-- RECORD FIELDS -->
     <field name="record_id_i" type="int" indexed="true" stored="true"/>
-    <field name="record_volume_id_i" type="int" indexed="true" stored="true"/>
-    <field name="record_container_i" type="int" indexed="true" stored="true"/>
-    <field name="record_date_tdt" type="tdate" indexed="true" stored="true"/>
-    <field name="record_text_s" type="string" indexed="true" stored="true"/>
-    <field name="record_num_d" type="double" indexed="true" stored="true"/>
-    <field name="record_metric" type="string" indexed="true" stored="true"/>
 
     <!-- SEGMENT FIELDS -->
     <field name="segment_volume_id_i" type="int" indexed="true" stored="true"/>

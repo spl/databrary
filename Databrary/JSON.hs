@@ -73,7 +73,10 @@ eitherJSON :: FromJSON a => Value -> Either String a
 eitherJSON = resultToEither . fromJSON
 
 instance ToJSON BS.ByteString where
-  toJSON = String . TE.decodeUtf8
+  toJSON = String . TE.decodeUtf8 -- questionable
+
+instance FromJSON BS.ByteString where
+  parseJSON = fmap TE.encodeUtf8 . parseJSON
 
 instance ToJSON C.Value where
   toJSON (C.Bool b) = Bool b
