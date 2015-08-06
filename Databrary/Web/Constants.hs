@@ -49,7 +49,7 @@ constantsJSON = JSON.Object $ JSON.object
   enumValues _ = map show $ enumFromTo minBound (maxBound :: a)
 
 constantsJSONB :: BSB.Builder
-constantsJSONB = JSON.encodeToByteStringBuilder constantsJSON
+constantsJSONB = JSON.encodeToBuilder constantsJSON
 
 constantsJS :: BSB.Builder
 constantsJS = BSB.string7 "app.constant('constantData'," <> constantsJSONB <> BSB.string7 ");"

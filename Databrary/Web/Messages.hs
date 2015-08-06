@@ -23,6 +23,6 @@ generateMessagesJS fo@(f, _) = do
     ml <- C.getMap =<< C.load [C.Optional mf]
     withBinaryFile (webFileAbs f) WriteMode $ \h -> do
       hPutStr h "app.constant('messageData',"
-      BSB.hPutBuilder h $ JSON.encodeToByteStringBuilder $ JSON.toJSON ml
+      BSB.hPutBuilder h $ JSON.encodeToBuilder $ JSON.toJSON ml
       hPutStr h ");")
     [mf] [] fo
