@@ -417,6 +417,7 @@ app.provider('routerService', [
     routes.partyAvatar = makeRoute(controllers.partyAvatar, ['id', 'size']);
     routes.volumeThumb = makeRoute(controllers.thumbVolume, ['id', 'size']);
     routes.assetThumb = makeRoute(controllers.thumbAssetSegment, ['cid', 'segment', 'id', 'size']);
+    routes.slotThumb = makeRoute(controllers.thumbSlot, ['id','cid','segment', 'size']);
     routes.assetDownload = makeRoute(controllers.downloadAssetSegment, ['cid', 'segment', 'id', 'inline']);
 
     $routeProvider.otherwise('/');
