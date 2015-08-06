@@ -78,6 +78,7 @@
               <ul ng-if="retrievedContainers[result.id].length > 0">
                 <li ng-repeat="container in retrievedContainers[result.id]">
                   <a ng-href="{{::page.router.slot([container.id, container.recordId, container.segment])}}">{{container.age? container.age: "no age"}} {{container.text? container.text: 'no text'}}</a>
+                  <img ng-src="{{container.thumbRoute(100)}}">
                 </li>
               </ul>
             </div>

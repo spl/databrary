@@ -45,6 +45,10 @@ app.factory('solrModelService', [
       SolrModel.prototype.init.call(this, init);
     };
 
+    SolrSlot.prototype.thumbRoute = function (size) {
+      return router.slotThumb([this.id, this.containerId, this.segment, size]);
+    };
+
     // ---------------------------- SolrVolume
     function SolrVolume(init) {
       // this.init(init);
