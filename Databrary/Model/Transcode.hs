@@ -83,7 +83,7 @@ addTranscode orig seg@(Segment rng) opts probe = do
 
 updateTranscode :: MonadDB m => Transcode -> Maybe TranscodePID -> Maybe String -> m Transcode
 updateTranscode tc pid logs = do
-  r <- dbQuery1 [pgSQL|UPDATE transcode SET process = ${pid}, log = COALESCE(COALESCE(log || E'\\n', '') || ${logs}, log) WHERE asset = ${assetId $ transcodeAsset tc} AND COALESCE(process, 0) = ${fromMaybe 0 $ transcodeProcess tc} RETURNING log|]
+  r <- dbQuery1 [pgSQL|UPDATE transcode SET process = ${pid}, log = COALESCE(COALESCE(log || E'\n', '') || ${logs}, log) WHERE asset = ${assetId $ transcodeAsset tc} AND COALESCE(process, 0) = ${fromMaybe 0 $ transcodeProcess tc} RETURNING log|]
   return $ maybe tc (\l -> tc
     { transcodeProcess = pid
     , transcodeLog = l
