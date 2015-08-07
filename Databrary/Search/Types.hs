@@ -1,6 +1,7 @@
 {-# LANGUAGE TemplateHaskell, OverloadedStrings #-}
 module Databrary.Search.Types
   ( SolrDocument(..)
+  , SolrRecordMeasures(..)
   ) where
 
 import qualified Data.Aeson as JSON
@@ -14,6 +15,7 @@ import qualified Data.Text as T
 
 import Databrary.Model.URL
 import Databrary.Model.Id.Types
+import Databrary.Model.Permission.Types
 import Databrary.Model.Release.Types
 import Databrary.Model.Party.Types
 import Databrary.Model.Volume.Types
@@ -56,29 +58,26 @@ data SolrDocument
     , solrPartyPreName_s :: Maybe T.Text
     , solrPartyAffiliation_s :: Maybe T.Text
     , solrPartyIsInstitution_b :: Bool
-    -- TODO: authorization...
+    , solrPartyAuthorization_i :: Maybe Permission
     }
   | SolrVolume
     { solrId :: !BS.ByteString
     , solrVolumeId_i :: Id Volume
     , solrName_t :: Maybe T.Text
-    , solrAbs_t :: T.Text -- body
-    , solrAlias_s :: Maybe T.Text
+    , solrBody_t :: Maybe T.Text -- body
     , solrVolumeOwnerIds_is :: [Id Party]
     , solrVolumeOwnerNames_ss :: [T.Text]
     , solrCitation_t :: Maybe T.Text
     , solrCitationUrl_s :: Maybe URI
     , solrCitationYear_i :: Maybe Int16
-    , solrVolumeHasSessions_b :: Bool
-    , solrHasExcerpt_b :: Bool
     }
   | SolrContainer
     { solrId :: !BS.ByteString
     , solrVolumeId_i :: Id Volume
     , solrContainerId_i :: Id Container
     , solrName_t :: Maybe T.Text
+    , solrContainerTop_b :: Bool
     , solrRelease_i :: Maybe Release
-    , solrHasExcerpt_b :: Bool
     }
   | SolrAsset -- Slot
     { solrId :: !BS.ByteString
@@ -89,6 +88,15 @@ data SolrDocument
     , solrAssetId_i :: Id Asset
     , solrName_t :: Maybe T.Text
     , solrFormat_i :: Id Format
+    , solrRelease_i :: Maybe Release
+    }
+  | SolrExcerpt
+    { solrId :: !BS.ByteString
+    , solrVolumeId_i :: Id Volume
+    , solrContainerId_i :: Id Container
+    , solrSegment_s :: Segment
+    , solrSegmentDuration_td :: Maybe Offset
+    , solrAssetId_i :: Id Asset
     , solrRelease_i :: Maybe Release
     }
   | SolrRecord -- Slot

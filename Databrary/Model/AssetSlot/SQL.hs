@@ -51,7 +51,7 @@ selectContainerSlotAsset = selectJoin 'makeContainerSlotAsset
 makeVolumeSlotIdAsset :: SlotId -> (Volume -> Asset) -> Volume -> (Asset, SlotId)
 makeVolumeSlotIdAsset s af v = (af v, s)
 
-selectVolumeSlotIdAsset :: Selector -- ^ @'Volume' -> '(Asset, SlotId)'@
+selectVolumeSlotIdAsset :: Selector -- ^ @'Volume' -> ('Asset', 'SlotId')@
 selectVolumeSlotIdAsset = selectJoin 'makeVolumeSlotIdAsset
   [ selectColumns 'SlotId "slot_asset" ["container", "segment"]
   , joinOn "slot_asset.asset = asset.id"

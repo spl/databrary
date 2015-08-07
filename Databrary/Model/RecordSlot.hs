@@ -7,7 +7,9 @@ module Databrary.Model.RecordSlot
   , lookupRecordSlotRecords
   , lookupVolumeContainersRecords
   , lookupVolumeContainersRecordIds
+  , lookupVolumeRecordSlotIds
   , moveRecordSlot
+  , recordSlotAge
   , recordSlotJSON
   ) where
 
@@ -60,6 +62,10 @@ lookupVolumeContainersRecordIds :: (MonadDB m) => Volume -> m [(Container, [(Seg
 lookupVolumeContainersRecordIds v =
   map (second catMaybes) . groupTuplesBy ((==) `on` containerId) <$>
     dbQuery (($ v) <$> $(selectQuery selectVolumeSlotMaybeRecordId "$WHERE container.volume = ${volumeId v} ORDER BY container.id, slot_record.segment"))
+
+lookupVolumeRecordSlotIds :: (MonadDB m) => Volume -> m [(Record, SlotId)]
+lookupVolumeRecordSlotIds v =
+  dbQuery (($ v) <$> $(selectQuery selectVolumeSlotIdRecord "WHERE record.volume = ${volumeId v} ORDER BY container"))
 
 moveRecordSlot :: (MonadAudit c m) => RecordSlot -> Segment -> m Bool
 moveRecordSlot rs@RecordSlot{ recordSlot = s@Slot{ slotSegment = src } } dst = do

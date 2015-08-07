@@ -2,6 +2,7 @@
 module Databrary.Model.Citation
   ( module Databrary.Model.Citation.Types
   , lookupVolumeCitation
+  , lookupVolumesCitations
   , changeVolumeCitation
   , lookupVolumeLinks
   , changeVolumeLinks
@@ -9,9 +10,13 @@ module Databrary.Model.Citation
 
 import Control.Applicative ((<$>))
 
+import Databrary.Has (peek, view)
 import Databrary.Service.DB
 import Databrary.Model.SQL
 import Databrary.Model.Audit
+import Databrary.Model.Id.Types
+import Databrary.Model.Identity.Types
+import Databrary.Model.Party.Types
 import Databrary.Model.Volume.Types
 import Databrary.Model.Citation.Types
 import Databrary.Model.Citation.SQL
@@ -19,6 +24,11 @@ import Databrary.Model.Citation.SQL
 lookupVolumeCitation :: (MonadDB m) => Volume -> m (Maybe Citation)
 lookupVolumeCitation vol =
   dbQuery1 $ fmap ($ Just (volumeName vol)) $(selectQuery selectVolumeCitation "$WHERE volume_citation.volume = ${volumeId vol}")
+
+lookupVolumesCitations :: (MonadDB m, MonadHasIdentity c m) => m [(Volume, Maybe Citation)]
+lookupVolumesCitations = do
+  ident :: Identity <- peek
+  dbQuery $(selectQuery (selectCitation 'ident) "")
 
 lookupVolumeLinks :: (MonadDB m) => Volume -> m [Citation]
 lookupVolumeLinks vol =

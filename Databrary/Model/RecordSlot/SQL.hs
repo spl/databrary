@@ -4,6 +4,7 @@ module Databrary.Model.RecordSlot.SQL
   , selectContainerSlotRecord
   , selectRecordSlotRecord
   , selectVolumeSlotRecord
+  , selectVolumeSlotIdRecord
   , selectVolumeSlotMaybeRecord
   , selectVolumeSlotMaybeRecordId
   , selectSlotRecord
@@ -67,6 +68,16 @@ selectVolumeSlotRecord = selectJoin 'makeVolumeSlotRecord
     selectVolumeRecord
   , joinOn "slot_record.container = container.id AND record.volume = container.volume"
     selectVolumeContainer
+  ]
+
+makeVolumeSlotIdRecord :: SlotId -> (Volume -> Record) -> Volume -> (Record, SlotId)
+makeVolumeSlotIdRecord s rf v = (rf v, s)
+
+selectVolumeSlotIdRecord :: Selector -- ^ @'Volume' -> ('Record', 'SlotId')@
+selectVolumeSlotIdRecord = selectJoin 'makeVolumeSlotIdRecord
+  [ selectColumns 'SlotId "slot_record" ["container", "segment"]
+  , joinOn "slot_record.record = record.id"
+    selectVolumeRecord --- XXX volumes match?
   ]
 
 makeVolumeSlotMaybeRecord :: (Volume -> Container) -> Maybe (Container -> RecordSlot) -> Volume -> (Container, Maybe RecordSlot)

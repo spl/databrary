@@ -1,6 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 module Databrary.Model.Citation.SQL
   ( selectVolumeCitation
+  , selectCitation
   , insertVolumeCitation
   , updateVolumeCitation
   , deleteVolumeCitation
@@ -9,10 +10,14 @@ module Databrary.Model.Citation.SQL
   , deleteVolumeLink
   ) where
 
+import qualified Data.Text as T
 import qualified Language.Haskell.TH as TH
 
+import Databrary.Ops
 import Databrary.Model.SQL.Select
 import Databrary.Model.Audit.SQL
+import Databrary.Model.Volume.Types
+import Databrary.Model.Volume.SQL
 import Databrary.Model.Citation.Types
 
 citationRow :: Selector -- ^ @Maybe 'T.Text' -> 'Citation'@
@@ -20,6 +25,17 @@ citationRow = selectColumns 'Citation "volume_citation" ["head", "url", "year"]
 
 selectVolumeCitation :: Selector -- ^ @Maybe 'T.Text' -> 'Citation'@
 selectVolumeCitation = citationRow
+
+makeVolumeCitation :: Volume -> Maybe (Maybe T.Text -> Citation) -> (Volume, Maybe Citation)
+makeVolumeCitation v cf = (v, cf <$- Just (volumeName v))
+
+selectCitation :: TH.Name -- ^ @'Identity'@
+  -> Selector -- ^ @('Volume', Maybe 'Citation')@
+selectCitation i = selectJoin 'makeVolumeCitation
+  [ selectVolume i
+  , maybeJoinOn "volume.id = volume_citation.volume"
+    selectVolumeCitation
+  ]
 
 linkRow :: Selector -- ^ @'Citation'@
 linkRow = selectColumns 'Citation "volume_link" ["head", "url"]

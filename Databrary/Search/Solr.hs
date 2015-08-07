@@ -13,7 +13,6 @@ import qualified Network.HTTP.Client as HC
 import Databrary.Has (MonadHas, focusIO)
 import Databrary.JSON
 import Databrary.HTTP.Client
-import qualified Databrary.Search.Types () -- TODO
 import qualified Databrary.Search.Query as Q
 
 
