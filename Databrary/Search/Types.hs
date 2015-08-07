@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TemplateHaskell, OverloadedStrings #-}
 module Databrary.Search.Types
   ( SolrDocument(..)
   ) where
@@ -6,19 +6,29 @@ module Databrary.Search.Types
 import qualified Data.Aeson as JSON
 import qualified Data.Aeson.TH as JTH
 import qualified Data.ByteString as BS
-import Data.Char (isUpper, toLower)
+import Data.Char (isAlphaNum, isUpper, toLower)
 import Data.Int (Int16)
+import qualified Data.HashMap.Strict as HM
+import Data.Monoid ((<>))
 import qualified Data.Text as T
 
 import Databrary.Model.URL
 import Databrary.Model.Id.Types
+import Databrary.Model.Release.Types
 import Databrary.Model.Party.Types
 import Databrary.Model.Volume.Types
 import Databrary.Model.Container.Types
+import Databrary.Model.Asset.Types
 import Databrary.Model.Record.Types
 import Databrary.Model.Metric.Types
 import Databrary.Model.Age
 import Databrary.Model.Tag.Types
+
+safeField :: T.Text -> T.Text
+safeField = T.map safeChar where
+  safeChar c
+    | isAlphaNum c = c
+    | otherwise = '_'
 
 newtype SolrRecordMeasures = SolrRecordMeasures [(Metric, MeasureDatum)]
 
@@ -28,15 +38,27 @@ metricSuffix Metric{ metricType = MeasureTypeText } = "_s"
 metricSuffix Metric{ metricType = MeasureTypeNumeric } = "_td"
 metricSuffix Metric{ metricType = MeasureTypeDate } = "_tdt"
 
+metricField :: Metric -> T.Text
+metricField m = safeField (metricName m) <> ('_' `T.cons` metricSuffix m)
+
 instance JSON.ToJSON SolrRecordMeasures where
   toJSON (SolrRecordMeasures ms) =
-    JSON.object $ map (\(m, d) -> ("record_" <> metricName m <> '_' `T.cons` metricSuffix m, d)) ms
+    JSON.object $ map (\(m, d) -> ("record_" <> metricField m) JSON..= d) ms
 
 data SolrDocument
-  = SolrVolume
-    { solrId :: BS.ByteString
+  = SolrParty
+    { solrId :: !BS.ByteString
+    , solrPartyId_i :: Id Party
+    , solrPartyName_s :: T.Text
+    , solrPartyPreName_s :: Maybe T.Text
+    , solrPartyAffiliation_s :: Maybe T.Text
+    , solrPartyIsInstitution_b :: Bool
+    -- TODO: authorization...
+    }
+  | SolrVolume
+    { solrId :: !BS.ByteString
     , solrVolumeId_i :: Id Volume
-    , solrTitle_t :: T.Text
+    , solrName_t :: Maybe T.Text
     , solrAbs_t :: T.Text -- body
     , solrAlias_s :: Maybe T.Text
     , solrVolumeOwnerIds_is :: [Id Party]
@@ -50,22 +72,35 @@ data SolrDocument
     , solrTags_ss :: [TagName]
     }
   | SolrContainer
-    { solrId :: BS.ByteString
+    { solrId :: !BS.ByteString
     , solrVolumeId_i :: Id Volume
     , solrContainerId_i :: Id Container
-    , solrContainerName_t :: Maybe T.Text
+    , solrName_t :: Maybe T.Text
+    , solrRelease_i :: Maybe Release
     , solrHasExcerpt_b :: Bool
     , solrKeywords_ss :: [TagName]
     , solrTags_ss :: [TagName]
     }
-  | SolrSlotRecord
-    { solrId :: BS.ByteString
+  | SolrAsset -- Slot
+    { solrId :: !BS.ByteString
+    , solrVolumeId_i :: Id Volume
+    , solrContainerId_i :: Id Container
+    , solrAssetId_i :: Id Asset
+    , solrName_t :: Maybe T.Text
+    , solrRelease_i :: Maybe Release
+    -- TODO: format? (duration?) segment...
+    }
+  | SolrRecord -- Slot
+    { solrId :: !BS.ByteString
     , solrVolumeId_i :: Id Volume
     , solrContainerId_i :: Id Container
     , solrRecordId_i :: Id Record
     , solrRecordMeasures :: SolrRecordMeasures
     , solrRecordAge_td :: Maybe Age
+    -- TODO: segment...
     }
+
+$(return []) -- force new decl group for splice:
 
 solrToJSON :: SolrDocument -> JSON.Value
 solrToJSON =
@@ -84,8 +119,8 @@ solrToJSON =
     } ''SolrDocument)
 
 fixToJSON :: SolrDocument -> JSON.Value -> JSON.Value
-fixToJSON (SolrSlotRecord _) (JSON.Object o) = JSON.Object $
-  maybe o (union $ delete k o) $ do
+fixToJSON SolrRecord{} (JSON.Object o) = JSON.Object $
+  maybe o (HM.union $ HM.delete k o) $ do
     JSON.Object m <- HM.lookup k o
     return m
   where k = "record_measures"

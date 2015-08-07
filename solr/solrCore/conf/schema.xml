@@ -125,8 +125,8 @@
 
     <!-- VOLUME FIELDS -->
     <field name="volume_id_i" type="int" indexed="true" stored="true"/>
+    <field name="name_t" type="text_en_splitting" indexed="true" stored="true"/>
     <field name="alias_s" type="string" indexed="true" stored="true"/>
-    <field name="title_t" type="text_en_splitting" indexed="true" stored="true"/>
     <field name="abs_t" type="text_en_splitting" indexed="true" stored="true"/>
     <field name="citation_url_s" type="string" indexed="true" stored="true" />
     <field name="citation_t" type="text_en_splitting" indexed="true" stored="true" />
@@ -140,7 +140,10 @@
 
     <!-- CONTAINER FIELDS -->
     <field name="container_id_i" type="int" indexed="true" stored="true"/>
-    <field name="container_name_t" type="text_en_splitting" indexed="true" stored="true"/>
+    <field name="release_i" type="int" indexed="true" stored="true"/>
+
+    <!-- ASSET FIELDS -->
+    <field name="asset_id_i" type="int" indexed="true" stored="true"/>
 
     <!-- RECORD FIELDS -->
     <field name="record_id_i" type="int" indexed="true" stored="true"/>

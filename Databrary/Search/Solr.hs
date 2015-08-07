@@ -1,23 +1,19 @@
-{-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
+{-# LANGUAGE OverloadedStrings, RecordWildCards #-}
 module Databrary.Search.Solr
-( search,
-  SolrResponse
+( search
 ) where
 
-import Data.Int (Int32)
-import Data.Aeson
-import Data.Map
-import Control.Applicative
-import Control.Monad (mzero)
+import Control.Applicative ((<$>))
 import Control.Monad.IO.Class (MonadIO)
-import GHC.Generics
-
-import qualified Network.HTTP.Client as HC
 import qualified Data.Attoparsec.ByteString as P
 import qualified Data.ByteString as BS
+import Data.Int (Int32)
+import qualified Network.HTTP.Client as HC
 
 import Databrary.Has (MonadHas, focusIO)
+import Databrary.JSON
 import Databrary.HTTP.Client
+import qualified Databrary.Search.Types () -- TODO
 import qualified Databrary.Search.Query as Q
 
 
@@ -25,99 +21,6 @@ solrServer :: String
 solrServer = "http://localhost/solr/Databrary/query"
 solrPort :: Int
 solrPort = 8983
-
-
-newtype Params = Params (Map String String) deriving (Show)
-instance FromJSON Params where
-  parseJSON val = Params <$> parseJSON val
-
-data ResponseHeader = ResponseHeader {
-  status :: Int,
-  qTime  :: Int,
-  params :: Params
-} deriving (Show)
-instance FromJSON ResponseHeader where
-  parseJSON (Object o) = ResponseHeader <$> o .: "status"
-                                        <*> o .: "QTime"
-                                        <*> o .: "params"
-  parseJSON _ = mzero
-
-data Docs = Docs {
-   content_type :: String,
-   id :: String,
-   _version_ :: Maybe Int,
-   volume_id_i :: Maybe Int,
-   alias_s :: Maybe String,
-   text_en :: Maybe [String],
-   title_t :: Maybe String,
-   citation_url_s :: Maybe String,
-   citation_t :: Maybe String,
-   citation_year_i :: Maybe Int,
-   container_id_i :: Maybe Int,
-   container_volume_id_i :: Maybe Int,
-   container_date_tdt :: Maybe String,
-   container_name_t :: Maybe String,
-   container_age_td :: Maybe Double,
-   container_keywords_ss :: Maybe [String],
-   record_id_i :: Maybe Int,
-   record_volume_id_i :: Maybe Int,
-   record_container_i :: Maybe Int,
-   record_date_tdt :: Maybe String,
-   record_text_t :: Maybe String,
-   record_num_d :: Maybe Double,
-   segment_volume_id_i :: Maybe Int,
-   segment_record_id_i :: Maybe Int,
-   segment_container_id_i :: Maybe Int,
-   segment_start_tl :: Maybe String,
-   segment_end_tl :: Maybe String,
-   segment_length_tl :: Maybe String,
-   segment_tags_ss :: Maybe [String],
-   segment_asset_i :: Maybe Int,
-   segment_asset_name_s :: Maybe String,
-   url :: Maybe String
-} deriving (Show,Generic)
-instance FromJSON Docs
-
-data Results = Results {
-  numFound :: Int,
-  start :: Int,
-  docs :: [Docs]
-} deriving (Show)
-instance FromJSON Results where
-  parseJSON (Object o) = Results <$> o .: "numFound"
-                                 <*> o .: "start"
-                                 <*> o .: "docs"
-  parseJSON _ = mzero
-
-data SpellCheck = SpellCheck {
-  suggestions :: [Suggestions],
-  correctlySpelled :: Bool,
-  collations :: [Collations]
-} deriving (Show)
-instance FromJSON SpellCheck where
-  parseJSON (Object o) = SpellCheck <$> o .: "suggestions"
-                                 <*> o .: "correctlySpelled"
-                                 <*> o .: "collations"
-  parseJSON _ = mzero
-
-data Suggestions = Suggestions {
-} deriving (Show,Generic)
-instance FromJSON Suggestions
-
-data Collations = Collations {
-} deriving (Show,Generic)
-instance FromJSON Collations
-
-data SolrResponse = SolrResponse {
-  responseHeader :: ResponseHeader,
-  response :: Results,
-  spellCheck :: SpellCheck
-} deriving (Show)
-instance FromJSON SolrResponse where
-  parseJSON (Object o) = SolrResponse <$> o .: "responseHeader"
-                                      <*> o .: "response"
-                                      <*> o .: "spellcheck"
-  parseJSON _ = mzero
 
 
 data SolrQuery = SolrQuery {
@@ -128,10 +31,10 @@ data SolrQuery = SolrQuery {
    solrStart :: Int32
 } deriving (Show)
 instance ToJSON SolrQuery where
-      toJSON ( SolrQuery sQquery sArgs sJoin sQlimit sQstart ) =
-         object [
-                  "limit" .= sQlimit,
-                  "filter" .= [sJoin, sArgs],
+      toJSON SolrQuery{..} =
+         Object $ object [
+                  "limit" .= solrLimit,
+                  "filter" .= [solrJoin, solrArgs],
                   "facet" .= object [
                     "content_type" .= object [
                         "terms" .= object [
@@ -147,7 +50,7 @@ instance ToJSON SolrQuery where
 --                   ]
                   "params" .= object [
                         "defType" .= ("edismax" :: String),
-                        "q" .= sQquery,
+                        "q" .= solrQuery,
                         "q.op" .= ("AND" :: String),
                         "qf" .= (volumeQf ++ (" " :: String) ++ containerQf),
                         "pf" .= (volumePf ++ (" " :: String) ++ containerPf),
@@ -157,17 +60,18 @@ instance ToJSON SolrQuery where
                         "group" .= ("true" :: String),
                         "group.field" .= ("content_type" :: String),
                         "group.limit" .= (10 :: Int),
-                        "group.offset" .= sQstart,
+                        "group.offset" .= solrStart,
                         "spellcheck" .= ("true" :: String),
                         "spellcheck.collate" .= ("true" :: String)
                         {- "spellcheck.collateParam.mm" .= ("100%" :: String) -}
                   ]
                 ]
 
-volumeQf = "text_en^0.6 text_exact^1.5 volume_keywords_ss^10.0 volume_tags_ss^5.0 party_name_s^5.0 volume_owner_names_ss^4" :: String
-volumePf = "volume_keywords_ss^10.0 volume_tags_ss^5.0 party_name_s^5.0 volume_owner_names_ss^4" :: String
-containerQf = "container_ethnicity_s^5 container_gender_s^5 container_race_s^5 container_text_t^3" :: String
-containerPf = "container_ethnicity_s^5 container_gender_s^5 container_race_s^5 container_text_t^3" :: String
+volumeQf, volumePf, containerQf, containerPf :: String
+volumeQf = "text_en^0.6 text_exact^1.5 volume_keywords_ss^10.0 volume_tags_ss^5.0 party_name_s^5.0 volume_owner_names_ss^4"
+volumePf = "volume_keywords_ss^10.0 volume_tags_ss^5.0 party_name_s^5.0 volume_owner_names_ss^4"
+containerQf = "container_ethnicity_s^5 container_gender_s^5 container_race_s^5 container_text_t^3"
+containerPf = "container_ethnicity_s^5 container_gender_s^5 container_race_s^5 container_text_t^3"
 
 -- formQuery :: String -> SolrQuery
 -- formQuery q = SolrQuery q
@@ -202,9 +106,13 @@ search q offset limit = focusIO $ \hcm -> do
       let modifiedQueryStr = (if(cType == "container") then "{!join from=volume_id_i to=volume_id_i} " else "")
                                                       ++ (if(length queryStr > 0) then queryStr else "*")
                                                       ++ (if(cType == "container") then " OR *" else "")
-      let sQuery = SolrQuery  modifiedQueryStr
-                              (contentType ++ (if(length args > 0) then " AND " else " ") ++ args)
-                              join limit offset
+      let sQuery = SolrQuery
+            { solrQuery = modifiedQueryStr
+            , solrArgs = (contentType ++ (if(length args > 0) then " AND " else " ") ++ args)
+            , solrJoin = join
+            , solrLimit = limit
+            , solrStart = offset
+            }
       request <- generatePostReq sQuery
       print $ encode sQuery
       print contentType
