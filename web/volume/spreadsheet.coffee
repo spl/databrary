@@ -460,6 +460,9 @@ app.directive 'spreadsheet', [
               icon = cell.appendChild(document.createElement('span'))
               icon.className = 'icon release ' + constants.release[asset.release] + ' hint-release-' + constants.release[asset.release]
             else
+              if Editing && Key.id == info.c && stop
+                delspace = cell.appendChild(document.createElement('span'))
+                delspace.className = 'icon'
               if Editing && Key.id == info.c && !stop
                 del = cell.appendChild(document.createElement('a'))
                 del.className = 'trash icon'
