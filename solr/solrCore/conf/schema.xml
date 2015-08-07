@@ -133,37 +133,32 @@
     <field name="citation_year_i" type="int" indexed="true" stored="true" />
     <field name="has_excerpt_b" type="boolean" indexed="true" stored="true" />
     <field name="volume_has_sessions_b" type="boolean" indexed="true" stored="true" />
-    <field name="tags_ss" type="string" indexed="true" stored="true" multiValued="true" omitNorms="false" />
-    <field name="keywords_ss" type="text_en_splitting" indexed="true" stored="true" multiValued="true" omitNorms="false" />
     <field name="volume_owner_names_ss" type="string" indexed="true" stored="true" multiValued="true" omitNorms="false" />
     <field name="volume_owner_ids_is" type="int" indexed="true" stored="true" multiValued="true" omitNorms="false" />
 
     <!-- CONTAINER FIELDS -->
     <field name="container_id_i" type="int" indexed="true" stored="true"/>
     <field name="release_i" type="int" indexed="true" stored="true"/>
+    <field name="segment_s" type="string" indexed="true" stored="true"/>
+    <field name="segment_duration_td" type="tdouble" indexed="true" stored="true"/>
 
     <!-- ASSET FIELDS -->
     <field name="asset_id_i" type="int" indexed="true" stored="true"/>
+    <field name="asset_format_i" type="int" indexed="true" stored="true"/>
 
     <!-- RECORD FIELDS -->
     <field name="record_id_i" type="int" indexed="true" stored="true"/>
 
-    <!-- SEGMENT FIELDS -->
-    <field name="segment_volume_id_i" type="int" indexed="true" stored="true"/>
-    <field name="segment_record_id_i" type="int" indexed="true" stored="true"/>
-    <field name="segment_container_id_i" type="int" indexed="true" stored="true"/>
-    <field name="segment_start_tl" type="tlong" indexed="true" stored="true"/>
-    <field name="segment_end_tl" type="tlong" indexed="true" stored="true"/>
-    <field name="segment_length_tl" type="tlong" indexed="true" stored="true"/>
-    <field name="segment_tags_ss" type="string" indexed="true" stored="true" multiValued="true"/>
-    <field name="segment_asset_i" type="int" indexed="true" stored="true" />
-    <field name="segment_asset_name_s" type="text_en_splitting" indexed="true" stored="true" />
+    <!-- TAG FIELDS -->
+    <field name="tag_id_i" type="int" indexed="true" stored="true" />
+    <field name="tag_s" type="string" indexed="true" stored="true" omitNorms="false" />
+    <field name="keyword_s" type="string" indexed="true" stored="true" omitNorms="false" />
 
     <!-- PARTY FIELDS -->
+    <field name="party_id_i" type="int" indexed="true" stored="true"/>
     <field name="party_pre_name_s" type="string" indexed="true" stored="true"/>
     <field name="party_name_s" type="string" indexed="true" stored="true"/>
     <field name="party_affiliation_s" type="string" indexed="true" stored="true"/>
-    <field name="party_id_i" type="int" indexed="true" stored="true"/>
     <field name="party_is_institution_b" type="boolean" indexed="true" stored="true"/>
     <field name="party_is_authorized_b" type="boolean" indexed="true" stored="true"/>
 

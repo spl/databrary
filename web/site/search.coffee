@@ -452,11 +452,11 @@ app.controller 'site/search', [
       return query + arg
 
     searchAge = (query, ageMin, ageMax, join=true) ->
-      # arg = "|arg=record_age_td:[#{ ageMin } TO #{ ageMax }]"
+      # arg = "|arg=record_age_ti:[#{ ageMin } TO #{ ageMax }]"
       if join
-        arg = "|join=volume_id_i,volume_id_i,record_age_td:[#{ ageMin } TO #{ ageMax }]"
+        arg = "|join=volume_id_i,volume_id_i,record_age_ti:[#{ ageMin } TO #{ ageMax }]"
       else
-        arg = "|arg=record_age_td:[#{ ageMin } TO #{ ageMax }]"
+        arg = "|arg=record_age_ti:[#{ ageMin } TO #{ ageMax }]"
       return query + arg
 
     searchSex = (volume, query, sex) ->

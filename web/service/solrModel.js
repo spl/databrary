@@ -120,7 +120,7 @@ app.factory('solrModelService', [
         "record_ethnicity_s": "ethnicity",
         "record_gender_s": "gender",
         "record_race_s": "race",
-        "record_age_td": "age",
+        "record_age_ti": "age",
         "record_segment_s": "segment",
         "record_text_t": "text",
       };

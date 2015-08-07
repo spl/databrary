@@ -18,10 +18,13 @@ import Databrary.Model.Release.Types
 import Databrary.Model.Party.Types
 import Databrary.Model.Volume.Types
 import Databrary.Model.Container.Types
+import Databrary.Model.Offset
+import Databrary.Model.Segment
+import Databrary.Model.Format.Types
 import Databrary.Model.Asset.Types
+import Databrary.Model.Age
 import Databrary.Model.Record.Types
 import Databrary.Model.Metric.Types
-import Databrary.Model.Age
 import Databrary.Model.Tag.Types
 
 safeField :: T.Text -> T.Text
@@ -68,8 +71,6 @@ data SolrDocument
     , solrCitationYear_i :: Maybe Int16
     , solrVolumeHasSessions_b :: Bool
     , solrHasExcerpt_b :: Bool
-    , solrKeywords_ss :: [TagName]
-    , solrTags_ss :: [TagName]
     }
   | SolrContainer
     { solrId :: !BS.ByteString
@@ -78,26 +79,38 @@ data SolrDocument
     , solrName_t :: Maybe T.Text
     , solrRelease_i :: Maybe Release
     , solrHasExcerpt_b :: Bool
-    , solrKeywords_ss :: [TagName]
-    , solrTags_ss :: [TagName]
     }
   | SolrAsset -- Slot
     { solrId :: !BS.ByteString
     , solrVolumeId_i :: Id Volume
     , solrContainerId_i :: Id Container
+    , solrSegment_s :: Segment
+    , solrSegmentDuration_td :: Maybe Offset
     , solrAssetId_i :: Id Asset
     , solrName_t :: Maybe T.Text
+    , solrFormat_i :: Id Format
     , solrRelease_i :: Maybe Release
-    -- TODO: format? (duration?) segment...
     }
   | SolrRecord -- Slot
     { solrId :: !BS.ByteString
     , solrVolumeId_i :: Id Volume
     , solrContainerId_i :: Id Container
+    , solrSegment_s :: Segment
+    , solrSegmentDuration_td :: Maybe Offset
     , solrRecordId_i :: Id Record
     , solrRecordMeasures :: SolrRecordMeasures
-    , solrRecordAge_td :: Maybe Age
-    -- TODO: segment...
+    , solrRecordAge_ti :: Maybe Age
+    }
+  | SolrTag -- Use
+    { solrId :: !BS.ByteString
+    , solrVolumeId_i :: Id Volume
+    , solrContainerId_i :: Id Container
+    , solrSegment_s :: Segment
+    , solrSegmentDuration_td :: Maybe Offset
+    , solrTagId_i :: Id Tag
+    , solrTag_s :: TagName
+    , solrKeyword_s :: Maybe TagName
+    , solrPartyId_i :: Id Party
     }
 
 $(return []) -- force new decl group for splice:
