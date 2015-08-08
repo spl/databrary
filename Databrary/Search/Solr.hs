@@ -4,23 +4,18 @@ module Databrary.Search.Solr
 ) where
 
 import Control.Applicative ((<$>))
-import Control.Monad.IO.Class (MonadIO)
+import Control.Monad.IO.Class (liftIO)
 import qualified Data.Attoparsec.ByteString as P
 import qualified Data.ByteString as BS
 import Data.Int (Int32)
+import Data.Monoid ((<>))
 import qualified Network.HTTP.Client as HC
 
-import Databrary.Has (MonadHas, focusIO)
+import Databrary.Has (peeks, focusIO)
 import Databrary.JSON
 import Databrary.HTTP.Client
+import Databrary.Search.Service
 import qualified Databrary.Search.Query as Q
-
-
-solrServer :: String
-solrServer = "http://localhost/solr/Databrary/query"
-solrPort :: Int
-solrPort = 8983
-
 
 data SolrQuery = SolrQuery {
    solrQuery :: String,
@@ -78,43 +73,40 @@ containerPf = "container_ethnicity_s^5 container_gender_s^5 container_race_s^5 c
 submitQuery :: HC.Request -> HTTPClient -> IO (Maybe Value)
 submitQuery q = httpRequestJSONSolr q
 
-generatePostReq :: SolrQuery -> IO HC.Request
-generatePostReq sr = do
-      initReq <- HC.parseUrl solrServer
-      let reqBody = HC.RequestBodyLBS $ encode sr
-      let req = initReq {
-                       HC.method = "POST",
-                       HC.port = solrPort,
-                       HC.requestBody = reqBody,
-                       HC.requestHeaders = ("content-type", "application/json") : HC.requestHeaders initReq
-                    }
-      return req
+generatePostReq :: SolrQuery -> SolrClient -> HC.Request
+generatePostReq sr SolrClient{ solrRequest = req } = req
+  { HC.path = HC.path req <> "query"
+  , HC.method = "POST"
+  , HC.requestBody = HC.RequestBodyLBS $ encode sr
+  , HC.requestHeaders = ("content-type", "application/json") : HC.requestHeaders req
+  }
 
 httpRequestJSONSolr :: HC.Request -> HTTPClient -> IO (Maybe Value)
 httpRequestJSONSolr req = httpRequest req "text/plain" $ \rb ->
   P.maybeResult <$> P.parseWith rb json BS.empty
 
-search :: (MonadHas HTTPClient c m, MonadIO m) => String -> Int32 -> Int32 -> m (Maybe Value)
-search q offset limit = focusIO $ \hcm -> do
-      print q
+search :: (MonadSolr c m) => String -> Int32 -> Int32 -> m (Maybe Value)
+search q offset limit = do
       let query = Q.createQuery q
-      let (queryStr, args, join, cType) = Q.queryToString query
+          (queryStr, args, join, cType) = Q.queryToString query
       -- This is hard-coded here so no one can send anything else...
       -- probably not the best.
-      let contentType = if cType == "container" then "content_type:record" else "content_type:(volume OR party)"
-      let modifiedQueryStr = (if(cType == "container") then "{!join from=volume_id_i to=volume_id_i} " else "")
+          contentType = if cType == "container" then "content_type:record" else "content_type:(volume OR party)"
+          modifiedQueryStr = (if(cType == "container") then "{!join from=volume_id_i to=volume_id_i} " else "")
                                                       ++ (if(length queryStr > 0) then queryStr else "*")
                                                       ++ (if(cType == "container") then " OR *" else "")
-      let sQuery = SolrQuery
+          sQuery = SolrQuery
             { solrQuery = modifiedQueryStr
             , solrArgs = (contentType ++ (if(length args > 0) then " AND " else " ") ++ args)
             , solrJoin = join
             , solrLimit = limit
             , solrStart = offset
             }
-      request <- generatePostReq sQuery
-      print $ encode sQuery
-      print contentType
-      print sQuery -- TODO REMOVE THIS
-      print request
-      submitQuery request hcm
+      request <- peeks (generatePostReq sQuery)
+      liftIO $ do -- TODO REMOVE THIS
+        print q
+        print $ encode sQuery
+        print contentType
+        print sQuery
+        print request
+      focusIO $ submitQuery request
