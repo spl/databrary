@@ -14,15 +14,7 @@ if [[ ! -f ${top}databrary.conf ]] ; then
 	exit 1
 fi
 
-getdbconfig () {
-	# This isn't perfect but hopefully good enough
-	sed -n '/^db\s*{/,/^}/{/^\s*\([a-z]\+\)\s*=\s*/{s//\1 /;s/^\([a-z]\+ \)"\(.*\)"$/\1\2/;s/\$(USER)/'"$USER"'/;p}}' ${top}databrary.conf
-}
-
-declare -A db=([port]=5432)
-while read key val ; do
-	db[$key]=$val
-done < <(getdbconfig)
+source "${top}load_configs.sh"
 
 if [[ -z ${db[db]} || -z ${db[user]} ]] ; then
 	echo "Could not read database configuration."

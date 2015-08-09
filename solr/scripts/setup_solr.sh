@@ -4,9 +4,7 @@
 ### Config
 ##################
 solr_version=5.1.0
-mvn_version=3.0.5
 solr_archive_url="https://archive.apache.org/dist/lucene/solr/$solr_version/solr-$solr_version.zip"
-mvn_archive_url="http://apache.mirrors.tds.net/maven/maven-3/$mvn_version/binaries/apache-maven-$mvn_version-bin.tar.gz"
 ##################
 
 curr_dir=`pwd`
@@ -23,19 +21,6 @@ echo "Stopping any running solr instances..."
 bash $top_dir/solr/scripts/stop_solr.sh
 
 core_loc=$top_dir/${solr[install]}/server/solr/databrary-core
-
-echo "Downloading and installing mvn (if needed)"
-# Download mvn if it does not exist
-if [ ! $(which mvn) ] ; then
-   cd /tmp
-   if [ ! -e apache-maven-$mvn_version-bin.tar.gz ]; then
-      wget $mvn_archive_url
-   fi
-   if [ ! -e apache-maven-$mvn_version ]; then
-      tar xvf apache-maven-$mvn_version-bin.tar.gz
-   fi
-   PATH=$PATH:/tmp/apache-maven-$mvn_version/bin
-fi
 
 # Download solr if install directory does not exist
 if [ ! -d "$top_dir/${solr[install]}" ]; then
@@ -68,6 +53,3 @@ cd $curr_dir
 
 echo "Starting solr"
 bash $top_dir/solr/scripts/start_solr.sh
-
-echo "Building solr index"
-bash $top_dir/solr/scripts/build_index.sh
