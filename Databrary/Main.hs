@@ -13,7 +13,10 @@ import System.Environment (getProgName, getArgs)
 import System.Exit (exitSuccess, exitFailure)
 import System.IO (stdout)
 
-#ifndef DEVEL
+#ifdef DEVEL
+import Databrary.Service.Types (serviceStartTime)
+import Databrary.Search.Index (updateIndex)
+#else
 import Paths_databrary (getDataFileName)
 import Databrary.Service.Types (serviceDB)
 import Databrary.Service.DB (liftDBM)
@@ -58,7 +61,9 @@ main = do
   routes <- evaluate routeMap
   conf <- loadConfig
   withService conf $ \rc -> do
-#ifndef DEVEL
+#ifdef DEVEL
+    updateIndex (serviceStartTime rc) rc
+#else
     schema <- getDataFileName "schema"
     runReaderT (liftDBM $ updateDBSchema schema) (serviceDB rc)
 #endif

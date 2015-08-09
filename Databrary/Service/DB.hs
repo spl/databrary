@@ -87,7 +87,8 @@ class (Functor m, Applicative m, Monad m) => MonadDB m where
     PGPool db <- peek
     liftIO $ withResource db f
 
-newtype DBM a = DBM { runDBM :: ReaderT PGConnection IO a } deriving (Functor, Applicative, Monad, MonadIO, MonadBase IO)
+newtype DBM a = DBM { runDBM :: ReaderT PGConnection IO a }
+  deriving (Functor, Applicative, Monad, MonadIO, MonadBase IO)
 
 instance MonadBaseControl IO DBM where
   type StM DBM a = a

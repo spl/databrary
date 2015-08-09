@@ -1,5 +1,5 @@
 {-# LANGUAGE TemplateHaskell, OverloadedStrings #-}
-module Databrary.Search.Types
+module Databrary.Search.Document
   ( SolrDocument(..)
   , SolrRecordMeasures(..)
   ) where

@@ -4,7 +4,7 @@ module Databrary.Service.Periodic
 
 import Control.Concurrent (ThreadId, forkFinally, threadDelay)
 import Control.Monad.IO.Class (liftIO)
-import Control.Monad.Trans.Reader (runReaderT)
+import Control.Monad.Trans.Reader (ReaderT(..))
 import Data.Fixed (Fixed(..), Micro)
 import Data.Time.Clock (UTCTime(..), diffUTCTime, getCurrentTime)
 import Data.Time.LocalTime (TimeOfDay(TimeOfDay), timeOfDayToTime)
@@ -30,13 +30,12 @@ daily = runReaderT $ do
   focusIO $ logMsg t "running daily cleanup"
   cleanTokens
   updateVolumeIndex
+  ReaderT $ updateIndex t
 
 runPeriodic :: Service -> IO ()
-runPeriodic rc = do
-  n <- getCurrentTime
-  let s = n{ utctDayTime = timeOfDayToTime $ TimeOfDay 7 0 0 }
-  loop (if s <= n then d s else s)
-  where
+runPeriodic rc = loop (if s <= st then d s else s) where
+  st = serviceStartTime rc
+  s = st{ utctDayTime = timeOfDayToTime $ TimeOfDay 7 0 0 }
   d t = t{ utctDay = succ (utctDay t) }
   loop t = do
     n <- getCurrentTime

@@ -24,6 +24,7 @@ initSolr conf = do
   return SolrClient
     { solrRequest = req
       { HC.port = port
+      , HC.redirectCount = 0
       }
     }
 

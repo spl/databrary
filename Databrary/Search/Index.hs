@@ -1,20 +1,34 @@
-{-# LANGUAGE RecordWildCards, TemplateHaskell #-}
+{-# LANGUAGE OverloadedStrings, RecordWildCards, GeneralizedNewtypeDeriving, TemplateHaskell #-}
 module Databrary.Search.Index
-  ( solrDocuments
+  ( updateIndex
   ) where
 
-import Control.Monad.Trans.Reader (ReaderT(..))
+import Control.Applicative (Applicative)
+import Control.Exception (handle)
+import Control.Monad (void)
+import Control.Monad.IO.Class (MonadIO)
+import Control.Monad.Reader (MonadReader, ReaderT(..))
+import Control.Monad.Trans.Class (lift)
+import qualified Data.Aeson as JSON
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
+import qualified Data.ByteString.Lazy as BSL
+import qualified Data.Foldable as Fold
 import Data.Maybe (isNothing)
 import Data.Monoid ((<>))
+import qualified Network.HTTP.Client as HC
+import Network.HTTP.Types.Header (hContentType)
 
+import Control.Invert
 import Databrary.Ops
 import Databrary.Has (Has(..), makeHasRec)
 import Databrary.Service.Types
+import Databrary.Service.DB
+import Databrary.Service.Log
+import Databrary.Model.Time
+import Databrary.Model.Segment
 import Databrary.Model.Kind
 import Databrary.Model.Id.Types
-import Databrary.Model.Segment
 import Databrary.Model.Permission.Types
 import Databrary.Model.Identity.Types
 import Databrary.Model.Party.Types
@@ -30,7 +44,8 @@ import Databrary.Model.Record.Types
 import Databrary.Model.RecordSlot
 import Databrary.Model.Measure
 import Databrary.Model.Tag.Types
-import Databrary.Search.Types
+import Databrary.Search.Service
+import Databrary.Search.Document
 
 solrDocId :: forall a . (Kinded a, Show (Id a)) => Id a -> BS.ByteString
 solrDocId i = kindOf (undefined :: a) <> BSC.pack ('_' : show i)
@@ -124,7 +139,7 @@ solrTag TagUse{ useTag = Tag{..}, tagSlot = Slot{..}, ..} = SolrTag
   , solrPartyId_i = partyId (accountParty tagWho)
   }
 
-newtype SolrContext = SolrContext { contextService :: Service }
+newtype SolrContext = SolrContext { solrService :: Service }
 
 instance Has Identity SolrContext where
   view _ = UnIdentified
@@ -137,10 +152,24 @@ instance Has (Id Party) SolrContext where
 instance Has Access SolrContext where
   view _ = view UnIdentified
 
-makeHasRec ''SolrContext ['contextService]
+makeHasRec ''SolrContext ['solrService]
 
-type SolrM a = ReaderT SolrContext IO a
--- newtype SolrM a = SolrM { runSolrM :: ReaderT Service IO a } deriving (Functor, Applicative, Monad, MonadIO, MonadBase IO, MonadReader Service)
+newtype SolrM a = SolrM { runSolrM :: ReaderT SolrContext (InvertM BS.ByteString) a }
+  deriving (Functor, Applicative, Monad, MonadIO, MonadReader SolrContext, MonadDB)
+
+writeBlock :: BS.ByteString -> SolrM ()
+writeBlock = SolrM . lift . give
+
+writeDocument :: SolrDocument -> SolrM ()
+writeDocument d =
+  writeBlock $ BSL.toStrict $ "},\"add\":{\"doc\":" <> JSON.encode d
+
+writeUpdate :: SolrM () -> SolrM ()
+writeUpdate f = do
+  writeBlock "{\"delete\":{\"query\":\"*:*\""
+  f
+  writeBlock "}}"
+
 
 joinContainers :: (a -> Slot -> b) -> [Container] -> [(a, SlotId)] -> [b]
 joinContainers _ _ [] = []
@@ -149,18 +178,31 @@ joinContainers f cl@(c:cr) al@((a, SlotId ci s):ar)
   | containerId c == ci = f a (Slot c s) : joinContainers f cl ar
   | otherwise = joinContainers f cr al
 
-volumeDocuments :: (Volume, Maybe Citation) -> SolrM [SolrDocument]
-volumeDocuments (v, vc) = do
+writeVolume :: (Volume, Maybe Citation) -> SolrM ()
+writeVolume (v, vc) = do
+  writeDocument $ solrVolume v vc
   cl <- lookupVolumeContainers v
+  mapM_ (writeDocument . solrContainer) cl
   al <- joinContainers ((. Just) . AssetSlot) cl <$> lookupVolumeAssetSlotIds v
+  mapM_ (writeDocument . solrAsset) al
   rl <- joinContainers RecordSlot cl <$> lookupVolumeRecordSlotIds v
-  return
-    $ solrVolume v vc
-    : map solrContainer cl
-    ++ map solrAsset al
-    ++ map solrRecord rl
+  mapM_ (writeDocument . solrRecord) rl
 
-solrDocuments :: SolrM [SolrDocument]
-solrDocuments =
-  fmap concat . mapM volumeDocuments =<< lookupVolumesCitations
+writeAllDocuments :: SolrM ()
+writeAllDocuments =
+  mapM_ writeVolume =<< lookupVolumesCitations
   -- parties
+
+updateIndex :: Timestamp -> Service -> IO ()
+updateIndex t rc = handle
+  (\(e :: HC.HttpException) -> logMsg t ("solr update failed: " ++ show e) (serviceLogs rc))
+  $ void $ HC.httpNoBody req
+    { HC.path = HC.path req <> "update/json"
+    , HC.queryString = "?commit=true"
+    , HC.method = "POST"
+    , HC.requestBody = HC.RequestBodyStreamChunked $ \wf -> do
+      w <- runInvert $ runReaderT (runSolrM (writeUpdate writeAllDocuments)) (SolrContext rc)
+      wf (Fold.fold <$> w)
+    , HC.requestHeaders = (hContentType, "application/json") : HC.requestHeaders req
+    } (serviceHTTPClient rc)
+  where req = solrRequest (serviceSolr rc)
