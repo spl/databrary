@@ -1,7 +1,8 @@
-{-# LANGUAGE TemplateHaskell, OverloadedStrings #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving, TemplateHaskell, OverloadedStrings #-}
 module Databrary.Search.Document
   ( SolrDocument(..)
   , SolrRecordMeasures(..)
+  , SolrSegment(..)
   ) where
 
 import qualified Data.Aeson as JSON
@@ -38,17 +39,27 @@ safeField = T.map safeChar where
 newtype SolrRecordMeasures = SolrRecordMeasures [(Metric, MeasureDatum)]
 
 metricSuffix :: Metric -> T.Text
-metricSuffix Metric{ metricType = MeasureTypeText, metricOptions = [] } = "_t"
-metricSuffix Metric{ metricType = MeasureTypeText } = "_s"
-metricSuffix Metric{ metricType = MeasureTypeNumeric } = "_td"
-metricSuffix Metric{ metricType = MeasureTypeDate } = "_tdt"
+metricSuffix Metric{ metricType = MeasureTypeText, metricOptions = [] } = "t"
+metricSuffix Metric{ metricType = MeasureTypeText } = "s"
+metricSuffix Metric{ metricType = MeasureTypeNumeric } = "td"
+metricSuffix Metric{ metricType = MeasureTypeDate } = "tdt"
 
 metricField :: Metric -> T.Text
 metricField m = safeField (metricName m) <> ('_' `T.cons` metricSuffix m)
 
+-- slight hack because we actually index dates as datetimes
+metricDatum :: Metric -> MeasureDatum -> JSON.Value
+metricDatum Metric{ metricType = MeasureTypeDate } d = JSON.toJSON $ d <> "T12:00:00Z"
+metricDatum _ d = JSON.toJSON d
+
 instance JSON.ToJSON SolrRecordMeasures where
   toJSON (SolrRecordMeasures ms) =
-    JSON.object $ map (\(m, d) -> ("record_" <> metricField m) JSON..= d) ms
+    JSON.object $ map (\(m, d) -> ("record_" <> metricField m) JSON..= metricDatum m d) ms
+
+newtype SolrSegment = SolrSegment Segment deriving (JSON.FromJSON)
+
+instance JSON.ToJSON SolrSegment where
+  toJSON (SolrSegment s) = JSON.String $ T.pack $ showSegmentWith (shows . offsetMillis) s ""
 
 data SolrDocument
   = SolrParty
@@ -83,7 +94,7 @@ data SolrDocument
     { solrId :: !BS.ByteString
     , solrVolumeId_i :: Id Volume
     , solrContainerId_i :: Id Container
-    , solrSegment_s :: Segment
+    , solrSegment_s :: SolrSegment
     , solrSegmentDuration_td :: Maybe Offset
     , solrAssetId_i :: Id Asset
     , solrName_t :: Maybe T.Text
@@ -94,7 +105,7 @@ data SolrDocument
     { solrId :: !BS.ByteString
     , solrVolumeId_i :: Id Volume
     , solrContainerId_i :: Id Container
-    , solrSegment_s :: Segment
+    , solrSegment_s :: SolrSegment
     , solrSegmentDuration_td :: Maybe Offset
     , solrAssetId_i :: Id Asset
     , solrRelease_i :: Maybe Release
@@ -103,7 +114,7 @@ data SolrDocument
     { solrId :: !BS.ByteString
     , solrVolumeId_i :: Id Volume
     , solrContainerId_i :: Id Container
-    , solrSegment_s :: Segment
+    , solrSegment_s :: SolrSegment
     , solrSegmentDuration_td :: Maybe Offset
     , solrRecordId_i :: Id Record
     , solrRecordMeasures :: SolrRecordMeasures
@@ -113,7 +124,7 @@ data SolrDocument
     { solrId :: !BS.ByteString
     , solrVolumeId_i :: Id Volume
     , solrContainerId_i :: Id Container
-    , solrSegment_s :: Segment
+    , solrSegment_s :: SolrSegment
     , solrSegmentDuration_td :: Maybe Offset
     , solrTagId_i :: Id Tag
     , solrTag_s :: TagName

@@ -91,7 +91,7 @@ solrAsset AssetSlot{ slotAsset = Asset{..}, assetSlot = ~(Just Slot{..}) } = Sol
   , solrAssetId_i = assetId
   , solrVolumeId_i = volumeId assetVolume
   , solrContainerId_i = containerId slotContainer
-  , solrSegment_s = slotSegment
+  , solrSegment_s = SolrSegment slotSegment
   , solrSegmentDuration_td = segmentLength slotSegment
   , solrName_t = assetName
   , solrRelease_i = assetRelease
@@ -105,7 +105,7 @@ solrExcerpt Excerpt{ excerptAsset = AssetSegment{ segmentAsset = AssetSlot{ slot
   , solrAssetId_i = assetId
   , solrVolumeId_i = volumeId assetVolume
   , solrContainerId_i = containerId container
-  , solrSegment_s = seg
+  , solrSegment_s = SolrSegment seg
   , solrSegmentDuration_td = segmentLength seg
   , solrRelease_i = assetRelease
   }
@@ -117,7 +117,7 @@ solrRecord rs@RecordSlot{ slotRecord = r@Record{..}, recordSlot = Slot{..} } = S
   , solrRecordId_i = recordId
   , solrVolumeId_i = volumeId recordVolume
   , solrContainerId_i = containerId slotContainer
-  , solrSegment_s = slotSegment
+  , solrSegment_s = SolrSegment slotSegment
   , solrSegmentDuration_td = segmentLength slotSegment
   , solrRecordMeasures = SolrRecordMeasures $ map (\m -> (measureMetric m, measureDatum m)) $ getRecordMeasures r
   , solrRecordAge_ti = recordSlotAge rs
@@ -131,7 +131,7 @@ solrTag TagUse{ useTag = Tag{..}, tagSlot = Slot{..}, ..} = SolrTag
     <> maybe "" (('_':) . show) (lowerBound $ segmentRange slotSegment)
   , solrVolumeId_i = volumeId (containerVolume slotContainer)
   , solrContainerId_i = containerId slotContainer
-  , solrSegment_s = slotSegment
+  , solrSegment_s = SolrSegment slotSegment
   , solrSegmentDuration_td = segmentLength slotSegment
   , solrTagId_i = tagId
   , solrTag_s = tagName
@@ -202,7 +202,7 @@ updateIndex t rc = handle
     , HC.method = "POST"
     , HC.requestBody = HC.RequestBodyStreamChunked $ \wf -> do
       w <- runInvert $ runReaderT (runSolrM (writeUpdate writeAllDocuments)) (SolrContext rc)
-      wf (Fold.fold <$> w)
+      wf $ Fold.fold <$> w
     , HC.requestHeaders = (hContentType, "application/json") : HC.requestHeaders req
     } (serviceHTTPClient rc)
   where req = solrRequest (serviceSolr rc)
