@@ -117,6 +117,7 @@ data SolrDocument
     , solrSegment :: SolrSegment
     , solrSegmentDuration_td :: Maybe Offset
     , solrRecordId_i :: Id Record
+    , solrRecordCategory_s :: Maybe T.Text
     , solrRecordMeasures :: SolrRecordMeasures
     , solrRecordAge_ti :: Maybe Age
     }
