@@ -5,7 +5,6 @@ module Databrary.Search.Index
 
 import Control.Applicative (Applicative)
 import Control.Exception (handle)
-import Control.Monad (void)
 import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.Reader (MonadReader, ReaderT(..))
 import Control.Monad.Trans.Class (lift)
@@ -16,6 +15,7 @@ import qualified Data.ByteString.Lazy as BSL
 import qualified Data.Foldable as Fold
 import Data.Maybe (isNothing)
 import Data.Monoid ((<>))
+import Data.Time.Clock (getCurrentTime, diffUTCTime)
 import qualified Network.HTTP.Client as HC
 import Network.HTTP.Types.Header (hContentType)
 
@@ -31,7 +31,7 @@ import Databrary.Model.Kind
 import Databrary.Model.Id.Types
 import Databrary.Model.Permission.Types
 import Databrary.Model.Identity.Types
-import Databrary.Model.Party.Types
+import Databrary.Model.Party
 import Databrary.Model.Volume.Types
 import Databrary.Model.Citation
 import Databrary.Model.Container
@@ -191,20 +191,23 @@ writeVolume (v, vc) = do
   mapM_ (writeDocument . solrTag (volumeId v)) =<< lookupVolumeTagUseIds v
 
 writeAllDocuments :: SolrM ()
-writeAllDocuments =
+writeAllDocuments = do
   mapM_ writeVolume =<< lookupVolumesCitations
-  -- parties
+  mapM_ (writeDocument . uncurry solrParty) =<< lookupPartyAuthorizations
 
 updateIndex :: Timestamp -> Service -> IO ()
 updateIndex t rc = handle
   (\(e :: HC.HttpException) -> logMsg t ("solr update failed: " ++ show e) (serviceLogs rc))
-  $ void $ HC.httpNoBody req
-    { HC.path = HC.path req <> "update/json"
-    , HC.queryString = "?commit=true"
-    , HC.method = "POST"
-    , HC.requestBody = HC.RequestBodyStreamChunked $ \wf -> do
-      w <- runInvert $ runReaderT (runSolrM (writeUpdate writeAllDocuments)) (SolrContext rc)
-      wf $ Fold.fold <$> w
-    , HC.requestHeaders = (hContentType, "application/json") : HC.requestHeaders req
-    } (serviceHTTPClient rc)
+  $ do
+    _ <- HC.httpNoBody req
+      { HC.path = HC.path req <> "update/json"
+      , HC.queryString = "?commit=true"
+      , HC.method = "POST"
+      , HC.requestBody = HC.RequestBodyStreamChunked $ \wf -> do
+        w <- runInvert $ runReaderT (runSolrM (writeUpdate writeAllDocuments)) (SolrContext rc)
+        wf $ Fold.fold <$> w
+      , HC.requestHeaders = (hContentType, "application/json") : HC.requestHeaders req
+      } (serviceHTTPClient rc)
+    t' <- getCurrentTime
+    logMsg t' ("solr update complete " ++ show (diffUTCTime t' t)) (serviceLogs rc)
   where req = solrRequest (serviceSolr rc)

@@ -28,7 +28,7 @@ lookupVolumeCitation vol =
 lookupVolumesCitations :: (MonadDB m, MonadHasIdentity c m) => m [(Volume, Maybe Citation)]
 lookupVolumesCitations = do
   ident :: Identity <- peek
-  dbQuery $(selectQuery (selectCitation 'ident) "")
+  dbQuery $(selectQuery (selectCitation 'ident) "WHERE volume.id > 0")
 
 lookupVolumeLinks :: (MonadDB m) => Volume -> m [Citation]
 lookupVolumeLinks vol =

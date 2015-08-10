@@ -33,6 +33,7 @@ data Party = Party
   , partyAffiliation :: Maybe T.Text
   , partyURL :: Maybe URI
   , partyAccount :: Maybe Account
+  -- , partySiteAccess :: Access -- site-level access this party is granted under root (currently SiteAuth only)
   , partyPermission :: Permission -- permission current user has over this party
   , partyAccess :: Maybe Access -- direct authorization this party has granted to current user
   }

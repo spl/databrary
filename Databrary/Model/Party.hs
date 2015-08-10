@@ -6,6 +6,7 @@ module Databrary.Model.Party
   , partyName
   , partyEmail
   , lookupParty
+  , lookupPartyAuthorizations
   , lookupAuthParty
   , lookupSiteAuthByEmail
   , changeParty
@@ -128,6 +129,11 @@ lookupParty i = do
   ident <- peek
   lookupFixedParty i ident `orElseM`
     dbQuery1 $(selectQuery (selectParty 'ident) "$WHERE party.id = ${i}")
+
+lookupPartyAuthorizations :: (MonadDB m, MonadHasIdentity c m) => m [(Party, Maybe Permission)]
+lookupPartyAuthorizations = do
+  ident <- peek
+  dbQuery $(selectQuery (selectPartyAuthorization 'ident) "WHERE party.id > 0")
 
 lookupAuthParty :: (MonadDB m, MonadHasIdentity c m) => Id Party -> m (Maybe Party)
 lookupAuthParty i = do
