@@ -94,7 +94,7 @@ data SolrDocument
     { solrId :: !BS.ByteString
     , solrVolumeId_i :: Id Volume
     , solrContainerId_i :: Id Container
-    , solrSegment_s :: SolrSegment
+    , solrSegment :: SolrSegment
     , solrSegmentDuration_td :: Maybe Offset
     , solrAssetId_i :: Id Asset
     , solrName_t :: Maybe T.Text
@@ -105,7 +105,7 @@ data SolrDocument
     { solrId :: !BS.ByteString
     , solrVolumeId_i :: Id Volume
     , solrContainerId_i :: Id Container
-    , solrSegment_s :: SolrSegment
+    , solrSegment :: SolrSegment
     , solrSegmentDuration_td :: Maybe Offset
     , solrAssetId_i :: Id Asset
     , solrRelease_i :: Maybe Release
@@ -114,7 +114,7 @@ data SolrDocument
     { solrId :: !BS.ByteString
     , solrVolumeId_i :: Id Volume
     , solrContainerId_i :: Id Container
-    , solrSegment_s :: SolrSegment
+    , solrSegment :: SolrSegment
     , solrSegmentDuration_td :: Maybe Offset
     , solrRecordId_i :: Id Record
     , solrRecordMeasures :: SolrRecordMeasures
@@ -124,7 +124,7 @@ data SolrDocument
     { solrId :: !BS.ByteString
     , solrVolumeId_i :: Id Volume
     , solrContainerId_i :: Id Container
-    , solrSegment_s :: SolrSegment
+    , solrSegment :: SolrSegment
     , solrSegmentDuration_td :: Maybe Offset
     , solrTagId_i :: Id Tag
     , solrTag_s :: TagName

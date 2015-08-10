@@ -94,7 +94,7 @@ solrAsset Asset{..} SlotId{..} = SolrAsset
   , solrAssetId_i = assetId
   , solrVolumeId_i = volumeId assetVolume
   , solrContainerId_i = slotContainerId
-  , solrSegment_s = SolrSegment slotSegmentId
+  , solrSegment = SolrSegment slotSegmentId
   , solrSegmentDuration_td = segmentLength slotSegmentId
   , solrName_t = assetName
   , solrRelease_i = assetRelease
@@ -108,7 +108,7 @@ solrExcerpt Excerpt{ excerptAsset = AssetSegment{ segmentAsset = AssetSlot{ slot
   , solrAssetId_i = assetId
   , solrVolumeId_i = volumeId assetVolume
   , solrContainerId_i = containerId container
-  , solrSegment_s = SolrSegment seg
+  , solrSegment = SolrSegment seg
   , solrSegmentDuration_td = segmentLength seg
   , solrRelease_i = assetRelease
   }
@@ -120,7 +120,7 @@ solrRecord rs@RecordSlot{ slotRecord = r@Record{..}, recordSlot = Slot{..} } = S
   , solrRecordId_i = recordId
   , solrVolumeId_i = volumeId recordVolume
   , solrContainerId_i = containerId slotContainer
-  , solrSegment_s = SolrSegment slotSegment
+  , solrSegment = SolrSegment slotSegment
   , solrSegmentDuration_td = segmentLength slotSegment
   , solrRecordMeasures = SolrRecordMeasures $ map (\m -> (measureMetric m, measureDatum m)) $ getRecordMeasures r
   , solrRecordAge_ti = recordSlotAge rs
@@ -134,7 +134,7 @@ solrTag vi TagUseId{ useTagId = Tag{..}, tagSlotId = SlotId{..}, ..} = SolrTag
     <> maybe "" (('_':) . show) (lowerBound $ segmentRange slotSegmentId)
   , solrVolumeId_i = vi
   , solrContainerId_i = slotContainerId
-  , solrSegment_s = SolrSegment slotSegmentId
+  , solrSegment = SolrSegment slotSegmentId
   , solrSegmentDuration_td = segmentLength slotSegmentId
   , solrTagId_i = tagId
   , solrTag_s = tagName

@@ -114,13 +114,12 @@ app.factory('solrModelService', [
         "volume_owner_names_ss": "owners",
         "volume_owner_ids_is": "ownerIds",
         "record_id_i": "recordId",
-        "record_container_i": "containerId",
+        "container_id_i": "containerId",
         "record_ethnicity_s": "ethnicity",
         "record_gender_s": "gender",
         "record_race_s": "race",
         "record_age_ti": "age",
-        "record_segment_s": "segment",
-        "record_text_t": "text",
+        "segment": "segment",
       };
 
       // Rewrite solrVals to use the solrKeynames names
