@@ -9,7 +9,9 @@ import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.Reader (MonadReader, ReaderT(..))
 import Control.Monad.Trans.Class (lift)
 import qualified Data.Aeson as JSON
+import qualified Data.Aeson.Encode as JSON
 import qualified Data.ByteString as BS
+import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy as BSL
 import qualified Data.Foldable as Fold
@@ -161,16 +163,16 @@ newtype SolrM a = SolrM { runSolrM :: ReaderT SolrContext (InvertM BS.ByteString
 writeBlock :: BS.ByteString -> SolrM ()
 writeBlock = SolrM . lift . give
 
-writeDocument :: SolrDocument -> SolrM ()
-writeDocument d =
-  writeBlock $ BSL.toStrict $ "},\"add\":{\"doc\":" <> JSON.encode d
+writeDocuments :: [SolrDocument] -> SolrM ()
+writeDocuments [] = return ()
+writeDocuments d =
+  writeBlock $ BSL.toStrict $ BSB.toLazyByteString $ Fold.foldMap (("},\"add\":{\"doc\":" <>) . JSON.encodeToBuilder . JSON.toJSON) d
 
 writeUpdate :: SolrM () -> SolrM ()
 writeUpdate f = do
   writeBlock "{\"delete\":{\"query\":\"*:*\""
   f
   writeBlock "}}"
-
 
 joinContainers :: (a -> Slot -> b) -> [Container] -> [(a, SlotId)] -> [b]
 joinContainers _ _ [] = []
@@ -181,19 +183,19 @@ joinContainers f cl@(c:cr) al@((a, SlotId ci s):ar)
 
 writeVolume :: (Volume, Maybe Citation) -> SolrM ()
 writeVolume (v, vc) = do
-  writeDocument $ solrVolume v vc
+  writeDocuments [solrVolume v vc]
   cl <- lookupVolumeContainers v
-  mapM_ (writeDocument . solrContainer) cl
-  mapM_ (writeDocument . uncurry solrAsset) =<< lookupVolumeAssetSlotIds v
+  writeDocuments $ map solrContainer cl
+  writeDocuments . map (uncurry solrAsset) =<< lookupVolumeAssetSlotIds v
   -- this could be more efficient, but there usually aren't many:
-  mapM_ (writeDocument . solrExcerpt) =<< lookupVolumeExcerpts v
-  mapM_ (writeDocument . solrRecord) =<< joinContainers RecordSlot cl <$> lookupVolumeRecordSlotIds v
-  mapM_ (writeDocument . solrTag (volumeId v)) =<< lookupVolumeTagUseIds v
+  writeDocuments . map solrExcerpt =<< lookupVolumeExcerpts v
+  writeDocuments . map solrRecord =<< joinContainers RecordSlot cl <$> lookupVolumeRecordSlotIds v
+  writeDocuments . map (solrTag (volumeId v)) =<< lookupVolumeTagUseIds v
 
 writeAllDocuments :: SolrM ()
 writeAllDocuments = do
   mapM_ writeVolume =<< lookupVolumesCitations
-  mapM_ (writeDocument . uncurry solrParty) =<< lookupPartyAuthorizations
+  writeDocuments . map (uncurry solrParty) =<< lookupPartyAuthorizations
 
 updateIndex :: Timestamp -> Service -> IO ()
 updateIndex t rc = handle
