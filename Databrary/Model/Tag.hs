@@ -4,6 +4,7 @@ module Databrary.Model.Tag
   , lookupTag
   , findTags
   , addTag
+  , lookupVolumeTagUseIds
   , addTagUse
   , removeTagUse
   , lookupTopTagWeight
@@ -26,6 +27,7 @@ import Databrary.Service.DB
 import Databrary.Model.SQL
 import Databrary.Model.Party.Types
 import Databrary.Model.Identity.Types
+import Databrary.Model.Volume.Types
 import Databrary.Model.Container.Types
 import Databrary.Model.Slot.Types
 import Databrary.Model.Tag.Types
@@ -44,6 +46,10 @@ findTags (TagName n) = -- TagName restrictions obviate pattern escaping
 addTag :: MonadDB m => TagName -> m Tag
 addTag n =
   dbQuery1' $ (`Tag` n) <$> [pgSQL|!SELECT get_tag(${n})|]
+
+lookupVolumeTagUseIds :: MonadDB m => Volume -> m [TagUseId]
+lookupVolumeTagUseIds v =
+  dbQuery $(selectQuery selectTagUseId "JOIN container ON tag_use.container = container.id WHERE container.volume = ${volumeId v} ORDER BY container.id")
 
 addTagUse :: MonadDB m => TagUse -> m Bool
 addTagUse t = either (const False) id <$> do

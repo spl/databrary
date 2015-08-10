@@ -40,10 +40,11 @@ import Databrary.Model.Format.Types
 import Databrary.Model.Asset.Types
 import Databrary.Model.AssetSlot
 import Databrary.Model.AssetSegment.Types
+import Databrary.Model.Excerpt
 import Databrary.Model.Record.Types
 import Databrary.Model.RecordSlot
 import Databrary.Model.Measure
-import Databrary.Model.Tag.Types
+import Databrary.Model.Tag
 import Databrary.Search.Service
 import Databrary.Search.Document
 
@@ -85,14 +86,14 @@ solrContainer Container{..} = SolrContainer
   , solrRelease_i = containerRelease
   }
 
-solrAsset :: AssetSlot -> SolrDocument
-solrAsset AssetSlot{ slotAsset = Asset{..}, assetSlot = ~(Just Slot{..}) } = SolrAsset
+solrAsset :: Asset -> SlotId -> SolrDocument
+solrAsset Asset{..} SlotId{..} = SolrAsset
   { solrId = solrDocId assetId
   , solrAssetId_i = assetId
   , solrVolumeId_i = volumeId assetVolume
-  , solrContainerId_i = containerId slotContainer
-  , solrSegment_s = SolrSegment slotSegment
-  , solrSegmentDuration_td = segmentLength slotSegment
+  , solrContainerId_i = slotContainerId
+  , solrSegment_s = SolrSegment slotSegmentId
+  , solrSegmentDuration_td = segmentLength slotSegmentId
   , solrName_t = assetName
   , solrRelease_i = assetRelease
   , solrFormat_i = formatId assetFormat
@@ -123,20 +124,20 @@ solrRecord rs@RecordSlot{ slotRecord = r@Record{..}, recordSlot = Slot{..} } = S
   , solrRecordAge_ti = recordSlotAge rs
   }
 
-solrTag :: TagUse -> SolrDocument
-solrTag TagUse{ useTag = Tag{..}, tagSlot = Slot{..}, ..} = SolrTag
+solrTag :: Id Volume -> TagUseId -> SolrDocument
+solrTag vi TagUseId{ useTagId = Tag{..}, tagSlotId = SlotId{..}, ..} = SolrTag
   { solrId = BSC.pack $ "tag_" <> show tagId
-    <> ('_' : show (containerId slotContainer))
-    <> (if tagKeyword then "" else '_' : show (partyId (accountParty tagWho)))
-    <> maybe "" (('_':) . show) (lowerBound $ segmentRange slotSegment)
-  , solrVolumeId_i = volumeId (containerVolume slotContainer)
-  , solrContainerId_i = containerId slotContainer
-  , solrSegment_s = SolrSegment slotSegment
-  , solrSegmentDuration_td = segmentLength slotSegment
+    <> ('_' : show slotContainerId)
+    <> (if tagKeywordId then "" else '_' : show tagWhoId)
+    <> maybe "" (('_':) . show) (lowerBound $ segmentRange slotSegmentId)
+  , solrVolumeId_i = vi
+  , solrContainerId_i = slotContainerId
+  , solrSegment_s = SolrSegment slotSegmentId
+  , solrSegmentDuration_td = segmentLength slotSegmentId
   , solrTagId_i = tagId
   , solrTag_s = tagName
-  , solrKeyword_s = tagKeyword ?> tagName
-  , solrPartyId_i = partyId (accountParty tagWho)
+  , solrKeyword_s = tagKeywordId ?> tagName
+  , solrPartyId_i = tagWhoId
   }
 
 newtype SolrContext = SolrContext { solrService :: Service }
@@ -183,10 +184,11 @@ writeVolume (v, vc) = do
   writeDocument $ solrVolume v vc
   cl <- lookupVolumeContainers v
   mapM_ (writeDocument . solrContainer) cl
-  al <- joinContainers ((. Just) . AssetSlot) cl <$> lookupVolumeAssetSlotIds v
-  mapM_ (writeDocument . solrAsset) al
-  rl <- joinContainers RecordSlot cl <$> lookupVolumeRecordSlotIds v
-  mapM_ (writeDocument . solrRecord) rl
+  mapM_ (writeDocument . uncurry solrAsset) =<< lookupVolumeAssetSlotIds v
+  -- this could be more efficient, but there usually aren't many:
+  mapM_ (writeDocument . solrExcerpt) =<< lookupVolumeExcerpts v
+  mapM_ (writeDocument . solrRecord) =<< joinContainers RecordSlot cl <$> lookupVolumeRecordSlotIds v
+  mapM_ (writeDocument . solrTag (volumeId v)) =<< lookupVolumeTagUseIds v
 
 writeAllDocuments :: SolrM ()
 writeAllDocuments =

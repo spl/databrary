@@ -1,6 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 module Databrary.Model.Tag.SQL
   ( selectTag
+  , selectTagUseId
   , insertTagUse
   , deleteTagUse
   , selectTagWeight
@@ -8,17 +9,18 @@ module Databrary.Model.Tag.SQL
   , selectSlotTagCoverage
   ) where
 
-import Data.Int (Int32)
 import Data.List (intercalate)
 import Data.Maybe (fromMaybe)
 import Database.PostgreSQL.Typed.Query (makePGQuery, simpleQueryFlags)
 import qualified Language.Haskell.TH as TH
 
 import Databrary.Model.SQL.Select
-import Databrary.Model.Tag.Types
+import Databrary.Model.Id.Types
+import Databrary.Model.Party.Types
 import Databrary.Model.Container.Types
 import Databrary.Model.Segment
 import Databrary.Model.Slot.Types
+import Databrary.Model.Tag.Types
 
 tagRow :: Selector -- ^ @'Tag'@
 tagRow = selectColumns 'Tag "tag" ["id", "name"]
@@ -29,6 +31,21 @@ selectTag = tagRow
 tagUseTable :: Bool -> String
 tagUseTable False = "tag_use"
 tagUseTable True = "keyword_use"
+
+makeTagUseId :: Id Party -> Id Container -> Segment -> Maybe Bool -> Tag -> TagUseId
+makeTagUseId w c s k t = TagUseId t (fromMaybe False k) w (SlotId c s)
+
+tagUseIdRow :: Selector -- ' @'Tag' -> 'TagUseId'@
+tagUseIdRow = addSelects '($)
+  (selectColumns 'makeTagUseId "tag_use" ["who", "container", "segment"])
+  [SelectExpr "tag_use.tableoid = 'keyword_use'::regclass::oid"]
+
+selectTagUseId :: Selector -- ^ @'TagUseId'@
+selectTagUseId = selectJoin '($)
+  [ tagUseIdRow
+  , joinOn "tag_use.tag = tag.id"
+    tagRow
+  ]
 
 insertTagUse :: Bool -- ^ keyword
   -> TH.Name -- ^ @'TagUse'@
