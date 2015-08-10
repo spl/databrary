@@ -53,8 +53,12 @@ app.controller 'site/search', [
     # Name of the currently selected filter.
     currentFilter = ""
 
+    ageRangeLower = 0
+    ageRangeUpper = 0
     ageRangeMin = 0
-    ageRangeMax = 0
+    ageRangeMax = 730
+
+    $scope.sex = ""
 
     highlightFilter = false
     sessionFilter = false
@@ -112,8 +116,8 @@ app.controller 'site/search', [
       $scope.selectedType = ""
       $scope.selectedVolume = ""
       $scope.filterDisplay = []
-      ageRangeMin = 0
-      ageRangeMax = 0
+      ageRangeLower = 0
+      ageRangeUpper = 0
 
     $scope.clearContainers = (vol) ->
       $scope.retrievedContainers[vol.id] = undefined
@@ -172,11 +176,14 @@ app.controller 'site/search', [
       clearAllContainers()
 
       # Set the currently selected filter options here
-      if ageRangeMin > 0 or ageRangeMax > 0
+      if ageRangeLower > 0 or ageRangeUpper > 0
         if volId > 0
-          $scope.query = searchAge($scope.query, ageRangeMin, ageRangeMax, false)
+          $scope.query = searchAge($scope.query, ageRangeLower, ageRangeUpper, false)
         else
-          $scope.query = searchAge($scope.query, ageRangeMin, ageRangeMax)
+          $scope.query = searchAge($scope.query, ageRangeLower, ageRangeUpper)
+
+      if $scope.sex == "m" || $scope.sex == "f"
+        $scope.query = searchSex($scope.query, $scope.sex)
 
       if sessionFilter
         $scope.query = searchSession($scope.query)
@@ -459,7 +466,7 @@ app.controller 'site/search', [
         arg = "|arg=record_age_ti:[#{ ageMin } TO #{ ageMax }]"
       return query + arg
 
-    searchSex = (volume, query, sex) ->
+    searchSex = (query, sex) ->
       arg = "|arg=record_gender_s:[#{ sex }]"
       return query + arg
 
@@ -480,8 +487,9 @@ app.controller 'site/search', [
     $ ->
       $('#age-slider').slider
         range: true
-        min: 0
-        max: 500
+        min: ageRangeMin
+        max: ageRangeMax
+        values: [ageRangeMin,ageRangeMax]
         slide: (event, ui) ->
           $('#age').val ui.values[0] + ' - ' + ui.values[1] + ' days'
           return
@@ -492,9 +500,8 @@ app.controller 'site/search', [
       return
 
     $scope.updateAgeRange = ->
-      ageRangeMin = $('#age-slider').slider('values', 0)
-      ageRangeMax = $('#age-slider').slider('values', 1)
-      console.log ageRangeMin, ageRangeMax
+      ageRangeLower = $('#age-slider').slider('values', 0)
+      ageRangeUpper = $('#age-slider').slider('values', 1)
       $scope.search()
       return
 
@@ -503,6 +510,11 @@ app.controller 'site/search', [
       $scope.searchBoxQuery = $scope.query
       $scope.search()
     )
+
+    $scope.printSomething = ->
+      console.log $scope.sex
+      $scope.search()
+      return
 
     # Code for the initial loado
     params = $location.search()

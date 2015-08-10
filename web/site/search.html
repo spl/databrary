@@ -10,7 +10,7 @@
         </h1>
       </div>
     </div>
-    <div class="search-filter col-desktop-3 col-tablet-2 col-mobile-6">
+    <div class="search-filters col-desktop-3 col-tablet-2 col-mobile-6">
       <!--gcwork in progress-->
       <div>
         <span><b>Results</b></span><br>
@@ -23,9 +23,17 @@
       <!--gcwork in progress-->
       <select multiple="multiple" ng-model="selectedType" ng-options="t for t in typeDisplay" ng-click="partyVolBoxClick()"></select>
       <select multiple="multiple" ng-model="selectedFilter" ng-options="s for s in filterDisplay" ng-click="filterBoxClick()"></select>
-      <label>Age Range</label>
-      <input type="text" id="age" style="border:0;box-shadow:none;">
-      <div id="age-slider"></div>
+      
+      <div class="search-filter filter-sex">
+        <span>Gender</span><br>
+        <label ng-class="{selected:sex=='f'}" class="button mini" for="female" ng-click="printSomething()"><input type="radio" ng-model="sex" value="{{page.constants.metric[name='gender']}}" ng-bind="{page.constants.metric['-580']}}"></label>
+        <label ng-class="{selected:sex=='m'}"class="button mini" for="male" ng-click="printSomething()"><input type="radio" ng-model="sex" value="m">Male</label>
+      </div>
+      <div class="search-filter">
+        <span>Age</span><br>
+        <input type="text" id="age" style="border:0;box-shadow:none;">
+        <div id="age-slider"></div>
+      </div>
 <!--       <select>
         <option>days</option>
         <option>months</option>
