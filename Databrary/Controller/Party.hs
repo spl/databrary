@@ -190,7 +190,7 @@ viewPartyDelete :: AppRoute (Id Party)
 viewPartyDelete = action GET (pathHTML >/> pathId </< "delete") $ \i -> withAuth $ do
   checkMemberADMIN
   p <- getParty (Just PermissionADMIN) (TargetParty i)
-  okResponse [] =<< peeks (htmlPartyDelete p)
+  blankForm $ htmlPartyDelete p
 
 viewAvatar :: AppRoute (Id Party)
 viewAvatar = action GET (pathId </< "avatar") $ \i -> withoutAuth $

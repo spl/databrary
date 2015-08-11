@@ -27,7 +27,7 @@ app.directive('citeVolume', [
       authors.push(authors.splice(-2, 2).join(' & '));
       $scope.authors = authors.join(', ');
       $scope.today = new Date();
-      $scope.permalink = (volume.doi ? 'doi:' + volume.doi : $location.absUrl());
+      $scope.permalink = (volume.doi ? 'http://dx.doi.org/' + volume.doi : $location.absUrl());
     };
 
     return {

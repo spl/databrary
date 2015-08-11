@@ -7,7 +7,7 @@ module Databrary.View.Party
   , htmlPartyDelete
   ) where
 
-import Control.Monad (when, forM_)
+import Control.Monad (void, when, forM_)
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.Foldable as Fold
 import Data.Maybe (fromMaybe)
@@ -123,9 +123,8 @@ htmlPartyAdmin pf pl req = htmlForm "party admin" adminParties ()
     (partyFilterPaginate pf) pl (view req))
   req
 
-htmlPartyDelete :: Party -> AuthRequest -> H.Html
-htmlPartyDelete p@Party{..} req = htmlTemplate req (Just $ "delete " <> partyName p) $ \js -> do
-  actionForm deleteParty partyId js $ do
-    H.a H.! actionLink viewParty (HTML, TargetParty partyId) js
-      $ H.text $ partyName p
-    H.input H.! HA.type_ "submit" H.! HA.value "delete"
+htmlPartyDelete :: Party -> AuthRequest -> FormHtml f
+htmlPartyDelete p@Party{..} = htmlForm ("delete " <> partyName p) deleteParty partyId
+  (return ())
+  (\js -> void $ H.a H.! actionLink viewParty (HTML, TargetParty partyId) js
+    $ H.text $ partyName p)

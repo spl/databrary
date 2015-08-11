@@ -20,7 +20,7 @@ import Databrary.Service.Log (initLogs, finiLogs)
 import Databrary.Service.Messages (initMessages)
 import Databrary.Web.Service (initWeb)
 import Databrary.Static.Service (initStatic)
-import Databrary.Search.Service (initSolr)
+import Databrary.Search.Service (initSolr, finiSolr)
 import Databrary.Service.Types
 
 loadConfig :: IO C.Config
@@ -61,6 +61,7 @@ initService conf = do
 
 finiService :: Service -> IO ()
 finiService Service{..} = do
+  finiSolr serviceSolr
   finiHTTPClient serviceHTTPClient
   finiDB serviceDB
   finiEntropy serviceEntropy

@@ -73,8 +73,8 @@ containerPf = "container_ethnicity_s^5 container_gender_s^5 container_race_s^5 c
 submitQuery :: HC.Request -> HTTPClient -> IO (Maybe Value)
 submitQuery q = httpRequestJSONSolr q
 
-generatePostReq :: SolrQuery -> SolrClient -> HC.Request
-generatePostReq sr SolrClient{ solrRequest = req } = req
+generatePostReq :: SolrQuery -> Solr -> HC.Request
+generatePostReq sr Solr{ solrRequest = req } = req
   { HC.path = HC.path req <> "query"
   , HC.method = "POST"
   , HC.requestBody = HC.RequestBodyLBS $ encode sr
