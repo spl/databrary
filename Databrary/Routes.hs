@@ -122,6 +122,8 @@ routeMap = fromRouteList
   , route postComment
 
   , route postSearch
+  , route getUpdateIndex
+  , route postUpdateIndex
 
   , route uploadStart
   , route uploadChunk

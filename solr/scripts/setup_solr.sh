@@ -13,25 +13,22 @@ cd $top_dir
 source "load_configs.sh"
 
 echo "Downloading (if needed) and installing Solr-$solr_version ..."
-echo "Installing to $top_dir/${solr[install]}"
+echo "Installing to $top_dir/${solr[path]}"
 echo "Solr core will be located in $top_dir/${solr[instance]}"
-echo $curr_dir, $top_dir, $top_dir/${solr[install]} $top_dir/${solr[instance]}
+echo $curr_dir, $top_dir, $top_dir/${solr[path]} $top_dir/${solr[instance]}
 
-echo "Stopping any running solr instances..."
-bash $top_dir/solr/scripts/stop_solr.sh
-
-core_loc=$top_dir/${solr[install]}/server/solr/databrary-core
+core_loc=$top_dir/${solr[path]}/server/solr/databrary-core
 
 # Download solr if install directory does not exist
-if [ ! -d "$top_dir/${solr[install]}" ]; then
-   prev_dir=`echo $top_dir/${solr[install]} | sed 's,/*[^/]\+/*$,,'`
+if [ ! -d "$top_dir/${solr[path]}" ]; then
+   prev_dir=`echo $top_dir/${solr[path]} | sed 's,/*[^/]\+/*$,,'`
    mkdir -p $prev_dir
    cd /tmp
    if [ ! -e solr-$solr_version.zip ]; then
       wget $solr_archive_url
    fi
    unzip solr-$solr_version.zip
-   mv solr-$solr_version $top_dir/${solr[install]}
+   mv solr-$solr_version $top_dir/${solr[path]}
 
 fi
 
@@ -47,9 +44,3 @@ if [ -e $core_loc ]; then
    rm $core_loc
 fi
 ln -s $top_dir/${solr[instance]} $core_loc
-
-# Start solr
-cd $curr_dir
-
-echo "Starting solr"
-bash $top_dir/solr/scripts/start_solr.sh
