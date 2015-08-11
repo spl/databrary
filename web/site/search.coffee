@@ -531,11 +531,17 @@ app.controller 'site/search', [
 
 
     $scope.updateSelectedMetrics = ->
-      console.log $scope.selectedMetric
       $scope.selectedMetrics.push($scope.selectedMetric)
       rmindex = $scope.allMetrics.indexOf($scope.selectedMetric)
       $scope.selectedMetric = undefined
       $scope.allMetrics.splice(rmindex,1)
+      return
+
+    $scope.returnMetric = (metric) ->
+      rmindex = $scope.selectedMetrics.indexOf(metric)
+      $scope.selectedMetrics.splice(rmindex,1)
+      $scope.allMetrics.push(metric)
+      $scope.allMetrics.sort((a,b) -> a.id - b.id)
       return
 
     # Code for the initial loado
