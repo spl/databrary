@@ -58,14 +58,12 @@ app.controller 'site/search', [
     ageRangeMin = 0
     ageRangeMax = 730
 
-    $scope.sex = ""
-
     highlightFilter = false
     sessionFilter = false
     partyFilter = false
     volumeFilter = false
 
-    #
+    $scope.selectedMetrics = []
 
 
   ###########################
@@ -511,9 +509,26 @@ app.controller 'site/search', [
       $scope.search()
     )
 
-    $scope.printSomething = ->
-      console.log $scope.sex
-      $scope.search()
+
+# other metrics filters
+    optionCompletions = (input,options) ->
+      i = input.toLowerCase()
+      (o for o in options when o.toLowerCase().startsWith(i))
+
+    $scope.optionsCompleter = (input,options) ->
+      match = optionCompletions(input,options)
+      switch match.length
+        when 0
+          input
+        when 1
+          match[0]
+        else
+          ({text:o, select:o, default: input && i==0} for o, i in match)
+
+    $scope.updateSelectedMetrics = ->
+      console.log $scope.selectedMetric
+      $scope.selectedMetrics.push($scope.selectedMetric)
+      $scope.selectedMetric = undefined
       return
 
     # Code for the initial loado
