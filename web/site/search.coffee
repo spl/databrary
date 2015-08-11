@@ -63,7 +63,11 @@ app.controller 'site/search', [
     partyFilter = false
     volumeFilter = false
 
+    $scope.allMetrics = (mv for mi,mv of page.constants.metric when mv.release)
+    $scope.allMetrics.sort((a,b) -> a.id - b.id)
+    console.log $scope.allMetrics
     $scope.selectedMetrics = []
+
 
 
   ###########################
@@ -525,10 +529,13 @@ app.controller 'site/search', [
         else
           ({text:o, select:o, default: input && i==0} for o, i in match)
 
+
     $scope.updateSelectedMetrics = ->
       console.log $scope.selectedMetric
       $scope.selectedMetrics.push($scope.selectedMetric)
+      rmindex = $scope.allMetrics.indexOf($scope.selectedMetric)
       $scope.selectedMetric = undefined
+      $scope.allMetrics.splice(rmindex,1)
       return
 
     # Code for the initial loado

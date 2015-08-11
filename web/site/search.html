@@ -33,11 +33,13 @@
 
       <div class="search-filter" ng-repeat="m in selectedMetrics track by m.id">
         <span ng-bind="::m.name"></span>
+        <input type="text" ng-if="::!m.options && m.type=='text'"/>
+        <input type="number" ng-if="::!m.options && m.type=='numeric'" />
         <input-completer ng-if="::m.options" input-name="{{::m.name}}" ng-model="input.value" completer="optionsCompleter($input, m.options)" min="0"></input-completer>
       </div>
 
       <div class="additional-filters">
-        <select ng-model="selectedMetric" ng-options="mv.name for (mi,mv) in page.constants.metric | filter: {release: page.constants.permission.PUBLIC}" ng-change="updateSelectedMetrics()">
+        <select ng-model="selectedMetric" ng-options="m.name for m in allMetrics" ng-change="updateSelectedMetrics()">
           <option value="">--additional filters--</option>
         </select>
       </div>
