@@ -3,6 +3,7 @@ module Databrary.Model.Excerpt
   ( lookupAssetExcerpts
   , lookupSlotExcerpts
   , lookupVolumeExcerpts
+  , lookupSlotThumb
   , lookupVolumeThumb
   , changeExcerpt
   , removeExcerpt
@@ -12,6 +13,7 @@ module Databrary.Model.Excerpt
 import Control.Monad (guard)
 
 import Databrary.Ops
+import Databrary.Has (view)
 import qualified Databrary.JSON as JSON
 import Databrary.Service.DB
 import Databrary.Model.SQL
@@ -37,12 +39,21 @@ lookupVolumeExcerpts :: MonadDB m => Volume -> m [Excerpt]
 lookupVolumeExcerpts v =
   dbQuery $ ($ v) <$> $(selectQuery selectVolumeExcerpt "$WHERE asset.volume = ${volumeId v}")
 
+lookupSlotThumb :: MonadDB m => Slot -> m (Maybe AssetSegment)
+lookupSlotThumb (Slot c s) = do
+  dbQuery1 $ assetSegmentInterp 0 . excerptAsset . ($ c) <$> $(selectQuery selectContainerExcerpt "$\
+    \JOIN format ON asset.format = format.id \
+    \WHERE slot_asset.container = ${containerId c} AND excerpt.segment && ${s} \
+      \AND COALESCE(GREATEST(excerpt.release, asset.release), ${containerRelease c}) >= ${readRelease (view c)}::release \
+      \AND (asset.duration IS NOT NULL AND format.mimetype LIKE 'video/%' OR format.mimetype LIKE 'image/%') \
+    \LIMIT 1")
+
 lookupVolumeThumb :: MonadDB m => Volume -> m (Maybe AssetSegment)
 lookupVolumeThumb v = do
   dbQuery1 $ assetSegmentInterp 0 . excerptAsset . ($ v) <$> $(selectQuery selectVolumeExcerpt "$\
     \JOIN format ON asset.format = format.id \
     \WHERE asset.volume = ${volumeId v} \
-      \AND COALESCE(GREATEST(excerpt.release, asset.release), slot_release.release) >= ${readRelease (volumePermission v)}::release \
+      \AND COALESCE(GREATEST(excerpt.release, asset.release), slot_release.release) >= ${readRelease (view v)}::release \
       \AND (asset.duration IS NOT NULL AND format.mimetype LIKE 'video/%' OR format.mimetype LIKE 'image/%') \
     \ORDER BY container.top DESC LIMIT 1")
 
