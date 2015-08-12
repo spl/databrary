@@ -128,6 +128,7 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
   container dir = do
     cid <- JE.keyMay "id" $ Id <$> JE.asIntegral
     key <- JE.key "key" $ asKey
+    c' <- lift (lookupIngestContainer vol key)
     c <- maybe
       (do
         c <- maybe
@@ -157,11 +158,11 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
           , containerDate = fromMaybe (containerDate c) date
           }
         return c)
-      =<< lift (lookupIngestContainer vol key)
+      c'
     let s = containerSlot c
     inObj c $ do
       _ <- JE.keyMay "release" $ do
-        release <- check (containerRelease c) =<< asRelease
+        release <- maybe (return . fmap Just) (check . containerRelease) c' =<< asRelease
         Fold.forM_ release $ \r -> do
           o <- lift $ changeRelease s r
           unless o $ throwPE "update failed"
@@ -169,7 +170,7 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
         r <- record
         inObj r $ do
           rs' <- lift $ lookupRecordSlotRecords r s
-          segs <- check (map (slotSegment . recordSlot) rs') . return =<< JE.keyOrDefault "position" fullSegment asSegment
+          segs <- (if null rs' then return . Just else check (map (slotSegment . recordSlot) rs')) . return =<< JE.keyOrDefault "position" fullSegment asSegment
           Fold.forM_ segs $ \[seg] -> do
             o <- lift $ moveRecordSlot (RecordSlot r s) seg
             unless o $ throwPE "record link failed"
