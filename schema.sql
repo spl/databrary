@@ -685,19 +685,19 @@ ALTER TABLE "metric"
 	ALTER "name" SET STORAGE EXTERNAL;
 COMMENT ON TABLE "metric" IS 'Types of measurements for data stored in measure_$type tables.';
 COMMENT ON COLUMN "metric"."options" IS '(Suggested) options for text enumerations, not enforced.';
-INSERT INTO "metric" ("id", "name", "release", "type") VALUES (-900, 'ID', 'EXCERPTS', 'text');
-INSERT INTO "metric" ("id", "name", "release", "type", "options") VALUES (-700, 'reason', 'EXCERPTS', 'text', ARRAY['Did not meet inclusion criteria','Procedural/experimenter error','Withdrew/fussy/tired','Outlier']);
+INSERT INTO "metric" ("id", "name", "release", "type") VALUES (-900, 'ID', 'PUBLIC', 'text');
+INSERT INTO "metric" ("id", "name", "release", "type", "options") VALUES (-700, 'reason', 'PUBLIC', 'text', ARRAY['Did not meet inclusion criteria','Procedural/experimenter error','Withdrew/fussy/tired','Outlier']);
 INSERT INTO "metric" ("id", "name", "release", "type") VALUES (-650, 'summary', 'PUBLIC', 'text');
 INSERT INTO "metric" ("id", "name", "release", "type") VALUES (-600, 'description', 'PUBLIC', 'text');
 INSERT INTO "metric" ("id", "name", "type") VALUES (-590, 'birthdate', 'date');
-INSERT INTO "metric" ("id", "name", "release", "type", "options") VALUES (-580, 'gender', 'EXCERPTS', 'text', ARRAY['Female','Male']);
-INSERT INTO "metric" ("id", "name", "release", "type", "options") VALUES (-550, 'race', 'EXCERPTS', 'text', ARRAY['American Indian or Alaska Native','Asian','Native Hawaiian or Other Pacific Islander','Black or African American','White','Multiple']);
-INSERT INTO "metric" ("id", "name", "release", "type", "options") VALUES (-540, 'ethnicity', 'EXCERPTS', 'text', ARRAY['Not Hispanic or Latino','Hispanic or Latino']);
+INSERT INTO "metric" ("id", "name", "release", "type", "options") VALUES (-580, 'gender', 'PUBLIC', 'text', ARRAY['Female','Male']);
+INSERT INTO "metric" ("id", "name", "release", "type", "options") VALUES (-550, 'race', 'PUBLIC', 'text', ARRAY['American Indian or Alaska Native','Asian','Native Hawaiian or Other Pacific Islander','Black or African American','White','Multiple']);
+INSERT INTO "metric" ("id", "name", "release", "type", "options") VALUES (-540, 'ethnicity', 'PUBLIC', 'text', ARRAY['Not Hispanic or Latino','Hispanic or Latino']);
 INSERT INTO "metric" ("id", "name", "type", "assumed") VALUES (-520, 'disability', 'text', 'typical');
-INSERT INTO "metric" ("id", "name", "release", "type", "assumed") VALUES (-510, 'language', 'EXCERPTS', 'text', 'English');
+INSERT INTO "metric" ("id", "name", "release", "type", "assumed") VALUES (-510, 'language', 'PUBLIC', 'text', 'English');
 INSERT INTO "metric" ("id", "name", "release", "type", "options") VALUES (-180, 'setting', 'PUBLIC', 'text', ARRAY['Lab','Home','Classroom','Outdoor','Clinic']);
-INSERT INTO "metric" ("id", "name", "release", "type", "assumed") VALUES (-150, 'country', 'EXCERPTS', 'text', 'US');
-INSERT INTO "metric" ("id", "name", "release", "type", "options") VALUES (-140, 'state', 'EXCERPTS', 'text', ARRAY['AL','AK','AZ','AR','CA','CO','CT','DE','DC','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','MD','MA','MI','MN','MS','MO','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY']);
+INSERT INTO "metric" ("id", "name", "release", "type", "assumed") VALUES (-150, 'country', 'PUBLIC', 'text', 'US');
+INSERT INTO "metric" ("id", "name", "release", "type", "options") VALUES (-140, 'state', 'PUBLIC', 'text', ARRAY['AL','AK','AZ','AR','CA','CO','CT','DE','DC','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','MD','MA','MI','MN','MS','MO','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY']);
 INSERT INTO "metric" ("id", "name", "release", "type") VALUES (-90, 'info', 'PUBLIC', 'text');
 
 CREATE TABLE "record_template" (
@@ -983,7 +983,7 @@ CREATE VIEW "volume_text" ("volume", "text") AS
 	UNION ALL SELECT volume, name FROM volume_funding JOIN funder ON funder = fundref_id
 	UNION ALL SELECT volume, name FROM container WHERE name IS NOT NULL
 	UNION ALL SELECT volume, name FROM asset JOIN slot_asset ON asset.id = asset WHERE name IS NOT NULL
-	UNION ALL SELECT volume, datum FROM record JOIN measure_text ON record.id = record JOIN metric ON metric = metric.id WHERE metric.release >= 'EXCERPTS'
+	UNION ALL SELECT volume, datum FROM record JOIN measure_text ON record.id = record JOIN metric ON metric = metric.id WHERE metric.release >= 'PUBLIC'
 	UNION ALL SELECT volume, tag.name FROM tag JOIN tag_use ON tag.id = tag JOIN container ON container = container.id; -- might want DISTINCT here
 COMMENT ON VIEW "volume_text" IS 'All (searchable) text data associated with a volume.';
 
