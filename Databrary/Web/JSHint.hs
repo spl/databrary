@@ -10,7 +10,6 @@ import qualified Data.ByteString.Char8 as BSC
 import qualified Data.Foldable as Fold
 import System.FilePath (takeExtensions)
 import System.Posix.FilePath (splitFileName, addExtension)
-import System.Posix.IO.ByteString (openFd, OpenMode(WriteOnly), defaultFileFlags, closeFd)
 import System.Process (callProcess)
 
 import Paths_databrary.Node
@@ -27,7 +26,7 @@ checkJSHint fo@(f, _)
       ht <- fmap snd <$> fileInfo h
       ft <- modificationTimestamp <$> getFileStatus f
       when (Fold.all (ft >) ht) $ do
-        openFd h WriteOnly (Just 0o666) defaultFileFlags >>= closeFd -- touch
+        setFileTimestamps h ft ft
         callProcess (binDir </> "jshint") [webFileAbs f]
     return r
   | otherwise = mzero
