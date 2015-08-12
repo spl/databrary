@@ -88,13 +88,14 @@
             <div >
 
             <div class="search-volume-containers" ng-if="retrievedContainers[result.id] !== undefined">
+              <small class="status" ng-if="retrievedContainers[result.id].length <= 0">No matching records or assets found</small>
               <ul ng-if="retrievedContainers[result.id].length > 0">
                 <li ng-repeat="container in retrievedContainers[result.id]">
                   <a ng-href="{{::page.router.slot([container.id, container.containerId, container.segment])}}?record={{container.recordId}}">Age: 
                   <span ng-if="!container.age">none</span>
                   <display-age value="container.age"></display-age> 
                   Text: {{container.text? container.text: 'none'}}</a>
-                  <img ng-src="{{container.thumbRoute(100)}}">
+                  <img ng-src="{{container.thumbRoute(240)}}">
                 </li>
               </ul>
             </div>
