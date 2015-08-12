@@ -68,6 +68,20 @@ app.controller 'site/search', [
     console.log $scope.allMetrics
     $scope.selectedMetrics = []
 
+    # metricToFunction = {
+      # "id" : searchId,
+      # "reason" : searchReason,
+      # "state" : searchState,
+      # "gestational age (weeks)" : searchAge,
+      # "summary" : searchSummary,
+      # "race" : searchRace,
+      # "ethnicity" : searchEthnicity,
+      # "language" : searchLanguage,
+      # "country" : searchCountry,
+      # "info" : searchInfo,
+      # "description" : searchDescription
+    # }
+
 
 
   ###########################
@@ -476,9 +490,38 @@ app.controller 'site/search', [
       arg = "|arg=record_setting_s:[#{ setting }]"
       return query + arg
 
-    searchRace = (volume, query, race) ->
+    searchMetricString = (metric, query, value) ->
+      arg = "|arg=record_#{ metric }_s:[#{ value }]"
+      return query + arg
+
+
+    searchRace = (query, race) ->
       arg = "|arg=record_race_s:[#{ race }]"
       return query + arg
+
+    searchDescription = (query, terms) ->
+      arg = "|arg=record_description_s:[#{ terms }]"
+      return query + arg
+
+    searchState = (query, state) ->
+      arg = "|arg=record_state_s:[#{ state }]"
+      return query + arg
+
+    searchMetric = (metricObj, query, value) ->
+      suffix = selectSuffix(metricObj)
+      if metricObj.metric in metricRewriteRules
+        metricName = metricRewriteRules[metricObj.metric]
+      else
+        metricName = metricObj.metric
+      arg = "|arg=record_#{ metricName }_#{ suffix }:#{ value }"
+      return query + arg
+
+    selectSuffix = (metric) ->
+      switch metric.metric
+        when "text" if metric.options? return "s" else return "t"
+        when "numeric" return "tdt"
+        else return ""
+
 
     # searchTags = (query, tag, user="") ->
       # query = searchVolume(volume, query)
@@ -534,6 +577,7 @@ app.controller 'site/search', [
       $scope.selectedMetrics.push({metric:$scope.selectedMetric})
       rmindex = $scope.allMetrics.remove($scope.selectedMetric)
       $scope.selectedMetric = undefined
+      console.log($scope.selectedMetrics)
       return
 
     $scope.returnMetric = (metric) ->
@@ -542,7 +586,7 @@ app.controller 'site/search', [
       $scope.allMetrics.sort((a,b) -> a.id - b.id)
       return
 
-    # Code for the initial loado
+    # Code for the initial load
     params = $location.search()
     $scope.query = params.query
     console.log("INITIAL QUERY:", $scope.query)
