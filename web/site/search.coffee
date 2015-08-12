@@ -345,9 +345,9 @@ app.controller 'site/search', [
       if $scope.selectedType and currentFilter != $scope.selectedType
         # We have to reset offset
         $scope.offset = 0
-        if $scope.selectedType.join(" ").includes($scope.volumeDisplayStr)
+        if $scope.selectedType.includes($scope.volumeDisplayStr)
           $scope.filterDisplay = (s for s in getVolumeFilterBoxOpts())
-        if $scope.selectedType.join(" ").includes($scope.partyDisplayStr)
+        if $scope.selectedType.includes($scope.partyDisplayStr)
           # console.log("AFFILIATIONS:", $scope.affiliations)
           $scope.filterDisplay = (s for s in $scope.selectPeopleFilters)
         currentFilter = $scope.selectedType
@@ -362,6 +362,7 @@ app.controller 'site/search', [
     # Perform a new search for people or volumes only... NOTE: does not do anything yet
     # TODO Either make this do something useful or remove the search part of it
     $scope.partyVolBoxClick_temp = (t) ->
+      $scope.selectedType = t
       if t.includes($scope.volumeDisplayStr)
         volumeFilter = true
       else
@@ -387,6 +388,25 @@ app.controller 'site/search', [
       console.log($scope.selectedType, $scope.filterDisplay)
 
     # Action to do something when a filter option is clicked
+    $scope.filterBoxClick_temp = (s) ->
+      console.log("FILTER BOX CLICKED", $scope.selectedFilter)
+      if s.includes($scope.volumeDisplayStr)
+        if s.includes($scope.selectSessionStr)
+          sessionFilter = true
+        else
+          sessionFilter = false
+        if s.includes($scope.selectHighlightStr)
+          highlightFilter = true
+        else
+          highlightFilter = false
+      if s.includes($scope.partyDisplayStr)
+        partyFilter = true
+        console.log("FILTERING BY PARTY")
+      else
+        partyFilter = false
+      $scope.offset = 0 # Reset the offset
+      $scope.search()
+
     $scope.filterBoxClick = ->
       console.log("FILTER BOX CLICKED", $scope.selectedFilter)
       if $scope.selectedType.join(" ").includes($scope.volumeDisplayStr)

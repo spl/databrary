@@ -12,18 +12,14 @@
     </div>
     <div class="search-filters col-desktop-3 col-tablet-2 col-mobile-6">
       <!--gcwork in progress-->
-      <div>
-        <span>Results</span>
-        <span ng-repeat="t in typeDisplay" ng-click="partyVolBoxClick_temp(t)" ng-bind="::t"></span>
+      <div ng-repeat="t in typeDisplay" ng-click="partyVolBoxClick_temp(t)" ng-bind="::t">
       </div>
 
-      <div>
-        <span>Filter</span>
-        <span ng-repeat="s in filterDisplay" ng-click="filterBoxClick()" ng-bind="::s"></span>
+      <div ng-repeat="s in filterDisplay" ng-click="filterBoxClick_temp(s)" ng-bind="::s">
       </div>
       <!--gcwork in progress-->
-      <select multiple="multiple" ng-model="selectedType" ng-options="t for t in typeDisplay" ng-click="partyVolBoxClick()"></select>
-      <select multiple="multiple" ng-model="selectedFilter" ng-options="s for s in filterDisplay" ng-click="filterBoxClick()"></select>
+<!--       <select multiple="multiple" ng-model="selectedType" ng-options="t for t in typeDisplay" ng-click="partyVolBoxClick()"></select>
+      <select multiple="multiple" ng-model="selectedFilter" ng-options="s for s in filterDisplay" ng-click="filterBoxClick()"></select> -->
 
       <div class="search-filter">
         <span>Age</span><br>
