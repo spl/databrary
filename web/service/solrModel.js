@@ -118,15 +118,15 @@ app.factory('solrModelService', [
       var solrValsRewrite = Array();
       for (var k in solrVals) {
         var v = solrVals[k];
-        if(solrKeynames in k) {
+        if(k in solrKeyNames) {
           // Rewrite with special rule
           k = solrKeyNames[k];
         } else {
           // Rewrite with general rule
-          var sp = k.split("_")
+          var sp = k.split("_");
           k = sp.slice(sp.length - 2, -1).join("");
         }
-        solrValsRewrite[rewriteName] = v;
+        solrValsRewrite[k] = v;
       }
 
       if(solrValsRewrite.prename !== undefined) {

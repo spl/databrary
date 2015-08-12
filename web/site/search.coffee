@@ -213,6 +213,8 @@ app.controller 'site/search', [
       if volumeFilter
         $scope.query = searchVolumes($scope.query)
 
+      for m in $scope.selectedMetrics
+        $scope.query = searchMetric(m, $scope.query, m.value)
       # Party search?
 
 
@@ -482,33 +484,13 @@ app.controller 'site/search', [
         arg = "|arg=record_age_ti:[#{ ageMin } TO #{ ageMax }]"
       return query + arg
 
-    searchSex = (query, sex) ->
-      arg = "|arg=record_gender_s:[#{ sex }]"
-      return query + arg
-
-    searchSetting = (volume, query, setting) ->
-      arg = "|arg=record_setting_s:[#{ setting }]"
-      return query + arg
-
-    searchMetricString = (metric, query, value) ->
-      arg = "|arg=record_#{ metric }_s:[#{ value }]"
-      return query + arg
-
-
-    searchRace = (query, race) ->
-      arg = "|arg=record_race_s:[#{ race }]"
-      return query + arg
-
-    searchDescription = (query, terms) ->
-      arg = "|arg=record_description_s:[#{ terms }]"
-      return query + arg
-
-    searchState = (query, state) ->
-      arg = "|arg=record_state_s:[#{ state }]"
-      return query + arg
 
     searchMetric = (metricObj, query, value) ->
       suffix = selectSuffix(metricObj)
+
+      metricRewriteRules = {}
+
+      metricName = ""
       if metricObj.metric in metricRewriteRules
         metricName = metricRewriteRules[metricObj.metric]
       else
@@ -517,10 +499,15 @@ app.controller 'site/search', [
       return query + arg
 
     selectSuffix = (metric) ->
-      switch metric.metric
-        when "text" if metric.options? return "s" else return "t"
-        when "numeric" return "tdt"
-        else return ""
+      suffix = switch metric.metric
+        when "text"
+          if metric.options?
+            "s"
+          else
+            "t"
+        when "numeric" then "tdt"
+        else ""
+      return suffix
 
 
     # searchTags = (query, tag, user="") ->
