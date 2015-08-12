@@ -92,12 +92,14 @@
               <ul ng-if="retrievedContainers[result.id].length > 0">
                 <li class="search-volume-container" ng-repeat="container in retrievedContainers[result.id]">
                   <a ng-href="{{::page.router.slot([container.id, container.containerId, container.segment])}}?record={{container.recordId}}">
-                    Age: 
-                    <span ng-if="!container.age">none</span>
-                    <display-age value="container.age"></display-age> 
-                    Text: {{container.text? container.text: 'none'}}
+                    <span class="search-volume-container-info">
+                      <span ng-if="container.age">Age: </span>
+                      <display-age value="container.age"></display-age> 
+                      {{container.text}}
+                    </span>
+                    <img ng-src="{{container.thumbRoute(240)}}">
                   </a>
-                  <img ng-src="{{container.thumbRoute(240)}}">
+
                 </li>
               </ul>
             </div>
