@@ -23,9 +23,9 @@
 <!--       <select multiple="multiple" ng-model="selectedType" ng-options="t for t in typeDisplay" ng-click="partyVolBoxClick()"></select>
       <select multiple="multiple" ng-model="selectedFilter" ng-options="s for s in filterDisplay" ng-click="filterBoxClick()"></select> -->
 
-      <div class="search-filter">
+      <div class="search-filter age-filter">
         <span>Age</span><br>
-        <input type="text" id="age" style="border:0;box-shadow:none;" />
+        <input type="number" id="ageLower" /> - <input type="number" id="ageUpper" /> days
         <div id="age-slider"></div>
       </div>
 
