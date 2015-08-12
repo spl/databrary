@@ -46,10 +46,10 @@
 
     </div>
     <div class="search-results col-desktop-12 col-tablet-7 col-mobile-6">
-      <p class="search-results-count">Number of results found: {{totalCount}}</p>
-      <p class="search-results-count" ng-if="suggestedQuery.length > 0">
-        Did you mean <a ng-click="search(suggestedQuery)">{{suggestedQuery}}</a>?
-      </p>
+      <small class="status">{{totalCount}} results found. </small>
+      <small class="status" ng-if="suggestedQuery.length > 0">
+        Did you mean <a class="search-suggestion" ng-click="search(suggestedQuery)">{{suggestedQuery}}</a>?
+      </small>
       <div ng-if="partyCount > 0">
         <h3>Users</h3>
         <div class="row search-party-results">
@@ -103,10 +103,7 @@
           </li>
         </ul>
       </div>
-      <span ng-if="partyCount <= 0 && volumeCount <= 0">
-        No results found.
-      </span>
-      <div class="search-pages">
+      <div class="search-pages" ng-if="totalCount > 0">
         <span ng-if="prev">
           <a ng-if="prev" ng-click="prev()">&lt; </a>
         </span>
