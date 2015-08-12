@@ -31,11 +31,11 @@
         <div id="age-slider"></div>
       </div>
 
-      <div class="search-filter" ng-repeat="m in selectedMetrics track by m.id">
-        <span class="icon trash" ng-click="returnMetric(m)"></span><span ng-bind="::m.name"></span>
-        <input type="text" ng-if="::!m.options && m.type=='text'"/>
-        <input type="number" ng-if="::!m.options && m.type=='numeric'" />
-        <input-completer ng-if="::m.options" input-name="{{::m.name}}" ng-model="input.value" completer="optionsCompleter($input, m.options)" min="0"></input-completer>
+      <div class="search-filter" ng-repeat="m in selectedMetrics track by m.metric.id">
+        <span class="icon trash" ng-click="returnMetric(m)"></span><span ng-bind="::m.metric.name"></span>
+        <input type="text" ng-if="::!m.metric.options && m.metric.type=='text'"/>
+        <input type="number" ng-if="::!m.metric.options && m.metric.type=='numeric'" />
+        <input-completer ng-if="::m.metric.options" input-name="{{::m.metric.name}}" ng-model="m.value" completer="optionsCompleter($input, m.metric.options)" min="0"></input-completer>
       </div>
 
       <div class="additional-filters">
