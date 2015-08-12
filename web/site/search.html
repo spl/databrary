@@ -12,10 +12,12 @@
     </div>
     <div class="search-filters col-desktop-3 col-tablet-2 col-mobile-6">
       <!--gcwork in progress-->
-      <div ng-repeat="t in typeDisplay" ng-click="partyVolBoxClick_temp(t)" ng-bind="::t">
+      <div class="search-filter">
+        <div ng-repeat="t in typeDisplay" ng-click="partyVolBoxClick_temp(t)" ng-bind="::t"></div>
       </div>
 
-      <div ng-repeat="s in filterDisplay" ng-click="filterBoxClick_temp(s)" ng-bind="::s">
+      <div ng-if="filterDisplay.length > 0" class="search-filter">
+        <div ng-repeat="s in filterDisplay" ng-click="filterBoxClick_temp(s)" ng-bind="::s"></div>
       </div>
       <!--gcwork in progress-->
 <!--       <select multiple="multiple" ng-model="selectedType" ng-options="t for t in typeDisplay" ng-click="partyVolBoxClick()"></select>
