@@ -56,7 +56,6 @@ import Databrary.Store.Upload
 import Databrary.Store.Temp
 import Databrary.Store.AV
 import Databrary.Store.Transcode
-import Databrary.Store.Filename
 import Databrary.Store.Probe
 import Databrary.HTTP.Request
 import Databrary.HTTP.Form.Errors
@@ -86,8 +85,6 @@ assetJSONField a "creation" _ | view a >= PermissionEDIT = do
     ]
 assetJSONField a "excerpts" _ =
   Just . JSON.toJSON . map excerptJSON <$> lookupAssetExcerpts a
-assetJSONField o "filename" _ =
-  return $ Just $ JSON.toJSON $ makeFilename $ assetDownloadName $ slotAsset o
 assetJSONField _ _ _ = return Nothing
 
 assetJSONQuery :: (MonadDB m, MonadHasIdentity c m) => AssetSlot -> JSON.Query -> m JSON.Object
