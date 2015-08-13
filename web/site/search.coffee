@@ -68,6 +68,20 @@ app.controller 'site/search', [
     console.log $scope.allMetrics
     $scope.selectedMetrics = []
 
+    # metricToFunction = {
+      # "id" : searchId,
+      # "reason" : searchReason,
+      # "state" : searchState,
+      # "gestational age (weeks)" : searchAge,
+      # "summary" : searchSummary,
+      # "race" : searchRace,
+      # "ethnicity" : searchEthnicity,
+      # "language" : searchLanguage,
+      # "country" : searchCountry,
+      # "info" : searchInfo,
+      # "description" : searchDescription
+    # }
+
 
 
   ###########################
@@ -184,9 +198,6 @@ app.controller 'site/search', [
         else
           $scope.query = searchAge($scope.query, ageRangeLower, ageRangeUpper)
 
-      if $scope.sex == "m" || $scope.sex == "f"
-        $scope.query = searchSex($scope.query, $scope.sex)
-
       if sessionFilter
         $scope.query = searchSession($scope.query)
 
@@ -199,6 +210,9 @@ app.controller 'site/search', [
       if volumeFilter
         $scope.query = searchVolumes($scope.query)
 
+      for m in $scope.selectedMetrics
+        # if m.value?
+          $scope.query = searchMetric(m, $scope.query, m.value)
       # Party search?
 
 
@@ -235,10 +249,10 @@ app.controller 'site/search', [
     # all of the params for use in the html.
     # ##############################
     parseResults = (res) ->
-      if res == "null" or !res?
-        $scope.query = "*"
-        $scope.search()
-        return
+      # if res == "null" or !res?
+        # $scope.query = "*"
+        # $scope.search()
+        # return
 
       models = createModels(res)
       $scope.partyModels = models.parties
@@ -488,17 +502,31 @@ app.controller 'site/search', [
         arg = "|arg=record_age_ti:[#{ ageMin } TO #{ ageMax }]"
       return query + arg
 
-    searchSex = (query, sex) ->
-      arg = "|arg=record_gender_s:[#{ sex }]"
+
+    searchMetric = (metricObj, query, value) ->
+      suffix = selectSuffix(metricObj.metric)
+      metricRewriteRules = {}
+      metricName = ""
+      if metricObj.metric.name in metricRewriteRules
+        metricName = metricRewriteRules[metricObj.metric.name]
+      else
+        metricName = metricObj.metric.name
+      arg = "|arg=record_#{ metricName }#{ suffix }:\"#{ value }\""
+      console.log("Adding arg:", metricName, arg)
       return query + arg
 
-    searchSetting = (volume, query, setting) ->
-      arg = "|arg=record_setting_s:[#{ setting }]"
-      return query + arg
+    selectSuffix = (metric) ->
+      console.log("SWITCHING: ", metric, metric.type)
+      suffix = switch metric.type
+        when "text"
+          if metric.options?
+            "_s"
+          else
+            "_t"
+        when "numeric" then "_tdt"
+        else ""
+      return suffix
 
-    searchRace = (volume, query, race) ->
-      arg = "|arg=record_race_s:[#{ race }]"
-      return query + arg
 
     # searchTags = (query, tag, user="") ->
       # query = searchVolume(volume, query)
@@ -532,7 +560,7 @@ app.controller 'site/search', [
     $scope.$on('$routeUpdate',() ->
       $scope.query = $location.search().query
       $scope.searchBoxQuery = $scope.query
-      $scope.search()
+      # $scope.search()
     )
 
 
@@ -555,6 +583,7 @@ app.controller 'site/search', [
     $scope.updateSelectedMetrics = ->
       $scope.selectedMetrics.push({metric:$scope.selectedMetric})
       rmindex = $scope.allMetrics.remove($scope.selectedMetric)
+      console.log($scope.selectedMetrics)
       $scope.selectedMetric = undefined
       return
 
@@ -564,7 +593,7 @@ app.controller 'site/search', [
       $scope.allMetrics.sort((a,b) -> a.id - b.id)
       return
 
-    # Code for the initial loado
+    # Code for the initial load
     params = $location.search()
     $scope.query = params.query
     console.log("INITIAL QUERY:", $scope.query)

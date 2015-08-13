@@ -103,22 +103,13 @@ app.factory('solrModelService', [
       var solrKeyNames = {
         "party_pre_name_s" : "prename",
         "party_name_s": "sortname",
-        "party_affiliation_s": "affiliation",
         "party_id_i": "id",
         "volume_id_i": "id",
-        "name_t": "name",
-        "body_t": "body",
         "citation_t": "citation",
-        "tags_ss": "tags",
-        "keywords_ss": "keywords",
         "volume_owner_names_ss": "owners",
         "volume_owner_ids_is": "ownerIds",
         "record_id_i": "recordId",
         "container_id_i": "containerId",
-        "record_ethnicity_s": "ethnicity",
-        "record_gender_s": "gender",
-        "record_race_s": "race",
-        "record_age_ti": "age",
         "segment": "segment",
       };
 
@@ -127,8 +118,15 @@ app.factory('solrModelService', [
       var solrValsRewrite = Array();
       for (var k in solrVals) {
         var v = solrVals[k];
-        var rewriteName = solrKeyNames[k];
-        solrValsRewrite[rewriteName] = v;
+        if(k in solrKeyNames) {
+          // Rewrite with special rule
+          k = solrKeyNames[k];
+        } else {
+          // Rewrite with general rule
+          var sp = k.split("_");
+          k = sp.slice(sp.length - 2, -1).join("");
+        }
+        solrValsRewrite[k] = v;
       }
 
       if(solrValsRewrite.prename !== undefined) {

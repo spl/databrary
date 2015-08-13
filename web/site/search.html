@@ -31,9 +31,9 @@
 
       <div class="search-filter" ng-repeat="m in selectedMetrics track by m.metric.id">
         <span class="icon trash" ng-click="returnMetric(m)"></span><span ng-bind="::m.metric.name"></span>
-        <input type="text" ng-if="::!m.metric.options && m.metric.type=='text'"/>
-        <input type="number" ng-if="::!m.metric.options && m.metric.type=='numeric'" />
-        <input-completer ng-if="::m.metric.options" input-name="{{::m.metric.name}}" ng-model="m.value" completer="optionsCompleter($input, m.metric.options)" min="0"></input-completer>
+        <input type="text" ng-if="::!m.metric.options && m.metric.type=='text'" ng-model="m.value" />
+        <input type="number" ng-if="::!m.metric.options && m.metric.type=='numeric'" ng-model="m.value" />
+        <input-completer ng-if="::m.metric.options" input-name="{{::m.metric.name}}" ng-model="m.value" completer="optionsCompleter($input, m.metric.options)" min="0" ng-change="search()"></input-completer>
       </div>
 
       <div class="additional-filters">
@@ -41,6 +41,8 @@
           <option value="">--additional filters--</option>
         </select>
       </div>
+
+      <button ng-click="search()">Apply Filters</button>
 
     </div>
     <div class="search-results col-desktop-12 col-tablet-7 col-mobile-6">
@@ -92,12 +94,11 @@
                   <a ng-href="{{::page.router.slot([container.id, container.containerId, container.segment])}}?record={{container.recordId}}">
                     <span class="search-volume-container-info">
                       <span ng-if="container.age">Age: </span>
-                      <display-age value="container.age"></display-age> 
+                      <display-age value="container.age"></display-age>
                       {{container.text}}
                     </span>
                     <img ng-src="{{container.thumbRoute(240)}}">
                   </a>
-
                 </li>
               </ul>
             </div>
