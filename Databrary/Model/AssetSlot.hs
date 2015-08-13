@@ -95,7 +95,7 @@ assetSlotJSON :: AssetSlot -> JSON.Object
 assetSlotJSON as@AssetSlot{..} = assetJSON slotAsset JSON..++ catMaybes
   [ segmentJSON . slotSegment =<< assetSlot
   -- , ("release" JSON..=) <$> (view as :: Maybe Release)
-  , ("name" JSON..=) <$> (guard (p > PermissionNONE) >> assetName slotAsset)
+  , ("name" JSON..=) <$> (guard (Fold.any (containerTop . slotContainer) assetSlot || p > PermissionNONE) >> assetName slotAsset)
   , Just $ "permission" JSON..= p
   , p > PermissionNONE && Fold.any (0 <=) z ?> "size" JSON..= z
   ] where
