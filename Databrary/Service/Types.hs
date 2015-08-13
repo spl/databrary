@@ -18,6 +18,7 @@ import Databrary.Service.Log (Logs)
 import Databrary.Service.Messages (Messages)
 import Databrary.Web.Types (Web)
 import Databrary.Static.Service (Static)
+import Databrary.Ingest.Service (Ingest)
 import Databrary.Model.Time
 
 newtype Secret = Secret BS.ByteString
@@ -35,6 +36,7 @@ data Service = Service
   , serviceWeb :: !Web
   , serviceHTTPClient :: !HTTPClient
   , serviceStatic :: !Static
+  , serviceIngest :: !Ingest
   }
 
-makeHasRec ''Service ['serviceSecret, 'serviceEntropy, 'servicePasswd, 'serviceLogs, 'serviceMessages, 'serviceDB, 'serviceStorage, 'serviceAV, 'serviceWeb, 'serviceHTTPClient, 'serviceStatic]
+makeHasRec ''Service ['serviceSecret, 'serviceEntropy, 'servicePasswd, 'serviceLogs, 'serviceMessages, 'serviceDB, 'serviceStorage, 'serviceAV, 'serviceWeb, 'serviceHTTPClient, 'serviceStatic, 'serviceIngest]
