@@ -198,9 +198,6 @@ app.controller 'site/search', [
         else
           $scope.query = searchAge($scope.query, ageRangeLower, ageRangeUpper)
 
-      if $scope.sex == "m" || $scope.sex == "f"
-        $scope.query = searchSex($scope.query, $scope.sex)
-
       if sessionFilter
         $scope.query = searchSession($scope.query)
 
@@ -214,7 +211,8 @@ app.controller 'site/search', [
         $scope.query = searchVolumes($scope.query)
 
       for m in $scope.selectedMetrics
-        $scope.query = searchMetric(m, $scope.query, m.value)
+        # if m.value?
+          $scope.query = searchMetric(m, $scope.query, m.value)
       # Party search?
 
 
@@ -251,10 +249,10 @@ app.controller 'site/search', [
     # all of the params for use in the html.
     # ##############################
     parseResults = (res) ->
-      if res == "null" or !res?
-        $scope.query = "*"
-        $scope.search()
-        return
+      # if res == "null" or !res?
+        # $scope.query = "*"
+        # $scope.search()
+        # return
 
       models = createModels(res)
       $scope.partyModels = models.parties
@@ -486,26 +484,26 @@ app.controller 'site/search', [
 
 
     searchMetric = (metricObj, query, value) ->
-      suffix = selectSuffix(metricObj)
-
+      suffix = selectSuffix(metricObj.metric)
       metricRewriteRules = {}
-
       metricName = ""
-      if metricObj.metric in metricRewriteRules
-        metricName = metricRewriteRules[metricObj.metric]
+      if metricObj.metric.name in metricRewriteRules
+        metricName = metricRewriteRules[metricObj.metric.name]
       else
-        metricName = metricObj.metric
-      arg = "|arg=record_#{ metricName }_#{ suffix }:#{ value }"
+        metricName = metricObj.metric.name
+      arg = "|arg=record_#{ metricName }#{ suffix }:\"#{ value }\""
+      console.log("Adding arg:", metricName, arg)
       return query + arg
 
     selectSuffix = (metric) ->
-      suffix = switch metric.metric
+      console.log("SWITCHING: ", metric, metric.type)
+      suffix = switch metric.type
         when "text"
           if metric.options?
-            "s"
+            "_s"
           else
-            "t"
-        when "numeric" then "tdt"
+            "_t"
+        when "numeric" then "_tdt"
         else ""
       return suffix
 
@@ -540,7 +538,7 @@ app.controller 'site/search', [
     $scope.$on('$routeUpdate',() ->
       $scope.query = $location.search().query
       $scope.searchBoxQuery = $scope.query
-      $scope.search()
+      # $scope.search()
     )
 
 
@@ -563,8 +561,8 @@ app.controller 'site/search', [
     $scope.updateSelectedMetrics = ->
       $scope.selectedMetrics.push({metric:$scope.selectedMetric})
       rmindex = $scope.allMetrics.remove($scope.selectedMetric)
-      $scope.selectedMetric = undefined
       console.log($scope.selectedMetrics)
+      $scope.selectedMetric = undefined
       return
 
     $scope.returnMetric = (metric) ->
