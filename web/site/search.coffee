@@ -123,7 +123,7 @@ app.controller 'site/search', [
     clearAllContainers = ->
       $scope.retrievedContainers = {}
 
-    resetFilters = ->
+    $scope.resetFilters = ->
       highlightFilter = false
       sessionFilter = false
       partyFilter = false
@@ -132,8 +132,11 @@ app.controller 'site/search', [
       $scope.selectedType = ""
       $scope.selectedVolume = ""
       $scope.filterDisplay = []
-      ageRangeLower = 0
-      ageRangeUpper = 0
+      for m in $scope.selectedMetrics
+        $scope.returnMetric(m)
+      ageRangeLower = ageRangeMin
+      ageRangeUpper = ageRangeMax
+      $scope.search()
 
     $scope.clearContainers = (vol) ->
       $scope.retrievedContainers[vol.id] = undefined
@@ -159,7 +162,7 @@ app.controller 'site/search', [
       else
         $scope.originalQuery = "*"
 
-      resetFilters()
+      $scope.resetFilters()
 
       $scope.query = $scope.originalQuery
       $scope.offset = 0
