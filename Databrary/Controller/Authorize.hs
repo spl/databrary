@@ -103,7 +103,7 @@ postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarge
         sendMail (maybe id (:) (Right <$> partyAccount child) authaddr)
           "Databrary authorization approved"
           $ BSL.fromChunks
-          [ "You have been authorized by ", TE.encodeUtf8 (partyName parent), " allowing\n\
+          [ "You have been authorized by ", TE.encodeUtf8 (partyName parent), ", allowing\n\
             \you to access all the shared data in Databrary. As you begin exploring, you\n\
             \can find illustrative videos for teaching, see how to conduct procedures,\n\
             \generate citations to your work, preserve data, and repurpose videos to ask\n\
