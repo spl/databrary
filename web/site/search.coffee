@@ -560,7 +560,7 @@ app.controller 'site/search', [
     $scope.$on('$routeUpdate',() ->
       $scope.query = $location.search().query
       $scope.searchBoxQuery = $scope.query
-      # $scope.search()
+      $scope.search()
     )
 
 
@@ -591,6 +591,7 @@ app.controller 'site/search', [
       rmindex = $scope.selectedMetrics.remove(metric)
       $scope.allMetrics.push(metric.metric)
       $scope.allMetrics.sort((a,b) -> a.id - b.id)
+      $scope.search()
       return
 
     # Code for the initial load
