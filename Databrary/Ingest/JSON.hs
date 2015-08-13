@@ -172,7 +172,7 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
           rs' <- lift $ lookupRecordSlotRecords r s
           segs <- (if null rs' then return . Just else check (map (slotSegment . recordSlot) rs')) . return =<< JE.keyOrDefault "position" fullSegment asSegment
           Fold.forM_ segs $ \[seg] -> do
-            o <- lift $ moveRecordSlot (RecordSlot r s) seg
+            o <- lift $ moveRecordSlot (RecordSlot r $ Slot c (if null rs' then emptySegment else fullSegment)) seg
             unless o $ throwPE "record link failed"
       _ <- JE.key "assets" $ JE.eachInArray $ do
         a <- asset dir
