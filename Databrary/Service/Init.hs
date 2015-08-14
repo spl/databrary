@@ -21,6 +21,7 @@ import Databrary.Service.Messages (initMessages)
 import Databrary.Web.Service (initWeb)
 import Databrary.Static.Service (initStatic)
 import Databrary.Search.Service (initSolr, finiSolr)
+import Databrary.Ingest.Service (initIngest)
 import Databrary.Service.Types
 
 loadConfig :: IO C.Config
@@ -43,6 +44,7 @@ initService conf = do
   httpc <- initHTTPClient
   static <- initStatic (C.subconfig "static" conf)
   solr <- initSolr (C.subconfig "solr" conf)
+  ingest <- initIngest
   return $ Service
     { serviceStartTime = time
     , serviceSecret = Secret secret
@@ -57,6 +59,7 @@ initService conf = do
     , serviceHTTPClient = httpc
     , serviceStatic = static
     , serviceSolr = solr
+    , serviceIngest = ingest
     }
 
 finiService :: Service -> IO ()

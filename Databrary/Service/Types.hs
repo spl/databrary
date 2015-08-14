@@ -19,6 +19,7 @@ import Databrary.Service.Messages (Messages)
 import Databrary.Web.Types (Web)
 import Databrary.Static.Service (Static)
 import Databrary.Search.Service (Solr)
+import Databrary.Ingest.Service (Ingest)
 import Databrary.Model.Time
 
 newtype Secret = Secret BS.ByteString
@@ -37,6 +38,7 @@ data Service = Service
   , serviceHTTPClient :: !HTTPClient
   , serviceStatic :: !Static
   , serviceSolr :: !Solr
+  , serviceIngest :: !Ingest
   }
 
-makeHasRec ''Service ['serviceSecret, 'serviceEntropy, 'servicePasswd, 'serviceLogs, 'serviceMessages, 'serviceDB, 'serviceStorage, 'serviceAV, 'serviceWeb, 'serviceHTTPClient, 'serviceStatic, 'serviceSolr]
+makeHasRec ''Service ['serviceSecret, 'serviceEntropy, 'servicePasswd, 'serviceLogs, 'serviceMessages, 'serviceDB, 'serviceStorage, 'serviceAV, 'serviceWeb, 'serviceHTTPClient, 'serviceStatic, 'serviceSolr, 'serviceIngest]

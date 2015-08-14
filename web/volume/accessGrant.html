@@ -17,13 +17,17 @@
         <fieldset class="skinny clean radio-set access-grant-radioset">
           <div class="access-grant-radioset-options" ng-repeat="(val, name) in page.constants.permission" ng-if="::accessGrantForm.canGrantAccess(val)">
             <input type="radio" ng-model="accessGrantForm.data.individual" name="access-{{access.party.id}}-individual" ng-value="val" required>
-            <label ng-bind="::'access.edit.'+name | message:access.party.name" class="option" hint="access-edit-{{::name}}"></label>
+            <label class="option" hint="access-edit-{{::name}}">
+              <span class="icon user-access" ng-class="::name"></span> 
+              <span ng-bind="::'access.edit.'+name | message:access.party.name"></span>
+            </label>
           </div>
         </fieldset>
         <fieldset class="clean radio-set access-grant-checkbox">
           <div ng-if="::!access.party.institution">
             <input type="checkbox" ng-model="accessGrantForm.data.extend">
             <label class="option inline">
+              <span class="icon network"></span> 
               <span ng-bind="::'access.grant.inherit' | possessive:access.party"></span>
               <a ng-href="{{::access.party.route()}}#affiliates" target="_blank"> affiliates</a>
             </label>
