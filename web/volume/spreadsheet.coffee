@@ -797,8 +797,8 @@ app.directive 'spreadsheet', [
 
         updateDatum = (info, v) ->
           info.v = v
+          info.d[info.metric.id] = v
           if info.category.fixed
-            info.d[info.metric.id] = v
             generateText(info)
           else
             for li in TBody.getElementsByClassName(info.p + info.d.id + '_' + info.metric.id)
