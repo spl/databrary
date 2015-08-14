@@ -23,3 +23,5 @@ UPDATE metric SET description = 'The physical context of this label' WHERE name 
 UPDATE metric SET description = 'Relevant country of origin, setting, or otherwise' WHERE name = 'country';
 UPDATE metric SET description = 'Relevant state/territory, usually within specified country' WHERE name = 'state';
 UPDATE metric SET description = 'Other information or alternate identifier for this label' WHERE name = 'info';
+
+UPDATE metric SET description = 'Pregnancy age in weeks between last menstrual period and birth (or pre-natal observation)', name = 'gestational age' WHERE name = 'gestational age (weeks)';
