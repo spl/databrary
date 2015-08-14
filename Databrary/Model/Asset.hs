@@ -91,7 +91,6 @@ assetJSON :: Asset -> JSON.Object
 assetJSON Asset{..} = JSON.record assetId $ catMaybes
   [ Just $ "format" JSON..= formatId assetFormat
   , ("classification" JSON..=) <$> assetRelease
-  , ("name" JSON..=) <$> assetName
   , ("duration" JSON..=) <$> assetDuration
   , ("pending" JSON..= isNothing assetSize) <? isNothing assetSHA1
   ]

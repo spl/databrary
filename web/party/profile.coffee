@@ -20,7 +20,6 @@ app.controller 'party/profile', [
 
       select: () ->
         s = @selected
-        return if selected && s != true
         @constructor.selection = {}
         if s == true
           selected = false

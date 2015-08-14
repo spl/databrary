@@ -688,19 +688,19 @@ ALTER TABLE "metric"
 COMMENT ON TABLE "metric" IS 'Types of measurements for data stored in measure_$type tables.';
 COMMENT ON COLUMN "metric"."options" IS '(Suggested) options for text enumerations, not enforced.';
 INSERT INTO "metric" ("id", "name", "release", "type") VALUES (-1000, 'indicator', 'PUBLIC', 'void');
-INSERT INTO "metric" ("id", "name", "release", "type", "description") VALUES (-900, 'ID', 'EXCERPTS', 'text', 'A primary, unique, anonymized identifier, label, or name');
-INSERT INTO "metric" ("id", "name", "release", "type", "options", "description") VALUES (-700, 'reason', 'EXCERPTS', 'text', ARRAY['Did not meet inclusion criteria','Procedural/experimenter error','Withdrew/fussy/tired','Outlier'], 'A reason for a label (often for an exclusion)');
+INSERT INTO "metric" ("id", "name", "release", "type", "description") VALUES (-900, 'ID', 'PUBLIC', 'text', 'A primary, unique, anonymized identifier, label, or name');
+INSERT INTO "metric" ("id", "name", "release", "type", "options", "description") VALUES (-700, 'reason', 'PUBLIC', 'text', ARRAY['Did not meet inclusion criteria','Procedural/experimenter error','Withdrew/fussy/tired','Outlier'], 'A reason for a label (often for an exclusion)');
 INSERT INTO "metric" ("id", "name", "release", "type", "description") VALUES (-650, 'summary', 'PUBLIC', 'text', 'A short, one-line summary of this label');
 INSERT INTO "metric" ("id", "name", "release", "type", "description") VALUES (-600, 'description', 'PUBLIC', 'text', 'A longer explanation or description of this label');
 INSERT INTO "metric" ("id", "name", "type", "description") VALUES (-590, 'birthdate', 'date', 'The date of birth of an individual, or start/inception date for other labels (used with session date to calculate age)');
-INSERT INTO "metric" ("id", "name", "release", "type", "options", "description") VALUES (-580, 'gender', 'EXCERPTS', 'text', ARRAY['Female','Male'], '"Male", "Female", or any other relevant gender label');
-INSERT INTO "metric" ("id", "name", "release", "type", "options", "description") VALUES (-550, 'race', 'EXCERPTS', 'text', ARRAY['American Indian or Alaska Native','Asian','Native Hawaiian or Other Pacific Islander','Black or African American','White','Multiple'], 'Usually as categorized by NIH');
-INSERT INTO "metric" ("id", "name", "release", "type", "options", "description") VALUES (-540, 'ethnicity', 'EXCERPTS', 'text', ARRAY['Not Hispanic or Latino','Hispanic or Latino'], 'Usually as categorized by NIH (Hispanic/Non-Hispanic)');
+INSERT INTO "metric" ("id", "name", "release", "type", "options", "description") VALUES (-580, 'gender', 'PUBLIC', 'text', ARRAY['Female','Male'], '"Male", "Female", or any other relevant gender label');
+INSERT INTO "metric" ("id", "name", "release", "type", "options", "description") VALUES (-550, 'race', 'PUBLIC', 'text', ARRAY['American Indian or Alaska Native','Asian','Native Hawaiian or Other Pacific Islander','Black or African American','White','Multiple'], 'Usually as categorized by NIH');
+INSERT INTO "metric" ("id", "name", "release", "type", "options", "description") VALUES (-540, 'ethnicity', 'PUBLIC', 'text', ARRAY['Not Hispanic or Latino','Hispanic or Latino'], 'Usually as categorized by NIH (Hispanic/Non-Hispanic)');
 INSERT INTO "metric" ("id", "name", "type", "assumed", "description") VALUES (-520, 'disability', 'text', 'typical', 'Any developmental, physical, or mental disability');
-INSERT INTO "metric" ("id", "name", "release", "type", "assumed", "description") VALUES (-510, 'language', 'EXCERPTS', 'text', 'English', 'Primary language relevant to this label, spoken by this participant, or used in this context');
+INSERT INTO "metric" ("id", "name", "release", "type", "assumed", "description") VALUES (-510, 'language', 'PUBLIC', 'text', 'English', 'Primary language relevant to this label, spoken by this participant, or used in this context');
 INSERT INTO "metric" ("id", "name", "release", "type", "options", "description") VALUES (-180, 'setting', 'PUBLIC', 'text', ARRAY['Lab','Home','Classroom','Outdoor','Clinic'], 'The physical context of this label');
-INSERT INTO "metric" ("id", "name", "release", "type", "assumed", "description") VALUES (-150, 'country', 'EXCERPTS', 'text', 'US', 'Relevant country of origin, setting, or otherwise');
-INSERT INTO "metric" ("id", "name", "release", "type", "options", "description") VALUES (-140, 'state', 'EXCERPTS', 'text', ARRAY['AL','AK','AZ','AR','CA','CO','CT','DE','DC','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','MD','MA','MI','MN','MS','MO','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY'], 'Relevant state/territory, usually within specified country');
+INSERT INTO "metric" ("id", "name", "release", "type", "assumed", "description") VALUES (-150, 'country', 'PUBLIC', 'text', 'US', 'Relevant country of origin, setting, or otherwise');
+INSERT INTO "metric" ("id", "name", "release", "type", "options", "description") VALUES (-140, 'state', 'PUBLIC', 'text', ARRAY['AL','AK','AZ','AR','CA','CO','CT','DE','DC','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','MD','MA','MI','MN','MS','MO','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY'], 'Relevant state/territory, usually within specified country');
 INSERT INTO "metric" ("id", "name", "release", "type", "description") VALUES (-90, 'info', 'PUBLIC', 'text', 'Other information or alternate identifier for this label');
 
 CREATE TABLE "record_template" (
@@ -994,7 +994,7 @@ CREATE VIEW "volume_text" ("volume", "text") AS
 	UNION ALL SELECT volume, name FROM volume_funding JOIN funder ON funder = fundref_id
 	UNION ALL SELECT volume, name FROM container WHERE name IS NOT NULL
 	UNION ALL SELECT volume, name FROM asset JOIN slot_asset ON asset.id = asset WHERE name IS NOT NULL
-	UNION ALL SELECT volume, datum FROM record JOIN measure_text ON record.id = record JOIN metric ON metric = metric.id WHERE metric.release >= 'EXCERPTS'
+	UNION ALL SELECT volume, datum FROM record JOIN measure_text ON record.id = record JOIN metric ON metric = metric.id WHERE metric.release >= 'PUBLIC'
 	UNION ALL SELECT volume, tag.name FROM tag JOIN tag_use ON tag.id = tag JOIN container ON container = container.id; -- might want DISTINCT here
 COMMENT ON VIEW "volume_text" IS 'All (searchable) text data associated with a volume.';
 
