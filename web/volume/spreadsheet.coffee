@@ -980,7 +980,7 @@ app.directive 'spreadsheet', [
                   rs = []
                   mf = (r) -> (m) -> r.measures[m]
                   for ri, r of volume.records
-                    if r.category == info.c && !info.row.list(info.c).some((d) -> d.id == ri)
+                    if r.category == info.c && !info.row.list(info.c).some((d) -> `d.id == ri`)
                       rs.push
                         r:r
                         v:(r.measures[mi] ? '').toLowerCase()
