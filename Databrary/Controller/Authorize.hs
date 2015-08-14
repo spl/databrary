@@ -131,7 +131,7 @@ postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarge
       return a
   case api of
     JSON -> maybe (emptyResponse noContent204 []) (okResponse [] . JSON.Object . authorizeJSON) a
-    HTML -> redirectRouteResponse [] viewAuthorize arg []
+    HTML -> otherRouteResponse [] viewAuthorize arg
 
 deleteAuthorize :: AppRoute (API, PartyTarget, AuthorizeTarget)
 deleteAuthorize = action DELETE (pathAPI </>> pathPartyTarget </> pathAuthorizeTarget) $ \arg@(api, i, AuthorizeTarget app oi) -> withAuth $ do
@@ -141,7 +141,7 @@ deleteAuthorize = action DELETE (pathAPI </>> pathPartyTarget </> pathAuthorizeT
   _ <- removeAuthorize $ Authorize (Authorization mempty child parent) Nothing
   case api of
     JSON -> emptyResponse noContent204 []
-    HTML -> redirectRouteResponse [] viewAuthorize arg []
+    HTML -> otherRouteResponse [] viewAuthorize arg
 
 postAuthorizeNotFound :: AppRoute (API, PartyTarget)
 postAuthorizeNotFound = action POST (pathAPI </> pathPartyTarget </< "notfound") $ \(api, i) -> withAuth $ do

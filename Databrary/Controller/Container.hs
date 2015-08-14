@@ -10,9 +10,9 @@ module Databrary.Controller.Container
   ) where
 
 import Control.Monad (when, mfilter)
-import Data.Maybe (fromMaybe, maybeToList)
+import Data.Maybe (fromMaybe, maybeToList, isJust)
 import qualified Data.Text as T
-import Network.HTTP.Types (StdMethod(DELETE), noContent204, conflict409)
+import Network.HTTP.Types (StdMethod(DELETE), noContent204, movedPermanently301, conflict409)
 
 import Databrary.Ops
 import qualified Databrary.Iso as I
@@ -60,8 +60,10 @@ containerForm c = do
 
 viewContainerEdit :: AppRoute (Maybe (Id Volume), Id Slot)
 viewContainerEdit = action GET (pathHTML >/> pathMaybe pathId </> pathSlotId </< "edit") $ \(vi, ci) -> withAuth $ do
-  angular
+  when (isJust vi) $ angular
   c <- getContainer PermissionEDIT vi ci
+  guardAction (isJust vi) $
+    redirectRouteResponse movedPermanently301 [] viewContainerEdit (Just (view c), containerSlotId (view c))
   blankForm $ htmlContainerEdit (Right c)
 
 createContainer :: AppRoute (API, Id Volume)
@@ -74,7 +76,7 @@ createContainer = action POST (pathAPI </> pathId </< "slot") $ \(api, vi) -> wi
   c <- addContainer bc
   case api of
     JSON -> okResponse [] $ containerJSON c
-    HTML -> redirectRouteResponse [] viewContainer (api, (Just vi, containerId c)) []
+    HTML -> otherRouteResponse [] viewContainer (api, (Just vi, containerId c))
 
 postContainer :: AppRoute (API, Id Slot)
 postContainer = action POST (pathAPI </> pathSlotId) $ \(api, ci) -> withAuth $ do
@@ -87,7 +89,7 @@ postContainer = action POST (pathAPI </> pathSlotId) $ \(api, ci) -> withAuth $ 
       emptyResponse conflict409 []
   case api of
     JSON -> okResponse [] $ containerJSON c'
-    HTML -> redirectRouteResponse [] viewSlot (api, (Just (view c'), ci)) []
+    HTML -> otherRouteResponse [] viewSlot (api, (Just (view c'), ci))
 
 deleteContainer :: AppRoute (API, Id Slot)
 deleteContainer = action DELETE (pathAPI </> pathSlotId) $ \(api, ci) -> withAuth $ do
@@ -99,4 +101,4 @@ deleteContainer = action DELETE (pathAPI </> pathSlotId) $ \(api, ci) -> withAut
     HTML -> returnResponse conflict409 [] ("This container is not empty." :: T.Text)
   case api of
     JSON -> emptyResponse noContent204 []
-    HTML -> redirectRouteResponse [] viewVolume (api, view c) []
+    HTML -> otherRouteResponse [] viewVolume (api, view c)

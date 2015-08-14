@@ -203,7 +203,7 @@ processAsset api target = do
   _ <- changeAssetSlot as''
   case api of
     JSON -> okResponse [] $ assetSlotJSON as''
-    HTML -> redirectRouteResponse [] viewAsset (api, assetId (slotAsset as'')) []
+    HTML -> otherRouteResponse [] viewAsset (api, assetId (slotAsset as''))
 
 postAsset :: AppRoute (API, Id Asset)
 postAsset = multipartAction $ action POST (pathAPI </> pathId) $ \(api, ai) -> withAuth $ do
@@ -246,7 +246,7 @@ deleteAsset = action DELETE (pathAPI </> pathId) $ \(api, ai) -> withAuth $ do
   _ <- changeAssetSlot asset'
   case api of
     JSON -> okResponse [] $ assetSlotJSON asset'
-    HTML -> redirectRouteResponse [] viewAsset (api, assetId (slotAsset asset')) []
+    HTML -> otherRouteResponse [] viewAsset (api, assetId (slotAsset asset'))
 
 downloadAsset :: AppRoute (Id Asset)
 downloadAsset = action GET (pathId </< "download") $ \ai -> withAuth $ do

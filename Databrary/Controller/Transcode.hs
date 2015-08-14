@@ -94,4 +94,4 @@ postTranscode = action POST (pathHTML >/> pathId) $ \ti -> withAuth $ do
     TranscodeStop -> void $ stopTranscode t
     TranscodeFail | isNothing (assetSize (transcodeAsset t)) -> void $ changeAsset (transcodeAsset t){ assetSize = Just (-1) } Nothing
     _ -> fail "Invalid action"
-  redirectRouteResponse [] viewTranscodes () []
+  otherRouteResponse [] viewTranscodes ()

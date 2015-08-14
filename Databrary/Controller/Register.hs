@@ -47,7 +47,7 @@ viewRegister = action GET (pathHTML </< "user" </< "register") $ \() -> withAuth
   angular
   maybeIdentity
     (blankForm htmlRegister)
-    (\_ -> redirectRouteResponse [] viewParty (HTML, TargetProfile) [])
+    (\_ -> otherRouteResponse [] viewParty (HTML, TargetProfile))
 
 postRegister :: AppRoute API
 postRegister = action POST (pathAPI </< "user" </< "register") $ \api -> withoutAuth $ do

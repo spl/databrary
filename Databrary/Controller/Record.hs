@@ -61,7 +61,7 @@ createRecord = action POST (pathAPI </> pathId </< "record") $ \(api, vi) -> wit
   rec <- addRecord br
   case api of
     JSON -> okResponse [] $ recordJSON rec
-    HTML -> redirectRouteResponse [] viewRecord (api, recordId rec) []
+    HTML -> otherRouteResponse [] viewRecord (api, recordId rec)
 
 postRecordMeasure :: AppRoute (API, Id Record, Id Metric)
 postRecordMeasure = action POST (pathAPI </>> pathId </> pathId) $ \(api, ri, mi) -> withAuth $ do
@@ -79,7 +79,7 @@ postRecordMeasure = action POST (pathAPI </>> pathId </> pathId) $ \(api, ri, mi
         return $ fromMaybe rec r)
   case api of
     JSON -> okResponse [] $ recordJSON rec'
-    HTML -> redirectRouteResponse [] viewRecord (api, recordId rec') []
+    HTML -> otherRouteResponse [] viewRecord (api, recordId rec')
 
 deleteRecord :: AppRoute (API, Id Record)
 deleteRecord = action DELETE (pathAPI </> pathId) $ \(api, ri) -> withAuth $ do
@@ -91,7 +91,7 @@ deleteRecord = action DELETE (pathAPI </> pathId) $ \(api, ri) -> withAuth $ do
     HTML -> returnResponse conflict409 [] ("This record is still used." :: T.Text)
   case api of
     JSON -> emptyResponse noContent204 []
-    HTML -> redirectRouteResponse [] viewVolume (api, view rec) []
+    HTML -> otherRouteResponse [] viewVolume (api, view rec)
 
 postRecordSlot :: AppRoute (API, Id Slot, Id Record)
 postRecordSlot = action POST (pathAPI </>> pathSlotId </> pathId) $ \(api, si, ri) -> withAuth $ do
@@ -102,8 +102,8 @@ postRecordSlot = action POST (pathAPI </>> pathSlotId </> pathId) $ \(api, si, r
     "src" .:> deformNonEmpty deform
   r <- moveRecordSlot (RecordSlot rec slot{ slotSegment = fromMaybe emptySegment src }) (slotSegment slot)
   case api of
-    HTML | r      -> redirectRouteResponse [] viewSlot (api, (Just (view slot), slotId slot)) []
-      | otherwise -> redirectRouteResponse [] viewRecord (api, recordId rec) []
+    HTML | r      -> otherRouteResponse [] viewSlot (api, (Just (view slot), slotId slot))
+      | otherwise -> otherRouteResponse [] viewRecord (api, recordId rec)
     JSON | r      -> okResponse [] $ recordSlotJSON (RecordSlot rec slot)
       | otherwise -> okResponse [] $ recordJSON rec
 
@@ -114,6 +114,6 @@ deleteRecordSlot = action DELETE (pathAPI </>> pathSlotId </> pathId) $ \(api, s
   rec <- getRecord PermissionEDIT ri
   r <- moveRecordSlot (RecordSlot rec slot) emptySegment
   case api of
-    HTML | r -> redirectRouteResponse [] viewRecord (api, recordId rec) []
+    HTML | r -> otherRouteResponse [] viewRecord (api, recordId rec)
     JSON | r -> okResponse [] $ recordJSON rec
     _ -> emptyResponse noContent204 []
