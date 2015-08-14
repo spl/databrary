@@ -723,6 +723,11 @@ app.controller('volume/slot', [
           $scope.updatePosition()
         return
 
+      Object.defineProperty @prototype, 'fullExcerpt',
+        get: ->
+          if @excerpts && @excerpts.length == 1 && @excerpts[0].contains(@)
+            @excerpts[0]
+
       updateExcerpt: () ->
         @excerpt = undefined
         return unless @asset && @excerpts
