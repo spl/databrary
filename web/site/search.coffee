@@ -510,15 +510,10 @@ app.controller 'site/search', [
         arg = "|arg=record_age_ti:[#{ ageMin } TO #{ ageMax }]"
       return query + arg
 
-
+    badFieldName = /\W/g
     searchMetric = (metricObj, query, value) ->
       suffix = selectSuffix(metricObj.metric)
-      metricRewriteRules = {}
-      metricName = ""
-      if metricObj.metric.name in metricRewriteRules
-        metricName = metricRewriteRules[metricObj.metric.name]
-      else
-        metricName = metricObj.metric.name
+      metricName = metricObj.metric.name.replace(badFieldName, '_')
       arg = "|arg=record_#{ metricName }#{ suffix }:\"#{ value }\""
       console.log("Adding arg:", metricName, arg)
       return query + arg
@@ -527,11 +522,12 @@ app.controller 'site/search', [
       console.log("SWITCHING: ", metric, metric.type)
       suffix = switch metric.type
         when "text"
-          if metric.options?
+          if metric.options
             "_s"
           else
             "_t"
-        when "numeric" then "_tdt"
+        when "numeric" then "_td"
+        when "date" then "_tdt"
         else ""
       return suffix
 
