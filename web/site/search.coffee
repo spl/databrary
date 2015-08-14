@@ -53,10 +53,15 @@ app.controller 'site/search', [
     # Name of the currently selected filter.
     currentFilter = ""
 
-    ageRangeLower = 0
-    ageRangeUpper = 0
+    days = {display:"days",div:1,max:500}
+    months = {display:"months",div:30,max:60}
+    years = {display:"years",div:365,max:92}
+    $scope.ageUnits = [days,months,years]
+    $scope.selectedAgeUnit.div = days.div
     ageRangeMin = 0
-    ageRangeMax = 730
+    ageRangeMax = days.max
+    ageRangeLower = ageRangeMin
+    ageRangeUpper = ageRangeMax
 
     highlightFilter = false
     sessionFilter = false

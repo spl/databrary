@@ -25,7 +25,9 @@
 
       <div class="search-filter age-filter">
         <span>Age</span><br>
-        <input type="number" id="ageLower" /> - <input type="number" id="ageUpper" /> days
+        <input type="number" id="ageLower" /> - <input type="number" id="ageUpper" />
+        <select ng-model="selectedAgeUnit.div" ng-options="a.display for a in ageUnits">
+        </select>
         <div id="age-slider"></div>
       </div>
 
