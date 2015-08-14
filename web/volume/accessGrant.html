@@ -29,7 +29,7 @@
             <label class="option inline">
               <span class="icon network"></span> 
               <span ng-bind="::'access.grant.inherit' | possessive:access.party"></span>
-              <a ng-href="{{::access.party.route()}}#affiliates" target="_blank"> affiliates</a>
+              <a ng-href="{{::page.router.party(access.party.id)}}#affiliates" target="_blank"> affiliates</a>
             </label>
 
           </div>
