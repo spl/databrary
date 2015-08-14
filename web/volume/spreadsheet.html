@@ -26,7 +26,7 @@
     </colgroup>
     <thead>
       <tr class="spreadsheet-head-groups">
-        <th class="metric-col" ng-repeat="col in groups track by col.category.id" id="{{::id}}-category_{{::col.category.id}}" colspan="{{col.metrics.length}}" ng-class="::'col'+col.category.id">
+        <th class="metric-col" ng-repeat="col in groups track by col.category.id" id="{{::id}}-category_{{::col.category.id}}" colspan="{{col.metrics.length}}" ng-class="::'col'+col.category.id" tooltip="::col.category.description">
           <span class="spreadsheet-tab-name" ng-bind="::col.category.name"></span>
           <span class="icon list spreadsheet-tab-options-icon" ng-click="tabOptionsToggle($event)" ng-if="key === col.category && views.length > 1" tooltip="'spreadsheet.switchview' | message"></span>
           <ul class="flat spreadsheet-tab-options" click-elsewhere="tabOptionsToggle($event)" ng-if="key === col.category && tabOptionsClick">
@@ -35,11 +35,10 @@
               <span ng-if="::key.id !== 'slot' && c.id !== 'slot' || key.id === 'slot'" ng-bind="::c.name+' view'"></span>
             </li>
           </ul>
-
         </th>
       </tr>
       <tr class="spreadsheet-head-metrics">
-        <th ng-repeat="col in cols" id="{{::id}}-metric_{{::$index}}" ng-click="clickMetric(col)" ng-class="colClasses(col)" ng-bind="col.metric.name"></th>
+        <th ng-repeat="col in cols" id="{{::id}}-metric_{{::$index}}" ng-click="clickMetric(col)" ng-class="colClasses(col)" ng-bind="col.metric.name" tooltip="::col.metric.description"></th>
       </tr>
     </thead>
     <tbody class="spreadsheet-tbody" id="{{::id}}">

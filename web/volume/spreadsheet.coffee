@@ -52,11 +52,13 @@ app.directive 'spreadsheet', [
         id: 'date'
         name: 'test date'
         type: 'date'
+        description: 'Date on which this session was acquired'
         sort: -8000
       release: # slot
         id: 'release'
         name: 'release'
         type: 'release'
+        description: 'Level of data release to which depicted participant(s) consented'
         sort: -7000
       age: # record
         id: 'age'
@@ -64,6 +66,7 @@ app.directive 'spreadsheet', [
         type: 'number'
         release: constants.release.EXCERPTS
         sort: constants.metricName.birthdate.id + 0.5
+        description: 'Time between birthdate and test date'
         readonly: true
       summary: # slot
         id: 'summary'
@@ -103,6 +106,7 @@ app.directive 'spreadsheet', [
             name: 'file'
             not: 'No files'
             metrics: ['name']
+            description: 'Files included in this folder'
             fixed: true
         constants.deepFreeze(pseudoCategory)
         getCategory = (c) ->
