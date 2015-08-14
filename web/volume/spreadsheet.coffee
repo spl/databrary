@@ -379,6 +379,7 @@ app.directive 'spreadsheet', [
         populateSlot = (slot) ->
           row = new Row()
           row.add('slot', populateSlotData(slot))
+          row.top = true if slot.top && slot.id == volume.top.id
 
           for rr in slot.records
             record = rr.record
@@ -451,7 +452,6 @@ app.directive 'spreadsheet', [
           cell.className = ''
           v = info.v
           slot = info.slot
-          stop = slot?.id == volume.top.id
           if info.col.first && info.d
             if info.c == 'asset'
               a = cell.appendChild(document.createElement('a'))
@@ -464,10 +464,10 @@ app.directive 'spreadsheet', [
               icon = cell.appendChild(document.createElement('span'))
               icon.className = 'icon release ' + constants.release[asset.release] + ' hint-release-' + constants.release[asset.release]
             else
-              if Editing && Key.id == info.c && stop
+              if Editing && Key.id == info.c && info.row.top
                 delspace = cell.appendChild(document.createElement('span'))
                 delspace.className = 'icon'
-              if Editing && Key.id == info.c && !stop
+              if Editing && Key.id == info.c && !info.row.top
                 del = cell.appendChild(document.createElement('a'))
                 del.className = 'trash icon'
                 i = new Info(info.i)
@@ -480,7 +480,7 @@ app.directive 'spreadsheet', [
                 a.setAttribute('href', if Editing then slot.editRoute() else slot.route())
           switch info.metric.id
             when 'name'
-              if stop && info.c == 'slot'
+              if info.row.top && info.c == 'slot'
                 cell.classList.add('top-level-materials')
                 v ?= constants.message('materials.top')
               else
@@ -581,7 +581,7 @@ app.directive 'spreadsheet', [
           tr = row.tr
           tr.id = ID + '_' + i
           tr.data = i
-          if Editing && info.key?.slot?.id == volume.top.id
+          if Editing && info.row.top
             tr.className = 'top'
 
           for col in Groups
@@ -670,10 +670,11 @@ app.directive 'spreadsheet', [
             c = col.category.id
             m = col.metric.id
             sort (i) ->
-              if d = Rows[i].get(c)
-                d[m]
-              else
+              r = Rows[i]
+              if r.top
                 null
+              else
+                r.get(c)?[m]
             currentSort = col
             currentSortDirection = false
           fill()
@@ -956,7 +957,7 @@ app.directive 'spreadsheet', [
                 # for now, just go to slot edit
                 $location.url(info.slot.editRoute({asset:info.d.id}))
                 return
-              return if info.slot?.id == volume.top.id
+              return if info.row.top
               m = info.metric
               if m.name == 'indicator'
                 # trash/bullet: remove
@@ -999,7 +1000,7 @@ app.directive 'spreadsheet', [
                 # for now, just go to slot edit
                 $location.url(info.slot.editRoute())
                 return
-              return if info.slot?.id == volume.top.id
+              return if info.row.top
               c = info.category
               editInput.value = (info.d?.id ? 'remove')+''
               editScope.type = 'record'
