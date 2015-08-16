@@ -9,21 +9,26 @@ app.directive 'volumeDesign', [
       volume = $scope.volume
       form = $scope.volumeDesign
 
+      $scope.select = (c) ->
+        form.metric = {}
+        return unless ($scope.selected = constants.category[c])?
+        for m in volume.metrics[c] ? $scope.selected.template
+          form.metric[m] = true
+        return
+
       init = () ->
-        for c of constants.category
-          if cm = volume.metrics[c]
-            f = {on:true}
-            for m in cm
-              f[m] = true
-            form[c] = f
-          else
-            delete form[c]
+        form.category = {}
+        for c of volume.metrics
+          form.category[c] = true
+        $scope.select($scope.selected?.id)
+        return
       init()
 
-      form.change = (c, m) ->
+      $scope.change = (c, m) ->
+        return unless c?
         messages.clear(form)
         form.$setSubmitted()
-        volume.setVolumeMetrics(c, m, if m? then form[c][m] else form[c].on).then(() ->
+        volume.setVolumeMetrics(c, m, if m? then form.metric[m] else form.category[c]).then(() ->
             init()
             form.$setPristine()
             return
@@ -33,5 +38,8 @@ app.directive 'volumeDesign', [
             messages.addError
               body: 'Error changing volume design'
               report: res
-              owner: form)
+              owner: form
+            return)
+        return
+
 ]

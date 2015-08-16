@@ -1,18 +1,25 @@
 <ng-form name="volumeDesign" class="volumeDesign">
   <ul class="volumeDesign-categories">
-    <li ng-repeat="c in ::page.constants.categories track by c.id">
-      <input type="checkbox" ng-model="volumeDesign[c.id].on" ng-change="volumeDesign.change(c.id)">
-      <span ng-bind="::c.name" class="b"></span>: 
+    <li ng-repeat="c in ::page.constants.categories track by c.id" ng-class="{selected: c === selected}">
+      <input type="checkbox" ng-model="volumeDesign.category[c.id]" ng-change="change(c.id)">
+      <span ng-bind="::c.name" class="b" ng-click="select(c.id)"></span>: 
       <span ng-bind="::c.description"></span>
-      <ul class="volumeDesign-fields" ng-if="volumeDesign[c.id].on">
-        <li ng-repeat="m in ::page.constants.metrics track by m.id" ng-if="::m.name != 'indicator'">
-          <input type="checkbox" ng-disabled="::c.ident.includes(m.id)" ng-model="volumeDesign[c.id][m.id]" ng-change="volumeDesign.change(c.id, m.id)">
-          <span class="icon release" ng-class="::page.constants.release[m.release]"></span>
-          <span ng-bind="::m.name" class="b"></span>: 
-          <span class="volumeDesign-field-description" ng-bind="::m.description"></span> 
-          <span class="volumeDesign-field-description" ng-if="::m.assumed">(assumed "{{::m.assumed}}" by default)</span>
+      <ul class="volumeDesign-fields">
+        <li ng-repeat="m in volume.metrics[c.id]">
+          <span ng-bind="::page.constants.metric[m].name"></span>
         </li>
       </ul>
+    </li>
+  </ul>
+
+  <span ng-if="!!selected" ng-bind="selected.name" ng-class="{b: volumeDesign.category[selected.id]}"></span>
+  <ul class="volumeDesign-fields">
+    <li ng-repeat="m in ::page.constants.metrics track by m.id" ng-if="::m.name != 'indicator'">
+      <input type="checkbox" ng-disabled="!volumeDesign.category[selected.id] || selected.ident.includes(m.id)" ng-model="volumeDesign.metric[m.id]" ng-change="change(selected.id, m.id)">
+      <span class="icon release" ng-class="::page.constants.release[m.release]"></span>
+      <span ng-bind="::m.name" class="b"></span>: 
+      <span class="volumeDesign-field-description" ng-bind="::m.description"></span> 
+      <span class="volumeDesign-field-description" ng-if="::m.assumed">(assumed "{{::m.assumed}}" by default)</span>
     </li>
   </ul>
 </ng-form>
