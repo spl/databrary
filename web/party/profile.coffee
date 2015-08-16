@@ -1,8 +1,8 @@
 'use strict'
 
 app.controller 'party/profile', [
-  '$scope', '$filter', 'displayService', 'constantService', 'modelService', 'messageService', 'party'
-  ($scope, $filter, display, constants, models, messages, party) ->
+  '$scope', '$filter', 'displayService', 'constantService', 'modelService', 'party'
+  ($scope, $filter, display, constants, models, party) ->
     display.title = party.name
     $scope.party = party
 
@@ -28,10 +28,6 @@ app.controller 'party/profile', [
           selected = true
           @constructor.selection[@id] = true
           @constructor.foreign.selection = @access
-          messages.add
-            body: 'something something'
-            type: 'blue'
-            owner: this
         return
 
     class Party extends Item
