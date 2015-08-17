@@ -83,6 +83,7 @@
 
   td
     border 1px solid dark
+    border-collapse initial
     padding 3px
     height 1+f3
     display table-cell
@@ -96,11 +97,13 @@
 
     a.session.icon
       background-size contain
-      background-position-y 50%
-      margin-right b8
       width b23
     .icon
-      vertical-align top    
+      vertical-align top
+  
+  td.folder-type
+    .icon
+      margin-right b8    
 
   td.icon
     background-position 50% 50%
@@ -160,8 +163,6 @@
       text-overflow clip
       // word-break break-all
       // word-break break-word
-  .icon.trash
-    margin-right b8
 
 .spreadsheet-head-groups
   th
@@ -237,6 +238,8 @@
 .top-level-materials
   font-style oblique
   color #999
+  .icon
+    margin-right b8
   
 .spreadsheet-tab-options
   left 0
