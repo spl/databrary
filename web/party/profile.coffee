@@ -28,10 +28,7 @@ app.controller 'party/profile', [
           selected = true
           @constructor.selection[@id] = true
           @constructor.foreign.selection = @access
-          messages.add
-            body: 'something something'
-            type: 'blue'
-            owner: this
+          @selectionMessage()
         return
 
     class Party extends Item
@@ -40,6 +37,11 @@ app.controller 'party/profile', [
       constructor: (@party) ->
         @access = {}
         Party.all[@party.id] = @
+        @selectionMessage = ->
+          messages.add
+            body: constants.message('profile.state', 'volumes', @party.name)
+            type: 'pale'
+            owner: this
 
       @make = (p) ->
         Party.all[p.id] || new Party(p)
@@ -56,6 +58,13 @@ app.controller 'party/profile', [
           p = Party.make(a.party)
           p.access[@volume.id] = a
           @access[p.party.id] = a
+
+        @selectionMessage = ->
+          displayName = if @volume.alias then @volume.alias else @volume.name
+          messages.add
+            body: constants.message('profile.state', 'users', @volume.displayName)
+            type: 'pale'
+            owner: this
 
       Object.defineProperty @prototype, 'id',
         get: -> @volume.id
