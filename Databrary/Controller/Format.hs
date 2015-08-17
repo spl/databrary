@@ -14,6 +14,7 @@ import Databrary.HTTP.Path.Parser
 import Databrary.Action
 import Databrary.Action.Auth
 import Databrary.Controller.Web
+import Databrary.Controller.Angular
 import Databrary.View.Format
 
 formatIcon :: AppRoute Format
@@ -29,5 +30,6 @@ formatIcon = invMap pf fp webFile where
   pf _ = unknownFormat
 
 viewFormats :: AppRoute ()
-viewFormats = action GET ("asset" >/> "formats") $ \() -> withoutAuth $
+viewFormats = action GET ("asset" >/> "formats") $ \() -> withoutAuth $ do
+  angular
   okResponse [] =<< asks htmlFormats
