@@ -42,4 +42,7 @@ app.directive 'volumeDesign', [
             return)
         return
 
+      $scope.stop = (e) ->
+        e.stopPropagation()
+        return false
 ]
