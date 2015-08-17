@@ -48,7 +48,6 @@ import Databrary.Model.Record
 import Databrary.Model.VolumeMetric
 import Databrary.Model.RecordSlot
 import Databrary.Model.Slot
-import Databrary.Model.Asset
 import Databrary.Model.AssetSlot
 import Databrary.Model.Excerpt
 import Databrary.Model.Tag
@@ -242,7 +241,7 @@ postVolume = action POST (pathAPI </> pathId) $ \arg@(api, vi) -> withAuth $ do
   r <- changeVolumeCitation v' cite'
   case api of
     JSON -> okResponse [] $ volumeJSON v' JSON..+ "citation" JSON..= if r then cite' else cite
-    HTML -> redirectRouteResponse [] viewVolume arg []
+    HTML -> otherRouteResponse [] viewVolume arg
 
 createVolume :: AppRoute API
 createVolume = action POST (pathAPI </< "volume") $ \api -> withAuth $ do
@@ -264,7 +263,7 @@ createVolume = action POST (pathAPI </< "volume") $ \api -> withAuth $ do
   _ <- changeVolumeAccess $ VolumeAccess PermissionADMIN PermissionADMIN owner v
   case api of
     JSON -> okResponse [] $ volumeJSON v
-    HTML -> redirectRouteResponse [] viewVolume (api, volumeId v) []
+    HTML -> otherRouteResponse [] viewVolume (api, volumeId v)
 
 viewVolumeLinks :: AppRoute (Id Volume)
 viewVolumeLinks = action GET (pathHTML >/> pathId </< "link") $ \vi -> withAuth $ do
@@ -285,7 +284,7 @@ postVolumeLinks = action POST (pathAPI </> pathId </< "link") $ \arg@(api, vi) -
   changeVolumeLinks v links'
   case api of
     JSON -> okResponse [] $ volumeJSON v JSON..+ ("links" JSON..= links')
-    HTML -> redirectRouteResponse [] viewVolume arg []
+    HTML -> otherRouteResponse [] viewVolume arg
 
 volumeSearchForm :: (Applicative m, Monad m) => DeformT f m VolumeFilter
 volumeSearchForm = VolumeFilter
@@ -306,8 +305,7 @@ thumbVolume :: AppRoute (Id Volume)
 thumbVolume = action GET (pathId </< "thumb") $ \vi -> withAuth $ do
   v <- getVolume PermissionPUBLIC vi
   e <- lookupVolumeThumb v
-  q <- peeks Wai.queryString
   maybe
-    (redirectRouteResponse [] webFile (Just $ staticPath ["images", "draft.png"]) q)
-    (\as -> redirectRouteResponse [] downloadAssetSegment (slotId $ view as, assetId $ view as) q)
+    (otherRouteResponse [] webFile (Just $ staticPath ["images", "draft.png"]))
+    (\as -> otherRouteResponse [] downloadAssetSegment (slotId $ view as, view as))
     e

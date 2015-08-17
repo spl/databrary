@@ -6,7 +6,6 @@ module Databrary.Controller.Angular
   ) where
 
 import Control.Arrow (second)
-import Control.Monad (when)
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import qualified Data.ByteString.Builder as BSB
 import Data.Default.Class (Default(..))
@@ -17,7 +16,7 @@ import qualified Network.Wai as Wai
 import qualified Text.Regex.Posix as Regex
 
 import Databrary.Ops
-import Databrary.Has (peek, view)
+import Databrary.Has (peek, peeks, view)
 #ifdef DEVEL
 import Databrary.Web.Uglify
 #endif
@@ -66,17 +65,20 @@ angularEnable JSDisabled = const False
 angularEnable JSDefault = not . Fold.any (Regex.matchTest browserBlacklist) . lookupRequestHeader hUserAgent
 angularEnable JSEnabled = const True
 
-angular :: (MonadIO m, MonadAuthAction q m) => m ()
-angular = do
+angularRequest :: Wai.Request -> Maybe BSB.Builder
+angularRequest req = angularEnable js req ?> nojs
+  where (js, nojs) = jsURL JSDisabled req
+
+angularResult :: (MonadIO m, MonadAuthAction q m) => BSB.Builder -> m ()
+angularResult nojs = do
   auth <- peek
-  let req = view auth
-      (js, nojs) = jsURL JSDisabled req
-      js' = angularEnable js req
-  when js' $ do
-    debug <-
+  debug <-
 #ifdef DEVEL
-      boolQueryParameter "debug" req ?$> liftIO allWebJS
+    boolQueryParameter "debug" (view auth) ?$> liftIO allWebJS
 #else
-      return Nothing
+    return Nothing
 #endif
-    result =<< okResponse [] (htmlAngular debug nojs auth)
+  result =<< okResponse [] (htmlAngular debug nojs auth)
+
+angular :: (MonadIO m, MonadAuthAction q m) => m ()
+angular = Fold.mapM_ angularResult =<< peeks angularRequest

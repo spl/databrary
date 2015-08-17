@@ -31,7 +31,7 @@ queryTags = action GET (pathJSON >/> "tags" >/> PathParameter) $ \t ->
 
 tagResponse :: API -> TagUse -> AuthAction
 tagResponse JSON t = okResponse [] . tagCoverageJSON =<< lookupTagCoverage (useTag t) (containerSlot $ slotContainer $ tagSlot t)
-tagResponse HTML t = redirectRouteResponse [] viewSlot (HTML, (Just (view t), slotId (tagSlot t))) []
+tagResponse HTML t = otherRouteResponse [] viewSlot (HTML, (Just (view t), slotId (tagSlot t)))
 
 postTag :: AppRoute (API, Id Slot, TagId)
 postTag = action POST (pathAPI </>> pathSlotId </> pathTagId) $ \(api, si, TagId kw tn) -> withAuth $ do

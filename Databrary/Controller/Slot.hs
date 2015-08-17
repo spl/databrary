@@ -9,7 +9,9 @@ module Databrary.Controller.Slot
 import Control.Monad (when, mfilter)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
+import Data.Maybe (isJust)
 import qualified Data.Text as T
+import Network.HTTP.Types.Status (movedPermanently301)
 import qualified Network.Wai as Wai
 
 import Databrary.Ops
@@ -69,18 +71,19 @@ slotDownloadName s =
 
 viewSlot :: AppRoute (API, (Maybe (Id Volume), Id Slot))
 viewSlot = action GET (pathAPI </> pathMaybe pathId </> pathSlotId) $ \(api, (vi, i)) -> withAuth $ do
-  when (api == HTML) angular
+  when (api == HTML && isJust vi) angular
   c <- getSlot PermissionPUBLIC vi i
   case api of
     JSON -> okResponse [] =<< slotJSONQuery c =<< peeks Wai.queryString
-    HTML -> okResponse [] $ BSC.pack $ show $ containerId $ slotContainer c -- TODO
+    HTML
+      | isJust vi -> okResponse [] $ BSC.pack $ show $ containerId $ slotContainer c -- TODO
+      | otherwise -> redirectRouteResponse movedPermanently301 [] viewSlot (api, (Just (view c), slotId c))
 
 thumbSlot :: AppRoute (Maybe (Id Volume), Id Slot)
 thumbSlot = action GET (pathMaybe pathId </> pathSlotId </< "thumb") $ \(vi, i) -> withAuth $ do
   s <- getSlot PermissionPUBLIC vi i
   e <- lookupSlotThumb s
-  q <- peeks Wai.queryString
   maybe
-    (redirectRouteResponse [] webFile (Just $ staticPath ["images", "draft.png"]) q)
-    (\as -> redirectRouteResponse [] downloadAssetSegment (slotId $ view as, assetId $ view as) q)
+    (otherRouteResponse [] webFile (Just $ staticPath ["images", "draft.png"]))
+    (\as -> otherRouteResponse [] downloadAssetSegment (slotId $ view as, assetId $ view as))
     e

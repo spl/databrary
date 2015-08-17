@@ -55,4 +55,4 @@ postIngest = multipartAction $ action POST (pathId </< "ingest") $ \vi -> withAu
     (\(r,o,j) -> runIngest $ right (map (unId . containerId)) <$> ingestJSON v (fileContent j) r o)
     a
   guardAction r $ returnResponse badRequest400 [] ("failed" :: String)
-  redirectRouteResponse [] viewIngest (volumeId v) []
+  otherRouteResponse [] viewIngest (volumeId v)

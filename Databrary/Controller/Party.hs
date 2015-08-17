@@ -164,7 +164,7 @@ postParty = multipartAction $ action POST (pathAPI </> pathPartyTarget) $ \(api,
     void $ changeAvatar p' a
   case api of
     JSON -> okResponse [] $ partyJSON p'
-    HTML -> redirectRouteResponse [] viewParty (api, i) []
+    HTML -> otherRouteResponse [] viewParty (api, i)
 
 createParty :: AppRoute API
 createParty = multipartAction $ action POST (pathAPI </< "party") $ \api -> withAuth $ do
@@ -175,7 +175,7 @@ createParty = multipartAction $ action POST (pathAPI </< "party") $ \api -> with
     void $ changeAvatar p a
   case api of
     JSON -> okResponse [] $ partyJSON p
-    HTML -> redirectRouteResponse [] viewParty (api, TargetParty $ partyId p) []
+    HTML -> otherRouteResponse [] viewParty (api, TargetParty $ partyId p)
 
 deleteParty :: AppRoute (Id Party)
 deleteParty = action POST (pathHTML >/> pathId </< "delete") $ \i -> withAuth $ do
@@ -195,7 +195,7 @@ viewPartyDelete = action GET (pathHTML >/> pathId </< "delete") $ \i -> withAuth
 viewAvatar :: AppRoute (Id Party)
 viewAvatar = action GET (pathId </< "avatar") $ \i -> withoutAuth $
   maybe
-    (redirectRouteResponse [] webFile (Just $ staticPath ["images", "avatar.png"]) [])
+    (otherRouteResponse [] webFile (Just $ staticPath ["images", "avatar.png"]))
     (serveAssetSegment False . assetSlotSegment . assetNoSlot)
     =<< lookupAvatar i
 
