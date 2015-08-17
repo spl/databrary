@@ -1,8 +1,8 @@
 'use strict'
 
 app.controller 'party/profile', [
-  '$scope', '$filter', 'displayService', 'constantService', 'modelService', 'party'
-  ($scope, $filter, display, constants, models, party) ->
+  '$scope', '$filter', 'displayService', 'constantService', 'modelService', 'messageService', 'party'
+  ($scope, $filter, display, constants, models, messages, party) ->
     display.title = party.name
     $scope.party = party
 
@@ -21,6 +21,7 @@ app.controller 'party/profile', [
       select: () ->
         s = @selected
         @constructor.selection = {}
+        messages.clear(Item)
         if s == true
           selected = false
           @constructor.foreign.selection = {}
@@ -28,6 +29,11 @@ app.controller 'party/profile', [
           selected = true
           @constructor.selection[@id] = true
           @constructor.foreign.selection = @access
+          messages.add
+            body: @selectionMessage()
+            type: 'dark'
+            owner: Item
+          @selectionMessage()
         return
 
     class Party extends Item
@@ -36,6 +42,9 @@ app.controller 'party/profile', [
       constructor: (@party) ->
         @access = {}
         Party.all[@party.id] = @
+
+      selectionMessage: ->
+        constants.message('profile.state', 'volumes', @party.name)
 
       @make = (p) ->
         Party.all[p.id] || new Party(p)
@@ -52,6 +61,9 @@ app.controller 'party/profile', [
           p = Party.make(a.party)
           p.access[@volume.id] = a
           @access[p.party.id] = a
+
+      selectionMessage: ->
+        constants.message('profile.state', 'users', @volume.displayName)
 
       Object.defineProperty @prototype, 'id',
         get: -> @volume.id
