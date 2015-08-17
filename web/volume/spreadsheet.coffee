@@ -465,9 +465,11 @@ app.directive 'spreadsheet', [
               icon.className = 'icon release ' + constants.release[asset.release] + ' hint-release-' + constants.release[asset.release]
             else
               if Editing && Key.id == info.c && info.row.top
+                cell.classList.add('top-level-materials')
                 delspace = cell.appendChild(document.createElement('span'))
                 delspace.className = 'icon'
               if Editing && Key.id == info.c && !info.row.top
+                cell.classList.add('folder-type')
                 del = cell.appendChild(document.createElement('a'))
                 del.className = 'trash icon'
                 i = new Info(info.i)
