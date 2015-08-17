@@ -24,10 +24,12 @@ app.controller 'party/profile', [
         if s == true
           selected = false
           @constructor.foreign.selection = {}
+          messages.clear(this)
         else
           selected = true
           @constructor.selection[@id] = true
           @constructor.foreign.selection = @access
+          messages.clear()
           @selectionMessage()
         return
 
