@@ -6,7 +6,7 @@
       <div class="hide-desktop hide-tablet profile-mobile-header view-title smaller" message="volumes.title"></div>
       <div ng-repeat="vl in ::volumes" ng-if="::vl.length">
         <div class="profile-section-header">
-          <span ng-bind="::'profile.volumes.'+vl.type+'.title' | message:vl.parent.party.name"></span> 
+          <strong ng-bind="::'profile.volumes.'+vl.type+'.title' | message:vl.parent.party.name"></strong> 
           <a ng-if="::vl.type === 'individual' && party.authorization >= page.constants.permission.EDIT || vl.parent.parent.member >= page.constants.permission.ADMIN" ng-href="{{page.router.volumeCreate([vl.parent.party.id])}}" class="button mini">Create volume</a>
           <div class="profile-additional" ng-if="::!!vl.parent">
             <span ng-bind="('auth.member.'+page.constants.permission[vl.parent.parent.member]+'.title' | message)+': '+('auth.member.'+page.constants.permission[vl.parent.parent.member] | message:'their')"></span>
@@ -60,13 +60,13 @@
       </div>
       <div class="profile-section" ng-if="::parties.children.length">
         <div class="profile-section-header">
-          <span>Affiliates</span>
+          <strong>Affiliates</strong>
           <a ng-href="{{::party.editRoute('grant')}}" class="button icon edit neutral"></a>
         </div>
         <div ng-repeat="(member, cl) in ::parties.children track by member" ng-if="::cl.length">
           <div class="profile-subsection-header">
-            <span ng-bind="::'auth.member.'+page.constants.permission[member]+'.title' | message"></span> 
-            <span class="icon info" tooltip="::'auth.member.'+page.constants.permission[member] | possessive:party"></span> 
+            <strong ng-bind="::'auth.member.'+page.constants.permission[member]+'.title' | message"></strong> 
+            <span ng-bind="::': '+('auth.member.'+page.constants.permission[member] | possessive:party)"></span> 
           </div>     
           <ul>
             <li ng-repeat="p in cl" ng-class="{'profile-highlight': !!p.selected}">
@@ -88,8 +88,8 @@
       </div>
       <div class="profile-section hide-mobile" ng-if="::parties.collaborators.length">
         <div class="profile-section-header">
-          <span ng-bind="::'profile.parties.'+parties.collaborators.type+'.title' | message"></span>
-          <span class="icon info" tooltip="::'profile.parties.'+parties.collaborators.type+'.definition' | message"></span>
+          <strong ng-bind="::'profile.parties.'+parties.collaborators.type+'.title' | message"></strong>
+          <div class="profile-additional" ng-bind="::'profile.parties.'+parties.collaborators.type+'.definition' | message"></div>
         </div>
         <ul>
           <li ng-repeat="p in ::parties.collaborators" ng-class="{'profile-highlight': !!p.selected}">
