@@ -8,9 +8,17 @@
   padding-left 0
   .selected
     background-color orange51
+    @media screen and (min-width: grid-mobile-width)
+      padding-right b1
+      margin-right -b1  
+  .beforeSelected
+    @media screen and (min-width:grid-mobile-width)
+      padding-right b1
+      margin-right -b1
 .volumeDesign-categories > li
   border-bottom 3px green51 solid
   padding b4 0
+
 .volumeDesign-categories > li
   padding-left 23px
   text-indent -20px
@@ -54,4 +62,3 @@
     color red
   &.selected
     background-color orange51
-  
