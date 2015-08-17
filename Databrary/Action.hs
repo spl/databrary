@@ -17,6 +17,7 @@ module Databrary.Action
   , returnResponse
   , emptyResponse
   , redirectRouteResponse
+  , otherRouteResponse
   , forbiddenResponse
   , notFoundResponse
   , okResponse
@@ -36,7 +37,7 @@ import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Lazy as BSL
 import Data.Maybe (fromMaybe)
 import Data.Monoid (mempty)
-import Network.HTTP.Types (Status, ok200, seeOther303, forbidden403, notFound404, ResponseHeaders, hLocation, Query)
+import Network.HTTP.Types (Status, ok200, seeOther303, forbidden403, notFound404, ResponseHeaders, hLocation)
 import qualified Network.Wai as Wai
 
 import Databrary.Has (peek, peeks)
@@ -53,10 +54,13 @@ import {-# SOURCE #-} Databrary.View.Error
 emptyResponse :: MonadAction q m => Status -> ResponseHeaders -> m Response
 emptyResponse s h = returnResponse s h (mempty :: BSB.Builder)
 
-redirectRouteResponse :: MonadAction c m => ResponseHeaders -> Route r a -> a -> Query -> m Response
-redirectRouteResponse h r a q = do
+redirectRouteResponse :: MonadAction c m => Status -> ResponseHeaders -> Route r a -> a -> m Response
+redirectRouteResponse s h r a = do
   req <- peek
-  emptyResponse seeOther303 ((hLocation, BSL.toStrict $ BSB.toLazyByteString $ actionURL (Just req) r a q) : h)
+  emptyResponse s ((hLocation, BSL.toStrict $ BSB.toLazyByteString $ actionURL (Just req) r a (Wai.queryString req)) : h)
+
+otherRouteResponse :: MonadAction c m => ResponseHeaders -> Route r a -> a -> m Response
+otherRouteResponse = redirectRouteResponse seeOther303
 
 forbiddenResponse :: MonadAppAction q m => m Response
 forbiddenResponse = returnResponse forbidden403 [] =<< peeks htmlForbidden

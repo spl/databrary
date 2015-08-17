@@ -47,7 +47,7 @@ viewRegister = action GET (pathHTML </< "user" </< "register") $ \() -> withAuth
   angular
   maybeIdentity
     (blankForm htmlRegister)
-    (\_ -> redirectRouteResponse [] viewParty (HTML, TargetProfile) [])
+    (\_ -> otherRouteResponse [] viewParty (HTML, TargetProfile))
 
 postRegister :: AppRoute API
 postRegister = action POST (pathAPI </< "user" </< "register") $ \api -> withoutAuth $ do
@@ -72,14 +72,10 @@ postRegister = action POST (pathAPI </< "user" </< "register") $ \api -> without
   resetPasswordMail (Right auth) 
     "Databrary account created"
     $ \(Just url) ->
-      "Thank you for registering with Databrary. Please use this link to complete your\n\
-      \registration:\n\n"
+      "Thank you for registering with Databrary. Please use this link to complete your registration:\n\n"
       <> url <> "\n\n\
-      \By clicking the above link, you also indicate that you have read and understand\n\
-      \the Databrary Access agreement, which you can download here:\n\n\
-      \http://databrary.org/policies/agreement.pdf\n\n\
-      \Once you've validated your e-mail, you will be able to request authorization in\n\
-      \order to be granted full access to Databrary.\n"
+      \By clicking the above link, you also indicate that you have read and understand the Databrary Access agreement, which you can download here: http://databrary.org/policies/agreement.pdf\n\n\
+      \Once you've validated your e-mail, you will be able to request authorization in order to be granted full access to Databrary.\n"
   date <- peek
   focusIO $ staticSendInvestigator (view auth) date
   okResponse [] $ "Your confirmation email has been sent to '" <> accountEmail reg <> "'."
