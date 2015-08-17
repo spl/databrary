@@ -42,7 +42,7 @@ app.controller 'party/profile', [
         @selectionMessage = ->
           messages.add
             body: constants.message('profile.state', 'volumes', @party.name)
-            type: 'pale'
+            type: 'dark'
             owner: this
 
       @make = (p) ->
@@ -65,7 +65,7 @@ app.controller 'party/profile', [
           displayName = if @volume.alias then @volume.alias else @volume.name
           messages.add
             body: constants.message('profile.state', 'users', @volume.displayName)
-            type: 'pale'
+            type: 'dark'
             owner: this
 
       Object.defineProperty @prototype, 'id',
