@@ -5,7 +5,7 @@
         <li ng-repeat="c in ::page.constants.categories track by c.id" ng-class="{selected: c === selected}">
           <input type="checkbox" ng-model="volumeDesign.category[c.id]" ng-change="change(c.id)">
           <span ng-bind="::c.name" class="b" ng-click="select(c.id)"></span>: 
-          <span ng-bind="::c.description"></span>
+          <span class="volumeDesign-description" ng-bind="::c.description"></span>
           <ul class="volumeDesign-fields">
             <li ng-repeat="m in volume.metrics[c.id]">
               <span ng-bind="::page.constants.metric[m].name"></span>
@@ -16,14 +16,14 @@
     </div>
     <div class="something">
       <span ng-if="!!selected" ng-bind="selected.name" ng-class="{b: volumeDesign.category[selected.id]}"></span>
-      <span ng-if="!!selected" ng-if="!volumeDesign.category[selected.id]"></span>
+      <s ng-if="!!selected && !volumeDesign.category[selected.id]">Check this category on the left to add or drop fields</s>
       <ul class="volumeDesign-fields">
         <li ng-repeat="m in ::page.constants.metrics track by m.id" ng-if="::m.name != 'indicator'">
           <input type="checkbox" ng-disabled="!volumeDesign.category[selected.id] || selected.ident.includes(m.id)" ng-model="volumeDesign.metric[m.id]" ng-change="change(selected.id, m.id)">
           <span class="icon release" ng-class="::page.constants.release[m.release]"></span>
           <span ng-bind="::m.name" class="b"></span>: 
-          <span class="volumeDesign-field-description" ng-bind="::m.description"></span> 
-          <span class="volumeDesign-field-description" ng-if="::m.assumed">(assumed "{{::m.assumed}}" by default)</span>
+          <span class="volumeDesign-description" ng-bind="::m.description"></span> 
+          <span class="volumeDesign-description" ng-if="::m.assumed">(assumed "{{::m.assumed}}" by default)</span>
         </li>
       </ul>
     </div>
