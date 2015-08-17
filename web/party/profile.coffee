@@ -21,15 +21,18 @@ app.controller 'party/profile', [
       select: () ->
         s = @selected
         @constructor.selection = {}
+        messages.clear(Item)
         if s == true
           selected = false
           @constructor.foreign.selection = {}
-          messages.clear(this)
         else
           selected = true
           @constructor.selection[@id] = true
           @constructor.foreign.selection = @access
-          messages.clear()
+          messages.add
+            body: @selectionMessage()
+            type: 'dark'
+            owner: Item
           @selectionMessage()
         return
 
@@ -39,11 +42,9 @@ app.controller 'party/profile', [
       constructor: (@party) ->
         @access = {}
         Party.all[@party.id] = @
-        @selectionMessage = ->
-          messages.add
-            body: constants.message('profile.state', 'volumes', @party.name)
-            type: 'dark'
-            owner: this
+
+      selectionMessage: ->
+        constants.message('profile.state', 'volumes', @party.name)
 
       @make = (p) ->
         Party.all[p.id] || new Party(p)
@@ -61,12 +62,8 @@ app.controller 'party/profile', [
           p.access[@volume.id] = a
           @access[p.party.id] = a
 
-        @selectionMessage = ->
-          displayName = if @volume.alias then @volume.alias else @volume.name
-          messages.add
-            body: constants.message('profile.state', 'users', @volume.displayName)
-            type: 'dark'
-            owner: this
+      selectionMessage: ->
+        constants.message('profile.state', 'users', @volume.displayName)
 
       Object.defineProperty @prototype, 'id',
         get: -> @volume.id
