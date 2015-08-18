@@ -16,7 +16,7 @@
               <li class="strong" ng-repeat="m in volume.metrics[c.id]" ng-bind="::page.constants.metric[m].name"></li>
             </ul>
           </div>
-          <small ng-if="c === selected" class="warning">Scroll down the page to edit {{c.name}} fields</small>
+          <small ng-if="c === selected" class="hide-desktop hide-tablet warning">Scroll down the page to edit {{c.name}} fields</small>
         </li>
       </ul>
     </div>
