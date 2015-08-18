@@ -8,14 +8,11 @@
     </h4>
   </div>
 
-  <p message="download.csv.prompt"></p>
-
   <div class="popup-cite" ng-if="::volume">
     <cite-volume></cite-volume>
   </div>
-
   <div class="popup-classification"></div>
-
+  <p message="download.warning"></p>
   <a ng-href="{{::volume.csvRoute(false)}}" class=" button green" target="_self">
     <span class="download icon"></span><span>Download CSV</span>
   </a>
