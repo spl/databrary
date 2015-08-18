@@ -10,6 +10,7 @@ module Databrary.Controller.Container
   ) where
 
 import Control.Monad (when, unless, mfilter)
+import qualified Data.Foldable as Fold
 import Data.Maybe (isJust, fromMaybe, maybeToList)
 import qualified Data.Text as T
 import Network.HTTP.Types (StdMethod(DELETE), noContent204, movedPermanently301, conflict409)
@@ -45,8 +46,11 @@ getContainer p mv (Id (SlotId i s)) top
     return c
   | otherwise = result =<< notFoundResponse
 
-containerDownloadName :: Container -> [T.Text]
-containerDownloadName c = T.pack (show (containerId c)) : maybeToList (containerName c)
+containerDownloadName :: Maybe (Id Container) -> Container -> [T.Text]
+containerDownloadName top c =
+  (if containerTop c then ("materials" :) else id)
+  $ (if Fold.any (containerId c ==) top then (T.pack (show (containerId c)) :) else id)
+  $ maybeToList (containerName c)
 
 viewContainer :: AppRoute (API, (Maybe (Id Volume), Id Container))
 viewContainer = I.second (I.second $ slotContainerId . unId I.:<->: containerSlotId) I.<$> viewSlot

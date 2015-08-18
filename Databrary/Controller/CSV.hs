@@ -1,10 +1,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Databrary.Controller.CSV
   ( csvVolume
+  , volumeCSV
   ) where
 
 import Control.Arrow (second)
 import qualified Data.ByteString as BS
+import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Char8 as BSC
 import Data.Function (on)
 import Data.List (foldl', nubBy, groupBy)
@@ -13,7 +15,7 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Network.HTTP.Types (hContentType)
 
-import Databrary.Store.Filename
+import Databrary.Service.DB
 import Databrary.Model.Id
 import Databrary.Model.Permission
 import Databrary.Model.Volume
@@ -24,6 +26,7 @@ import Databrary.Model.RecordSlot
 import Databrary.Model.Metric
 import Databrary.Model.Measure
 import Databrary.Model.VolumeMetric
+import Databrary.Store.Filename
 import Databrary.Store.CSV
 import Databrary.HTTP
 import Databrary.HTTP.Path.Parser
@@ -88,20 +91,24 @@ dataRow hl@((c,m):hl') rll@(~rl@(r:_):rll') = case compare c rc of
   where rc = recordCategory r
 dataRow _ _ = []
 
-csvVolume :: AppRoute (Id Volume)
-csvVolume = action GET (pathId </< "csv") $ \vi -> withAuth $ do
-  vol <- getVolume PermissionPUBLIC vi
+volumeCSV :: MonadDB m => Volume -> [(Container, [RecordSlot])] -> m BSB.Builder
+volumeCSV vol crsl = do
   cols <- lookupVolumeMetrics vol
-  crsl <- lookupVolumeContainersRecords vol
+  -- FIXME if volume metrics can be reordered
   let grm r = r{ recordMeasures = getRecordMeasures r }
       crl = map (second $ map (nubBy ((==) `on` recordId)) . groupBy ((==) `on` recordCategory) . map (grm . slotRecord)) crsl
       hl = map (\(c, n) -> (c, replicate n $ maybe [] (map getMetric') $ lookup (recordCategoryId c) cols)) $
         foldl' updateHeaders [] $ map snd crl
       cr c r = tshow (containerId c) : tmaybe tenc (containerName c) : tmaybe BSC.pack (formatContainerDate c) : tmaybe tshow (containerRelease c) : dataRow hl r
       hr = "session-id" : "session-name" : "session-date" : "session-release" : headerRow hl
-      csv = hr : map (uncurry cr) crl
+  return $ buildCSV $ hr : map (uncurry cr) crl
+
+csvVolume :: AppRoute (Id Volume)
+csvVolume = action GET (pathId </< "csv") $ \vi -> withAuth $ do
+  vol <- getVolume PermissionPUBLIC vi
+  r <- lookupVolumeContainersRecords vol
+  csv <- volumeCSV vol r
   okResponse 
     [ (hContentType, "text/csv;charset=utf-8")
     , ("content-disposition", "attachment; filename=" <> quoteHTTP (makeFilename (volumeDownloadName vol) <> ".csv"))
-    ]
-    $ buildCSV csv
+    ] csv
