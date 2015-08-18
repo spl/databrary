@@ -14,7 +14,7 @@ app.directive('loginForm', [
         form.$setSubmitted();
         models.Login.login(form.data).then(function () {
           form.validator.server({});
-          form.$setUnsubmitted();
+          form.$setPristine();
           router.back();
         }, function (res) {
           form.$setUnsubmitted();

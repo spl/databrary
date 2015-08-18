@@ -34,7 +34,6 @@ app.directive('fundingGrantForm', [
           delete funding.new;
           form.data.awards.push('');
           form.$setPristine();
-          form.$setUnsubmitted();
         }, function (res) {
           form.$setUnsubmitted();
           page.messages.addError({
@@ -58,7 +57,6 @@ app.directive('fundingGrantForm', [
           });
 
           form.$setPristine();
-          form.$setUnsubmitted();
           form.removeSuccessFn(funding);
         }, function (res) {
           form.$setUnsubmitted();

@@ -27,7 +27,6 @@ app.directive('volumeEditAccessForm', [
             children: a,
           });
         })).then(function () {
-          form.$setUnsubmitted();
           messages.add({
             body: constants.message('access.preset.save.success'),
             type: 'green',

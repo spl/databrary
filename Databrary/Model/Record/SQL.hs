@@ -25,9 +25,9 @@ parseMeasure :: Record -> BSC.ByteString -> Measure
 parseMeasure r s = Measure r (getMetric' (Id (read (BSC.unpack m)))) (BSC.tail d) where
   (m, d) = BSC.splitAt (fromMaybe (error $ "parseMeasure " ++ show (recordId r) ++ ": " ++ BSC.unpack s) $ BSC.elemIndex ':' s) s
 
-makeRecord :: Id Record -> Maybe (Id RecordCategory) -> [Maybe BSC.ByteString] -> Maybe Release -> Volume -> Record
+makeRecord :: Id Record -> Id RecordCategory -> [Maybe BSC.ByteString] -> Maybe Release -> Volume -> Record
 makeRecord i c ms p v = r where
-  r = Record i v (fmap getRecordCategory' c) p (map (parseMeasure r . fromMaybe (error "NULL record.measure")) ms)
+  r = Record i v (getRecordCategory' c) p (map (parseMeasure r . fromMaybe (error "NULL record.measure")) ms)
 
 recordRow :: Selector -- ^ @Maybe 'Release' -> 'Volume' -> 'Record'@
 recordRow = fromMap ("record_measures AS " ++) $
@@ -52,7 +52,7 @@ recordSets :: String -- ^ @'Record'@
   -> [(String, String)]
 recordSets r =
   [ ("volume", "${volumeId (recordVolume " ++ r ++ ")}")
-  , ("category", "${fmap recordCategoryId (recordCategory " ++ r ++ ")}")
+  , ("category", "${recordCategoryId (recordCategory " ++ r ++ ")}")
   ]
 
 setRecordId :: Record -> Id Record -> Record

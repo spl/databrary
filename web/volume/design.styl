@@ -1,0 +1,64 @@
+.volumeDesign
+  position relative
+  ul, li
+    &:before
+      content none
+
+.volumeDesign-categories
+  padding-left 0
+  .selected
+    background-color orange51
+    @media screen and (min-width: grid-mobile-width)
+      padding-right b1
+      margin-right -b1  
+  .beforeSelected
+    @media screen and (min-width:grid-mobile-width)
+      padding-right b1
+      margin-right -b1
+.volumeDesign-categories > li
+  border-bottom 3px green51 solid
+  padding b4 0
+
+.volumeDesign-categories > li
+  padding-left 23px
+  text-indent -20px
+  div
+    text-indent 0px
+    margin-top b3
+    font-size 0.85
+    ul
+      color orange13
+
+.volumeDesign-fields
+  padding-left 0px
+  margin-bottom 0
+  &.disabled
+    color neutral12
+.volumeDesign-fields > li
+  padding-left 51px
+  text-indent -48px
+  &:nth-child(odd)
+    background-color neutral51
+  .icon
+    vertical-align middle
+    width 28px
+.volumeDesign-description
+  font-size b2
+  
+.volumeDesign-float
+  border 1px solid black
+  
+.volumeDesign-section
+  padding 0
+  margin 0 b2
+
+.volumeDesign-header
+  border-bottom 1px dotted neutral
+  padding b3 b8
+  strong
+    text-transform capitalize
+  small
+    display block
+    color red
+  &.selected
+    background-color orange51

@@ -87,8 +87,8 @@ asDate = JE.withString (maybe (Left "expecting %F") Right . parseTime defaultTim
 asRelease :: IngestM (Maybe Release)
 asRelease = JE.perhaps JE.fromAesonParser
 
-asCategory :: IngestM (Maybe RecordCategory)
-asCategory = JE.perhaps $ do
+asCategory :: IngestM RecordCategory
+asCategory =
   JE.withIntegral (err . getRecordCategory . Id) `catchError` \_ -> do
     JE.withText (\n -> err $ find ((n ==) . recordCategoryName) allRecordCategories)
   where err = maybe (Left "category not found") Right
@@ -212,7 +212,7 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
           throwPE "id mismatch"
         _ <- JE.key "category" $ do
           category <- asCategory
-          category' <- (category <$) <$> on check (fmap recordCategoryName) (recordCategory r) category
+          category' <- (category <$) <$> on check recordCategoryName (recordCategory r) category
           Fold.forM_ category' $ \c -> lift $ changeRecord r
             { recordCategory = c
             }

@@ -36,6 +36,7 @@ data Metric = Metric
   , metricType :: MeasureType
   , metricOptions :: [MeasureDatum]
   , metricAssumed :: Maybe MeasureDatum
+  , metricDescription :: Maybe T.Text
   }
 
 instance Kinded Metric where

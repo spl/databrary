@@ -241,11 +241,27 @@ app.factory('modelService', [
       return Party.search(param);
     };
 
+    function subPartyUpdate(list, auth) {
+      if (!list)
+        return;
+      auth.party = partyMake(auth.party);
+      var i = list.findIndex(function (a) {
+        return a.party.id === auth.party.id;
+      });
+      if ('site' in auth || 'member' in auth || auth.individual || auth.children)
+        if (i >= 0)
+          list.splice(i, 1, auth);
+        else
+          list.push(auth);
+      else if (i >= 0)
+        list.splice(i, 1);
+    }
+
     Party.prototype.authorizeApply = function (target, data) {
       var p = this;
       return router.http(router.controllers.postAuthorizeApply, this.id, target, data)
         .then(function (res) {
-          p.clear('parents');
+          subPartyUpdate(p.parents, res.data);
           return p;
         });
     };
@@ -258,7 +274,7 @@ app.factory('modelService', [
       var p = this;
       return router.http(router.controllers.postAuthorize, this.id, target, data)
         .then(function (res) {
-          p.clear('children');
+          subPartyUpdate(p.children, res.data);
           return res.data;
         });
     };
@@ -267,7 +283,7 @@ app.factory('modelService', [
       var p = this;
       return router.http(router.controllers.deleteAuthorize, this.id, target)
         .then(function (res) {
-          p.clear('children');
+          subPartyUpdate(p.children, res.data);
           return p;
         });
     };
@@ -276,7 +292,7 @@ app.factory('modelService', [
       var p = this;
       return router.http(router.controllers.deleteAuthorizeParent, this.id, target)
         .then(function (res) {
-          p.clear('parents');
+          subPartyUpdate(p.parents, res.data);
           return p;
         });
     };
@@ -399,6 +415,7 @@ app.factory('modelService', [
       links: false,
       funding: false,
       tags: false,
+      metrics: false,
       // consumers: false,
       // producers: false,
     };
@@ -566,8 +583,8 @@ app.factory('modelService', [
       var v = this;
       return router.http(router.controllers.postVolumeAccess, this.id, target, data)
         .then(function (res) {
-          // could update v.access with res.data
-          v.clear('access', 'accessPreset');
+          subPartyUpdate(v.access, res.data);
+          volumeAccessPreset(v);
           return v;
         });
     };
@@ -580,8 +597,15 @@ app.factory('modelService', [
       var v = this;
       return router.http(router.controllers.postVolumeFunding, this.id, funder, data)
         .then(function (res) {
-          // res.data could replace/add v.funding[X]
-          v.clear('funding');
+          var d = res.data;
+          if (v.funding) {
+            var i = v.funding.findIndex(function (f) {
+              return f.funder.id == d.funder.id;
+            });
+            if (i < 0)
+              i = v.funding.length;
+            v.funding[i] = d;
+          }
           return v;
         });
     };
@@ -590,9 +614,38 @@ app.factory('modelService', [
       var v = this;
       return router.http(router.controllers.deleteVolumeFunder, this.id, funder)
         .then(function (res) {
-          // could just remove v.funding[X]
-          v.clear('funding');
+          if (v.funding) {
+            v.funding = v.funding.filter(function (f) {
+              return f.funder.id != funder;
+            });
+          }
           return v.update(res.data);
+        });
+    };
+
+    Volume.prototype.setVolumeMetrics = function (c, m, on) {
+      var v = this;
+      return router.http(m == null ?
+          on ? router.controllers.addVolumeCategory : router.controllers.deleteVolumeCategory :
+          on ? router.controllers.addVolumeMetric   : router.controllers.deleteVolumeMetric,
+          this.id, c, m)
+        .then(function (res) {
+          var d = res.data;
+          if ('metrics' in v) {
+            if (m == null)
+              if (on)
+                v.metrics[c] = d;
+              else
+                delete v.metrics[c];
+            else {
+              v.metrics[c].remove(m);
+              if (on) {
+                v.metrics[c].push(m);
+                v.metrics[c].sort();
+              }
+            }
+          }
+          return d;
         });
     };
 
@@ -929,17 +982,13 @@ app.factory('modelService', [
     Object.defineProperty(Record.prototype, 'displayName', {
       get: function () {
         var cat = constants.category[this.category];
-        var idents = cat && cat.ident || [constants.metricName.ID.id];
+        var idents = cat.ident || [constants.metricName.ID.id];
         var ident = [];
         for (var i = 0; i < idents.length; i ++)
           if (idents[i] in this.measures)
             ident.push(this.measures[idents[i]]);
 
-        ident = ident.length && ident.join(', ');
-        cat = cat && cat.name;
-        if (cat && ident)
-          return cat + ' ' + ident;
-        return cat || ident || '[' + this.id + ']';
+        return cat.name + ' ' + ident.join(', ');
       }
     });
 

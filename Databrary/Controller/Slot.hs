@@ -67,7 +67,7 @@ slotJSONQuery o = JSON.jsonQuery (slotJSON o) (slotJSONField o)
 
 slotDownloadName :: Slot -> [T.Text]
 slotDownloadName s =
-  containerDownloadName (slotContainer s)
+  containerDownloadName Nothing (slotContainer s)
 
 viewSlot :: AppRoute (API, (Maybe (Id Volume), Id Slot))
 viewSlot = action GET (pathAPI </> pathMaybe pathId </> pathSlotId) $ \(api, (vi, i)) -> withAuth $ do
