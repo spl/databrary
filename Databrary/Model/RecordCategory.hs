@@ -7,6 +7,7 @@ module Databrary.Model.RecordCategory
   , recordCategoryJSON
   ) where
 
+import Control.Applicative ((<$>))
 import qualified Data.IntMap.Strict as IntMap
 import Data.Maybe (catMaybes)
 
@@ -36,4 +37,5 @@ recordCategoryJSON RecordCategory{..} = JSON.record recordCategoryId $ catMaybes
   [ Just $ "name" JSON..= recordCategoryName
   , Just $ "ident" JSON..= [ metricId m | (m, True) <- recordCategoryTemplate ]
   , Just $ "template" JSON..= map (metricId . fst) recordCategoryTemplate
+  , ("description" JSON..=) <$> recordCategoryDescription
   ]

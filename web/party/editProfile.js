@@ -41,7 +41,6 @@ app.directive('partyEditProfileForm', [
         party.save(fd)
           .then(function () {
             form.validator.server({});
-            form.$setUnsubmitted();
             page.messages.add({
               type: 'green',
               body: page.constants.message('party.edit.profile.success'),

@@ -10,6 +10,7 @@ module Databrary.Model.Authorize
   , changeAuthorize
   , removeAuthorize
   , authorizeExpired
+  , authorizeActive
   , authorizeJSON
   , lookupAuthorizeActivity
   ) where
@@ -86,9 +87,15 @@ removeAuthorize auth = do
   ident <- getAuditIdentity
   dbExecute1 $(deleteAuthorize 'ident 'auth)
 
+authorizationActive :: Authorization -> Bool
+authorizationActive Authorization{ authorizeAccess = a } = a /= mempty
+
 authorizeExpired :: Authorize -> Timestamp -> Bool
 authorizeExpired Authorize{ authorizeExpires = Just e } = (e <)
 authorizeExpired _ = const False
+
+authorizeActive :: Authorize -> Timestamp -> Bool
+authorizeActive a t = authorizationActive (authorization a) && not (authorizeExpired a t)
 
 authorizeJSON :: Authorize -> JSON.Object
 authorizeJSON Authorize{..} = accessJSON (authorizeAccess authorization)

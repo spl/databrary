@@ -891,7 +891,7 @@ app.controller('volume/slot', [
             return
 
       metrics: ->
-        ident = constants.category[@record.category]?.ident || [constants.metricName.ID.id]
+        ident = constants.category[@record.category].ident || [constants.metricName.ID.id]
         (constants.metric[m] for m of @record.measures when !(+m in ident)).sort(byId)
 
       rePosition: () ->
@@ -968,7 +968,7 @@ app.controller('volume/slot', [
     $scope.setCategory = (c) ->
       if c?
         rs = {}
-        for ri, r of $scope.addRecord.records when `(r.category || 0) == c`
+        for ri, r of $scope.addRecord.records when `r.category == c`
           rs[ri] = r.displayName
         $scope.addRecord.options = rs
       else
@@ -988,7 +988,7 @@ app.controller('volume/slot', [
         $scope.addRecord.records = rs
         rc = {}
         for ri, r of rs
-          rc[r.category || 0] = null
+          rc[r.category] = null
         $scope.addRecord.categories = rc
         $scope.addRecord.select = null
         $scope.setCategory($scope.addRecord.category)

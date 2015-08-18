@@ -1,3 +1,4 @@
+<ng-form name="partyEditForm">
 <article class="view party-edit-view">
   <div class="wrap">
     <div class="row">
@@ -12,23 +13,24 @@
 
       <div class="col">
         <wizard name="party-edit">
-          <wizard-step name="profile">
+          <wizard-page name="profile">
             <party-edit-profile-form></party-edit-profile-form>
-          </wizard-step>
+          </wizard-page>
 
-          <wizard-step name="account" enabled="!party.institution && party.checkPermission(page.permission.SUPER)">
+          <wizard-page name="account" ng-if="::!party.institution && party.checkPermission(page.permission.SUPER)">
             <party-edit-account-form></party-edit-account-form>
-          </wizard-step>
+          </wizard-page>
 
-          <wizard-step name="apply" enabled="party.checkPermission(page.permission.ADMIN)">
+          <wizard-page name="apply" ng-if="::party.checkPermission(page.permission.ADMIN)">
             <party-edit-apply-form></party-edit-apply-form>
-          </wizard-step>
+          </wizard-page>
 
-          <wizard-step name="grant" enabled="party.checkPermission(page.permission.ADMIN)">
+          <wizard-page name="grant" ng-if="::party.checkPermission(page.permission.ADMIN)">
             <party-edit-grant-form></party-edit-grant-form>
-          </wizard-step>
+          </wizard-page>
         </wizard>
       </div>
     </div>
   </div>
 </article>
+</ng-form>

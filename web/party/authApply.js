@@ -1,9 +1,10 @@
 'use strict';
 
 app.directive('authApplyForm', [
-  'pageService', function (page) {
+  'modelService', 'messageService', 'displayService',
+  function (models, messages, display) {
     var link = function ($scope) {
-      var party = $scope.party || page.models.Login.user;
+      var party = $scope.party || models.Login.user;
       var auth = $scope.auth;
       var form = $scope.authApplyForm;
 
@@ -17,21 +18,20 @@ app.directive('authApplyForm', [
       var saveAuth = function () {
         form.$setSubmitted();
         party.authorizeApply(auth.party.id, form.data).then(function () {
-          form.$setUnsubmitted();
           form.validator.server({});
           form.$setPristine();
           delete auth.new;
 
-          form.successFn(auth);
+          $scope.authApplySuccessFn(auth, form);
         }, function (res) {
           form.$setUnsubmitted();
           form.validator.server(res);
-          page.display.scrollTo(form.$element);
+          display.scrollTo(form.$element);
         });
       };
 
       var saveQuery = function () {
-        page.messages.clear(form);
+        messages.clear(form);
         party.authorizeNotFound(angular.extend({
           name: auth.query
         }, form.data)).then(function () {
@@ -39,10 +39,10 @@ app.directive('authApplyForm', [
           form.$setPristine();
           delete auth.new;
 
-          form.successFn(auth);
+          $scope.authApplySuccessFn(auth, form);
         }, function (res) {
           form.validator.server(res);
-          page.display.scrollTo(form.$element);
+          display.scrollTo(form.$element);
         });
       };
 
@@ -56,7 +56,7 @@ app.directive('authApplyForm', [
       //
 
       form.cancel = function () {
-        form.cancelFn(auth);
+        $scope.authApplyCancelFn(auth, form);
       };
 
       //
@@ -73,7 +73,6 @@ app.directive('authApplyForm', [
     return {
       restrict: 'E',
       templateUrl: 'party/authApply.html',
-      scope: false,
       replace: true,
       link: link
     };

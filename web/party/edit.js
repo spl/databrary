@@ -5,12 +5,8 @@ app.controller('party/edit', [
     $scope.party = party;
     page.display.title = page.constants.message('party.edit');
 
-    $scope.registerStep = function (step) {
-      step.form = step.$scope['partyEdit' + step.name.charAt(0).toUpperCase() + step.name.slice(1) + 'Form'];
-    };
-
     function leavingSoSoon() {
-      return !$scope.activeStep || $scope.activeStep.form.resetAll(false, true);
+      return $scope.partyEditForm.resetAll(false, true);
     }
 
     $scope.switchStep = leavingSoSoon;
@@ -21,13 +17,6 @@ app.controller('party/edit', [
         return;
       if (!leavingSoSoon())
         return page.display.cancelRouteChange(event);
-    });
-
-    $scope.$watch(function () {
-      $scope.steps.forEach(function (step) {
-        step.complete = step.form.$pristine;
-        step.error = step.form.$invalid;
-      });
     });
   }
 ]);

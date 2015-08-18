@@ -647,30 +647,31 @@ COMMENT ON TABLE "keyword_use" IS 'Special "keyword" tags editable as volume dat
 
 CREATE TABLE "record_category" (
 	"id" smallserial NOT NULL Primary Key,
-	"name" varchar(64) NOT NULL Unique
+	"name" varchar(64) NOT NULL Unique,
+	"description" text
 );
 ALTER TABLE "record_category"
 	ALTER "name" SET STORAGE EXTERNAL;
 COMMENT ON TABLE "record_category" IS 'Types of records that are relevant for data organization.';
-INSERT INTO "record_category" ("id", "name") VALUES (-500, 'participant');
-INSERT INTO "record_category" ("id", "name") VALUES (-200, 'group');
-INSERT INTO "record_category" ("id", "name") VALUES (-800, 'pilot');
-INSERT INTO "record_category" ("id", "name") VALUES (-700, 'exclusion');
-INSERT INTO "record_category" ("id", "name") VALUES (-400, 'condition');
-INSERT INTO "record_category" ("id", "name") VALUES (-300, 'task');
-INSERT INTO "record_category" ("id", "name") VALUES (-100, 'context');
+INSERT INTO "record_category" ("id", "name", "description") VALUES (-500, 'participant', 'An individual subject depicted, represented, or otherwise contributing data');
+INSERT INTO "record_category" ("id", "name", "description") VALUES (-200, 'group', 'A grouping determined by an aspect of the data (participant ability, age, experience, measurements used/available)');
+INSERT INTO "record_category" ("id", "name", "description") VALUES (-800, 'pilot', 'Indicates that the methods used were not finalized or were non-standard');
+INSERT INTO "record_category" ("id", "name", "description") VALUES (-700, 'exclusion', 'Indicates that data were not usable for a study');
+INSERT INTO "record_category" ("id", "name", "description") VALUES (-400, 'condition', 'An experimenter-determined manipulation (within or between sessions)');
+INSERT INTO "record_category" ("id", "name", "description") VALUES (-300, 'task', 'A particular task, activity, or phase of the session or study');
+INSERT INTO "record_category" ("id", "name", "description") VALUES (-100, 'context', 'A particular setting or other variable aspect of where/when/how data were collected');
 
 CREATE TABLE "record" (
 	"id" serial NOT NULL Primary Key,
 	"volume" integer NOT NULL References "volume",
-	"category" smallint References "record_category" ON UPDATE CASCADE ON DELETE SET NULL
+	"category" smallint NOT NULL References "record_category" ON UPDATE CASCADE ON DELETE SET NULL
 );
 CREATE INDEX ON "record" ("volume");
 COMMENT ON TABLE "record" IS 'Sets of metadata measurements organized into or applying to a single cohesive unit.  These belong to the object(s) they''re attached to, which are expected to be within a single volume.';
 
 SELECT audit.CREATE_TABLE ('record');
 
-CREATE TYPE data_type AS ENUM ('text', 'numeric', 'date');
+CREATE TYPE data_type AS ENUM ('text', 'numeric', 'date', 'void');
 COMMENT ON TYPE data_type IS 'Types of measurement data corresponding to measure_* tables.';
 
 CREATE TABLE "metric" (
@@ -679,26 +680,28 @@ CREATE TABLE "metric" (
 	"release" release,
 	"type" data_type NOT NULL,
 	"options" text[],
-	"assumed" text
+	"assumed" text,
+	"description" text
 );
 ALTER TABLE "metric"
 	ALTER "name" SET STORAGE EXTERNAL;
 COMMENT ON TABLE "metric" IS 'Types of measurements for data stored in measure_$type tables.';
 COMMENT ON COLUMN "metric"."options" IS '(Suggested) options for text enumerations, not enforced.';
-INSERT INTO "metric" ("id", "name", "release", "type") VALUES (-900, 'ID', 'PUBLIC', 'text');
-INSERT INTO "metric" ("id", "name", "release", "type", "options") VALUES (-700, 'reason', 'PUBLIC', 'text', ARRAY['Did not meet inclusion criteria','Procedural/experimenter error','Withdrew/fussy/tired','Outlier']);
-INSERT INTO "metric" ("id", "name", "release", "type") VALUES (-650, 'summary', 'PUBLIC', 'text');
-INSERT INTO "metric" ("id", "name", "release", "type") VALUES (-600, 'description', 'PUBLIC', 'text');
-INSERT INTO "metric" ("id", "name", "type") VALUES (-590, 'birthdate', 'date');
-INSERT INTO "metric" ("id", "name", "release", "type", "options") VALUES (-580, 'gender', 'PUBLIC', 'text', ARRAY['Female','Male']);
-INSERT INTO "metric" ("id", "name", "release", "type", "options") VALUES (-550, 'race', 'PUBLIC', 'text', ARRAY['American Indian or Alaska Native','Asian','Native Hawaiian or Other Pacific Islander','Black or African American','White','Multiple']);
-INSERT INTO "metric" ("id", "name", "release", "type", "options") VALUES (-540, 'ethnicity', 'PUBLIC', 'text', ARRAY['Not Hispanic or Latino','Hispanic or Latino']);
-INSERT INTO "metric" ("id", "name", "type", "assumed") VALUES (-520, 'disability', 'text', 'typical');
-INSERT INTO "metric" ("id", "name", "release", "type", "assumed") VALUES (-510, 'language', 'PUBLIC', 'text', 'English');
-INSERT INTO "metric" ("id", "name", "release", "type", "options") VALUES (-180, 'setting', 'PUBLIC', 'text', ARRAY['Lab','Home','Classroom','Outdoor','Clinic']);
-INSERT INTO "metric" ("id", "name", "release", "type", "assumed") VALUES (-150, 'country', 'PUBLIC', 'text', 'US');
-INSERT INTO "metric" ("id", "name", "release", "type", "options") VALUES (-140, 'state', 'PUBLIC', 'text', ARRAY['AL','AK','AZ','AR','CA','CO','CT','DE','DC','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','MD','MA','MI','MN','MS','MO','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY']);
-INSERT INTO "metric" ("id", "name", "release", "type") VALUES (-90, 'info', 'PUBLIC', 'text');
+INSERT INTO "metric" ("id", "name", "release", "type") VALUES (-1000, 'indicator', 'PUBLIC', 'void');
+INSERT INTO "metric" ("id", "name", "release", "type", "description") VALUES (-900, 'ID', 'PUBLIC', 'text', 'A primary, unique, anonymized identifier, label, or name');
+INSERT INTO "metric" ("id", "name", "release", "type", "options", "description") VALUES (-700, 'reason', 'PUBLIC', 'text', ARRAY['Did not meet inclusion criteria','Procedural/experimenter error','Withdrew/fussy/tired','Outlier'], 'A reason for a label (often for an exclusion)');
+INSERT INTO "metric" ("id", "name", "release", "type", "description") VALUES (-650, 'summary', 'PUBLIC', 'text', 'A short, one-line summary of this label');
+INSERT INTO "metric" ("id", "name", "release", "type", "description") VALUES (-600, 'description', 'PUBLIC', 'text', 'A longer explanation or description of this label');
+INSERT INTO "metric" ("id", "name", "type", "description") VALUES (-590, 'birthdate', 'date', 'The date of birth of an individual, or start/inception date for other labels (used with session date to calculate age)');
+INSERT INTO "metric" ("id", "name", "release", "type", "options", "description") VALUES (-580, 'gender', 'PUBLIC', 'text', ARRAY['Female','Male'], '"Male", "Female", or any other relevant gender label');
+INSERT INTO "metric" ("id", "name", "release", "type", "options", "description") VALUES (-550, 'race', 'PUBLIC', 'text', ARRAY['American Indian or Alaska Native','Asian','Native Hawaiian or Other Pacific Islander','Black or African American','White','Multiple'], 'Usually as categorized by NIH');
+INSERT INTO "metric" ("id", "name", "release", "type", "options", "description") VALUES (-540, 'ethnicity', 'PUBLIC', 'text', ARRAY['Not Hispanic or Latino','Hispanic or Latino'], 'Usually as categorized by NIH (Hispanic/Non-Hispanic)');
+INSERT INTO "metric" ("id", "name", "type", "assumed", "description") VALUES (-520, 'disability', 'text', 'typical', 'Any developmental, physical, or mental disability');
+INSERT INTO "metric" ("id", "name", "release", "type", "assumed", "description") VALUES (-510, 'language', 'PUBLIC', 'text', 'English', 'Primary language relevant to this label, spoken by this participant, or used in this context');
+INSERT INTO "metric" ("id", "name", "release", "type", "options", "description") VALUES (-180, 'setting', 'PUBLIC', 'text', ARRAY['Lab','Home','Classroom','Outdoor','Clinic'], 'The physical context of this label');
+INSERT INTO "metric" ("id", "name", "release", "type", "assumed", "description") VALUES (-150, 'country', 'PUBLIC', 'text', 'US', 'Relevant country of origin, setting, or otherwise');
+INSERT INTO "metric" ("id", "name", "release", "type", "options", "description") VALUES (-140, 'state', 'PUBLIC', 'text', ARRAY['AL','AK','AZ','AR','CA','CO','CT','DE','DC','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','MD','MA','MI','MN','MS','MO','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY'], 'Relevant state/territory, usually within specified country');
+INSERT INTO "metric" ("id", "name", "release", "type", "description") VALUES (-90, 'info', 'PUBLIC', 'text', 'Other information or alternate identifier for this label');
 
 CREATE TABLE "record_template" (
 	"category" smallint NOT NULL References "record_category" ON UPDATE CASCADE ON DELETE CASCADE,
@@ -720,6 +723,14 @@ INSERT INTO "record_template" VALUES (-700, -700, true);
 INSERT INTO "record_template" VALUES (-100, -180, true);
 INSERT INTO "record_template" VALUES (-100, -140, true);
 INSERT INTO "record_template" VALUES (-100, -150, true);
+INSERT INTO "record_template" VALUES (-800, -1000);
+
+CREATE TABLE "volume_metric" (
+	"volume" integer NOT NULL References "volume",
+	"category" smallint NOT NULL References "record_category" ON UPDATE CASCADE ON DELETE CASCADE,
+	"metric" integer NOT NULL References "metric" ON UPDATE CASCADE ON DELETE CASCADE,
+	Primary Key ("volume", "category", "metric")
+);
 
 CREATE TABLE "measure_abstract" ( -- ABSTRACT
 	"record" integer NOT NULL References "record" ON DELETE CASCADE,
@@ -825,7 +836,7 @@ COMMENT ON VIEW "measures" IS 'All measures for each record aggregated into a si
 CREATE TABLE "record_measures" (
 	"id" integer NOT NULL Primary Key References "record" ON UPDATE CASCADE ON DELETE CASCADE,
 	"volume" integer NOT NULL,
-	"category" smallint,
+	"category" smallint NOT NULL,
 	"measures" text[] NOT NULL Default '{}'
 );
 CREATE INDEX ON "record_measures" ("volume");
