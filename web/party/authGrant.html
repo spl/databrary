@@ -12,7 +12,7 @@
         <span class="icon info" ng-if="val >= party.authorization" tooltip="'auth.site.disabled' | message:('auth.site.'+page.constants.permission[val+1]+'.title' | message)"></span>
       </label>
     </div>
-    <s class="" ng-show="authGrantForm.data.site" ng-bind="'auth.site.warning' | possessive:auth.party"></s>
+    <s class="permission-auth-warning" ng-show="authGrantForm.data.site" ng-bind="'auth.site.warning' | possessive:auth.party"></s>
   </fieldset>
 
   <fieldset class="skinny clean radio-set">
