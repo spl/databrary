@@ -640,8 +640,8 @@ app.factory('modelService', [
             else {
               v.metrics[c].remove(m);
               if (on) {
-                v.metrics[c].push(m);
-                v.metrics[c].sort();
+                Array.prototype.push.apply(v.metrics[c], d);
+                v.metrics[c].sort(function (a, b) { return a - b; });
               }
             }
           }
