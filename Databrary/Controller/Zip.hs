@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, ViewPatterns, RecordWildCards #-}
+{-# LANGUAGE OverloadedStrings, ViewPatterns #-}
 module Databrary.Controller.Zip
   ( zipContainer
   , zipVolume
@@ -10,18 +10,16 @@ import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy as BSL
 import qualified Data.Foldable as Fold
 import Data.Function (on)
-import Data.List (groupBy, partition, intersperse)
+import Data.List (groupBy, partition)
 import Data.Maybe (fromJust, maybeToList)
-import Data.Monoid ((<>), mempty, mconcat)
+import Data.Monoid ((<>))
 import qualified Data.Text.Encoding as TE
-import Data.Time.Format (formatTime)
 import Network.HTTP.Types (hContentType, hCacheControl, hContentLength)
-import System.Locale (defaultTimeLocale)
 import System.Posix.FilePath ((<.>))
+import qualified Text.Blaze.Html.Renderer.Utf8 as Html
 
 import Databrary.Ops
 import Databrary.Has (view, peek)
-import Databrary.Service.Messages
 import Databrary.Store.Asset
 import Databrary.Store.Filename
 import Databrary.Store.Zip
@@ -35,7 +33,6 @@ import Databrary.Model.Asset
 import Databrary.Model.AssetSlot
 import Databrary.Model.Format
 import Databrary.Model.Party
-import Databrary.Model.Time
 import Databrary.Model.Citation
 import Databrary.Model.Funding
 import Databrary.HTTP
@@ -47,6 +44,7 @@ import Databrary.Controller.Container
 import Databrary.Controller.Volume
 import Databrary.Controller.Party
 import Databrary.Controller.CSV
+import Databrary.View.Zip
 
 assetZipEntry :: AssetSlot -> AuthActionM ZipEntry
 assetZipEntry AssetSlot{ slotAsset = a } = do
@@ -71,33 +69,6 @@ containerZipEntry top c l = do
     , zipEntryContent = ZipDirectory a
     }
 
-volumeDescription :: Volume -> [Citation] -> [Funding] -> AuthRequest -> BSB.Builder
-volumeDescription Volume{..} cite fund req =
-  s "Databrary Volume " <> BSB.int32Dec (unId volumeId)
-    <> c ' ' <> maybe (actionURL (Just $ view req) viewVolume (HTML, volumeId) []) ((s "http://dx.doi.org/" <>) . BSB.byteString) volumeDOI
-    <> s "\n\n" <> t volumeName
-    <> c '\n' <> mconcat (intersperse (s "; ") $ map (t . snd) volumeOwners)
-    <> Fold.foldMap ((s "\n\n" <>) . t) volumeBody
-    <> c '\n'
-    <> Fold.foldMap (\Funding{..} ->
-        s "\nFunded by: " <> t (funderName fundingFunder)
-        <> (if null fundingAwards then mempty else s " (" <> mconcat (intersperse (s "; ") (map t fundingAwards)) <> c ')'))
-      fund
-    <> Fold.foldMap (\Citation{..} ->
-        s "\nRelated work: " <> t citationHead
-        <> Fold.foldMap (\y -> s " (" <> BSB.int16Dec y <> c ')') citationYear
-        <> Fold.foldMap ((c ' ' <>) . BSB.stringUtf8 . show) citationURL)
-      cite
-    <> s "\n\nCreated " <> s (formatTime defaultTimeLocale "%d %b %Y" volumeCreation)
-    <> s "\nDownloaded " <> s (formatTime defaultTimeLocale "%a, %d %b %Y %H:%M:%S %Z" (view req :: Timestamp))
-    <> s " by " <> t (partyName $ view req)
-    <> s "\n\n" <> t (getMessage "download.warning" $ view req)
-    <> s " For more information and terms of use see http://databrary.org/access/policies/agreement.html\n"
-  where
-  s = BSB.string7
-  c = BSB.char7
-  t = TE.encodeUtf8Builder
-
 volumeZipEntry :: Container -> Maybe BSB.Builder -> [AssetSlot] -> AuthActionM ZipEntry
 volumeZipEntry top@Container{ containerVolume = v } csv al = do
   req <- peek
@@ -111,8 +82,8 @@ volumeZipEntry top@Container{ containerVolume = v } csv al = do
     , zipEntryComment = BSL.toStrict $ BSB.toLazyByteString $ actionURL (Just $ view req) viewVolume (HTML, volumeId v) []
     , zipEntryContent = ZipDirectory
       $ blankZipEntry
-        { zipEntryName = "description.txt"
-        , zipEntryContent = ZipEntryPure $ BSB.toLazyByteString $ volumeDescription v (maybeToList cite ++ links) fund req
+        { zipEntryName = "description.html"
+        , zipEntryContent = ZipEntryPure $ Html.renderHtml $ htmlVolumeDescription v (maybeToList cite ++ links) fund req
         }
       : maybe id (\c -> (blankZipEntry
         { zipEntryName = "spreadsheet.csv"
