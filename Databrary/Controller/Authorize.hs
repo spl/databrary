@@ -7,7 +7,7 @@ module Databrary.Controller.Authorize
   ) where
 
 import Control.Applicative ((<|>))
-import Control.Monad (when, liftM2)
+import Control.Monad (when, liftM2, mfilter)
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Lazy as BSL
 import qualified Data.ByteString.Lazy.Char8 as BSLC
@@ -25,6 +25,7 @@ import qualified Databrary.JSON as JSON
 import Databrary.Service.DB
 import Databrary.Service.Mail
 import Databrary.Static.Service
+import Databrary.Model.Id.Types
 import Databrary.Model.Party
 import Databrary.Model.Permission
 import Databrary.Model.Identity
@@ -64,7 +65,7 @@ authorizeAddr = return . Left . staticAuthorizeAddr
 postAuthorize :: AppRoute (API, PartyTarget, AuthorizeTarget)
 postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarget) $ \arg@(api, i, AuthorizeTarget app oi) -> withAuth $ do
   p <- getParty (Just PermissionADMIN) i
-  o <- maybeAction =<< lookupParty oi
+  o <- maybeAction . mfilter ((0 <) . unId . partyId) =<< lookupParty oi
   let (child, parent) = if app then (p, o) else (o, p)
   c <- lookupAuthorize child parent
   let c' = Authorize (Authorization mempty child parent) Nothing `fromMaybe` c
