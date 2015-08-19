@@ -2,7 +2,7 @@
   <ng-include src="'party/overview.html'"></ng-include>
   <panel id="panel_browser" panel-title="profile.title" fold ng-if="::party.volumes || page.models.Login.isAuthorized()" class="profile">  
 
-    <section id="profile-volumes" class="profile-volumes col-desktop-10 col-tablet-6 col-mobile-6">
+    <section id="profile-volumes" class="profile-volumes col-desktop-9 col-tablet-5 col-mobile-6">
       <div class="hide-desktop hide-tablet profile-mobile-header view-title smaller" message="volumes.title"></div>
       <div ng-repeat="vl in ::volumes" ng-if="::vl.length">
         <div class="profile-section-header">
@@ -23,14 +23,17 @@
               <span ng-click="v.select()" class="icon" ng-class="v.class()"></span>
             </div>
 
-            <div class="profile-link"><a ng-href="{{::v.volume.route()}}" ng-bind="::v.volume.displayName"></a></div>
+            <div class="profile-link">
+              <a ng-href="{{::v.volume.route()}}" ng-bind="::v.volume.displayName"></a>
+              <a ng-href="{{::v.volume.route()}}" class="button mini profile-hover-link">Rolly polly dylan head</a> 
+            </div>
 
           </li>
         </ul>
       </div>
     </section>
 
-    <section id="profile-parties" class="profile-parties col-desktop-5 col-tablet-3 col-mobile-6">
+    <section id="profile-parties" class="profile-parties col-desktop-6 col-tablet-4 col-mobile-6">
       <div class="hide-desktop hide-tablet profile-mobile-header view-title smaller" message="network.title"></div>
 
       <div class="profile-section" ng-if="::parties.parents.length">
@@ -47,7 +50,8 @@
             <div class="profile-link">
               <a ng-href="{{::p.party.route()}}" ng-bind="::p.party.name"></a><wbr>
               <span ng-if="::!(p.parent.member || p.parent.site)" class="permission-auth-pending" message="auth.pending"></span>
-              <span ng-if="::(p.parent.member || p.parent.site)" class="permission-auth-expiration" ng-bind="::p.parent.expires | date:'yyyy/MM/dd'" ng-class="::{expired:isExpired(p.parent)}"></span>
+              <span ng-if="::(p.parent.member || p.parent.site)" class="permission-auth-expiration" ng-bind="::p.parent.expires | date:'yyyy/MM/dd'" ng-class="::{expired:isExpired(p.parent)}"></span><wbr>
+              <a ng-href="{{::p.party.route()}}" class="button mini profile-hover-link">dylandylan</a>
               <br>
             </div>
             <div ng-if="::p.parent.site" class="profile-additional">
@@ -78,9 +82,10 @@
               </div>
 
               <div class="profile-link">
-                <span><a ng-href="{{::p.party.route()}}" ng-bind="::p.party.name"></a></span><wbr>
+                <a ng-href="{{::p.party.route()}}" ng-bind="::p.party.name"></a><wbr>
                 <span ng-if="::!(p.child.member || p.child.site)" class="permission-auth-pending" message="auth.pending"></span>
-                <span ng-if="::(p.child.member || p.child.site)" class="permission-auth-expiration" ng-bind="::p.child.expires | date:'yyyy/MM/dd'" ng-class="::{expired:isExpired(p.child)}"></span>
+                <span ng-if="::(p.child.member || p.child.site)" class="permission-auth-expiration" ng-bind="::p.child.expires | date:'yyyy/MM/dd'" ng-class="::{expired:isExpired(p.child)}"></span><wbr>
+                <a ng-href="{{::v.volume.route()}}" class="button mini profile-hover-link">dylandylan</a>
               </div>
             </li>
           </ul>
@@ -97,7 +102,10 @@
               <span ng-click="p.select()" class="icon" ng-class="p.class()"></span>
             </div>
 
-            <div class="profile-link"><a ng-href="{{::p.party.route()}}" ng-bind="::p.party.name"></a></div>
+            <div class="profile-link">
+              <a ng-href="{{::p.party.route()}}" ng-bind="::p.party.name"></a><wbr>
+              <a ng-href="{{::v.volume.route()}}" class="button mini profile-hover-link">dylandylan</a>
+            </div>
           </li>
         </ul>
       </div>
