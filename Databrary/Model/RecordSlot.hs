@@ -54,7 +54,7 @@ lookupRecordSlotRecords r (Slot c s) =
 lookupVolumeContainersRecords :: (MonadDB m) => Volume -> m [(Container, [RecordSlot])]
 lookupVolumeContainersRecords v =
   map (second catMaybes) . groupTuplesBy ((==) `on` containerId) <$>
-    dbQuery (($ v) <$> $(selectQuery selectVolumeSlotMaybeRecord "WHERE container.volume = ${volumeId v} AND NOT container.top ORDER BY container.id, record.category NULLS FIRST, slot_record.segment, slot_record.record"))
+    dbQuery (($ v) <$> $(selectQuery selectVolumeSlotMaybeRecord "WHERE container.volume = ${volumeId v} ORDER BY container.id, record.category NULLS FIRST, slot_record.segment, slot_record.record"))
 
 lookupVolumeContainersRecordIds :: (MonadDB m) => Volume -> m [(Container, [(Segment, Id Record)])]
 lookupVolumeContainersRecordIds v =
