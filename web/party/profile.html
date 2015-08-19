@@ -25,7 +25,7 @@
 
             <div class="profile-link">
               <a ng-href="{{::v.volume.route()}}" ng-bind="::v.volume.displayName"></a>
-              <a ng-href="{{::v.volume.route()}}" class="button mini profile-hover-link">Rolly polly dylan head</a> 
+              <a ng-if="::v.volume.checkPermission(page.constants.permission.EDIT)" href="" ng-click="v.edit()" class="button mini profile-hover-link">edit</a> 
             </div>
 
           </li>
@@ -51,7 +51,7 @@
               <a ng-href="{{::p.party.route()}}" ng-bind="::p.party.name"></a><wbr>
               <span ng-if="::!(p.parent.member || p.parent.site)" class="permission-auth-pending" message="auth.pending"></span>
               <span ng-if="::(p.parent.member || p.parent.site)" class="permission-auth-expiration" ng-bind="::p.parent.expires | date:'yyyy/MM/dd'" ng-class="::{expired:isExpired(p.parent)}"></span><wbr>
-              <a ng-href="{{::p.party.route()}}" class="button mini profile-hover-link">dylandylan</a>
+              <a href="" ng-click="p.edit('apply')" class="button mini profile-hover-link">edit</a>
               <br>
             </div>
             <div ng-if="::p.parent.site" class="profile-additional">
@@ -85,7 +85,7 @@
                 <a ng-href="{{::p.party.route()}}" ng-bind="::p.party.name"></a><wbr>
                 <span ng-if="::!(p.child.member || p.child.site)" class="permission-auth-pending" message="auth.pending"></span>
                 <span ng-if="::(p.child.member || p.child.site)" class="permission-auth-expiration" ng-bind="::p.child.expires | date:'yyyy/MM/dd'" ng-class="::{expired:isExpired(p.child)}"></span><wbr>
-                <a ng-href="{{::v.volume.route()}}" class="button mini profile-hover-link">dylandylan</a>
+                <a href="" ng-click="p.edit('grant')" class="button mini profile-hover-link">edit</a>
               </div>
             </li>
           </ul>
@@ -104,7 +104,7 @@
 
             <div class="profile-link">
               <a ng-href="{{::p.party.route()}}" ng-bind="::p.party.name"></a><wbr>
-              <a ng-href="{{::v.volume.route()}}" class="button mini profile-hover-link">dylandylan</a>
+              <a ng-if="editable" href="" ng-click="p.edit()" class="button mini profile-hover-link">edit</a>
             </div>
           </li>
         </ul>

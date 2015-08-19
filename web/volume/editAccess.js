@@ -67,9 +67,17 @@ app.directive('volumeEditAccessForm', [
           new: true,
           party: found,
         });
-        //warning: next line is template dependent! if classnames change this will no longer work
         display.scrollTo('fieldset .access-grant:last');
       };
+
+      form.preSelect = function (p) {
+        if (form.data.some(function (a) { return a.party.id === p.id; }))
+          display.scrollTo("#access-"+p.id);
+        else
+          $scope.selectFn(p);
+      };
+
+      $scope.$emit('volumeEditAccessForm-init', form);
     };
 
     return {
