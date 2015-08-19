@@ -503,7 +503,7 @@ app.directive 'spreadsheet', [
                 cell.className = 'icon ' + if Editing && Key.id != info.c then 'trash' else 'bullet'
                 v = ''
           if info.metric.long
-            cell.classList.add('white-space-pre')
+            cell.classList.add('long')
           if v?
             cell.classList.remove('blank')
           else
@@ -1063,6 +1063,7 @@ app.directive 'spreadsheet', [
               styles.set('.' + c + '{background-color:' +
                 (if c.includes('_', 4) then 'rgba(226,217,0,0.6)' else 'rgba(242,238,100,0.4)') +
                 ';\n text-}')
+              info.cell.classList.add('selected')
 
           edit(info) if Editing
           return
