@@ -442,6 +442,7 @@ app.directive 'spreadsheet', [
           Rows[-1] = foot if foot
           populateCols(bySlot)
           generate()
+          tooltips.clear()
           return
 
         ################################# Generate HTML
@@ -1192,12 +1193,13 @@ app.directive 'spreadsheet', [
         ################################# main
 
         $scope.setKey = (key) ->
-          Key = $scope.key = key? && getCategory(key) || pseudoCategory.slot
           unedit()
+          Key = $scope.key = key? && getCategory(key) || pseudoCategory.slot
+          $location.replace().search('key', Key.id) unless Top
           populate()
           $scope.tabOptionsClick = undefined
 
-        $scope.setKey($attrs.key)
+        $scope.setKey($attrs.key || !Top && $location.search().key)
         return
 
     ]

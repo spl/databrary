@@ -3,7 +3,7 @@
     <div class="volumeDesign-section col-desktop-7 col-tablet-5 col-mobile-6">
       <div class="volumeDesign-header">
         <strong>Categories</strong>
-        <small>Choose the categories to label and organize your data</small>
+        <small>Choose the categories or groupings by which you wish to label and organize your data</small>
       </div>
       <ul class="volumeDesign-categories">
         <li ng-repeat="c in ::page.constants.categories track by c.id" ng-class="{selected: c === selected, beforeSelected: selected === page.constants.categories[$index+1]}" ng-click="select(c.id)">
@@ -23,14 +23,15 @@
     <div class="volumeDesign-section col-desktop-7 col-tablet-4 col-mobile-6">
       <div class="volumeDesign-float">
         <div class="volumeDesign-header" ng-class="{selected: !!selected}">
-          <strong ng-bind="!!selected? selected.name : 'Fields'" ng-class="{b: volumeDesign.category[selected.id]}"></strong>
-          <small class="warning" ng-if="!!selected && !volumeDesign.category[selected.id]">Check this category's checkbox on the left column to add or drop fields</small>
-          <small class="warning" ng-if="!selected">Select a category to edit its fields</small>
+          <strong ng-bind="selected ? selected.name : 'Fields'" ng-class="{b: volumeDesign.category[selected.id]}"></strong>
+          <small class="warning" ng-if="selected && !volumeDesign.category[selected.id]">Enable this category on the left to change fields</small>
+          <small class="warning" ng-if="!selected">Select a category to change its fields</small> 
+          <a ng-if="volumeDesign.category[selected.id]" class="button mini" ng-click="activateStep(step.data)">manage list</a>
         </div>
         <ul class="volumeDesign-fields" ng-class="{'disabled':!!selected && !volumeDesign.category[selected.id] || !selected}">
           <li ng-repeat="m in ::page.constants.metrics track by m.id" ng-if="::m.name != 'indicator'">
             <input type="checkbox" ng-disabled="!volumeDesign.category[selected.id] || selected.ident.includes(m.id)" ng-model="volumeDesign.metric[m.id]" ng-change="change(selected.id, m.id)">
-            <span class="icon release" ng-class="::page.constants.release[m.release]"></span>
+            <span class="icon release" ng-class="::page.constants.release[m.release]" tooltip="'release.'+page.constants.release[m.release]+'.metric' | message"></span>
             <span ng-bind="::m.name" class="b"></span>: 
             <span class="volumeDesign-description" ng-bind="::m.description"></span> 
             <span class="volumeDesign-description" ng-if="::m.assumed">(assumed "{{::m.assumed}}" by default)</span>

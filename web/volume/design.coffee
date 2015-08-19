@@ -1,8 +1,8 @@
 'use strict'
 
 app.directive 'volumeDesign', [
-  'constantService', 'routerService', 'messageService',
-  (constants, router, messages) ->
+  '$location', 'constantService', 'routerService', 'messageService',
+  ($location, constants, router, messages) ->
     restrict: 'E'
     templateUrl: 'volume/design.html'
     link: ($scope) ->
@@ -12,6 +12,7 @@ app.directive 'volumeDesign', [
       $scope.select = (c) ->
         form.metric = {}
         return unless ($scope.selected = constants.category[c])?
+        $location.replace().search('key', volume.metrics[c] && c)
         for m in volume.metrics[c] ? $scope.selected.template
           form.metric[m] = true
         return
@@ -20,7 +21,7 @@ app.directive 'volumeDesign', [
         form.category = {}
         for c of volume.metrics
           form.category[c] = true
-        $scope.select($scope.selected?.id)
+        $scope.select($scope.selected?.id || $location.search().key)
         return
       init()
 
