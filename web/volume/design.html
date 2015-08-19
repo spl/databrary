@@ -16,7 +16,7 @@
               <li class="strong" ng-repeat="m in volume.metrics[c.id]" ng-bind="::page.constants.metric[m].name"></li>
             </ul>
           </div>
-          <small ng-if="c === selected" class="hide-desktop hide-tablet warning">Scroll down the page to edit {{c.name}} fields</small>
+          <small ng-if="c === selected" class="hide-desktop hide-tablet reminder">Scroll down the page to edit {{c.name}} fields</small>
         </li>
       </ul>
     </div>
@@ -24,8 +24,8 @@
       <div class="volumeDesign-float">
         <div class="volumeDesign-header" ng-class="{selected: !!selected}">
           <strong ng-bind="selected ? selected.name : 'Fields'" ng-class="{b: volumeDesign.category[selected.id]}"></strong>
-          <small class="warning" ng-if="selected && !volumeDesign.category[selected.id]">Enable this category on the left to change fields</small>
-          <small class="warning" ng-if="!selected">Select a category to change its fields</small> 
+          <small class="reminder" ng-if="selected && !volumeDesign.category[selected.id]">Enable this category on the left to change fields</small>
+          <small class="reminder" ng-if="!selected">Select a category to change its fields</small> 
           <a ng-if="volumeDesign.category[selected.id]" class="button mini" ng-click="activateStep(step.data)">manage list</a>
         </div>
         <ul class="volumeDesign-fields" ng-class="{'disabled':!!selected && !volumeDesign.category[selected.id] || !selected}">

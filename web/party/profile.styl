@@ -10,8 +10,23 @@
     content none
   li
     overflow hidden
+  li:hover
+    .profile-hover-link
+      display inline-block
+      visibility visible
   a
     overflow hidden
+  .button:not(.icon)
+    font-size 12px
+    line-height 12px
+    background-color white
+    &:not(.profile-hover-link)
+      padding-top b8
+      padding-bottom b8
+    &:hover
+      background-color neutral51
+    &:focus
+      background-color neutral52
 
 .profile-volumes
   ul
@@ -45,12 +60,6 @@
 .profile-section-header
   font-line f1
   border-bottom 1px dotted neutral
-  .button:not(.icon)
-    font-size 12px
-    line-height 12px
-    padding-top b8
-    padding-bottom b8
-    background-color white
   .icon, .button, .button:hover
     margin 0 0 0 8px
   .button.icon, .button.icon:hover
@@ -87,6 +96,13 @@
   overflow hidden
   vertical-align text-top
   line-height 22px
+
+.profile-hover-link
+  display none
+  visibility hidden
+  margin-left b3
+  padding-top 0
+  padding-bottom 0
   
 .profile-mobile-header
   background-color green51
