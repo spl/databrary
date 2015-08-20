@@ -86,7 +86,7 @@ instance Monad m => Monad (DeformT f m) where
     (ex, mx) <- x d
     case mx of
       Nothing -> return (ex, Nothing)
-      Just vx -> first (ex <>) `liftM` runDeformT (f vx) d
+      Just vx -> first (ex <>) `liftM` runDeformT (f $! vx) d
   fail = deformError' . T.pack
 
 instance Monad m => MonadPlus (DeformT f m) where

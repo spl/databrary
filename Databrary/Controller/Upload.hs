@@ -103,7 +103,7 @@ uploadChunk = action POST (pathJSON </< "upload") $ \() -> withAuth $ do
                   write b' = do
                     w <- BSU.unsafeUseAsCStringLen b' $ \(buf, siz) -> fdWriteBuf h (castPtr buf) (fromIntegral siz)
                     if w < fromIntegral (BS.length b')
-                      then write $ BS.drop (fromIntegral w) b'
+                      then write $! BS.drop (fromIntegral w) b'
                       else block n'
               if n' > len
                 then return n'
@@ -129,7 +129,7 @@ testChunk = action GET (pathJSON </< "upload") $ \() -> withAuth $ do
               then return False -- really should be error
               else if any (0 /=) a
                 then return True
-                else block $ n - r
+                else block $! n - r
       block (CSize len)
   emptyResponse (if r then ok200 else noContent204) []
   where
