@@ -4,7 +4,7 @@ module Databrary.Ingest.JSON
   ) where
 
 import Control.Arrow (left)
-import Control.Monad (join, when, unless, void)
+import Control.Monad (join, when, unless, void, mfilter)
 import Control.Monad.Except (ExceptT(..), runExceptT, mapExceptT, catchError)
 import Control.Monad.IO.Class (MonadIO(liftIO))
 import Control.Monad.Trans.Class (lift)
@@ -179,7 +179,9 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
         inObj a $ do
           as' <- lift $ lookupAssetAssetSlot a
           seg <- JE.keyOrDefault "position" (maybe fullSegment slotSegment $ assetSlot as') $
-            JE.withTextM (\t -> if t == "auto" then Right . Segment . Range.point <$> findAssetContainerEnd c else return $ Left "invalid asset position")
+            JE.withTextM (\t -> if t == "auto"
+              then maybe (Right . Segment . Range.point <$> findAssetContainerEnd c) (return . Right . slotSegment) $ mfilter (on (==) containerId c . slotContainer) (assetSlot as')
+              else return $ Left "invalid asset position")
               `catchError` \_ -> asSegment
           let seg'
                 | Just p <- Range.getPoint (segmentRange seg)
