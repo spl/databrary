@@ -2,6 +2,7 @@
 module Databrary.Controller.Zip
   ( zipContainer
   , zipVolume
+  , viewVolumeDescription
   ) where
 
 import qualified Data.ByteString as BS
@@ -16,10 +17,11 @@ import Data.Monoid ((<>))
 import qualified Data.Text.Encoding as TE
 import Network.HTTP.Types (hContentType, hCacheControl, hContentLength)
 import System.Posix.FilePath ((<.>))
+import qualified Text.Blaze.Html5 as Html
 import qualified Text.Blaze.Html.Renderer.Utf8 as Html
 
 import Databrary.Ops
-import Databrary.Has (view, peek)
+import Databrary.Has (view, peek, peeks)
 import Databrary.Store.Asset
 import Databrary.Store.Filename
 import Databrary.Store.Zip
@@ -44,6 +46,7 @@ import Databrary.Controller.Container
 import Databrary.Controller.Volume
 import Databrary.Controller.Party
 import Databrary.Controller.CSV
+import Databrary.Controller.Angular
 import Databrary.View.Zip
 
 assetZipEntry :: AssetSlot -> AuthActionM ZipEntry
@@ -69,21 +72,31 @@ containerZipEntry top c l = do
     , zipEntryContent = ZipDirectory a
     }
 
-volumeZipEntry :: Container -> Maybe BSB.Builder -> [AssetSlot] -> AuthActionM ZipEntry
-volumeZipEntry top@Container{ containerVolume = v } csv al = do
-  req <- peek
+volumeDescription :: Container -> [AssetSlot] -> AuthActionM (Html.Html, [[AssetSlot]], [[AssetSlot]])
+volumeDescription top@Container{ containerVolume = v } al = do
   cite <- lookupVolumeCitation v
   links <- lookupVolumeLinks v
   fund <- lookupVolumeFunding v
-  zt <- mapM ent ct
-  zb <- mapM ent cb
+  desc <- peeks $ htmlVolumeDescription top (maybeToList cite ++ links) fund at ab
+  return (desc, at, ab)
+  where
+  (at, ab) = partition (Fold.any (containerTop . slotContainer) . assetSlot . head) $ groupBy (me `on` fmap (containerId . slotContainer) . assetSlot) al
+  me (Just x) (Just y) = x == y
+  me _ _ = False
+
+volumeZipEntry :: Container -> Maybe BSB.Builder -> [AssetSlot] -> AuthActionM ZipEntry
+volumeZipEntry top@Container{ containerVolume = v } csv al = do
+  req <- peek
+  (desc, at, ab) <- volumeDescription top al
+  zt <- mapM ent at
+  zb <- mapM ent ab
   return blankZipEntry
     { zipEntryName = makeFilename (volumeDownloadName v)
-    , zipEntryComment = BSL.toStrict $ BSB.toLazyByteString $ actionURL (Just $ view req) viewVolume (HTML, volumeId v) []
+    , zipEntryComment = BSL.toStrict $ BSB.toLazyByteString $ actionURL (Just req) viewVolume (HTML, volumeId v) []
     , zipEntryContent = ZipDirectory
       $ blankZipEntry
         { zipEntryName = "description.html"
-        , zipEntryContent = ZipEntryPure $ Html.renderHtml $ htmlVolumeDescription v (maybeToList cite ++ links) fund ct cb req
+        , zipEntryContent = ZipEntryPure $ Html.renderHtml $ desc
         }
       : maybe id (\c -> (blankZipEntry
         { zipEntryName = "spreadsheet.csv"
@@ -95,9 +108,6 @@ volumeZipEntry top@Container{ containerVolume = v } csv al = do
         }]))
     }
   where
-  (ct, cb) = partition (Fold.any (containerTop . slotContainer) . assetSlot . head) $ groupBy (me `on` fmap (containerId . slotContainer) . assetSlot) al
-  me (Just x) (Just y) = x == y
-  me _ _ = False
   ent [a@AssetSlot{ assetSlot = Nothing }] = assetZipEntry a
   ent l@(AssetSlot{ assetSlot = Just s } : _) = containerZipEntry (Just $ containerId top) (slotContainer s) l
   ent _ = fail "volumeZipEntry"
@@ -138,3 +148,12 @@ zipVolume = action GET (pathId </< "zip") $ \vi -> withAuth $ do
   z <- volumeZipEntry top csv a
   auditVolumeDownload (not $ zipEmpty z) v
   zipResponse ("databrary-" <> BSC.pack (show (volumeId v))) [z]
+
+viewVolumeDescription :: AppRoute (Id Volume)
+viewVolumeDescription = action GET (pathId </< "description") $ \vi -> withAuth $ do
+  angular
+  v <- getVolume PermissionPUBLIC vi
+  top <- lookupVolumeTopContainer v
+  al <- filter checkAsset <$> lookupVolumeAssetSlots v False
+  (desc, _, _) <- volumeDescription top al
+  okResponse [] desc

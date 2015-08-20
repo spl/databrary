@@ -21,8 +21,9 @@ import Databrary.Service.Messages
 import Databrary.Model.Time
 import Databrary.Model.Enum
 import Databrary.Model.Release.Types
-import Databrary.Model.Volume.Types
 import Databrary.Model.Party
+import Databrary.Model.Volume.Types
+import Databrary.Model.Container.Types
 import Databrary.Model.Citation.Types
 import Databrary.Model.Funding.Types
 import Databrary.Model.AssetSlot.Types
@@ -40,8 +41,8 @@ htmlTemplate title body = H.docTypeHtml $ do
     H.title $ H.text title
   H.body $ body
 
-htmlVolumeDescription :: Volume -> [Citation] -> [Funding] -> [[AssetSlot]] -> [[AssetSlot]] -> AuthRequest -> H.Html
-htmlVolumeDescription Volume{..} cite fund _ _ req = htmlTemplate ("Databrary Volume " <> T.pack (show volumeId)) $ do
+htmlVolumeDescription :: Container -> [Citation] -> [Funding] -> [[AssetSlot]] -> [[AssetSlot]] -> AuthRequest -> H.Html
+htmlVolumeDescription Container{ containerVolume = Volume{..} } cite fund _ _ req = htmlTemplate ("Databrary Volume " <> T.pack (show volumeId)) $ do
   H.h1 $
     H.a H.! (maybe (link viewVolume (HTML, volumeId)) (HA.href . byteStringValue . ("http://dx.doi.org/" <>)) volumeDOI)
       $ H.text volumeName

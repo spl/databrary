@@ -79,6 +79,7 @@ routeMap = fromRouteList
   , route createVolume
   , route queryVolumes
   , route zipVolume
+  , route viewVolumeDescription
   , route thumbVolume
   , route csvVolume
 

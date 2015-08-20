@@ -72,6 +72,7 @@ jsRoutes = mconcat
 
   , jsRoute "zipSlot" zipContainer (Just volume, container)
   , jsRoute "zipVolume" zipVolume (volume)
+  , jsRoute "viewVolumeDescription" viewVolumeDescription (volume)
 
   , jsRoute "get" viewRoot (JSON)
   , jsRoute "getUser" viewUser ()
