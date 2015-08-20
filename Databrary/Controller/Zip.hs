@@ -83,7 +83,7 @@ volumeZipEntry top@Container{ containerVolume = v } csv al = do
     , zipEntryContent = ZipDirectory
       $ blankZipEntry
         { zipEntryName = "description.html"
-        , zipEntryContent = ZipEntryPure $ Html.renderHtml $ htmlVolumeDescription v (maybeToList cite ++ links) fund req
+        , zipEntryContent = ZipEntryPure $ Html.renderHtml $ htmlVolumeDescription v (maybeToList cite ++ links) fund ct cb req
         }
       : maybe id (\c -> (blankZipEntry
         { zipEntryName = "spreadsheet.csv"
