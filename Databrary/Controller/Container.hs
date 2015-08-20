@@ -47,10 +47,10 @@ getContainer p mv (Id (SlotId i s)) top
   | otherwise = result =<< notFoundResponse
 
 containerDownloadName :: Maybe (Id Container) -> Container -> [T.Text]
-containerDownloadName top c =
-  (if containerTop c then ("materials" :) else id)
-  $ (if Fold.any (containerId c ==) top then (T.pack (show (containerId c)) :) else id)
-  $ maybeToList (containerName c)
+containerDownloadName top c
+  | Fold.any (containerId c ==) top = ["materials"]
+  | otherwise = (if containerTop c then ("materials" :) else id)
+    $ T.pack (show (containerId c)) : maybeToList (containerName c)
 
 viewContainer :: AppRoute (API, (Maybe (Id Volume), Id Container))
 viewContainer = I.second (I.second $ slotContainerId . unId I.:<->: containerSlotId) I.<$> viewSlot
