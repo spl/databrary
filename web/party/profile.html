@@ -67,7 +67,7 @@
           <strong>Affiliates</strong>
           <a ng-href="{{::party.editRoute('grant')}}" class="button icon edit neutral"></a>
         </div>
-        <div ng-repeat="(member, cl) in ::parties.children track by member" ng-if="::cl.length">
+        <div ng-repeat="(member, cl) in ::parties.children track by member" ng-if="::cl.length" ng-class="{'profile-affiliate-highlight': member && selected.self.children}">
           <div class="profile-subsection-header">
             <strong ng-bind="::'auth.member.'+page.constants.permission[member]+'.title' | message"></strong>: 
             <span ng-bind="::'auth.member.'+page.constants.permission[member] | possessive:party"></span> 
