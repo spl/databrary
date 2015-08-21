@@ -4,11 +4,11 @@
     &:before
       content none
 
-.volumeDesign-categories > li, .volumeDesign-fields > li
+.volume-design-categories > li, .volume-design-fields > li
   line-height 20px
   padding-height b8
 
-.volumeDesign-categories
+.volume-design-categories
   padding-left 0
   .selected
     background-color orange51
@@ -19,13 +19,13 @@
     @media screen and (min-width:grid-mobile-width)
       padding-right b1
       margin-right -b1
-.volumeDesign-categories > li
+.volume-design-categories > li
   border-bottom 3px green51 solid
   padding b4 0
-
-.volumeDesign-categories > li
   padding-left 23px
   text-indent -20px
+  &:hover:not(.selected)
+    background-color neutral51
   div
     text-indent 0px
     margin-top b3
@@ -33,13 +33,13 @@
     ul
       color orange13
 
-.volumeDesign-fields
+.volume-design-fields
   padding-left 0px
   margin-bottom 0
   &.disabled
     color neutral12
 
-.volumeDesign-fields > li
+.volume-design-fields > li
   padding-left 23px
   text-indent -20px
 
@@ -49,23 +49,26 @@
     vertical-align middle
     width 28px
     float right
-.volumeDesign-description
+.volume-design-description
   font-size b2
   
-.volumeDesign-float
+.volume-design-float
   border 1px solid black
   
-.volumeDesign-section
+.volume-design-section
   padding 0 b2
   margin 0
 
-.volumeDesign-header
+.volume-design-header
   border-bottom 1px dotted neutral
   padding b3 b8
+  a.button
+    margin-left b8
+    font-size b2
+    line-height b2
+    padding-height b8
+    vertical-align text-top
   small
     display block
   &.selected
     background-color orange51
-    
-small.reminder
-  color blue
