@@ -411,7 +411,7 @@ app.directive 'spreadsheet', [
             records[r] = populateRecord(record)
 
           nor = undefined
-          for s, slot of volume.containers when Top != !slot.top
+          for s, slot of volume.containers when Top != !slot.top && slot.id != volume.top.id
             recs = slot.records
             any = false
             for rr in recs when (row = records[rr.id])
