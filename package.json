@@ -11,7 +11,8 @@
     "uglify-js": "^2.4.21",
     "stylus": "^0.51.1",
     "nib": "^1.1.0",
-    "normalize.styl": "^3.0.0"
+    "normalize.styl": "^3.0.0",
+    "autoprefixer-stylus": "^0.7.1"
   },
   "scripts": {
     "postinstall": "bower install"
