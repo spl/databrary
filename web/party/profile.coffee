@@ -52,7 +52,7 @@ app.controller 'party/profile', [
       @selection = {}
 
       selectionMessage: ->
-        constants.message('profile.state', 'volumes', @party.name)
+        "Highlighting volumes on which " + @party.name + " has been added as a collaborator"
 
       edit: (t) ->
         if $scope.editable
@@ -76,7 +76,7 @@ app.controller 'party/profile', [
       @selection = {}
 
       selectionMessage: ->
-        constants.message('profile.state', 'users', @volume.displayName)
+        "Highlighting people who have been added as a collaborator on " + @volume.displayName
 
       editAccess: (p) ->
         $location.url(@volume.editRoute('access'))
