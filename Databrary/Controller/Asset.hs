@@ -98,7 +98,9 @@ viewAsset = action GET (pathAPI </> pathId) $ \(api, i) -> withAuth $ do
   asset <- getAsset PermissionPUBLIC i
   case api of
     JSON -> okResponse [] =<< assetJSONQuery asset =<< peeks Wai.queryString
-    HTML -> okResponse [] $ T.pack $ show $ assetId $ slotAsset asset -- TODO
+    HTML
+      | Just s <- assetSlot asset -> otherRouteResponse [] viewAssetSegment (api, Just (view asset), slotId s, assetId (slotAsset asset))
+      | otherwise -> okResponse [] $ T.pack $ show $ assetId $ slotAsset asset -- TODO
 
 data AssetTarget
   = AssetTargetVolume Volume
