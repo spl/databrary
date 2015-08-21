@@ -72,12 +72,12 @@ containerZipEntry top c l = do
     , zipEntryContent = ZipDirectory a
     }
 
-volumeDescription :: Container -> [AssetSlot] -> AuthActionM (Html.Html, [[AssetSlot]], [[AssetSlot]])
-volumeDescription top@Container{ containerVolume = v } al = do
+volumeDescription :: Bool -> Container -> [AssetSlot] -> AuthActionM (Html.Html, [[AssetSlot]], [[AssetSlot]])
+volumeDescription inzip top@Container{ containerVolume = v } al = do
   cite <- lookupVolumeCitation v
   links <- lookupVolumeLinks v
   fund <- lookupVolumeFunding v
-  desc <- peeks $ htmlVolumeDescription top (maybeToList cite ++ links) fund at ab
+  desc <- peeks $ htmlVolumeDescription inzip top (maybeToList cite ++ links) fund at ab
   return (desc, at, ab)
   where
   (at, ab) = partition (Fold.any (containerTop . slotContainer) . assetSlot . head) $ groupBy (me `on` fmap (containerId . slotContainer) . assetSlot) al
@@ -87,7 +87,7 @@ volumeDescription top@Container{ containerVolume = v } al = do
 volumeZipEntry :: Container -> Maybe BSB.Builder -> [AssetSlot] -> AuthActionM ZipEntry
 volumeZipEntry top@Container{ containerVolume = v } csv al = do
   req <- peek
-  (desc, at, ab) <- volumeDescription top al
+  (desc, at, ab) <- volumeDescription True top al
   zt <- mapM ent at
   zb <- mapM ent ab
   return blankZipEntry
@@ -155,5 +155,5 @@ viewVolumeDescription = action GET (pathId </< "description") $ \vi -> withAuth 
   v <- getVolume PermissionPUBLIC vi
   top <- lookupVolumeTopContainer v
   al <- filter checkAsset <$> lookupVolumeAssetSlots v False
-  (desc, _, _) <- volumeDescription top al
+  (desc, _, _) <- volumeDescription False top al
   okResponse [] desc

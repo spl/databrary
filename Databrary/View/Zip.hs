@@ -19,6 +19,7 @@ import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as HA
 import qualified Text.Blaze.Html4.Strict.Attributes as H4A
 
+import Databrary.Ops
 import Databrary.Has (view)
 import Databrary.Service.Messages
 import Databrary.Store.Filename
@@ -44,13 +45,22 @@ import Databrary.Controller.Asset
 import Databrary.Controller.Web
 import Databrary.View.Html
 
-htmlVolumeDescription :: Container -> [Citation] -> [Funding] -> [[AssetSlot]] -> [[AssetSlot]] -> AuthRequest -> H.Html
-htmlVolumeDescription top@Container{ containerVolume = Volume{..} } cite fund atl abl req = H.docTypeHtml $ do
+import {-# SOURCE #-} Databrary.Controller.Zip
+
+htmlVolumeDescription :: Bool -> Container -> [Citation] -> [Funding] -> [[AssetSlot]] -> [[AssetSlot]] -> AuthRequest -> H.Html
+htmlVolumeDescription inzip top@Container{ containerVolume = Volume{..} } cite fund atl abl req = H.docTypeHtml $ do
   H.head $ do
     H.title $ do
       void "Databrary Volume "
       H.toMarkup (unId volumeId)
   H.body $ do
+    H.p $ do
+      H.em "Databrary"
+      void " Volume "
+      H.toMarkup (unId volumeId)
+      Fold.forM_ volumeDOI $ \doi -> do
+        void " DOI "
+        byteStringHtml doi
     H.h1 $
       H.a H.! HA.href (maybe (link viewVolume (HTML, volumeId)) (byteStringValue . ("http://dx.doi.org/" <>)) volumeDOI) $
         H.text volumeName
@@ -76,19 +86,24 @@ htmlVolumeDescription top@Container{ containerVolume = Volume{..} } cite fund at
     H.dl $ do
       H.dt "Created"
       H.dd $ H.string $ formatTime defaultTimeLocale "%d %b %Y" volumeCreation
-      H.dt "Downloaded"
-      H.dd $ do
-        H.string $ formatTime defaultTimeLocale "%a, %d %b %Y %H:%M:%S %Z" (view req :: Timestamp)
-        void " by "
-        H.a H.! HA.href (link viewParty (HTML, TargetParty $ view req)) $
-          H.text $ partyName (view req)
+      if inzip
+      then do
+        H.dt "Downloaded"
+        H.dd $ do
+          H.string $ formatTime defaultTimeLocale "%a, %d %b %Y %H:%M:%S %Z" (view req :: Timestamp)
+          void " by "
+          H.a H.! HA.href (link viewParty (HTML, TargetParty $ view req)) $
+            H.text $ partyName (view req)
+      else do
+        H.dt $ H.a H.! HA.href (link zipVolume volumeId) $
+          void "Download"
     H.p $ do
       H.text $ msg "download.warning"
       void " For more information and terms of use see the "
       H.a H.! HA.href "http://databrary.org/access/policies/agreement.html"
         $ "Databrary Access Agreement"
       void "."
-    H.h2 "Package contents"
+    H.h2 "Contents"
     H.h3 "Legend of release levels"
     H.dl $ forM_ pgEnumValues $ \(_ :: Release, n) -> do
       H.dt $ H.string n
@@ -102,7 +117,7 @@ htmlVolumeDescription top@Container{ containerVolume = Volume{..} } cite fund at
     H.h3 "Sessions"
     atable Nothing abl
   where
-  link r a = builderValue $ actionURL (Just $ view req) r a []
+  link r a = builderValue $ actionURL (inzip ?> view req) r a []
   msg m = getMessage m $ view req
   atable tid acl = H.table H.! H4A.border "1" $ do
     H.thead $ H.tr $ do
@@ -118,7 +133,7 @@ htmlVolumeDescription top@Container{ containerVolume = Volume{..} } cite fund at
   abody _ [] = mempty
   abody tid (~(a@AssetSlot{ assetSlot = Just Slot{ slotContainer = c } }:l):al) = do
     H.tr $ do
-      H.td H.! rs $ H.a H.! HA.href (byteStringValue fn) $
+      H.td H.! rs $ H.a !? (inzip ?> HA.href (byteStringValue fn)) $
         byteStringHtml dn
       H.td H.! rs $ H.a H.! HA.href (link viewContainer (HTML, (Just volumeId, containerId c))) $ do
         Fold.mapM_ H.string $ formatContainerDate c
@@ -131,7 +146,7 @@ htmlVolumeDescription top@Container{ containerVolume = Volume{..} } cite fund at
     dn = makeFilename $ containerDownloadName tid c
     fn = maybe ("sessions" </>) seq tid dn
   arow bf as@AssetSlot{ slotAsset = a } = do
-    H.td $ H.a H.! HA.href (byteStringValue $ bf </> fn) $
+    H.td $ H.a !? (inzip ?> HA.href (byteStringValue $ bf </> fn)) $
       byteStringHtml fn
     H.td $ H.a H.! HA.href (link viewAsset (HTML, assetId a)) $
       H.text $ fromMaybe (formatName (assetFormat a)) $ assetName a
