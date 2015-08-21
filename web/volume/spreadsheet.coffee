@@ -411,7 +411,7 @@ app.directive 'spreadsheet', [
             records[r] = populateRecord(record)
 
           nor = undefined
-          for s, slot of volume.containers when Top != !slot.top
+          for s, slot of volume.containers when Top != !slot.top && slot.id != volume.top.id
             recs = slot.records
             any = false
             for rr in recs when (row = records[rr.id])
@@ -518,8 +518,8 @@ app.directive 'spreadsheet', [
           return
 
         generateAdd = (info, td) ->
-          width = info.cols.metrics.length
           info.m = info.cols.start
+          width = info.width || info.cols.metrics.length
           if typeof info.metric.id == 'number' && info.metric.type != 'void'
             info.id = ID+'-'+info.i+'_'+info.cols.start+(if info.hasOwnProperty('n') then '_'+info.n else '')
             info.cell = info.tr.appendChild(document.createElement('td'))
@@ -531,6 +531,7 @@ app.directive 'spreadsheet', [
             else
               info.tr.removeChild(td)
           else
+            td.setAttribute("colspan", width)
             td.classList.add('add')
             td.id = ID + '-add_' + info.i + '_' + info.c
             td.appendChild(document.createTextNode("add " + info.category.name))
@@ -605,6 +606,7 @@ app.directive 'spreadsheet', [
           td = info.tr.appendChild(document.createElement('td'))
           td.setAttribute("colspan", info.cols.metrics.length)
           td.className = 'null'
+          info.width = Cols.length
           generateAdd(info, td)
 
         # Update all age displays.
