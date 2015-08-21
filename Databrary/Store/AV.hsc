@@ -24,6 +24,7 @@ import Data.Maybe (isNothing)
 import Data.Ratio (Ratio, (%), numerator, denominator)
 import Data.Time.Clock (DiffTime)
 import Data.Time.Format (parseTime)
+import Data.Time.LocalTime (ZonedTime)
 import qualified Data.Traversable as Trav
 import Data.Typeable (Typeable)
 import Data.Word (Word16, Word32)
@@ -40,7 +41,6 @@ import System.Locale (defaultTimeLocale)
 
 import Databrary.Ops
 import Databrary.Files
-import Databrary.Model.Time
 import Databrary.Model.Offset
 
 #include <libavformat/avformat.h>
@@ -371,7 +371,7 @@ data AVProbe = AVProbe
   { avProbeFormat :: BS.ByteString
   , avProbeDuration :: DiffTime
   , avProbeStreams :: [BS.ByteString]
-  , avProbeDate :: Maybe Timestamp
+  , avProbeDate :: Maybe ZonedTime
   }
 
 -- |Test if this represents a video in standard format.
