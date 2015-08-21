@@ -25,7 +25,7 @@
         <div class="volume-design-header" ng-class="{selected: !!selected}">
           <strong ng-bind="selected ? selected.name : 'Fields'" ng-class="{b: volumeDesign.category[selected.id]}"></strong>
           <small class="reminder" ng-if="selected && !volumeDesign.category[selected.id]">Enable this category on the left to change fields</small>
-          <small class="reminder" ng-if="!selected">Select a category to change its fields</small> 
+          <small class="reminder" ng-if="!selected">Select a category name to edit its fields</small> 
           <a ng-if="volumeDesign.category[selected.id]" class="button mini" ng-click="activateStep(step.data)">manage list</a>
         </div>
         <ul class="volume-design-fields" ng-class="{'disabled':!!selected && !volumeDesign.category[selected.id] || !selected}">
