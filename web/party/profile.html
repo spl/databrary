@@ -69,8 +69,9 @@
         </div>
         <div ng-repeat="(member, cl) in ::parties.children track by member" ng-if="::cl.length">
           <div class="profile-subsection-header">
-            <strong ng-bind="::'auth.member.'+page.constants.permission[member]+'.title' | message"></strong> 
-            <span ng-bind="::': '+('auth.member.'+page.constants.permission[member] | possessive:party)"></span> 
+            <strong ng-bind="::'auth.member.'+page.constants.permission[member]+'.title' | message"></strong>: 
+            <span ng-bind="::'auth.member.'+page.constants.permission[member] | possessive:party"></span> 
+            <span ng-if="member" class="icon network"></span>
           </div>     
           <ul>
             <li ng-repeat="p in cl" ng-class="{'profile-highlight': !!p.selected}">
