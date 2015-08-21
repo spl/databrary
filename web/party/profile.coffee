@@ -10,7 +10,7 @@ app.controller 'party/profile', [
       class: () ->
         switch s = @selected
           when true then ["radio-selected"]
-          when undefined then (if Item.selected then [] else ["radio"])
+          when undefined then (if $scope.selected then [] else ["radio"])
           else ["user-access", constants.permission[s.individual]]
 
       Object.defineProperty @prototype, 'selected',
@@ -21,11 +21,11 @@ app.controller 'party/profile', [
         @constructor.selection = {}
         messages.clear(Item)
         if s == true
-          Item.selected = undefined
+          $scope.selected = undefined
           $scope.editable = undefined
           @constructor.foreign.selection = {}
         else
-          Item.selected = @
+          $scope.selected = @
           $scope.editable = @volume?.checkPermission(constants.permission.ADMIN)
           @constructor.selection[@id] = true
           @constructor.foreign.selection = @access
@@ -56,7 +56,7 @@ app.controller 'party/profile', [
 
       edit: (t) ->
         if $scope.editable
-          Item.selected.editAccess(@party)
+          $scope.selected.editAccess(@party)
         else if t
           $location.url(party.editRoute(t)+'#auth-'+@party.id)
 
@@ -86,7 +86,7 @@ app.controller 'party/profile', [
             remove()
 
       edit: () ->
-        if (s = Item.selected) && (s == @ || p = s.party) && @volume.checkPermission(constants.permission.ADMIN)
+        if (s = $scope.selected) && (s == @ || p = s.party) && @volume.checkPermission(constants.permission.ADMIN)
           @editAccess(p)
         else if @volume.checkPermission(constants.permission.EDIT)
           $location.url(@volume.editRoute())
