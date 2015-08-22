@@ -388,7 +388,7 @@ avTime t = realToFrac $ t % #{const AV_TIME_BASE}
 avProbe :: RawFilePath -> AV -> IO AVProbe
 avProbe f AV = withAVInput f Nothing $ \ic -> do
   findAVStreamInfo ic
-  let getmeta = getAVDictionary $ #{ptr AVFormatContext, metadata} ic
+  meta <- #{peek AVFormatContext, metadata} ic
   AVProbe
     <$> (BS.packCString =<< #{peek AVInputFormat, name} =<< #{peek AVFormatContext, iformat} ic)
     <*> (avTime <$> #{peek AVFormatContext, duration} ic)
@@ -397,7 +397,8 @@ avProbe f AV = withAVInput f Nothing $ \ic -> do
       ss <- #{peek AVFormatContext, streams} ic
       forM [0..pred (fromIntegral nb)] $ \i ->
         BS.packCString =<< avcodecGetName =<< #{peek AVCodecContext, codec_id} =<< #{peek AVStream, codec} =<< peekElemOff ss i
-    <*> ((=<<) (\t -> parseTime defaultTimeLocale "%F %T%Z" t <|> parseTime defaultTimeLocale "%F %T %Z" t) <$> ((`orElseM` getmeta "creation_time") =<< getmeta "date"))
+    <*> ((=<<) (\t -> parseTime defaultTimeLocale "%F %T%Z" t <|> parseTime defaultTimeLocale "%F %T %Z" t) <$>
+      ((`orElseM` getAVDictionary meta "creation_time") =<< getAVDictionary meta "date"))
 
 
 avSeekStream :: Ptr AVFormatContext -> Ptr AVStream -> Ptr AVFrame -> Maybe DiffTime -> IO ()
