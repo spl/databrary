@@ -69,11 +69,22 @@ startTranscode :: Transcode -> TranscodeM (Maybe TranscodePID)
 startTranscode tc = do
   tc' <- updateTranscode tc lock Nothing
   unless (transcodeProcess tc' == lock) $ fail $ "startTranscode " ++ show (transcodeId tc)
-  args <- transcodeArgs tc
-  (r, out, err) <- ctlTranscode tc' args
-  let pid = guard (r == ExitSuccess) >> readMaybe out
-  _ <- updateTranscode tc' pid $ (isNothing pid ?> out) <> (null err ?!> err)
-  return pid
+  findMatchingTranscode tc >>= maybe
+    (do
+      args <- transcodeArgs tc
+      (r, out, err) <- ctlTranscode tc' args
+      let pid = guard (r == ExitSuccess) >> readMaybe out
+      _ <- updateTranscode tc' pid $ (isNothing pid ?> out) <> (null err ?!> err)
+      return pid)
+    (\Transcode{ transcodeAsset = match } -> do
+      a <- changeAsset (transcodeAsset tc)
+        { assetSHA1 = assetSHA1 match
+        , assetDuration = assetDuration match
+        , assetSize = assetSize match
+        } Nothing
+      void $ changeAssetSlotDuration a
+      _ <- updateTranscode tc' Nothing (Just $ "reuse " ++ show (assetId match))
+      return Nothing)
   where lock = Just (-1)
 
 forkTranscode :: Transcode -> TranscodeM ThreadId

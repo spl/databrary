@@ -8,6 +8,7 @@ module Databrary.Model.Transcode
   , addTranscode
   , updateTranscode
   , findTranscode
+  , findMatchingTranscode
   ) where
 
 import qualified Data.ByteString as BS
@@ -91,5 +92,9 @@ updateTranscode tc pid logs = do
 
 findTranscode :: MonadDB m => Asset -> Segment -> TranscodeArgs -> m (Maybe Transcode)
 findTranscode orig seg opts =
-  dbQuery1 $ ($ orig) <$> $(selectQuery selectOrigTranscode "WHERE transcode.orig = ${assetId orig} AND transcode.segment = ${seg} AND transcode.options = ${map Just opts} AND asset.volume = ${volumeId $ assetVolume orig}")
+  dbQuery1 $ ($ orig) <$> $(selectQuery selectOrigTranscode "WHERE transcode.orig = ${assetId orig} AND transcode.segment = ${seg} AND transcode.options = ${map Just opts} AND asset.volume = ${volumeId $ assetVolume orig} LIMIT 1")
+
+findMatchingTranscode :: MonadDB m => Transcode -> m (Maybe Transcode)
+findMatchingTranscode Transcode{..} =
+  dbQuery1 $(selectQuery selectTranscode "WHERE orig.sha1 = ${assetSHA1 transcodeOrig} AND transcode.segment = ${transcodeSegment} AND transcode.options = ${map Just transcodeOptions} AND asset.id < ${assetId transcodeAsset} ORDER BY asset.id LIMIT 1")
 
