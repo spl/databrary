@@ -16,7 +16,7 @@ module Databrary.Controller.Asset
   ) where
 
 import Control.Applicative ((<|>))
-import Control.Monad ((<=<), void)
+import Control.Monad ((<=<), void, guard)
 import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.Trans.Class (lift)
 import qualified Data.ByteString as BS
@@ -165,7 +165,7 @@ processAsset api target = do
         p <- (<|> (lowerBound . segmentRange =<< seg)) <$> deformNonEmpty deform
         Slot c . maybe fullSegment
           (\l -> Segment $ Range.bounded l (l + fromMaybe 0 ((segmentLength =<< seg) <|> dur)))
-          <$> orElseM p (Trav.mapM (lift . findAssetContainerEnd) (isNothing s && isJust dur ?> c)))
+          <$> orElseM p (Trav.mapM (lift . probeAutoPosition c . fileUploadProbe) (guard (isNothing s && isJust dur) >> up)))
     return
       ( as
         { slotAsset = a

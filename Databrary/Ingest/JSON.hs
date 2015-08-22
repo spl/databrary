@@ -175,12 +175,12 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
             o <- lift $ moveRecordSlot (RecordSlot r $ Slot c (if null rs' then emptySegment else fullSegment)) seg
             unless o $ throwPE "record link failed"
       _ <- JE.key "assets" $ JE.eachInArray $ do
-        a <- asset dir
+        (a, probe) <- asset dir
         inObj a $ do
           as' <- lift $ lookupAssetAssetSlot a
           seg <- JE.keyOrDefault "position" (maybe fullSegment slotSegment $ assetSlot as') $
             JE.withTextM (\t -> if t == "auto"
-              then maybe (Right . Segment . Range.point <$> findAssetContainerEnd c) (return . Right . slotSegment) $ mfilter (on (==) containerId c . slotContainer) (assetSlot as')
+              then maybe (Right . Segment . Range.point <$> probeAutoPosition c probe) (return . Right . slotSegment) $ mfilter (on (==) containerId c . slotContainer) (assetSlot as')
               else return $ Left "invalid asset position")
               `catchError` \_ -> asSegment
           let seg'
@@ -262,11 +262,11 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
         Fold.forM_ orig $ \o -> lift $ replaceSlotAsset o a'
         return a')
       ae
-    t <- inObj a $ case probe of
+    inObj a $ case probe of
       ProbePlain _ -> do
         noKey "clip"
         noKey "options"
-        return a
+        return (a, probe)
       ProbeVideo _ av -> do
         clip <- JE.keyOrDefault "clip" fullSegment asSegment
         opts <- JE.keyOrDefault "options" defaultTranscodeOptions $ JE.eachInArray JE.asString
@@ -276,5 +276,4 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
             _ <- startTranscode t
             return t)
           =<< flatMapM (\_ -> findTranscode a clip opts) ae
-        return $ transcodeAsset t
-    return t
+        return (transcodeAsset t, probe)
