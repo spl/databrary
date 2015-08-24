@@ -76,7 +76,8 @@
               <div ng-init="updatePlayerHeight()" id="player-viewport" class="player-viewport">
                 <div ng-if="editing && current.type === 'asset' && !current.file && !current.asset" flow-drop flow-btn flow-drag-enter="dropClasses['over-zone'] = true" flow-drag-leave="dropClasses['over-zone'] = false" ng-class="dropClasses" class="player-drop">
                   <span class="icon line add"></span>
-                  <span class="dropzone-message" message="asset.add-drop{{current.asset ? '.replace' : ''}}"></span>
+                  <span class="dropzone-message" message="asset.add-drop{{::current.asset ? '.replace' : ''}}"></span>
+                  <span class="dropzone-message">See our <a ng-href="{{::page.router.helpFormats()}}" target="_blank">list of accepted file types</a>.</span>
                 </div>
                 <upload-progress class="upload-progress-info" ng-if="!!current.file" progress-value="current.progress"></upload-progress>
                 <asset-display ng-repeat="asset in [asset]" ng-if="!!asset" asset="asset"></asset-display>
