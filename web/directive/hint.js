@@ -8,9 +8,6 @@ app.directive('hint', [
     _.each(constants.permission, function (a) {
       hints['permission-' + a] =
         constants.message('access.' + a, 'You');
-      if ('access.edit.' + a + '.who' in constants.messages)
-        hints['access-edit-' + a] =
-          constants.message('access.edit.' + a + '.who', 'You');
     });
 
     _.each(constants.release, function (a) {
