@@ -11,7 +11,7 @@ UPDATE record_category SET description = 'A particular setting or other variable
 
 UPDATE metric SET description = 'A primary, unique, anonymized identifier, label, or name' WHERE name = 'ID';
 UPDATE metric SET description = 'A reason for a label (often for an exclusion)' WHERE name = 'reason';
-UPDATE metric SET description = 'A short, one-line summary of this label' WHERE name = 'summary';
+DELETE FROM metric WHERE name = 'summary';
 UPDATE metric SET description = 'A longer explanation or description of this label' WHERE name = 'description';
 UPDATE metric SET description = 'The date of birth of an individual, or start/inception date for other labels (used with session date to calculate age)' WHERE name = 'birthdate';
 UPDATE metric SET description = '"Male", "Female", or any other relevant gender label' WHERE name = 'gender';
@@ -24,4 +24,18 @@ UPDATE metric SET description = 'Relevant country of origin, setting, or otherwi
 UPDATE metric SET description = 'Relevant state/territory, usually within specified country' WHERE name = 'state';
 UPDATE metric SET description = 'Other information or alternate identifier for this label' WHERE name = 'info';
 
-UPDATE metric SET description = 'Pregnancy age in weeks between last menstrual period and birth (or pre-natal observation)', name = 'gestational age' WHERE name = 'gestational age (weeks)';
+UPDATE metric SET id = -530, description = 'Pregnancy age in weeks between last menstrual period and birth (or pre-natal observation)', name = 'gestational age' WHERE name = 'gestational age (weeks)';
+INSERT INTO "metric" ("id", "name", "release", "type", "description") SELECT -530, 'gestational age', 'PUBLIC', 'numeric', 'Pregnancy age in weeks between last menstrual period and birth (or pre-natal observation)' EXCEPT SELECT id, name, release, type, description FROM metric WHERE name = 'gestational age';
+
+-- leftover from 20150727-metric_release
+CREATE OR REPLACE VIEW "volume_text" ("volume", "text") AS
+	SELECT id, name FROM volume 
+	UNION ALL SELECT id, body FROM volume WHERE body IS NOT NULL
+	UNION ALL SELECT volume, COALESCE(prename || ' ', '') || name FROM volume_access JOIN party ON party.id = party WHERE individual >= 'ADMIN'
+	UNION ALL SELECT volume, head FROM volume_citation
+	UNION ALL SELECT volume, year::text FROM volume_citation WHERE year IS NOT NULL
+	UNION ALL SELECT volume, name FROM volume_funding JOIN funder ON funder = fundref_id
+	UNION ALL SELECT volume, name FROM container WHERE name IS NOT NULL
+	UNION ALL SELECT volume, name FROM asset JOIN slot_asset ON asset.id = asset WHERE name IS NOT NULL
+	UNION ALL SELECT volume, datum FROM record JOIN measure_text ON record.id = record JOIN metric ON metric = metric.id WHERE metric.release >= 'PUBLIC'
+	UNION ALL SELECT volume, tag.name FROM tag JOIN tag_use ON tag.id = tag JOIN container ON container = container.id;
