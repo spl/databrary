@@ -1105,7 +1105,7 @@ app.factory('modelService', [
         this.volume = context;
         Model.call(this, init);
       }
-      this.volume.assets[init.id] = this;
+      this.volume.assets[this.id] = this;
     }
 
     Asset.prototype = Object.create(AssetSlot.prototype);
@@ -1199,9 +1199,9 @@ app.factory('modelService', [
       var a = this;
       return router.http(router.controllers.postAsset, this.id, data)
         .then(function (res) {
-          if (a.container)
-            a.container.clear('assets');
-          return assetMake(a.container || a.volume, res.data);
+          a.id = res.data.id;
+          a.volume.assets[a.id] = a;
+          return a.update(res.data);
         });
     };
 
