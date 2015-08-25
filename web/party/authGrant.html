@@ -23,8 +23,8 @@
     <div ng-repeat="(val, name) in page.constants.permission" ng-if="::canGrantMember(val)">
       <input type="radio" ng-model="authGrantForm.data.member" name="auth-{{auth.party.id}}-member" ng-value="val" ng-selected="val == authGrantForm.data.member">
       <label class="option">
-        <strong message="auth.member.{{::name}}.title"></strong>: 
-        {{'auth.member.'+name | possessive:party}}
+        <strong message="auth.member.{{::name}}.title"></strong>
+        : {{'auth.member.'+name | possessive:party}}
       </label>
     </div>
   </fieldset>
