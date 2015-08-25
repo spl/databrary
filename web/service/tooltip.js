@@ -60,10 +60,10 @@ app.factory('tooltipService', [
     }
 
     function target(tooltip) {
+      removeEvents(tooltip);
+
       if (!(tooltip.id in Tooltip.list))
         return;
-
-      removeEvents(tooltip);
 
       var $target = tooltip.$target;
 
