@@ -11,7 +11,6 @@ module Databrary.Controller.Login
 
 import Control.Applicative ((<|>))
 import Control.Monad (when, unless)
-import Control.Monad.Reader (withReaderT)
 import Control.Monad.Trans.Class (lift)
 import qualified Crypto.BCrypt as BCrypt
 import qualified Data.ByteString as BS
@@ -29,7 +28,7 @@ import Databrary.HTTP.Cookie
 import Databrary.HTTP.Form.Deform
 import Databrary.HTTP.Path.Parser
 import Databrary.Action
-import Databrary.Action.Auth
+import Databrary.Action.App
 import Databrary.Controller.Paths
 import Databrary.Controller.Form
 import Databrary.Controller.Angular
@@ -73,13 +72,13 @@ postLogin = action POST (pathAPI </< "user" </< "login") $ \api -> withoutAuth $
     when block $ "email" .:> deformError "Too many login attempts. Try again later."
     unless pass $ "password" .:> deformError "Incorrect login"
     return (auth, su)
-  withReaderT authApp $ loginAccount api auth su
+  loginAccount api auth su
 
 postLogout :: AppRoute API
 postLogout = action POST (pathAPI </< "user" </< "logout") $ \api -> withAuth $ do
   _ <- maybeIdentity (return False) removeSession
   case api of
-    JSON -> okResponse [cook] $ identityJSON UnIdentified
+    JSON -> okResponse [cook] $ identityJSON NotIdentified
     HTML -> otherRouteResponse [cook] viewRoot HTML
   where cook = clearCookie "session"
 

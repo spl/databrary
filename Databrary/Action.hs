@@ -8,10 +8,6 @@ module Databrary.Action
   , AppActionM
   , AppAction
   , MonadAppAction
-  , AuthRequest
-  , AuthActionM
-  , AuthAction
-  , MonadAuthAction
 
   , Response
   , returnResponse
@@ -45,7 +41,6 @@ import Databrary.HTTP.Request
 import Databrary.Action.Types
 import Databrary.Action.Response
 import Databrary.Action.App
-import Databrary.Action.Auth
 import Databrary.Action.Route
 import Databrary.Service.Types
 import Databrary.HTTP.Route
@@ -83,5 +78,5 @@ type AppRoute a = Route AppAction a
 
 runAppRoute :: RouteMap AppAction -> Service -> Wai.Application
 runAppRoute rm rc req = runApp rc
-  (fromMaybe notFoundResponse (lookupRoute req rm))
+  (fromMaybe (withoutAuth notFoundResponse) (lookupRoute req rm))
   req

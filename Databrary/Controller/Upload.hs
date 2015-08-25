@@ -61,7 +61,7 @@ uploadStart = action POST (pathJSON >/> pathId </< "upload") $ \vi -> withAuth $
     (`setFdSize` COff size)
   okResponse [] $ unId (view tok :: Id Token)
 
-chunkForm :: DeformT f (ReaderT AuthRequest IO) (Upload, Int64, Word64)
+chunkForm :: DeformT f (ReaderT AppRequest IO) (Upload, Int64, Word64)
 chunkForm = do
   csrfForm
   up <- "flowIdentifier" .:> (lift . (maybeAction <=< lookupUpload) =<< deform)

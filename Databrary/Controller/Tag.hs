@@ -29,7 +29,7 @@ queryTags :: AppRoute TagName
 queryTags = action GET (pathJSON >/> "tags" >/> PathParameter) $ \t ->
   okResponse [] . toJSON . map tagName =<< findTags t
 
-tagResponse :: API -> TagUse -> AuthAction
+tagResponse :: API -> TagUse -> AppAction
 tagResponse JSON t = okResponse [] . tagCoverageJSON =<< lookupTagCoverage (useTag t) (containerSlot $ slotContainer $ tagSlot t)
 tagResponse HTML t = otherRouteResponse [] viewSlot (HTML, (Just (view t), slotId (tagSlot t)))
 

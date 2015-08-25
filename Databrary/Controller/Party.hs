@@ -48,8 +48,8 @@ import Databrary.Store.Temp
 import Databrary.HTTP.Path.Parser
 import Databrary.HTTP.Form.Deform
 import Databrary.Action.Route
-import Databrary.Action.Auth
 import Databrary.Action
+import Databrary.Action.App
 import Databrary.Controller.Paths
 import Databrary.Controller.Permission
 import Databrary.Controller.Form
@@ -58,7 +58,7 @@ import Databrary.Controller.AssetSegment
 import Databrary.Controller.Web
 import Databrary.View.Party
 
-getParty :: Maybe Permission -> PartyTarget -> AuthActionM Party
+getParty :: Maybe Permission -> PartyTarget -> AppActionM Party
 getParty (Just p) (TargetParty i) =
   checkPermission p =<< maybeAction =<< lookupAuthParty i
 getParty _ mi = do
@@ -111,7 +111,7 @@ viewParty = action GET (pathAPI </> pathPartyTarget) $ \(api, i) -> withAuth $ d
     JSON -> okResponse [] =<< partyJSONQuery p =<< peeks Wai.queryString
     HTML -> okResponse [] =<< peeks (htmlPartyView p)
 
-processParty :: API -> Maybe Party -> AuthActionM (Party, Maybe Asset)
+processParty :: API -> Maybe Party -> AppActionM (Party, Maybe Asset)
 processParty api p = do
   (p', a) <- runFormFiles [("avatar", maxAvatarSize)] (api == HTML ?> htmlPartyEdit p) $ do
     csrfForm

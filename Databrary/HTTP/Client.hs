@@ -2,7 +2,6 @@
 module Databrary.HTTP.Client
   ( HTTPClient
   , initHTTPClient
-  , finiHTTPClient
   , httpRequest
   , httpRequestJSON
   ) where
@@ -23,9 +22,6 @@ initHTTPClient = HC.newManager HC.defaultManagerSettings
   { HC.managerConnCount = 2
   , HC.managerIdleConnectionCount = 4
   }
-
-finiHTTPClient :: HTTPClient -> IO ()
-finiHTTPClient = HC.closeManager
 
 contentType :: BS.ByteString -> BS.ByteString
 contentType = BSC.takeWhile (';' /=)

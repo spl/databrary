@@ -12,7 +12,7 @@ import Databrary.Iso.Types (invMap)
 import Databrary.Model.Format
 import Databrary.HTTP.Path.Parser
 import Databrary.Action
-import Databrary.Action.Auth
+import Databrary.Action.App
 import Databrary.Controller.Web
 import Databrary.Controller.Angular
 import Databrary.View.Format

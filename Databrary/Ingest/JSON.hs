@@ -52,9 +52,9 @@ import Databrary.Model.Asset
 import Databrary.Model.AssetSlot
 import Databrary.Model.Transcode
 import Databrary.Model.Ingest
-import Databrary.Action.Auth
+import Databrary.Action.App
 
-type IngestM a = JE.ParseT T.Text (ReaderT AuthRequest IO) a
+type IngestM a = JE.ParseT T.Text (ReaderT AppRequest IO) a
 
 jsErr :: (Functor m, Monad m) => Either (V.Vector JS.ValErr) a -> ExceptT [T.Text] m a
 jsErr = ExceptT . return . left V.toList
@@ -107,7 +107,7 @@ asStageFile b = do
   a <- fromMaybeM (throwPE "stage file not found") =<< lift (focusIO (stageFile r))
   return $ StageFile r a
 
-ingestJSON :: Volume -> J.Value -> Bool -> Bool -> AuthActionM (Either [T.Text] [Container])
+ingestJSON :: Volume -> J.Value -> Bool -> Bool -> AppActionM (Either [T.Text] [Container])
 ingestJSON vol jdata' run overwrite = runExceptT $ do
   schema <- mapExceptT liftIO loadSchema
   jdata <- jsErr $ JS.validate schema jdata'

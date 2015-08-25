@@ -36,7 +36,7 @@ import Databrary.Controller.Volume
 import {-# SOURCE #-} Databrary.Controller.Slot
 import Databrary.View.Container
 
-getContainer :: Permission -> Maybe (Id Volume) -> Id Slot -> Bool -> AuthActionM Container
+getContainer :: Permission -> Maybe (Id Volume) -> Id Slot -> Bool -> AppActionM Container
 getContainer p mv (Id (SlotId i s)) top
   | segmentFull s = do
     c <- checkPermission p =<< maybeAction . maybe id (\v -> mfilter $ (v ==) . view) mv =<< lookupContainer i
@@ -55,7 +55,7 @@ containerDownloadName top c
 viewContainer :: AppRoute (API, (Maybe (Id Volume), Id Container))
 viewContainer = I.second (I.second $ slotContainerId . unId I.:<->: containerSlotId) I.<$> viewSlot
 
-containerForm :: Container -> DeformActionM () AuthRequest Container
+containerForm :: Container -> DeformActionM () AppRequest Container
 containerForm c = do
   csrfForm
   name <- "name" .:> deformOptional (deformNonEmpty deform)

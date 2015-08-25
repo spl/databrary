@@ -65,7 +65,7 @@ import Databrary.Controller.Web
 import {-# SOURCE #-} Databrary.Controller.AssetSegment
 import Databrary.View.Volume
 
-getVolume :: Permission -> Id Volume -> AuthActionM Volume
+getVolume :: Permission -> Id Volume -> AppActionM Volume
 getVolume p i =
   checkPermission p =<< maybeAction =<< lookupVolume i
 
@@ -171,7 +171,7 @@ volumeJSONField o "filename" _ =
   return $ Just $ JSON.toJSON $ makeFilename $ volumeDownloadName o
 volumeJSONField _ _ _ = return Nothing
 
-volumeJSONQuery :: Volume -> JSON.Query -> AuthActionM JSON.Object
+volumeJSONQuery :: Volume -> JSON.Query -> AppActionM JSON.Object
 volumeJSONQuery vol = runVolumeCache . JSON.jsonQuery (volumeJSON vol) (volumeJSONField vol)
 
 volumeDownloadName :: Volume -> [T.Text]
@@ -199,7 +199,7 @@ volumeForm v = do
     , volumeBody = body
     }
 
-volumeCitationForm :: Volume -> DeformActionM f AuthRequest (Volume, Maybe Citation)
+volumeCitationForm :: Volume -> DeformActionM f AppRequest (Volume, Maybe Citation)
 volumeCitationForm v = do
   csrfForm
   vol <- volumeForm v

@@ -69,7 +69,7 @@ angularRequest :: Wai.Request -> Maybe BSB.Builder
 angularRequest req = angularEnable js req ?> nojs
   where (js, nojs) = jsURL JSDisabled req
 
-angularResult :: (MonadIO m, MonadAuthAction q m) => BSB.Builder -> m ()
+angularResult :: (MonadIO m, MonadAppAction q m) => BSB.Builder -> m ()
 angularResult nojs = do
   auth <- peek
   debug <-
@@ -80,5 +80,5 @@ angularResult nojs = do
 #endif
   result =<< okResponse [] (htmlAngular debug nojs auth)
 
-angular :: (MonadIO m, MonadAuthAction q m) => m ()
+angular :: (MonadIO m, MonadAppAction q m) => m ()
 angular = Fold.mapM_ angularResult =<< peeks angularRequest

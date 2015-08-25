@@ -6,7 +6,6 @@ module Databrary.View.Container
 import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>), mempty)
 
-import Databrary.Action.Auth
 import Databrary.Action
 import Databrary.Model.Volume
 import Databrary.Model.Container
@@ -21,6 +20,6 @@ htmlContainerForm cont = do
   field "date" $ inputDate (containerDate =<< cont)
   field "release" $ inputEnum False (containerRelease =<< cont)
 
-htmlContainerEdit :: Either Volume Container -> AuthRequest -> FormHtml f
+htmlContainerEdit :: Either Volume Container -> AppRequest -> FormHtml f
 htmlContainerEdit (Left v)  = htmlForm "Create container" createContainer (HTML, volumeId v) (htmlContainerForm Nothing) (const mempty)
 htmlContainerEdit (Right c) = htmlForm ("Edit container " <> fromMaybe "" (containerName c)) postContainer (HTML, containerSlotId $ containerId c) (htmlContainerForm $ Just c) (const mempty)

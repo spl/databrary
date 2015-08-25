@@ -49,7 +49,7 @@ import Databrary.Controller.CSV
 import Databrary.Controller.Angular
 import Databrary.View.Zip
 
-assetZipEntry :: AssetSlot -> AuthActionM ZipEntry
+assetZipEntry :: AssetSlot -> AppActionM ZipEntry
 assetZipEntry AssetSlot{ slotAsset = a } = do
   Just f <- getAssetFile a
   req <- peek
@@ -62,7 +62,7 @@ assetZipEntry AssetSlot{ slotAsset = a } = do
     , zipEntryContent = ZipEntryFile (fromIntegral $ fromJust $ assetSize a) f
     }
 
-containerZipEntry :: Maybe (Id Container) -> Container -> [AssetSlot] -> AuthActionM ZipEntry
+containerZipEntry :: Maybe (Id Container) -> Container -> [AssetSlot] -> AppActionM ZipEntry
 containerZipEntry top c l = do
   req <- peek
   a <- mapM assetZipEntry l
@@ -72,7 +72,7 @@ containerZipEntry top c l = do
     , zipEntryContent = ZipDirectory a
     }
 
-volumeDescription :: Bool -> Container -> [AssetSlot] -> AuthActionM (Html.Html, [[AssetSlot]], [[AssetSlot]])
+volumeDescription :: Bool -> Container -> [AssetSlot] -> AppActionM (Html.Html, [[AssetSlot]], [[AssetSlot]])
 volumeDescription inzip top@Container{ containerVolume = v } al = do
   cite <- lookupVolumeCitation v
   links <- lookupVolumeLinks v
@@ -84,7 +84,7 @@ volumeDescription inzip top@Container{ containerVolume = v } al = do
   me (Just x) (Just y) = x == y
   me _ _ = False
 
-volumeZipEntry :: Container -> Maybe BSB.Builder -> [AssetSlot] -> AuthActionM ZipEntry
+volumeZipEntry :: Container -> Maybe BSB.Builder -> [AssetSlot] -> AppActionM ZipEntry
 volumeZipEntry top@Container{ containerVolume = v } csv al = do
   req <- peek
   (desc, at, ab) <- volumeDescription True top al
@@ -112,7 +112,7 @@ volumeZipEntry top@Container{ containerVolume = v } csv al = do
   ent l@(AssetSlot{ assetSlot = Just s } : _) = containerZipEntry (Just $ containerId top) (slotContainer s) l
   ent _ = fail "volumeZipEntry"
 
-zipResponse :: BS.ByteString -> [ZipEntry] -> AuthAction
+zipResponse :: BS.ByteString -> [ZipEntry] -> AppAction
 zipResponse n z = do
   req <- peek
   u <- peek

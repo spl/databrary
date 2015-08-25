@@ -17,7 +17,6 @@ import qualified Text.Blaze.Html5.Attributes as HA
 import Databrary.Ops
 import Databrary.Has (view)
 import Databrary.Model.Identity
-import Databrary.Action.Auth
 import Databrary.Action
 import Databrary.Web (WebFilePath, webFileRelRaw)
 import Databrary.Web.Libs (allWebLibs)
@@ -32,7 +31,7 @@ ngAttribute = H.customAttribute . H.stringTag . ("ng-" <>)
 webURL :: BS.ByteString -> H.AttributeValue
 webURL p = builderValue $ actionURL Nothing webFile (Just $ StaticPath p) []
 
-htmlAngular :: Maybe [WebFilePath] -> BSB.Builder -> AuthRequest -> H.Html
+htmlAngular :: Maybe [WebFilePath] -> BSB.Builder -> AppRequest -> H.Html
 htmlAngular debug nojs auth = H.docTypeHtml H.! ngAttribute "app" "databraryModule" $ do
   H.head $ do
     htmlHeader Nothing def

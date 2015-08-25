@@ -70,7 +70,7 @@ import Databrary.Controller.Slot
 import {-# SOURCE #-} Databrary.Controller.AssetSegment
 import Databrary.View.Asset
 
-getAsset :: Permission -> Id Asset -> AuthActionM AssetSlot
+getAsset :: Permission -> Id Asset -> AppActionM AssetSlot
 getAsset p i =
   checkPermission p =<< maybeAction =<< lookupAssetSlot i
 
@@ -136,7 +136,7 @@ detectUpload u =
   either deformError' (return . FileUpload u)
     =<< lift (probeFile (fileUploadName u) =<< peeks (fileUploadPath u))
 
-processAsset :: API -> AssetTarget -> AuthAction
+processAsset :: API -> AssetTarget -> AppAction
 processAsset api target = do
   let as@AssetSlot{ slotAsset = a, assetSlot = s } = case target of
         AssetTargetVolume t -> assetNoSlot $ blankAsset t

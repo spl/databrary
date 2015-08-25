@@ -4,7 +4,6 @@ module Databrary.HTTP.Form
   , FormPath
   , formPathText
   , FormData
-  , getFormData
   , FormDatum(..)
   , Form(..)
   , initForm
@@ -12,47 +11,20 @@ module Databrary.HTTP.Form
   , subForms
   ) where
 
-import Control.Applicative ((<|>))
-import Control.Monad.IO.Class (MonadIO)
 import qualified Data.Aeson as JSON
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.Foldable as Fold
 import qualified Data.HashMap.Strict as HM
 import qualified Data.Map as Map
-import Data.Maybe (fromMaybe)
 import Data.Monoid (Monoid(..), (<>))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.Vector as V
-import Data.Word (Word64)
-import qualified Network.Wai as Wai
 import Network.Wai.Parse (FileInfo)
 
-import Databrary.Has (Has(..), peeks)
-import Databrary.HTTP.Parse
-import Databrary.Action.App (MonadAppAction)
-
-data FormData a = FormData
-  { formDataQuery :: Map.Map BS.ByteString (Maybe BS.ByteString)
-  , formDataPost :: Map.Map BS.ByteString BS.ByteString
-  , formDataJSON :: Maybe JSON.Value
-  , formDataFiles :: Map.Map BS.ByteString (FileInfo a)
-  }
-
-instance Monoid (FormData a) where
-  mempty = FormData mempty mempty Nothing mempty
-  mappend (FormData q1 p1 j1 f1) (FormData q2 p2 j2 f2) =
-    FormData (mappend q1 q2) (mappend p1 p2) (j1 <|> j2) (mappend f1 f2)
-
-getFormData :: (MonadAppAction c m, MonadIO m, FileContent a) => [(BS.ByteString, Word64)] -> m (FormData a)
-getFormData fs = do
-  f <- peeks $ FormData . Map.fromList . Wai.queryString
-  c <- parseRequestContent (fromMaybe 0 . (`lookup` fs))
-  return $ case c of
-    ContentForm p u -> f (Map.fromList p) Nothing (Map.fromList u)
-    ContentJSON j -> f Map.empty (Just j) Map.empty
-    _ -> f Map.empty Nothing Map.empty
+import Databrary.Has (Has(..))
+import Databrary.HTTP.Form.Data
 
 data FormKey 
   = FormField !T.Text

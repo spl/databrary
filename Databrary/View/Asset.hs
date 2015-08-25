@@ -6,7 +6,6 @@ module Databrary.View.Asset
 import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>), mempty)
 
-import Databrary.Action.Auth
 import Databrary.Action
 import Databrary.Model.Volume
 import Databrary.Model.Asset
@@ -24,7 +23,7 @@ htmlAssetForm asset = do
   field "file" inputFile
   -- TODO
 
-htmlAssetEdit :: AssetTarget -> AuthRequest -> FormHtml f
+htmlAssetEdit :: AssetTarget -> AppRequest -> FormHtml f
 htmlAssetEdit (AssetTargetVolume v) = htmlForm "Create asset" createAsset     (HTML, volumeId v) (htmlAssetForm Nothing) (const mempty)
 htmlAssetEdit (AssetTargetSlot s)   = htmlForm "Create asset" createSlotAsset (HTML, slotId s) (field "container" (inputHidden $ show $ containerId $ slotContainer s) >> htmlAssetForm Nothing) (const mempty)
 htmlAssetEdit (AssetTargetAsset t)  = htmlForm ("Edit asset " <> fromMaybe "" (assetName a)) postAsset (HTML, assetId a) (htmlAssetForm (Just a)) (const mempty)

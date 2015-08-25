@@ -24,7 +24,7 @@ determineIdentity :: (MonadHasService c m, MonadHasRequest c m, MonadDB m) => m 
 determineIdentity = do
   c <- getSignedCookie "session"
   s <- flatMapM lookupSession c
-  return $ maybe UnIdentified Identified s
+  return $ maybe NotIdentified Identified s
 
 maybeIdentity :: (MonadHasIdentity c m) => m a -> (Session -> m a) -> m a
 maybeIdentity u i = foldIdentity u i =<< peek

@@ -47,7 +47,7 @@ import Databrary.Controller.Slot
 import Databrary.Controller.Asset
 import Databrary.Controller.Format
 
-getAssetSegment :: Permission -> Maybe (Id Volume) -> Id Slot -> Id Asset -> AuthActionM AssetSegment
+getAssetSegment :: Permission -> Maybe (Id Volume) -> Id Slot -> Id Asset -> AppActionM AssetSegment
 getAssetSegment p mv s a =
   checkPermission p =<< maybeAction . maybe id (\v -> mfilter $ (v ==) . view) mv =<< lookupSlotAssetSegment s a
 
@@ -71,7 +71,7 @@ viewAssetSegment = action GET (pathAPI </>>> pathMaybe pathId </>> pathSlotId </
       | isJust vi -> okResponse [] $ T.pack $ show $ assetId $ slotAsset $ segmentAsset as -- TODO
       | otherwise -> redirectRouteResponse movedPermanently301 [] viewAssetSegment (api, Just (view as), slotId $ view as, view as)
 
-serveAssetSegment :: Bool -> AssetSegment -> AuthAction
+serveAssetSegment :: Bool -> AssetSegment -> AppAction
 serveAssetSegment dl as = do
   _ <- checkDataPermission as
   sz <- peeks $ readMaybe . BSC.unpack <=< join . listToMaybe . lookupQueryParameters "size"

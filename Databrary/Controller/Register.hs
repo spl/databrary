@@ -14,8 +14,6 @@ import qualified Data.Text as T
 
 import Databrary.Ops
 import Databrary.Has (view, peek, focusIO)
-import Databrary.Action
-import Databrary.Action.Auth
 import Databrary.Service.Mail
 import Databrary.Static.Fillin
 import Databrary.Model.Permission
@@ -25,6 +23,8 @@ import Databrary.Model.Identity
 import Databrary.Model.Token
 import Databrary.HTTP.Form.Deform
 import Databrary.HTTP.Path.Parser
+import Databrary.Action
+import Databrary.Action.App
 import Databrary.Controller.Paths
 import Databrary.Controller.Form
 import Databrary.Controller.Permission
@@ -33,7 +33,7 @@ import Databrary.Controller.Token
 import Databrary.Controller.Angular
 import Databrary.View.Register
 
-resetPasswordMail :: Either T.Text SiteAuth -> T.Text -> (Maybe BSL.ByteString -> BSL.ByteString) -> AuthActionM ()
+resetPasswordMail :: Either T.Text SiteAuth -> T.Text -> (Maybe BSL.ByteString -> BSL.ByteString) -> AppActionM ()
 resetPasswordMail (Left email) subj body =
   sendMail [Left email] subj (body Nothing)
 resetPasswordMail (Right auth) subj body = do

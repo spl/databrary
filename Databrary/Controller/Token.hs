@@ -9,7 +9,6 @@ module Databrary.Controller.Token
 import Control.Monad (mfilter)
 #endif
 import Control.Monad (when)
-import Control.Monad.Reader (withReaderT)
 import Data.Maybe (isJust)
 import qualified Data.Text as T
 
@@ -25,7 +24,7 @@ import Databrary.Model.Permission
 #endif
 import Databrary.HTTP.Path.Parser
 import Databrary.Action
-import Databrary.Action.Auth
+import Databrary.Action.App
 import Databrary.Controller.Paths
 import Databrary.Controller.Form
 import Databrary.Controller.Login
@@ -51,7 +50,7 @@ viewLoginToken = action GET (pathAPI </> pathId) $ \(api, ti) -> withoutAuth $ d
       HTML -> blankForm $ htmlPasswordToken ti
     else do
       _ <- removeLoginToken tok
-      withReaderT authApp $ loginAccount api (view tok) False
+      loginAccount api (view tok) False
 
 postPasswordToken :: AppRoute (API, Id LoginToken)
 postPasswordToken = action POST (pathAPI </> pathId) $ \(api, ti) -> withoutAuth $ do
@@ -62,4 +61,4 @@ postPasswordToken = action POST (pathAPI </> pathId) $ \(api, ti) -> withoutAuth
     passwordForm (siteAccount auth)
   changeAccount auth{ accountPasswd = Just pw } -- or should this be withAuth?
   _ <- removeLoginToken tok
-  withReaderT authApp $ loginAccount api (view tok) False
+  loginAccount api (view tok) False

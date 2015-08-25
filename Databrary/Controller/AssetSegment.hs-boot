@@ -8,5 +8,5 @@ import Databrary.Model.AssetSegment.Types
 import Databrary.Action
 
 viewAssetSegment :: AppRoute (API, Maybe (Id Volume), Id Slot, Id Asset)
-serveAssetSegment :: Bool -> AssetSegment -> AuthAction
+serveAssetSegment :: Bool -> AssetSegment -> AppAction
 downloadAssetSegment :: AppRoute (Id Slot, Id Asset)

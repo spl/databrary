@@ -30,25 +30,26 @@ checkDataPermission o = do
   guardAction (dataPermission o > PermissionNONE) forbiddenResponse
   return o
 
-authAccount :: AuthActionM Account
+authAccount :: AppActionM Account
 authAccount = do
   ident <- peek
   case ident of
-    UnIdentified -> result =<< forbiddenResponse
+    PreIdentified -> fail "authAccount: PreIdentified"
+    NotIdentified -> result =<< forbiddenResponse
     Identified s -> return $ view s
     ReIdentified u -> return $ view u
 
-checkMemberADMIN :: AuthActionM ()
+checkMemberADMIN :: AppActionM ()
 checkMemberADMIN = do
   admin <- peeks accessMember'
   void $ checkPermission PermissionADMIN admin
 
-checkVerfHeader :: (MonadAuthAction q m) => m Bool
+checkVerfHeader :: (MonadAppAction q m) => m Bool
 checkVerfHeader = do
   header <- peeks $ lookupRequestHeader "x-csverf"
   peeks $ Fold.or . liftM2 (==) header . identityVerf
 
-guardVerfHeader :: AuthActionM ()
+guardVerfHeader :: AppActionM ()
 guardVerfHeader = do
   c <- checkVerfHeader
   guardAction c forbiddenResponse

@@ -29,18 +29,16 @@ import Databrary.Model.Asset
 import Databrary.Model.AssetSlot
 import Databrary.Model.Transcode
 import Databrary.Files
-import Databrary.Action.Auth
 import Databrary.Store.Types
 import Databrary.Store.Temp
 import Databrary.Store.Asset
 import Databrary.Store.Transcoder
 import Databrary.Store.AV
+import Databrary.Action.App
 
 import {-# SOURCE #-} Databrary.Controller.Transcode
 
-type TranscodeM a = AuthActionM a
-
-ctlTranscode :: Transcode -> TranscodeArgs -> TranscodeM (ExitCode, String, String)
+ctlTranscode :: Transcode -> TranscodeArgs -> AppActionM (ExitCode, String, String)
 ctlTranscode tc args = do
   t <- peek
   Just ctl <- peeks storageTranscoder
@@ -49,7 +47,7 @@ ctlTranscode tc args = do
   focusIO $ logMsg t ("transcode " ++ unwords args' ++ ": " ++ case c of { ExitSuccess -> "" ; ExitFailure i -> ": exit " ++ show i ++ "\n" } ++ o ++ e)
   return r
 
-transcodeArgs :: Transcode -> TranscodeM TranscodeArgs
+transcodeArgs :: Transcode -> AppActionM TranscodeArgs
 transcodeArgs t@Transcode{..} = do
   Just f <- getAssetFile transcodeOrig
   req <- peek
@@ -65,7 +63,7 @@ transcodeArgs t@Transcode{..} = do
   rng = segmentRange transcodeSegment
   lb = lowerBound rng
 
-startTranscode :: Transcode -> TranscodeM (Maybe TranscodePID)
+startTranscode :: Transcode -> AppActionM (Maybe TranscodePID)
 startTranscode tc = do
   tc' <- updateTranscode tc lock Nothing
   unless (transcodeProcess tc' == lock) $ fail $ "startTranscode " ++ show (transcodeId tc)
@@ -87,7 +85,7 @@ startTranscode tc = do
       return Nothing)
   where lock = Just (-1)
 
-forkTranscode :: Transcode -> TranscodeM ThreadId
+forkTranscode :: Transcode -> AppActionM ThreadId
 forkTranscode tc = focusIO $ \app ->
   forkFinally -- violates InternalState, could use forkResourceT, but we don't need it
     (runReaderT (startTranscode tc) app)
@@ -95,7 +93,7 @@ forkTranscode tc = focusIO $ \app ->
       (\e -> logMsg (view app) ("forkTranscode: " ++ show e) (view app))
       (const $ return ()))
 
-stopTranscode :: Transcode -> TranscodeM Transcode
+stopTranscode :: Transcode -> AppActionM Transcode
 stopTranscode tc@Transcode{ transcodeProcess = Just pid } | pid >= 0 = do
   tc' <- updateTranscode tc Nothing (Just "aborted")
   (r, out, err) <- ctlTranscode tc ["-k", show pid]
@@ -104,7 +102,7 @@ stopTranscode tc@Transcode{ transcodeProcess = Just pid } | pid >= 0 = do
   return tc'
 stopTranscode tc = return tc
 
-collectTranscode :: Transcode -> Int -> Maybe BS.ByteString -> String -> TranscodeM ()
+collectTranscode :: Transcode -> Int -> Maybe BS.ByteString -> String -> AppActionM ()
 collectTranscode tc 0 sha1 logs = do
   tc' <- updateTranscode tc (Just (-2)) (Just logs)
   f <- makeTempFile (const $ return ())

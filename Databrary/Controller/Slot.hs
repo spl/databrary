@@ -41,7 +41,7 @@ import Databrary.Controller.Container
 import Databrary.Controller.Web
 import {-# SOURCE #-} Databrary.Controller.AssetSegment
 
-getSlot :: Permission -> Maybe (Id Volume) -> Id Slot -> AuthActionM Slot
+getSlot :: Permission -> Maybe (Id Volume) -> Id Slot -> AppActionM Slot
 getSlot p mv i =
   checkPermission p =<< maybeAction . maybe id (\v -> mfilter $ (v ==) . view) mv =<< lookupSlot i
 
