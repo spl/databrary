@@ -6,7 +6,7 @@ module Databrary.Controller.Web
   ) where
 
 import Control.Monad ((<=<))
-import Crypto.Hash (digestToHexByteString)
+import Data.ByteArray.Encoding (convertToBase, Base(Base16))
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import Data.Char (isAscii, isAlphaNum)
@@ -53,4 +53,4 @@ webFile = action GET ("web" >/> pathStatic) $ \sp -> do
   StaticPath p <- maybeAction sp
   (wf, wfi) <- either (result <=< returnResponse notFound404 [] . T.pack) return =<< focusIO (lookupWebFile p)
   let wfp = toRawFilePath wf
-  serveFile wfp (unknownFormat{ formatMimeType = webFileFormat wfi }) Nothing (digestToHexByteString $ webFileHash wfi)
+  serveFile wfp (unknownFormat{ formatMimeType = webFileFormat wfi }) Nothing (convertToBase Base16 $ webFileHash wfi)

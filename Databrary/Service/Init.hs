@@ -11,7 +11,7 @@ import Data.Time.Clock (getCurrentTime)
 
 import Paths_databrary (getDataFileName)
 import Databrary.Service.DB (initDB, finiDB)
-import Databrary.Service.Entropy (initEntropy, finiEntropy)
+import Databrary.Service.Entropy (initEntropy)
 import Databrary.HTTP.Client (initHTTPClient, finiHTTPClient)
 import Databrary.Store.Service (initStorage)
 import Databrary.Store.AV (initAV)
@@ -63,7 +63,6 @@ finiService :: Service -> IO ()
 finiService Service{..} = do
   finiHTTPClient serviceHTTPClient
   finiDB serviceDB
-  finiEntropy serviceEntropy
   finiLogs serviceLogs
 
 withService :: C.Config -> (Service -> IO a) -> IO a

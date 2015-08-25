@@ -16,8 +16,9 @@ module Databrary.Model.Token
 
 import Control.Monad (when, void, (<=<))
 import Control.Monad.IO.Class (MonadIO, liftIO)
+import Data.ByteArray (Bytes)
+import Data.ByteArray.Encoding (convertToBase, Base(Base64URLUnpadded))
 import qualified Data.ByteString as BS
-import qualified Data.ByteString.Base64.URL as Base64
 import Data.Int (Int64)
 import Database.PostgreSQL.Typed (pgSQL)
 import Database.PostgreSQL.Typed.Query (simpleQueryFlags)
@@ -60,11 +61,14 @@ lookupUpload tok = do
   auth <- peek
   dbQuery1 $ fmap ($ auth) $(selectQuery selectUpload "$!WHERE upload.token = ${tok} AND expires > CURRENT_TIMESTAMP AND upload.account = ${view auth :: Id Party}")
 
+entropyBase64 :: Int -> Entropy -> IO BS.ByteString
+entropyBase64 n e = (convertToBase Base64URLUnpadded :: Bytes -> BS.ByteString) <$> entropyBytes n e
+
 createToken :: (MonadHasService c m, MonadDB m) => (Id Token -> DBM a) -> m a
 createToken insert = do
   e <- peek
   let loop = do
-        tok <- liftIO $ Id . Base64.encode <$> entropyBytes 24 e
+        tok <- liftIO $ Id <$> entropyBase64 24 e
         r <- dbQuery1 [pgSQL|SELECT token FROM token WHERE token = ${tok}|]
         case r `asTypeOf` Just tok of
           Nothing -> insert tok
@@ -94,7 +98,7 @@ createSession :: (MonadHasService c m, MonadDB m) => SiteAuth -> Bool -> m Sessi
 createSession auth su = do
   e <- peek
   (tok, ex, verf) <- createToken $ \tok -> do
-    verf <- liftIO $ Base64.encode <$> entropyBytes 12 e
+    verf <- liftIO $ entropyBase64 12 e
     dbQuery1' [pgSQL|INSERT INTO session (token, expires, account, superuser, verf) VALUES (${tok}, CURRENT_TIMESTAMP + ${sessionDuration su}::interval, ${view auth :: Id Party}, ${su}, ${verf}) RETURNING token, expires, verf|]
   return $ Session
     { sessionAccountToken = AccountToken

@@ -9,6 +9,7 @@ module Databrary.Controller.Transcode
 import Control.Applicative (optional)
 import Control.Monad (void, liftM3)
 import Data.Bits (shiftL, (.|.))
+import Data.ByteArray (constEq)
 import qualified Data.ByteString as BS
 import Data.Char (isHexDigit, digitToInt)
 import Data.List (stripPrefix)
@@ -17,7 +18,6 @@ import Data.Word (Word8)
 
 import Databrary.Ops
 import Databrary.Has (peeks)
-import Databrary.Service.Crypto
 import Databrary.HTTP.Form.Deform
 import Databrary.HTTP.Path.Parser
 import Databrary.Action
@@ -52,7 +52,7 @@ remoteTranscode = action POST (pathJSON >/> pathId) $ \ti -> do
   withReAuth (transcodeOwner t) $ do
     auth <- peeks $ transcodeAuth t
     (res, sha1, logs) <- runForm Nothing $ do
-      _ <- "auth" .:> (deformCheck "Invalid authentication" (constEqBytes auth) =<< deform)
+      _ <- "auth" .:> (deformCheck "Invalid authentication" (constEq auth :: BS.ByteString -> Bool) =<< deform)
       _ <- "pid" .:> (deformCheck "PID mismatch" (transcodeProcess t ==) =<< deformNonEmpty deform)
       liftM3 (,,)
         ("res" .:> deform)
