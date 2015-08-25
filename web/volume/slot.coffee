@@ -426,8 +426,10 @@ app.controller('volume/slot', [
           # We don't want to have the item snap to itself.
 
           # We want to have all the times that are finite in our array to compare against
-          listOfAllPlacements.push i.lt if i.lt.defined
-          listOfAllPlacements.push i.ut if i.ut.defined
+          listOfAllPlacements.push i.lt if i.lt.defined()
+          listOfAllPlacements.push i.ut if i.ut.defined()
+
+        listOfAllPlacements.push ruler.position if ruler.position.defined()
 
         # If there aren't any items in the timeline that we can snap to, let's just break
         # out and return the original time sent in.
