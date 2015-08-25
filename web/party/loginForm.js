@@ -1,8 +1,8 @@
 'use strict';
 
 app.directive('loginForm', [
-  'modelService', 'routerService', '$timeout',
-  function (models, router, $timeout) { return {
+  '$route', 'modelService', 'routerService', '$timeout',
+  function ($route, models, router, $timeout) { return {
     restrict: 'E',
     templateUrl: 'party/loginForm.html',
     link: function ($scope) {
@@ -15,7 +15,10 @@ app.directive('loginForm', [
         models.Login.login(form.data).then(function () {
           form.validator.server({});
           form.$setPristine();
-          router.back();
+          if ($route.current.controller === 'party/login')
+            router.back();
+          else
+            $route.reload();
         }, function (res) {
           form.$setUnsubmitted();
           form.validator.server(res, true);
