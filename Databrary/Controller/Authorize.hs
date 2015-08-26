@@ -38,7 +38,7 @@ import Databrary.Controller.Form
 import Databrary.Controller.Party
 import Databrary.View.Authorize
 
-viewAuthorize :: AppRoute (API, PartyTarget, AuthorizeTarget)
+viewAuthorize :: ActionRoute (API, PartyTarget, AuthorizeTarget)
 viewAuthorize = action GET (pathAPI </>> pathPartyTarget </> pathAuthorizeTarget) $ \(api, i, AuthorizeTarget app oi) -> withAuth $ do
   p <- getParty (Just PermissionADMIN) i
   o <- maybeAction =<< lookupParty oi
@@ -46,10 +46,10 @@ viewAuthorize = action GET (pathAPI </>> pathPartyTarget </> pathAuthorizeTarget
   c <- lookupAuthorize child parent
   let c' = Authorize (Authorization mempty child parent) Nothing `fromMaybe` c
   case api of
-    JSON -> okResponse [] $ JSON.Object $ authorizeJSON c'
+    JSON -> return $ okResponse [] $ JSON.Object $ authorizeJSON c'
     HTML
-      | app -> okResponse [] ("" :: T.Text) -- TODO
-      | otherwise -> blankForm (htmlAuthorizeForm c')
+      | app -> return $ okResponse [] ("" :: T.Text) -- TODO
+      | otherwise -> peeks $ blankForm . htmlAuthorizeForm c'
 
 partyDelegates :: (MonadDB m, MonadHasIdentity c m) => Party -> m [Account]
 partyDelegates p =
@@ -62,7 +62,7 @@ partyDelegates p =
 authorizeAddr :: Static -> [Either T.Text Account]
 authorizeAddr = return . Left . staticAuthorizeAddr
 
-postAuthorize :: AppRoute (API, PartyTarget, AuthorizeTarget)
+postAuthorize :: ActionRoute (API, PartyTarget, AuthorizeTarget)
 postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarget) $ \arg@(api, i, AuthorizeTarget app oi) -> withAuth $ do
   p <- getParty (Just PermissionADMIN) i
   o <- maybeAction . mfilter ((0 <) . unId . partyId) =<< lookupParty oi
@@ -123,20 +123,20 @@ postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarge
           ]
       return a
   case api of
-    JSON -> okResponse [] $ JSON.Object $ Fold.foldMap authorizeJSON a JSON..+ ("party" JSON..= partyJSON o)
-    HTML -> otherRouteResponse [] viewAuthorize arg
+    JSON -> return $ okResponse [] $ JSON.Object $ Fold.foldMap authorizeJSON a JSON..+ ("party" JSON..= partyJSON o)
+    HTML -> peeks $ otherRouteResponse [] viewAuthorize arg
 
-deleteAuthorize :: AppRoute (API, PartyTarget, AuthorizeTarget)
+deleteAuthorize :: ActionRoute (API, PartyTarget, AuthorizeTarget)
 deleteAuthorize = action DELETE (pathAPI </>> pathPartyTarget </> pathAuthorizeTarget) $ \arg@(api, i, AuthorizeTarget app oi) -> withAuth $ do
   p <- getParty (Just PermissionADMIN) i
   o <- maybeAction =<< lookupParty oi
   let (child, parent) = if app then (p, o) else (o, p)
   _ <- removeAuthorize $ Authorize (Authorization mempty child parent) Nothing
   case api of
-    JSON -> okResponse [] $ JSON.object ["party" JSON..= partyJSON o]
-    HTML -> otherRouteResponse [] viewAuthorize arg
+    JSON -> return $ okResponse [] $ JSON.object ["party" JSON..= partyJSON o]
+    HTML -> peeks $ otherRouteResponse [] viewAuthorize arg
 
-postAuthorizeNotFound :: AppRoute (API, PartyTarget)
+postAuthorizeNotFound :: ActionRoute (API, PartyTarget)
 postAuthorizeNotFound = action POST (pathAPI </> pathPartyTarget </< "notfound") $ \(api, i) -> withAuth $ do
   p <- getParty (Just PermissionADMIN) i
   agent <- peeks $ fmap accountEmail . partyAccount
@@ -147,4 +147,4 @@ postAuthorizeNotFound = action POST (pathAPI </> pathPartyTarget </< "notfound")
   sendMail authaddr
     ("Databrary authorization request from " <> partyName p)
     $ BSL.fromChunks [TE.encodeUtf8 (partyName p), " <", maybe "" TE.encodeUtf8 agent, "> has requested to be authorized by ", TE.encodeUtf8 name, maybe "" (\it -> " (" <> TE.encodeUtf8 it <> ")") info, ".\n"]
-  emptyResponse noContent204 []
+  return $ emptyResponse noContent204 []

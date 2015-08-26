@@ -18,16 +18,16 @@ import Databrary.Action
 import Databrary.Controller.Paths
 import Databrary.Controller.Volume
 
-postVolumeMetric :: AppRoute (Id Volume, (Id RecordCategory, Maybe (Id Metric)))
+postVolumeMetric :: ActionRoute (Id Volume, (Id RecordCategory, Maybe (Id Metric)))
 postVolumeMetric = action PUT (pathJSON >/> pathId </> (pathId </> pathMaybe pathId)) $ \(vi, (c, mm)) -> withAuth $ do
   v <- getVolume PermissionEDIT vi
   r <- maybe (addVolumeCategory v c) (\m -> do
     r <- addVolumeMetric v c m
     return $ if r then [m] else []) mm
-  okResponse [] $ JSON.toJSON r
+  return $ okResponse [] $ JSON.toJSON r
 
-deleteVolumeMetric :: AppRoute (Id Volume, (Id RecordCategory, Maybe (Id Metric)))
+deleteVolumeMetric :: ActionRoute (Id Volume, (Id RecordCategory, Maybe (Id Metric)))
 deleteVolumeMetric = action DELETE (pathJSON >/> pathId </> (pathId </> pathMaybe pathId)) $ \(vi, (c, mm)) -> withAuth $ do
   v <- getVolume PermissionEDIT vi
   r <- maybe (removeVolumeCategory v c) (fmap fromEnum . removeVolumeMetric v c) mm
-  okResponse [] $ JSON.toJSON r
+  return $ okResponse [] $ JSON.toJSON r

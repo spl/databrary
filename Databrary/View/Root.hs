@@ -7,8 +7,8 @@ import qualified Text.Blaze.Html5 as H
 
 import Databrary.Has (view)
 import Databrary.Model.Identity
+import Databrary.Action.Types
 import Databrary.Action.Route
-import Databrary.Action.App
 import Databrary.Controller.Paths
 import Databrary.Controller.Login
 import Databrary.Controller.Volume
@@ -16,7 +16,7 @@ import Databrary.Controller.Party
 import Databrary.View.Template
 import Databrary.View.Html
 
-htmlRoot :: AppRequest -> H.Html
+htmlRoot :: Context -> H.Html
 htmlRoot req = htmlTemplate req Nothing $ \js -> do
   H.ul $ do
     H.li $ foldIdentity

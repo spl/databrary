@@ -9,10 +9,10 @@ import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as HA
 
 import Databrary.Has (view)
-import Databrary.Action
 import Databrary.Model.Transcode
 import Databrary.Model.Asset
 import Databrary.Model.Party
+import Databrary.Action
 import Databrary.Controller.Paths
 import Databrary.View.Html
 import Databrary.View.Template
@@ -21,7 +21,7 @@ import Databrary.Controller.Asset
 import Databrary.Controller.Party
 import {-# SOURCE #-} Databrary.Controller.Transcode
 
-htmlTranscodes :: [Transcode] -> AppRequest -> H.Html
+htmlTranscodes :: [Transcode] -> Context -> H.Html
 htmlTranscodes tl req = htmlTemplate req (Just "transcodes") $ \js -> do
   H.table $ do
     H.thead $ H.tr $

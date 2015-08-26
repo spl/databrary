@@ -2,7 +2,7 @@ module Databrary.View.Error where
 
 import qualified Text.Blaze.Html5 as H
 
-import Databrary.Action.App
+import Databrary.Action.Types
 
-htmlNotFound :: AppRequest -> H.Html
-htmlForbidden :: AppRequest -> H.Html
+htmlNotFound :: Context -> H.Html
+htmlForbidden :: Context -> H.Html

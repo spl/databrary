@@ -4,4 +4,4 @@ import Databrary.Model.Id.Types
 import Databrary.Model.Slot.Types
 import Databrary.Action
 
-postComment :: AppRoute (API, Id Slot)
+postComment :: ActionRoute (API, Id Slot)

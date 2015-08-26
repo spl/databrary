@@ -13,7 +13,7 @@ import Data.Monoid ((<>), mempty)
 import qualified Data.Text as T
 
 import Databrary.Ops
-import Databrary.Has (view, peek, focusIO)
+import Databrary.Has
 import Databrary.Service.Mail
 import Databrary.Static.Fillin
 import Databrary.Model.Permission
@@ -24,7 +24,7 @@ import Databrary.Model.Token
 import Databrary.HTTP.Form.Deform
 import Databrary.HTTP.Path.Parser
 import Databrary.Action
-import Databrary.Action.App
+import Databrary.Action.Types
 import Databrary.Controller.Paths
 import Databrary.Controller.Form
 import Databrary.Controller.Permission
@@ -33,7 +33,7 @@ import Databrary.Controller.Token
 import Databrary.Controller.Angular
 import Databrary.View.Register
 
-resetPasswordMail :: Either T.Text SiteAuth -> T.Text -> (Maybe BSL.ByteString -> BSL.ByteString) -> AppActionM ()
+resetPasswordMail :: Either T.Text SiteAuth -> T.Text -> (Maybe BSL.ByteString -> BSL.ByteString) -> ActionM ()
 resetPasswordMail (Left email) subj body =
   sendMail [Left email] subj (body Nothing)
 resetPasswordMail (Right auth) subj body = do
@@ -42,14 +42,14 @@ resetPasswordMail (Right auth) subj body = do
   sendMail [Right $ view auth] subj
     (body $ Just $ BSB.toLazyByteString $ actionURL (Just req) viewLoginToken (HTML, tok) [])
 
-viewRegister :: AppRoute ()
+viewRegister :: ActionRoute ()
 viewRegister = action GET (pathHTML </< "user" </< "register") $ \() -> withAuth $ do
   angular
   maybeIdentity
-    (blankForm htmlRegister)
-    (\_ -> otherRouteResponse [] viewParty (HTML, TargetProfile))
+    (peeks $ blankForm . htmlRegister)
+    (\_ -> peeks $ otherRouteResponse [] viewParty (HTML, TargetProfile))
 
-postRegister :: AppRoute API
+postRegister :: ActionRoute API
 postRegister = action POST (pathAPI </< "user" </< "register") $ \api -> withoutAuth $ do
   reg <- runForm (api == HTML ?> htmlRegister) $ do
     name <- "sortname" .:> (deformRequired =<< deform)
@@ -78,22 +78,22 @@ postRegister = action POST (pathAPI </< "user" </< "register") $ \api -> without
       \Once you've validated your e-mail, you will be able to request authorization in order to be granted full access to Databrary.\n"
   date <- peek
   focusIO $ staticSendInvestigator (view auth) date
-  okResponse [] $ "Your confirmation email has been sent to '" <> accountEmail reg <> "'."
+  return $ okResponse [] $ "Your confirmation email has been sent to '" <> accountEmail reg <> "'."
 
-resendInvestigator :: AppRoute (Id Party)
+resendInvestigator :: ActionRoute (Id Party)
 resendInvestigator = action POST (pathHTML >/> pathId </< "investigator") $ \i -> withAuth $ do
   checkMemberADMIN
   p <- getParty (Just PermissionREAD) (TargetParty i)
   date <- peek
   focusIO $ staticSendInvestigator p date
-  okResponse [] ("sent" :: String)
+  return $ okResponse [] ("sent" :: String)
 
-viewPasswordReset :: AppRoute ()
+viewPasswordReset :: ActionRoute ()
 viewPasswordReset = action GET (pathHTML </< "user" </< "password") $ \() -> withoutAuth $ do
   angular
-  blankForm htmlPasswordReset
+  peeks $ blankForm . htmlPasswordReset
 
-postPasswordReset :: AppRoute API
+postPasswordReset :: ActionRoute API
 postPasswordReset = action POST (pathAPI </< "user" </< "password") $ \api -> withoutAuth $ do
   email <- runForm (api == HTML ?> htmlPasswordReset) $ do
     "email" .:> emailTextForm
@@ -107,5 +107,5 @@ postPasswordReset = action POST (pathAPI </< "user" </< "password") $ \api -> wi
       "Unfortunately, no Databrary account was found for this email address. You can\n\
       \try again with a different email address, or reply to this email for assistance.\n"
       ("Otherwise, you may use this link to reset your Databrary password:\n\n" <>)
-  okResponse [] $ "Your password reset information has been sent to '" <> email <> "'."
+  return $ okResponse [] $ "Your password reset information has been sent to '" <> email <> "'."
 

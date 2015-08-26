@@ -12,6 +12,6 @@ data AssetTarget
   | AssetTargetSlot Slot
   | AssetTargetAsset AssetSlot
 
-postAsset :: AppRoute (API, Id Asset)
-createAsset :: AppRoute (API, Id Volume)
-createSlotAsset :: AppRoute (API, Id Slot)
+postAsset :: ActionRoute (API, Id Asset)
+createAsset :: ActionRoute (API, Id Volume)
+createSlotAsset :: ActionRoute (API, Id Slot)

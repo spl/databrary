@@ -103,12 +103,12 @@ volumeCSV vol crsl = do
       hr = "session-id" : "session-name" : "session-date" : "session-release" : headerRow hl
   return $ buildCSV $ hr : map (uncurry cr) crl
 
-csvVolume :: AppRoute (Id Volume)
+csvVolume :: ActionRoute (Id Volume)
 csvVolume = action GET (pathId </< "csv") $ \vi -> withAuth $ do
   vol <- getVolume PermissionPUBLIC vi
   r <- lookupVolumeContainersRecords vol
   csv <- volumeCSV vol r
-  okResponse 
+  return $ okResponse 
     [ (hContentType, "text/csv;charset=utf-8")
     , ("content-disposition", "attachment; filename=" <> quoteHTTP (makeFilename (volumeDownloadName vol) <> ".csv"))
     ] csv

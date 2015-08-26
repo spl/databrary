@@ -18,7 +18,7 @@ import qualified Data.Foldable as Fold
 import Data.Maybe (fromMaybe)
 
 import Databrary.Ops
-import Databrary.Has (view, peek)
+import Databrary.Has
 import Databrary.Model.Id.Types
 import Databrary.Model.Party
 import Databrary.Model.Identity
@@ -28,7 +28,7 @@ import Databrary.HTTP.Cookie
 import Databrary.HTTP.Form.Deform
 import Databrary.HTTP.Path.Parser
 import Databrary.Action
-import Databrary.Action.App
+import Databrary.Action.Types
 import Databrary.Controller.Paths
 import Databrary.Controller.Form
 import Databrary.Controller.Angular
@@ -37,26 +37,26 @@ import Databrary.View.Login
 import {-# SOURCE #-} Databrary.Controller.Root
 import {-# SOURCE #-} Databrary.Controller.Party
 
-loginAccount :: API -> SiteAuth -> Bool -> AppAction
+loginAccount :: API -> SiteAuth -> Bool -> ActionM Response
 loginAccount api auth su = do
   sess <- createSession auth su
   let Token (Id tok) ex = view sess
   cook <- setSignedCookie "session" tok ex
   case api of
-    JSON -> okResponse [cook] $ identityJSON (Identified sess)
-    HTML -> otherRouteResponse [cook] viewParty (HTML, TargetProfile)
+    JSON -> return $ okResponse [cook] $ identityJSON (Identified sess)
+    HTML -> peeks $ otherRouteResponse [cook] viewParty (HTML, TargetProfile)
 
-viewLogin :: AppRoute ()
+viewLogin :: ActionRoute ()
 viewLogin = action GET ("user" >/> "login") $ \() -> withAuth $ do
   angular
   maybeIdentity
-    (blankForm htmlLogin)
-    (const $ otherRouteResponse [] viewParty (HTML, TargetProfile))
+    (peeks $ blankForm . htmlLogin)
+    (const $ peeks $ otherRouteResponse [] viewParty (HTML, TargetProfile))
 
 checkPassword :: BS.ByteString -> SiteAuth -> Bool
 checkPassword p = Fold.any (`BCrypt.validatePassword` p) . accountPasswd
 
-postLogin :: AppRoute API
+postLogin :: ActionRoute API
 postLogin = action POST (pathAPI </< "user" </< "login") $ \api -> withoutAuth $ do
   (Just auth, su) <- runForm (api == HTML ?> htmlLogin) $ do
     email <- "email" .:> emailTextForm
@@ -74,19 +74,19 @@ postLogin = action POST (pathAPI </< "user" </< "login") $ \api -> withoutAuth $
     return (auth, su)
   loginAccount api auth su
 
-postLogout :: AppRoute API
+postLogout :: ActionRoute API
 postLogout = action POST (pathAPI </< "user" </< "logout") $ \api -> withAuth $ do
   _ <- maybeIdentity (return False) removeSession
   case api of
-    JSON -> okResponse [cook] $ identityJSON NotIdentified
-    HTML -> otherRouteResponse [cook] viewRoot HTML
+    JSON -> return $ okResponse [cook] $ identityJSON NotIdentified
+    HTML -> peeks $ otherRouteResponse [cook] viewRoot HTML
   where cook = clearCookie "session"
 
-viewUser :: AppRoute ()
+viewUser :: ActionRoute ()
 viewUser = action GET (pathJSON </< "user") $ \() -> withAuth $
-  okResponse [] . identityJSON =<< peek
+  peeks $ okResponse [] . identityJSON
 
-postUser :: AppRoute API
+postUser :: ActionRoute API
 postUser = action POST (pathAPI </< "user") $ \api -> withAuth $ do
   auth <- peek
   let acct = siteAccount auth
@@ -105,5 +105,5 @@ postUser = action POST (pathAPI </< "user") $ \api -> withAuth $ do
       }
   changeAccount auth'
   case api of
-    JSON -> okResponse [] $ partyJSON $ accountParty $ siteAccount auth'
-    HTML -> otherRouteResponse [] viewParty (api, TargetProfile)
+    JSON -> return $ okResponse [] $ partyJSON $ accountParty $ siteAccount auth'
+    HTML -> peeks $ otherRouteResponse [] viewParty (api, TargetProfile)

@@ -10,5 +10,5 @@ data TranscodeAction
   | TranscodeFail
 instance Show TranscodeAction
 
-remoteTranscode :: AppRoute (Id Transcode)
-postTranscode :: AppRoute (Id Transcode)
+remoteTranscode :: ActionRoute (Id Transcode)
+postTranscode :: ActionRoute (Id Transcode)

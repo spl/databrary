@@ -33,7 +33,7 @@ import Databrary.Controller.Transcode
 import Databrary.Controller.Ingest
 import Databrary.Controller.Web
 
-routeMap :: RouteMap AppAction
+routeMap :: RouteMap Action
 routeMap = fromRouteList
   [ route viewRoot
   , route viewRobotsTxt

@@ -16,7 +16,7 @@ module Databrary.Controller.Asset
   ) where
 
 import Control.Applicative ((<|>))
-import Control.Monad ((<=<), void, guard)
+import Control.Monad ((<=<), void, guard, when)
 import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.Trans.Class (lift)
 import qualified Data.ByteString as BS
@@ -70,7 +70,7 @@ import Databrary.Controller.Slot
 import {-# SOURCE #-} Databrary.Controller.AssetSegment
 import Databrary.View.Asset
 
-getAsset :: Permission -> Id Asset -> AppActionM AssetSlot
+getAsset :: Permission -> Id Asset -> ActionM AssetSlot
 getAsset p i =
   checkPermission p =<< maybeAction =<< lookupAssetSlot i
 
@@ -93,14 +93,14 @@ assetJSONQuery vol = JSON.jsonQuery (assetSlotJSON vol) (assetJSONField vol)
 assetDownloadName :: Asset -> [T.Text]
 assetDownloadName a = T.pack (show (assetId a)) : maybeToList (assetName a)
 
-viewAsset :: AppRoute (API, Id Asset)
+viewAsset :: ActionRoute (API, Id Asset)
 viewAsset = action GET (pathAPI </> pathId) $ \(api, i) -> withAuth $ do
   asset <- getAsset PermissionPUBLIC i
   case api of
-    JSON -> okResponse [] =<< assetJSONQuery asset =<< peeks Wai.queryString
+    JSON -> okResponse [] <$> (assetJSONQuery asset =<< peeks Wai.queryString)
     HTML
-      | Just s <- assetSlot asset -> otherRouteResponse [] viewAssetSegment (api, Just (view asset), slotId s, assetId (slotAsset asset))
-      | otherwise -> okResponse [] $ T.pack $ show $ assetId $ slotAsset asset -- TODO
+      | Just s <- assetSlot asset -> peeks $ otherRouteResponse [] viewAssetSegment (api, Just (view asset), slotId s, assetId (slotAsset asset))
+      | otherwise -> return $ okResponse [] $ T.pack $ show $ assetId $ slotAsset asset -- TODO
 
 data AssetTarget
   = AssetTargetVolume Volume
@@ -136,7 +136,7 @@ detectUpload u =
   either deformError' (return . FileUpload u)
     =<< lift (probeFile (fileUploadName u) =<< peeks (fileUploadPath u))
 
-processAsset :: API -> AssetTarget -> AppAction
+processAsset :: API -> AssetTarget -> ActionM Response
 processAsset api target = do
   let as@AssetSlot{ slotAsset = a, assetSlot = s } = case target of
         AssetTargetVolume t -> assetNoSlot $ blankAsset t
@@ -204,53 +204,53 @@ processAsset api target = do
   _ <- changeAsset (slotAsset as'') Nothing
   _ <- changeAssetSlot as''
   case api of
-    JSON -> okResponse [] $ assetSlotJSON as''
-    HTML -> otherRouteResponse [] viewAsset (api, assetId (slotAsset as''))
+    JSON -> return $ okResponse [] $ assetSlotJSON as''
+    HTML -> peeks $ otherRouteResponse [] viewAsset (api, assetId (slotAsset as''))
 
-postAsset :: AppRoute (API, Id Asset)
+postAsset :: ActionRoute (API, Id Asset)
 postAsset = multipartAction $ action POST (pathAPI </> pathId) $ \(api, ai) -> withAuth $ do
   asset <- getAsset PermissionEDIT ai
   r <- assetIsSuperseded (slotAsset asset)
-  guardAction (not r) $
-    returnResponse conflict409 [] ("This file has already been replaced." :: T.Text)
+  when r $ result $
+    response conflict409 [] ("This file has already been replaced." :: T.Text)
   processAsset api $ AssetTargetAsset asset
 
-viewAssetEdit :: AppRoute (Id Asset)
+viewAssetEdit :: ActionRoute (Id Asset)
 viewAssetEdit = action GET (pathHTML >/> pathId </< "edit") $ \ai -> withAuth $ do
   asset <- getAsset PermissionEDIT ai
-  blankForm $ htmlAssetEdit $ AssetTargetAsset asset
+  peeks $ blankForm . htmlAssetEdit (AssetTargetAsset asset)
 
-createAsset :: AppRoute (API, Id Volume)
+createAsset :: ActionRoute (API, Id Volume)
 createAsset = multipartAction $ action POST (pathAPI </> pathId </< "asset") $ \(api, vi) -> withAuth $ do
   v <- getVolume PermissionEDIT vi
   processAsset api $ AssetTargetVolume v
 
-viewAssetCreate :: AppRoute (Id Volume)
+viewAssetCreate :: ActionRoute (Id Volume)
 viewAssetCreate = action GET (pathHTML >/> pathId </< "asset") $ \vi -> withAuth $ do
   v <- getVolume PermissionEDIT vi
-  blankForm $ htmlAssetEdit $ AssetTargetVolume v
+  peeks $ blankForm . htmlAssetEdit (AssetTargetVolume v)
 
-createSlotAsset :: AppRoute (API, Id Slot)
+createSlotAsset :: ActionRoute (API, Id Slot)
 createSlotAsset = multipartAction $ action POST (pathAPI </> pathSlotId </< "asset") $ \(api, si) -> withAuth $ do
   v <- getSlot PermissionEDIT Nothing si
   processAsset api $ AssetTargetSlot v
 
-viewSlotAssetCreate :: AppRoute (Id Slot)
+viewSlotAssetCreate :: ActionRoute (Id Slot)
 viewSlotAssetCreate = action GET (pathHTML >/> pathSlotId </< "asset") $ \si -> withAuth $ do
   s <- getSlot PermissionEDIT Nothing si
-  blankForm $ htmlAssetEdit $ AssetTargetSlot s
+  peeks $ blankForm . htmlAssetEdit (AssetTargetSlot s)
 
-deleteAsset :: AppRoute (API, Id Asset)
+deleteAsset :: ActionRoute (API, Id Asset)
 deleteAsset = action DELETE (pathAPI </> pathId) $ \(api, ai) -> withAuth $ do
   guardVerfHeader
   asset <- getAsset PermissionEDIT ai
   let asset' = asset{ assetSlot = Nothing }
   _ <- changeAssetSlot asset'
   case api of
-    JSON -> okResponse [] $ assetSlotJSON asset'
-    HTML -> otherRouteResponse [] viewAsset (api, assetId (slotAsset asset'))
+    JSON -> return $ okResponse [] $ assetSlotJSON asset'
+    HTML -> peeks $ otherRouteResponse [] viewAsset (api, assetId (slotAsset asset'))
 
-downloadAsset :: AppRoute (Id Asset)
+downloadAsset :: ActionRoute (Id Asset)
 downloadAsset = action GET (pathId </< "download") $ \ai -> withAuth $ do
   as <- getAsset PermissionPUBLIC ai
   inline <- peeks $ lookupQueryParameters "inline"

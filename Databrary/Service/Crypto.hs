@@ -49,4 +49,4 @@ unSign sigmsg = do
   where
   (sig, noncemsg) = BS.splitAt hmacLength sigmsg
   (nonce64, msg) = BS.splitAt nonceLength noncemsg
-  nonce = either (const Nothing) Just $ convertFromBase Base64URLUnpadded nonce64
+  nonce = rightJust $ convertFromBase Base64URLUnpadded nonce64

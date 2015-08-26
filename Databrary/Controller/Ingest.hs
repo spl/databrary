@@ -6,12 +6,13 @@ module Databrary.Controller.Ingest
 
 import Control.Applicative ((<*>))
 import Control.Arrow (right)
-import System.Posix.FilePath (takeExtension)
+import Control.Monad (unless)
 import Network.HTTP.Types (badRequest400)
 import Network.Wai.Parse (FileInfo(..))
+import System.Posix.FilePath (takeExtension)
 
 import Databrary.Ops
-import Databrary.Has (focusIO)
+import Databrary.Has
 import Databrary.Model.Id
 import Databrary.Model.Permission
 import Databrary.Model.Volume
@@ -28,14 +29,14 @@ import Databrary.Controller.Form
 import Databrary.Controller.Volume
 import Databrary.View.Ingest
 
-viewIngest :: AppRoute (Id Volume)
+viewIngest :: ActionRoute (Id Volume)
 viewIngest = action GET (pathId </< "ingest") $ \vi -> withAuth $ do
   checkMemberADMIN
   s <- focusIO getIngestStatus
   v <- getVolume PermissionEDIT vi
-  blankForm $ htmlIngestForm v s
+  peeks $ blankForm . htmlIngestForm v s
 
-postIngest :: AppRoute (Id Volume)
+postIngest :: ActionRoute (Id Volume)
 postIngest = multipartAction $ action POST (pathId </< "ingest") $ \vi -> withAuth $ do
   checkMemberADMIN
   s <- focusIO getIngestStatus
@@ -54,5 +55,5 @@ postIngest = multipartAction $ action POST (pathId </< "ingest") $ \vi -> withAu
     (True <$ focusIO abortIngest)
     (\(r,o,j) -> runIngest $ right (map (unId . containerId)) <$> ingestJSON v (fileContent j) r o)
     a
-  guardAction r $ returnResponse badRequest400 [] ("failed" :: String)
-  otherRouteResponse [] viewIngest (volumeId v)
+  unless r $ result $ response badRequest400 [] ("failed" :: String)
+  peeks $ otherRouteResponse [] viewIngest (volumeId v)

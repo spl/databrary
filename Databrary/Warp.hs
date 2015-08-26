@@ -39,7 +39,7 @@ runWarp conf rc app = do
     $ Warp.setServerName (BSC.pack $ "databrary/" ++ showVersion version)
     $ Warp.setOnException (\req e -> do
       t <- getCurrentTime
-      msg <- Trav.mapM (\q -> requestLog t q $ Warp.exceptionResponseForDebug e) req
+      msg <- Trav.mapM (\q -> requestLog t q Nothing $ Warp.exceptionResponseForDebug e) req
       logMsg t (maybe id (\m -> (<>) (m <> "\n")) msg $ toLogStr $ show e) (serviceLogs rc))
     $ Warp.defaultSettings)
     app

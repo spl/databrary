@@ -16,7 +16,7 @@ import qualified Network.Wai as Wai
 import qualified Text.Regex.Posix as Regex
 
 import Databrary.Ops
-import Databrary.Has (peek, peeks, view)
+import Databrary.Has (peeks, view, focusIO)
 #ifdef DEVEL
 import Databrary.Web.Uglify
 #endif
@@ -69,16 +69,15 @@ angularRequest :: Wai.Request -> Maybe BSB.Builder
 angularRequest req = angularEnable js req ?> nojs
   where (js, nojs) = jsURL JSDisabled req
 
-angularResult :: (MonadIO m, MonadAppAction q m) => BSB.Builder -> m ()
-angularResult nojs = do
-  auth <- peek
+angularResult :: BSB.Builder -> Context -> IO ()
+angularResult nojs auth = do
   debug <-
 #ifdef DEVEL
     boolQueryParameter "debug" (view auth) ?$> liftIO allWebJS
 #else
     return Nothing
 #endif
-  result =<< okResponse [] (htmlAngular debug nojs auth)
+  result $ okResponse [] (htmlAngular debug nojs auth)
 
-angular :: (MonadIO m, MonadAppAction q m) => m ()
-angular = Fold.mapM_ angularResult =<< peeks angularRequest
+angular :: (MonadIO m, MonadAction q m) => m ()
+angular = Fold.mapM_ (focusIO . angularResult) =<< peeks angularRequest

@@ -41,7 +41,7 @@ import Databrary.Controller.Container
 import Databrary.Controller.Web
 import {-# SOURCE #-} Databrary.Controller.AssetSegment
 
-getSlot :: Permission -> Maybe (Id Volume) -> Id Slot -> AppActionM Slot
+getSlot :: Permission -> Maybe (Id Volume) -> Id Slot -> ActionM Slot
 getSlot p mv i =
   checkPermission p =<< maybeAction . maybe id (\v -> mfilter $ (v ==) . view) mv =<< lookupSlot i
 
@@ -69,21 +69,21 @@ slotDownloadName :: Slot -> [T.Text]
 slotDownloadName s =
   containerDownloadName Nothing (slotContainer s)
 
-viewSlot :: AppRoute (API, (Maybe (Id Volume), Id Slot))
+viewSlot :: ActionRoute (API, (Maybe (Id Volume), Id Slot))
 viewSlot = action GET (pathAPI </> pathMaybe pathId </> pathSlotId) $ \(api, (vi, i)) -> withAuth $ do
   when (api == HTML && isJust vi) angular
   c <- getSlot PermissionPUBLIC vi i
   case api of
-    JSON -> okResponse [] =<< slotJSONQuery c =<< peeks Wai.queryString
+    JSON -> okResponse [] <$> (slotJSONQuery c =<< peeks Wai.queryString)
     HTML
-      | isJust vi -> okResponse [] $ BSC.pack $ show $ containerId $ slotContainer c -- TODO
-      | otherwise -> redirectRouteResponse movedPermanently301 [] viewSlot (api, (Just (view c), slotId c))
+      | isJust vi -> return $ okResponse [] $ BSC.pack $ show $ containerId $ slotContainer c -- TODO
+      | otherwise -> peeks $ redirectRouteResponse movedPermanently301 [] viewSlot (api, (Just (view c), slotId c))
 
-thumbSlot :: AppRoute (Maybe (Id Volume), Id Slot)
+thumbSlot :: ActionRoute (Maybe (Id Volume), Id Slot)
 thumbSlot = action GET (pathMaybe pathId </> pathSlotId </< "thumb") $ \(vi, i) -> withAuth $ do
   s <- getSlot PermissionPUBLIC vi i
   e <- lookupSlotThumb s
   maybe
-    (otherRouteResponse [] webFile (Just $ staticPath ["images", "draft.png"]))
-    (\as -> otherRouteResponse [] downloadAssetSegment (slotId $ view as, assetId $ view as))
+    (peeks $ otherRouteResponse [] webFile (Just $ staticPath ["images", "draft.png"]))
+    (\as -> peeks $ otherRouteResponse [] downloadAssetSegment (slotId $ view as, assetId $ view as))
     e

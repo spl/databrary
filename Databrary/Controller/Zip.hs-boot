@@ -4,4 +4,4 @@ import Databrary.Model.Id.Types
 import Databrary.Model.Volume.Types
 import Databrary.Action
 
-zipVolume :: AppRoute (Id Volume)
+zipVolume :: ActionRoute (Id Volume)

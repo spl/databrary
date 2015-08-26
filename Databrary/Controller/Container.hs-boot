@@ -6,6 +6,6 @@ import Databrary.Model.Container.Types
 import Databrary.Model.Slot.Types
 import Databrary.Action
 
-viewContainer :: AppRoute (API, (Maybe (Id Volume), Id Container))
-postContainer :: AppRoute (API, Id Slot)
-createContainer :: AppRoute (API, Id Volume)
+viewContainer :: ActionRoute (API, (Maybe (Id Volume), Id Container))
+postContainer :: ActionRoute (API, Id Slot)
+createContainer :: ActionRoute (API, Id Volume)

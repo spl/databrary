@@ -47,7 +47,7 @@ import Databrary.Controller.Slot
 import Databrary.Controller.Asset
 import Databrary.Controller.Format
 
-getAssetSegment :: Permission -> Maybe (Id Volume) -> Id Slot -> Id Asset -> AppActionM AssetSegment
+getAssetSegment :: Permission -> Maybe (Id Volume) -> Id Slot -> Id Asset -> ActionM AssetSegment
 getAssetSegment p mv s a =
   checkPermission p =<< maybeAction . maybe id (\v -> mfilter $ (v ==) . view) mv =<< lookupSlotAssetSegment s a
 
@@ -61,17 +61,17 @@ assetSegmentDownloadName :: AssetSegment -> [T.Text]
 assetSegmentDownloadName a =
   volumeDownloadName (view a) ++ slotDownloadName (view a) ++ assetDownloadName (view a)
 
-viewAssetSegment :: AppRoute (API, Maybe (Id Volume), Id Slot, Id Asset)
+viewAssetSegment :: ActionRoute (API, Maybe (Id Volume), Id Slot, Id Asset)
 viewAssetSegment = action GET (pathAPI </>>> pathMaybe pathId </>> pathSlotId </> pathId) $ \(api, vi, si, ai) -> withAuth $ do
   when (api == HTML && isJust vi) angular
   as <- getAssetSegment PermissionPUBLIC vi si ai
   case api of
-    JSON -> okResponse [] =<< assetSegmentJSONQuery as =<< peeks Wai.queryString
+    JSON -> okResponse [] <$> (assetSegmentJSONQuery as =<< peeks Wai.queryString)
     HTML
-      | isJust vi -> okResponse [] $ T.pack $ show $ assetId $ slotAsset $ segmentAsset as -- TODO
-      | otherwise -> redirectRouteResponse movedPermanently301 [] viewAssetSegment (api, Just (view as), slotId $ view as, view as)
+      | isJust vi -> return $ okResponse [] $ T.pack $ show $ assetId $ slotAsset $ segmentAsset as -- TODO
+      | otherwise -> peeks $ redirectRouteResponse movedPermanently301 [] viewAssetSegment (api, Just (view as), slotId $ view as, view as)
 
-serveAssetSegment :: Bool -> AssetSegment -> AppAction
+serveAssetSegment :: Bool -> AssetSegment -> ActionM Response
 serveAssetSegment dl as = do
   _ <- checkDataPermission as
   sz <- peeks $ readMaybe . BSC.unpack <=< join . listToMaybe . lookupQueryParameters "size"
@@ -82,22 +82,20 @@ serveAssetSegment dl as = do
   either
     (okResponse hd)
     (okResponse hd . (, part))
-    =<< getAssetSegmentStore as sz
+    <$> getAssetSegmentStore as sz
   where
   a = slotAsset $ segmentAsset as
 
-downloadAssetSegment :: AppRoute (Id Slot, Id Asset)
+downloadAssetSegment :: ActionRoute (Id Slot, Id Asset)
 downloadAssetSegment = action GET (pathSlotId </> pathId </< "download") $ \(si, ai) -> withAuth $ do
   as <- getAssetSegment PermissionPUBLIC Nothing si ai
   inline <- peeks $ boolQueryParameter "inline"
   serveAssetSegment (not inline) as
 
-thumbAssetSegment :: AppRoute (Id Slot, Id Asset)
+thumbAssetSegment :: ActionRoute (Id Slot, Id Asset)
 thumbAssetSegment = action GET (pathSlotId </> pathId </< "thumb") $ \(si, ai) -> withAuth $ do
   as <- getAssetSegment PermissionPUBLIC Nothing si ai
   let as' = assetSegmentInterp 0.25 as
   if formatIsImage (view as') && assetBacked (view as)
-    then
-      otherRouteResponse [] downloadAssetSegment (slotId $ view as', assetId $ view as')
-    else
-      otherRouteResponse [] formatIcon (view as)
+    then peeks $ otherRouteResponse [] downloadAssetSegment (slotId $ view as', assetId $ view as')
+    else peeks $ otherRouteResponse [] formatIcon (view as)

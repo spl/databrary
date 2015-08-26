@@ -12,7 +12,7 @@ module Databrary.Controller.Form
   ) where
 
 import Control.Applicative (Applicative, (<$>), (<*>), (<|>))
-import Control.Monad ((<=<), unless)
+import Control.Monad (unless)
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import Control.Monad.Reader (ask)
 import Control.Monad.Trans.Class (lift)
@@ -38,41 +38,40 @@ import Databrary.HTTP.Form (FormData)
 import Databrary.HTTP.Form.Deform
 import Databrary.HTTP.Form.View (runFormView, blankFormView)
 import Databrary.HTTP.Form.Errors (FormErrors)
-import Databrary.Action
+import Databrary.Action.Response
 import Databrary.Action.Types
 import Databrary.Action.Form (getFormData)
 import Databrary.Controller.Permission (checkVerfHeader)
 import Databrary.View.Form (FormHtml)
 
-jsonFormErrors :: MonadAction c m => FormErrors -> m Response
-jsonFormErrors = returnResponse badRequest400 [] . JSON.toJSON
+jsonFormErrors :: FormErrors -> Response
+jsonFormErrors = response badRequest400 [] . JSON.toJSON
 
-htmlFormErrors :: MonadAction c m => (FormErrors -> Html.Html) -> FormErrors -> m Response
-htmlFormErrors f = returnResponse badRequest400 [] . f
+htmlFormErrors :: (FormErrors -> Html.Html) -> FormErrors -> Response
+htmlFormErrors f = response badRequest400 [] . f
 
-handleForm :: (MonadAction c m, MonadIO m) => (FormErrors -> m Response) -> Either FormErrors a -> m a
-handleForm re = either (result <=< re) return
+handleForm :: MonadIO m => (FormErrors -> Response) -> Either FormErrors a -> m a
+handleForm re = either (result . re) return
 
-handleFormErrors :: (MonadAction c m, MonadIO m) => Maybe (FormErrors -> Html.Html) -> Either FormErrors a -> m a
+handleFormErrors :: MonadIO m => Maybe (FormErrors -> Html.Html) -> Either FormErrors a -> m a
 handleFormErrors = handleForm . maybe jsonFormErrors htmlFormErrors
 
-runFormWith :: (MonadAppAction q m, MonadIO m) => FormData f -> Maybe (q -> FormHtml f) -> DeformT f m a -> m a
+runFormWith :: (MonadAction q m, MonadIO m) => FormData f -> Maybe (q -> FormHtml f) -> DeformT f m a -> m a
 runFormWith fd mf fa = do
   req <- ask
   let fv hv = runFormView (hv req) fd
   handleFormErrors (fv <$> mf) =<< runDeform fa fd
 
-runFormFiles :: (MonadAppAction q m, MonadIO m, FileContent f) => [(BS.ByteString, Word64)] -> Maybe (q -> FormHtml f) -> DeformT f m a -> m a
+runFormFiles :: (MonadAction q m, MonadIO m, FileContent f) => [(BS.ByteString, Word64)] -> Maybe (q -> FormHtml f) -> DeformT f m a -> m a
 runFormFiles fl mf fa = do
   fd <- getFormData fl
   runFormWith fd mf fa
 
-runForm :: (MonadAppAction q m, MonadIO m) => Maybe (q -> FormHtml ()) -> DeformT () m a -> m a
+runForm :: (MonadAction q m, MonadIO m) => Maybe (q -> FormHtml ()) -> DeformT () m a -> m a
 runForm = runFormFiles []
 
-blankForm :: ActionData q => (q -> FormHtml f) -> Action q
-blankForm hv =
-  okResponse [] . blankFormView . hv =<< ask
+blankForm :: FormHtml f -> Response
+blankForm = okResponse [] . blankFormView
 
 emailRegex :: Regex.Regex
 emailRegex = Regex.makeRegexOpts Regex.compIgnoreCase Regex.blankExecOpt
@@ -101,7 +100,7 @@ paginateForm = Paginate
   <*> get "limit" paginateLimit
   where get t f = t .:> (deformCheck ("invalid " <> t) (\i -> i >= f minBound && i <= f maxBound) =<< deform) <|> return (f def)
 
-csrfForm :: (MonadAppAction q m) => DeformT f m ()
+csrfForm :: (MonadAction q m) => DeformT f m ()
 csrfForm = do
   r <- lift checkVerfHeader
   unless r $ do

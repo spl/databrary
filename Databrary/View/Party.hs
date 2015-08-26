@@ -18,11 +18,12 @@ import qualified Text.Blaze.Html5.Attributes as HA
 
 import Databrary.Ops
 import Databrary.Has (view)
-import Databrary.Action
 import Databrary.Model.Permission
 import Databrary.Model.Party
 import Databrary.Model.ORCID
 import Databrary.Store.Temp
+import Databrary.Action.Types
+import Databrary.Action
 import Databrary.Controller.Paths
 import Databrary.View.Html
 import Databrary.View.Template
@@ -34,7 +35,7 @@ import {-# SOURCE #-} Databrary.Controller.Party
 import {-# SOURCE #-} Databrary.Controller.Volume
 import {-# SOURCE #-} Databrary.Controller.Register
 
-htmlPartyView :: Party -> AppRequest -> H.Html
+htmlPartyView :: Party -> Context -> H.Html
 htmlPartyView p@Party{..} req = htmlTemplate req (Just $ partyName p) $ \js -> do
   when (view p >= PermissionEDIT) $
     H.p $
@@ -65,7 +66,7 @@ htmlPartyForm t = do
   field "affiliation" $ inputText $ partyAffiliation =<< t
   field "url" $ inputText $ show <$> (partyURL =<< t)
 
-htmlPartyEdit :: Maybe Party -> AppRequest -> FormHtml TempFile
+htmlPartyEdit :: Maybe Party -> Context -> FormHtml TempFile
 htmlPartyEdit t = maybe
   (htmlForm "Create party" createParty HTML)
   (\p -> htmlForm
@@ -88,13 +89,13 @@ htmlPartySearchForm pf = do
   field "authorization" $ inputEnum False $ partyFilterAuthorization pf
   field "institution" $ inputCheckbox $ fromMaybe False $ partyFilterInstitution pf
 
-htmlPartySearch :: PartyFilter -> [Party] -> AppRequest -> FormHtml f
+htmlPartySearch :: PartyFilter -> [Party] -> Context -> FormHtml f
 htmlPartySearch pf pl req = htmlForm "Search users" queryParties HTML
   (htmlPartySearchForm pf)
   (\js -> htmlPaginate (htmlPartyList js) (partyFilterPaginate pf) pl (view req))
   req
 
-htmlPartyAdmin :: PartyFilter -> [Party] -> AppRequest -> FormHtml f
+htmlPartyAdmin :: PartyFilter -> [Party] -> Context -> FormHtml f
 htmlPartyAdmin pf pl req = htmlForm "party admin" adminParties ()
   (htmlPartySearchForm pf)
   (\js -> htmlPaginate
@@ -122,7 +123,7 @@ htmlPartyAdmin pf pl req = htmlForm "party admin" adminParties ()
     (partyFilterPaginate pf) pl (view req))
   req
 
-htmlPartyDelete :: Party -> AppRequest -> H.Html
+htmlPartyDelete :: Party -> Context -> H.Html
 htmlPartyDelete p@Party{..} req = htmlTemplate req (Just $ "delete " <> partyName p) $ \js -> do
   actionForm deleteParty partyId js $ do
     H.a H.! actionLink viewParty (HTML, TargetParty partyId) js

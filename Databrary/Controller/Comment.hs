@@ -6,7 +6,7 @@ module Databrary.Controller.Comment
 import Data.Maybe (maybeToList)
 
 import Databrary.Ops
-import Databrary.Has (view)
+import Databrary.Has
 import Databrary.Model.Permission
 import Databrary.Model.Id
 import Databrary.Model.Slot
@@ -20,7 +20,7 @@ import Databrary.Controller.Form
 import Databrary.Controller.Slot
 import Databrary.View.Comment
 
-postComment :: AppRoute (API, Id Slot)
+postComment :: ActionRoute (API, Id Slot)
 postComment = action POST (pathAPI </> pathSlotId </< "comment") $ \(api, si) -> withAuth $ do
   u <- authAccount
   s <- getSlot PermissionSHARED Nothing si
@@ -34,5 +34,5 @@ postComment = action POST (pathAPI </> pathSlotId </< "comment") $ \(api, si) ->
       }
   c' <- addComment c
   case api of
-    JSON -> okResponse [] $ commentJSON c'
-    HTML -> otherRouteResponse [] viewSlot (api, (Just (view c'), slotId (commentSlot c')))
+    JSON -> return $ okResponse [] $ commentJSON c'
+    HTML -> peeks $ otherRouteResponse [] viewSlot (api, (Just (view c'), slotId (commentSlot c')))

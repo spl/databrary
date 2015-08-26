@@ -92,14 +92,14 @@ logStr l t s = do
   zt <- utcToLocalZonedTime t
   pushLogStr l $ time zt & s <> char '\n'
 
-requestLog :: Timestamp -> Wai.Request -> Wai.Response -> IO LogStr
-requestLog qt q r = do
+requestLog :: Timestamp -> Wai.Request -> Maybe String -> Wai.Response -> IO LogStr
+requestLog qt q u r = do
   (Just h, Nothing) <- Net.getNameInfo [Net.NI_NUMERICHOST] True False $ Wai.remoteHost q
   rt <- getCurrentTime
   return
     $ pad (-15) h
     & pad 3 (show $ HTTP.statusCode $ Wai.responseStatus r)
-    & pad 4 (fromMaybe "-" $ lookup "user" rh)
+    & pad 4 (fromMaybe "-" u)
     & pad 4 (show (floor $ 1000 * rt `diffUTCTime` qt :: Integer))
     & str (Wai.requestMethod q)
     & str (Wai.rawPathInfo q) <> str (Wai.rawQueryString q)
@@ -115,7 +115,7 @@ logMsg t m Logs{ loggerMessages = Just l } = do
   logStr l t $ str m
 logMsg _ _ _ = return ()
 
-logAccess :: Timestamp -> Wai.Request -> Wai.Response -> Logs -> IO ()
-logAccess qt q r Logs{ loggerAccess = Just l } =
-  logStr l qt =<< requestLog qt q r
-logAccess _ _ _ _ = return ()
+logAccess :: Timestamp -> Wai.Request -> Maybe String -> Wai.Response -> Logs -> IO ()
+logAccess qt q u r Logs{ loggerAccess = Just l } =
+  logStr l qt =<< requestLog qt q u r
+logAccess _ _ _ _ _ = return ()

@@ -4,6 +4,7 @@ module Databrary.Controller.Excerpt
   , deleteExcerpt
   ) where
 
+import Control.Monad (unless)
 import qualified Data.Text as T
 import Network.HTTP.Types (StdMethod(DELETE), conflict409)
 
@@ -24,7 +25,7 @@ import Databrary.Controller.AssetSegment
 pathExcerpt :: PathParser (Id Slot, Id Asset)
 pathExcerpt = pathJSON >/> pathSlotId </> pathId </< "excerpt"
 
-postExcerpt :: AppRoute (Id Slot, Id Asset)
+postExcerpt :: ActionRoute (Id Slot, Id Asset)
 postExcerpt = action POST pathExcerpt $ \(si, ai) -> withAuth $ do
   as <- getAssetSegment PermissionEDIT Nothing si ai
   c <- runForm Nothing $ do
@@ -32,13 +33,13 @@ postExcerpt = action POST pathExcerpt $ \(si, ai) -> withAuth $ do
     "release" .:> deformNonEmpty deform
   let e = Excerpt as c
   r <- changeExcerpt e
-  guardAction r $
-    returnResponse conflict409 [] ("The requested excerpt overlaps an existing excerpt." :: T.Text)
-  okResponse [] $ assetSegmentJSON (if r then as{ assetExcerpt = Just e } else as)
+  unless r $ result $
+    response conflict409 [] ("The requested excerpt overlaps an existing excerpt." :: T.Text)
+  return $ okResponse [] $ assetSegmentJSON (if r then as{ assetExcerpt = Just e } else as)
 
-deleteExcerpt :: AppRoute (Id Slot, Id Asset)
+deleteExcerpt :: ActionRoute (Id Slot, Id Asset)
 deleteExcerpt = action DELETE pathExcerpt $ \(si, ai) -> withAuth $ do
   guardVerfHeader
   as <- getAssetSegment PermissionEDIT Nothing si ai
   r <- removeExcerpt as
-  okResponse [] $ assetSegmentJSON (if r then as{ assetExcerpt = Nothing } else as)
+  return $ okResponse [] $ assetSegmentJSON (if r then as{ assetExcerpt = Nothing } else as)

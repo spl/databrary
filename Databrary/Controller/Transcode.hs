@@ -20,12 +20,12 @@ import Databrary.Ops
 import Databrary.Has (peeks)
 import Databrary.HTTP.Form.Deform
 import Databrary.HTTP.Path.Parser
+import Databrary.Action
+import Databrary.Action.Types
 import Databrary.Model.Id
 import Databrary.Model.Transcode
 import Databrary.Model.Asset
 import Databrary.Store.Transcode
-import Databrary.Action
-import Databrary.Action.App
 import Databrary.Controller.Paths
 import Databrary.Controller.Permission
 import Databrary.Controller.Form
@@ -46,8 +46,8 @@ sha1Form = do
   deformGuard "Invalid SHA1 hex string" (length b == 40)
   maybe (deformError "Invalid hex string" >> return BS.empty) (return . BS.pack) $ unHex b
 
-remoteTranscode :: AppRoute (Id Transcode)
-remoteTranscode = action POST (pathJSON >/> pathId) $ \ti -> do
+remoteTranscode :: ActionRoute (Id Transcode)
+remoteTranscode = action POST (pathJSON >/> pathId) $ \ti -> withoutAuth $ do
   t <- maybeAction =<< lookupTranscode ti
   withReAuth (transcodeOwner t) $ do
     auth <- peeks $ transcodeAuth t
@@ -59,13 +59,13 @@ remoteTranscode = action POST (pathJSON >/> pathId) $ \ti -> do
         ("sha1" .:> optional sha1Form)
         ("log" .:> deform)
     collectTranscode t res sha1 logs
-    okResponse [] BS.empty
+    return $ okResponse [] BS.empty
 
-viewTranscodes :: AppRoute ()
+viewTranscodes :: ActionRoute ()
 viewTranscodes = action GET (pathHTML >/> "transcode") $ \() -> withAuth $ do
   checkMemberADMIN
   t <- lookupActiveTranscodes
-  okResponse [] =<< peeks (htmlTranscodes t)
+  peeks $ okResponse [] . htmlTranscodes t
 
 data TranscodeAction
   = TranscodeStart
@@ -84,7 +84,7 @@ instance Read TranscodeAction where
 instance Deform f TranscodeAction where
   deform = deformRead TranscodeStart
 
-postTranscode :: AppRoute (Id Transcode)
+postTranscode :: ActionRoute (Id Transcode)
 postTranscode = action POST (pathHTML >/> pathId) $ \ti -> withAuth $ do
   t <- maybeAction =<< lookupTranscode ti
   act <- runForm Nothing $
@@ -94,4 +94,4 @@ postTranscode = action POST (pathHTML >/> pathId) $ \ti -> withAuth $ do
     TranscodeStop -> void $ stopTranscode t
     TranscodeFail | isNothing (assetSize (transcodeAsset t)) -> void $ changeAsset (transcodeAsset t){ assetSize = Just (-1) } Nothing
     _ -> fail "Invalid action"
-  otherRouteResponse [] viewTranscodes ()
+  peeks $ otherRouteResponse [] viewTranscodes ()

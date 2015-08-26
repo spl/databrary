@@ -12,9 +12,9 @@ import qualified Network.Wai as Wai
 import Databrary.Has (peeks)
 import Databrary.HTTP.Form.Data
 import Databrary.HTTP.Parse
-import Databrary.Action.App
+import Databrary.Action.Types
 
-getFormData :: (MonadAppAction c m, MonadIO m, FileContent a) => [(BS.ByteString, Word64)] -> m (FormData a)
+getFormData :: (MonadAction c m, MonadIO m, FileContent a) => [(BS.ByteString, Word64)] -> m (FormData a)
 getFormData fs = do
   f <- peeks $ FormData . Map.fromList . Wai.queryString
   c <- parseRequestContent (fromMaybe 0 . (`lookup` fs))

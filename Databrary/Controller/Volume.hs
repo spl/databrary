@@ -29,7 +29,7 @@ import qualified Data.Text as T
 import qualified Network.Wai as Wai
 
 import Databrary.Ops
-import Databrary.Has (view, peeks, peek, focusIO)
+import Databrary.Has
 import qualified Databrary.JSON as JSON
 import Databrary.Service.DB
 import Databrary.Model.Enum
@@ -65,7 +65,7 @@ import Databrary.Controller.Web
 import {-# SOURCE #-} Databrary.Controller.AssetSegment
 import Databrary.View.Volume
 
-getVolume :: Permission -> Id Volume -> AppActionM Volume
+getVolume :: Permission -> Id Volume -> ActionM Volume
 getVolume p i =
   checkPermission p =<< maybeAction =<< lookupVolume i
 
@@ -171,7 +171,7 @@ volumeJSONField o "filename" _ =
   return $ Just $ JSON.toJSON $ makeFilename $ volumeDownloadName o
 volumeJSONField _ _ _ = return Nothing
 
-volumeJSONQuery :: Volume -> JSON.Query -> AppActionM JSON.Object
+volumeJSONQuery :: Volume -> JSON.Query -> ActionM JSON.Object
 volumeJSONQuery vol = runVolumeCache . JSON.jsonQuery (volumeJSON vol) (volumeJSONField vol)
 
 volumeDownloadName :: Volume -> [T.Text]
@@ -180,13 +180,13 @@ volumeDownloadName v =
     : map (T.takeWhile (',' /=) . snd) (volumeOwners v)
     ++ [fromMaybe (volumeName v) (getVolumeAlias v)]
 
-viewVolume :: AppRoute (API, Id Volume)
+viewVolume :: ActionRoute (API, Id Volume)
 viewVolume = action GET (pathAPI </> pathId) $ \(api, vi) -> withAuth $ do
   when (api == HTML) angular
   v <- getVolume PermissionPUBLIC vi
   case api of
-    JSON -> okResponse [] =<< volumeJSONQuery v =<< peeks Wai.queryString
-    HTML -> okResponse [] =<< peeks (htmlVolumeView v)
+    JSON -> okResponse [] <$> (volumeJSONQuery v =<< peeks Wai.queryString)
+    HTML -> peeks $ okResponse [] . htmlVolumeView v
 
 volumeForm :: (Functor m, Monad m) => Volume -> DeformT f m Volume
 volumeForm v = do
@@ -199,7 +199,7 @@ volumeForm v = do
     , volumeBody = body
     }
 
-volumeCitationForm :: Volume -> DeformActionM f AppRequest (Volume, Maybe Citation)
+volumeCitationForm :: Volume -> DeformActionM f Context (Volume, Maybe Citation)
 volumeCitationForm v = do
   csrfForm
   vol <- volumeForm v
@@ -221,18 +221,19 @@ volumeCitationForm v = do
     "citation" .:> "name" .:> deformRequired (citationHead fill)
   return (vol{ volumeName = name }, empty ?!> fill)
 
-viewVolumeEdit :: AppRoute (Id Volume)
+viewVolumeEdit :: ActionRoute (Id Volume)
 viewVolumeEdit = action GET (pathHTML >/> pathId </< "edit") $ \vi -> withAuth $ do
   angular
   v <- getVolume PermissionEDIT vi
-  blankForm . htmlVolumeEdit . Just . (,) v =<< lookupVolumeCitation v
+  cite <- lookupVolumeCitation v
+  peeks $ blankForm . htmlVolumeEdit (Just (v, cite))
 
-viewVolumeCreate :: AppRoute ()
+viewVolumeCreate :: ActionRoute ()
 viewVolumeCreate = action GET (pathHTML </< "volume" </< "create") $ \() -> withAuth $ do
   angular
-  blankForm $ htmlVolumeEdit Nothing
+  peeks $ blankForm . htmlVolumeEdit Nothing
 
-postVolume :: AppRoute (API, Id Volume)
+postVolume :: ActionRoute (API, Id Volume)
 postVolume = action POST (pathAPI </> pathId) $ \arg@(api, vi) -> withAuth $ do
   v <- getVolume PermissionEDIT vi
   cite <- lookupVolumeCitation v
@@ -240,10 +241,10 @@ postVolume = action POST (pathAPI </> pathId) $ \arg@(api, vi) -> withAuth $ do
   changeVolume v'
   r <- changeVolumeCitation v' cite'
   case api of
-    JSON -> okResponse [] $ volumeJSON v' JSON..+ "citation" JSON..= if r then cite' else cite
-    HTML -> otherRouteResponse [] viewVolume arg
+    JSON -> return $ okResponse [] $ volumeJSON v' JSON..+ "citation" JSON..= if r then cite' else cite
+    HTML -> peeks $ otherRouteResponse [] viewVolume arg
 
-createVolume :: AppRoute API
+createVolume :: ActionRoute API
 createVolume = action POST (pathAPI </< "volume") $ \api -> withAuth $ do
   u <- peek
   (bv, cite, owner) <- runForm (api == HTML ?> htmlVolumeEdit Nothing) $ do
@@ -262,15 +263,16 @@ createVolume = action POST (pathAPI </< "volume") $ \api -> withAuth $ do
   _ <- changeVolumeCitation v cite
   _ <- changeVolumeAccess $ VolumeAccess PermissionADMIN PermissionADMIN owner v
   case api of
-    JSON -> okResponse [] $ volumeJSON v
-    HTML -> otherRouteResponse [] viewVolume (api, volumeId v)
+    JSON -> return $ okResponse [] $ volumeJSON v
+    HTML -> peeks $ otherRouteResponse [] viewVolume (api, volumeId v)
 
-viewVolumeLinks :: AppRoute (Id Volume)
+viewVolumeLinks :: ActionRoute (Id Volume)
 viewVolumeLinks = action GET (pathHTML >/> pathId </< "link") $ \vi -> withAuth $ do
   v <- getVolume PermissionEDIT vi
-  blankForm . htmlVolumeLinksEdit v =<< lookupVolumeLinks v
+  links <- lookupVolumeLinks v
+  peeks $ blankForm . htmlVolumeLinksEdit v links
 
-postVolumeLinks :: AppRoute (API, Id Volume)
+postVolumeLinks :: ActionRoute (API, Id Volume)
 postVolumeLinks = action POST (pathAPI </> pathId </< "link") $ \arg@(api, vi) -> withAuth $ do
   v <- getVolume PermissionEDIT vi
   links <- lookupVolumeLinks v
@@ -283,8 +285,8 @@ postVolumeLinks = action POST (pathAPI </> pathId </< "link") $ \arg@(api, vi) -
       <$- Nothing
   changeVolumeLinks v links'
   case api of
-    JSON -> okResponse [] $ volumeJSON v JSON..+ ("links" JSON..= links')
-    HTML -> otherRouteResponse [] viewVolume arg
+    JSON -> return $ okResponse [] $ volumeJSON v JSON..+ ("links" JSON..= links')
+    HTML -> peeks $ otherRouteResponse [] viewVolume arg
 
 volumeSearchForm :: (Applicative m, Monad m) => DeformT f m VolumeFilter
 volumeSearchForm = VolumeFilter
@@ -292,20 +294,20 @@ volumeSearchForm = VolumeFilter
   <*> ("party" .:> optional deform)
   <*> paginateForm
 
-queryVolumes :: AppRoute API
+queryVolumes :: ActionRoute API
 queryVolumes = action GET (pathAPI </< "volume") $ \api -> withAuth $ do
   when (api == HTML) angular
   vf <- runForm (api == HTML ?> htmlVolumeSearch mempty []) volumeSearchForm
   p <- findVolumes vf
   case api of
-    JSON -> okResponse [] $ JSON.toJSON $ map volumeJSON p
-    HTML -> blankForm $ htmlVolumeSearch vf p
+    JSON -> return $ okResponse [] $ JSON.toJSON $ map volumeJSON p
+    HTML -> peeks $ blankForm . htmlVolumeSearch vf p
 
-thumbVolume :: AppRoute (Id Volume)
+thumbVolume :: ActionRoute (Id Volume)
 thumbVolume = action GET (pathId </< "thumb") $ \vi -> withAuth $ do
   v <- getVolume PermissionPUBLIC vi
   e <- lookupVolumeThumb v
   maybe
-    (otherRouteResponse [] webFile (Just $ staticPath ["images", "draft.png"]))
-    (\as -> otherRouteResponse [] downloadAssetSegment (slotId $ view as, view as))
+    (peeks $ otherRouteResponse [] webFile (Just $ staticPath ["images", "draft.png"]))
+    (\as -> peeks $ otherRouteResponse [] downloadAssetSegment (slotId $ view as, view as))
     e

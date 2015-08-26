@@ -8,12 +8,12 @@ module Databrary.Controller.Token
 #if !defined(DEVEL) && !defined(SANDBOX)
 import Control.Monad (mfilter)
 #endif
-import Control.Monad (when)
+import Control.Monad (when, unless)
 import Data.Maybe (isJust)
 import qualified Data.Text as T
 
 import Databrary.Ops
-import Databrary.Has (view)
+import Databrary.Has
 import qualified Databrary.JSON as JSON
 import Databrary.Service.DB
 import Databrary.Model.Id
@@ -23,8 +23,8 @@ import Databrary.Model.Party
 import Databrary.Model.Permission
 #endif
 import Databrary.HTTP.Path.Parser
+import Databrary.Action.Types
 import Databrary.Action
-import Databrary.Action.App
 import Databrary.Controller.Paths
 import Databrary.Controller.Form
 import Databrary.Controller.Login
@@ -38,24 +38,24 @@ lookupPasswordResetAccount email =
 #endif
   lookupSiteAuthByEmail email
 
-viewLoginToken :: AppRoute (API, Id LoginToken)
+viewLoginToken :: ActionRoute (API, Id LoginToken)
 viewLoginToken = action GET (pathAPI </> pathId) $ \(api, ti) -> withoutAuth $ do
   when (api == HTML) angular
   tok <- maybeAction =<< lookupLoginToken ti
   if loginPasswordToken tok
     then case api of
-      JSON -> okResponse [] $ JSON.record ti
+      JSON -> return $ okResponse [] $ JSON.record ti
         [ "reset" JSON..= isJust (accountPasswd (view tok))
         ]
-      HTML -> blankForm $ htmlPasswordToken ti
+      HTML -> peeks $ blankForm . htmlPasswordToken ti
     else do
       _ <- removeLoginToken tok
       loginAccount api (view tok) False
 
-postPasswordToken :: AppRoute (API, Id LoginToken)
+postPasswordToken :: ActionRoute (API, Id LoginToken)
 postPasswordToken = action POST (pathAPI </> pathId) $ \(api, ti) -> withoutAuth $ do
   tok <- maybeAction =<< lookupLoginToken ti
-  guardAction (loginPasswordToken tok) notFoundResponse
+  unless (loginPasswordToken tok) $ result =<< peeks notFoundResponse
   let auth = view tok
   pw <- runForm (api == HTML ?> htmlPasswordToken ti) $
     passwordForm (siteAccount auth)

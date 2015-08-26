@@ -2,6 +2,8 @@
 module Databrary.Action.Response
   ( Response
   , ResponseData(..)
+  , emptyResponse
+  , okResponse
   , result
   , runResult
   ) where
@@ -17,7 +19,7 @@ import qualified Data.Text.Encoding as TE
 import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.Encoding as TLE
 import Data.Typeable (Typeable)
-import Network.HTTP.Types (ResponseHeaders, Status, hContentType)
+import Network.HTTP.Types (ResponseHeaders, Status, ok200, hContentType)
 import Network.Wai (Response, responseBuilder, responseLBS, StreamingBody, responseStream, FilePart(..), responseFile, responseStatus)
 import qualified Text.Blaze.Html as Html
 import qualified Text.Blaze.Html.Renderer.Utf8 as Html
@@ -76,6 +78,12 @@ instance ResponseData JSON.Object where
 instance ResponseData Html.Html where
   response s h =
     response s ((hContentType, "text/html;charset=utf-8") : h) . Html.renderHtmlBuilder
+
+emptyResponse :: Status -> ResponseHeaders -> Response
+emptyResponse s h = response s h BS.empty
+
+okResponse :: ResponseData r => ResponseHeaders -> r -> Response
+okResponse = response ok200
 
 newtype Result = Result { resultResponse :: Response } deriving (Typeable)
 instance Show Result where
