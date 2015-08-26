@@ -10,7 +10,7 @@
             (<span>Error </span>
             <span ng-bind-html="::error.title"></span>)
           </div>
-          <div class="error-container" ng-if="::(error.status === 404 || error.status === 403) && !page.models.Login.isLoggedIn()">
+          <div class="error-container error-login" ng-if="::(error.status === 404 || error.status === 403) && !page.models.Login.isLoggedIn()">
             <div class="error-section">
               You might try logging in:
               <login-form></login-form>
