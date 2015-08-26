@@ -31,11 +31,7 @@ app.directive('hint', [
     });
 
     _.each(hints, function (hint, name) {
-      new tooltips({
-        live: true,
-        $target: '.hint-' + name,
-        message: hint
-      });
+      tooltips.add('.hint-' + name, hint);
     });
 
     var link = function ($scope, $element, $attrs) {

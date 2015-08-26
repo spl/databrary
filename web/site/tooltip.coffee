@@ -8,13 +8,13 @@ app.directive 'tooltip', [
     templateUrl: 'site/tooltip.html'
     link: ($scope) ->
       tooltip = $scope.tooltip
-      $scope.classes = [tooltip.cls]
+      $scope.classes = []
       $scope.style = {}
 
       $timeout ->
-        return unless tooltip.target
+        return unless tooltip.active
         doc = window.document.documentElement
-        box = tooltip.target.getBoundingClientRect()
+        box = tooltip.active.getBoundingClientRect()
 
         ww = doc.clientWidth
         wx = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0)

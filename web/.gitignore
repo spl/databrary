@@ -29,6 +29,7 @@
 /service/offset.js
 /service/play.js
 /service/styles.js
+/service/tooltip.js
 /service/upload.js
 /site/errors.js
 /site/inputCompleter.js
