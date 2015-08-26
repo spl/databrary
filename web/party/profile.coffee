@@ -30,7 +30,7 @@ app.controller 'party/profile', [
           @constructor.selection[@id] = true
           @constructor.foreign.selection = @access
           messages.add
-            body: @selectionMessage()
+            body: "Highlighting " + @selectionMessage()
             type: 'dark'
             owner: Item
           @selectionMessage()
@@ -52,7 +52,7 @@ app.controller 'party/profile', [
       @selection = {}
 
       selectionMessage: ->
-        "Highlighting volumes on which " + @party.name + " has been added as a collaborator"
+        constants.message('profile.parties.selected', @party.name)
 
       edit: (t) ->
         if $scope.editable
@@ -76,7 +76,7 @@ app.controller 'party/profile', [
       @selection = {}
 
       selectionMessage: ->
-        "Highlighting people who have been added as a collaborator on " + @volume.displayName
+        constants.message('profile.volumes.selected', @volume.displayName)
 
       editAccess: (p) ->
         $location.url(@volume.editRoute('access'))

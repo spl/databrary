@@ -15,7 +15,7 @@
         <ul>
           <li ng-repeat="v in ::vl" ng-class="{'profile-highlight': !!v.selected}">
             <div class="profile-left-icons hide-mobile">
-              <span ng-click="v.select()" class="icon" ng-class="v.class()"></span>
+              <span ng-click="v.select()" class="icon" ng-class="v.class()" tooltip="'Click to highlight ' + ('profile.volumes.selected' | message:'this volume')"></span>
             </div>
             <div class="profile-right-icons">
               <span class="icon access1" ng-show="::v.volume.accessPreset" tooltip="'access.preset.title'+v.volume.accessPreset | message"></span>
@@ -44,7 +44,7 @@
         <ul>
           <li ng-repeat="p in ::parties.parents" ng-class="{'profile-highlight': !!p.selected}">
             <div class="profile-left-icons hide-mobile">
-              <span ng-click="p.select()" class="icon" ng-class="p.class()"></span>
+              <span ng-click="p.select()" class="icon" ng-class="p.class()" tooltip="'Click to highlight ' + ('profile.parties.selected' | message:'this individual')"></span>
             </div>
 
             <div class="profile-link">
@@ -76,7 +76,7 @@
           <ul>
             <li ng-repeat="p in cl" ng-class="{'profile-highlight': !!p.selected}">
               <div class="profile-left-icons hide-mobile">
-                <span ng-click="p.select()" class="icon" ng-class="p.class()"></span>
+                <span ng-click="p.select()" class="icon" ng-class="p.class()" tooltip="'Click to highlight ' + ('profile.parties.selected' | message:'this individual')"></span>
               </div>
               <div class="profile-right-icons">
                 <span class="icon site" ng-class="::page.constants.permission[p.child.site]" tooltip="('auth.site.'+page.constants.permission[p.child.site]+'.title' | message)+': '+('auth.site.'+page.constants.permission[p.child.site] | possessive:party)"></span>
@@ -100,7 +100,7 @@
         <ul>
           <li ng-repeat="p in ::parties.collaborators" ng-class="{'profile-highlight': !!p.selected}">
             <div class="profile-left-icons hide-mobile">
-              <span ng-click="p.select()" class="icon" ng-class="p.class()"></span>
+              <span ng-click="p.select()" class="icon" ng-class="p.class()" tooltip="'Click to highlight ' + ('profile.parties.selected' | message:'this individual')"></span>
             </div>
 
             <div class="profile-link">
