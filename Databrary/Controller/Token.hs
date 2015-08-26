@@ -36,7 +36,7 @@ lookupPasswordResetAccount email =
 #if !defined(DEVEL) && !defined(SANDBOX)
   mfilter ((PermissionADMIN >) . accessMember) <$> 
 #endif
-  lookupSiteAuthByEmail email
+  lookupSiteAuthByEmail True email
 
 viewLoginToken :: ActionRoute (API, Id LoginToken)
 viewLoginToken = action GET (pathAPI </> pathId) $ \(api, ti) -> withoutAuth $ do

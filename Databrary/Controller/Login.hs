@@ -62,7 +62,7 @@ postLogin = action POST (pathAPI </< "user" </< "login") $ \api -> withoutAuth $
     email <- "email" .:> emailTextForm
     password <- "password" .:> deform
     superuser <- "superuser" .:> deform
-    auth <- lift $ lookupSiteAuthByEmail email
+    auth <- lift $ lookupSiteAuthByEmail True email
     let p = view <$> auth
         su = superuser && Fold.any ((PermissionADMIN ==) . accessPermission) auth
     attempts <- lift $ maybe (return 0) recentAccountLogins p

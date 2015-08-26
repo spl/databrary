@@ -135,9 +135,17 @@ lookupAuthParty i = do
   lookupFixedParty i ident `orElseM`
     dbQuery1 $(selectQuery (selectAuthParty 'ident) "$WHERE party.id = ${i}")
 
-lookupSiteAuthByEmail :: MonadDB m => T.Text -> m (Maybe SiteAuth)
-lookupSiteAuthByEmail e =
-  dbQuery1 $(selectQuery selectSiteAuth "WHERE account.email = ${e}")
+lookupSiteAuthByEmail :: MonadDB m => Bool -> T.Text -> m (Maybe SiteAuth)
+lookupSiteAuthByEmail ic e = do
+  r <- dbQuery1 $(selectQuery selectSiteAuth "WHERE account.email = ${e}")
+  if ic && isNothing r
+    then do
+      a <- dbQuery $(selectQuery selectSiteAuth "WHERE lower(account.email) = ${T.toLower e} LIMIT 2")
+      return $ case a of
+        [x] -> Just x
+        _ -> Nothing
+    else
+      return r
 
 auditAccountLogin :: (MonadHasRequest c m, MonadDB m) => Bool -> Party -> T.Text -> m ()
 auditAccountLogin success who email = do
