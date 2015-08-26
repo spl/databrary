@@ -13,9 +13,9 @@ app.directive('partyEditProfileForm', [
         fields.forEach(function (f) {
           form.data[f] = party[f];
         });
-        form.avatarUrl = party.avatarRoute();
       }
       init();
+      form.avatarUrl = party.avatarRoute();
 
       form.save = function () {
         page.messages.clear(form);
@@ -62,6 +62,12 @@ app.directive('partyEditProfileForm', [
             if (upload)
               upload.remove();
           });
+      };
+
+      form.removeAvatar = function () {
+        form.data.avatar = null;
+        form.avatarUrl = '/web/images/avatar.png';
+        form.$setDirty();
       };
 
       var validate = {};

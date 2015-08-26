@@ -14,10 +14,11 @@ module Databrary.Controller.Party
   ) where
 
 import Control.Applicative (Applicative, (<*>), pure, optional)
-import Control.Monad (unless, when, void)
+import Control.Monad (unless, when)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
-import Data.Maybe (isJust, fromMaybe)
+import qualified Data.Foldable as Fold
+import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>), mempty)
 import qualified Data.Text.Encoding as TE
 import qualified Data.Traversable as Trav
@@ -111,7 +112,7 @@ viewParty = action GET (pathAPI </> pathPartyTarget) $ \(api, i) -> withAuth $ d
     JSON -> okResponse [] <$> (partyJSONQuery p =<< peeks Wai.queryString)
     HTML -> peeks $ okResponse [] . htmlPartyView p
 
-processParty :: API -> Maybe Party -> ActionM (Party, Maybe Asset)
+processParty :: API -> Maybe Party -> ActionM (Party, Maybe (Maybe Asset))
 processParty api p = do
   (p', a) <- runFormFiles [("avatar", maxAvatarSize)] (api == HTML ?> htmlPartyEdit p) $ do
     csrfForm
@@ -121,11 +122,11 @@ processParty api p = do
     affiliation <- "affiliation" .:> deformNonEmpty deform
     url <- "url" .:> deformNonEmpty deform
     avatar <- "avatar" .:>
-      (Trav.mapM (\a -> do
+      (maybe (deformOptional $ return Nothing) (\a -> do
         f <- deformCheck "Must be an image." formatIsImage =<<
           deformMaybe' "Unknown or unsupported file format."
           (getFormatByFilename (fileName a))
-        return (a, f)) =<< deform)
+        return $ Just $ Just (a, f)) =<< deform)
     return ((fromMaybe blankParty p)
       { partySortName = name
       , partyPreName = prename
@@ -133,7 +134,7 @@ processParty api p = do
       , partyAffiliation = affiliation
       , partyURL = url
       }, avatar)
-  a' <- Trav.forM a $ \(af, fmt) -> do
+  a' <- Trav.forM a $ Trav.mapM $ \(af, fmt) -> do
     a' <- addAsset (blankAsset coreVolume)
       { assetFormat = fmt
       , assetRelease = Just ReleasePUBLIC
@@ -160,8 +161,7 @@ postParty = multipartAction $ action POST (pathAPI </> pathPartyTarget) $ \(api,
   p <- getParty (Just PermissionADMIN) i
   (p', a) <- processParty api (Just p)
   changeParty p'
-  when (isJust a) $
-    void $ changeAvatar p' a
+  Fold.mapM_ (changeAvatar p') a
   case api of
     JSON -> return $ okResponse [] $ partyJSON p'
     HTML -> peeks $ otherRouteResponse [] viewParty (api, i)
@@ -171,8 +171,7 @@ createParty = multipartAction $ action POST (pathAPI </< "party") $ \api -> with
   checkMemberADMIN
   (bp, a) <- processParty api Nothing
   p <- addParty bp
-  when (isJust a) $
-    void $ changeAvatar p a
+  Fold.mapM_ (changeAvatar p) a
   case api of
     JSON -> return $ okResponse [] $ partyJSON p
     HTML -> peeks $ otherRouteResponse [] viewParty (api, TargetParty $ partyId p)
