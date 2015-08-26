@@ -3,25 +3,22 @@
     <div class="wrap">
       <div class="row">
         <hgroup class="col">
-          <h1 class="panel-context" message="error.title"></h1>
-          <h2 ng-if="::error.status != null" class="panel-title with-context" ng-bind-html="::error.message"></h2>
+          <h1 class="panel-context">Error</h1>
+          <h2 class="panel-title with-context" ng-bind-html="::error.title"></h2>
         </hgroup>
 
         <div class="col">
-          <div>
-            <span ng-if="::(error.status === 403)">Sorry, you don't have access to the following page: </span>
-            <span ng-if="::(error.status === 404)">Unfortunately, the page you requested doesn't exist: </span>
-            <i ng-bind="page.$location.url()"></i>
-          </div>
-          <div ng-if="::(error.status===404) || (error.status === 403) && !page.models.Login.isLoggedIn()">
+          <div ng-if="::error.message" ng-bind="::error.message"></div>
+          <i ng-bind="::page.$location.url()"></i>
+          <div ng-if="::(error.status === 404 || error.status === 403) && !page.models.Login.isLoggedIn()">
             You might try logging in:
             <login-form></login-form>
           </div>
           <div>
             <span>Some other options:</span>
-              <ul>
+            <ul>
               <li><a ng-href="{{::page.router.index()}}">Return to the homepage</a></li>
-              <li><a ng-if="::!!page.models.Login.isLoggedIn()" ng-href="{{::page.router.profile()}}">See your Databrary profile</a></li>
+              <li><a ng-if="::page.models.Login.isLoggedIn()" ng-href="{{::page.router.profile()}}">See your Databrary profile</a></li>
               <li>Check out our <a href="//databrary.org/access/guide.html">user guide</a></li>
               <li>Need help or more support? Feel free to <a href="//databrary.org/about/support.html">contact us</a></li>
             </ul>
