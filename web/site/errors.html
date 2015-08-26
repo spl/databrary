@@ -2,26 +2,30 @@
   <article class="view error-view">
     <div class="wrap">
       <div class="row">
-        <hgroup class="col">
-          <h1 class="panel-context">Error</h1>
-          <h2 class="panel-title with-context" ng-bind-html="::error.title"></h2>
-        </hgroup>
-
         <div class="col">
-          <div ng-if="::error.message" ng-bind="::error.message"></div>
-          <i ng-bind="::page.$location.url()"></i>
-          <div ng-if="::(error.status === 404 || error.status === 403) && !page.models.Login.isLoggedIn()">
-            You might try logging in:
-            <login-form></login-form>
+          <div class="error-container error-message">
+            <span ng-if="::error.message" ng-bind="::error.message"></span>: 
+            <i ng-bind="::page.$location.url()"></i>
+            <br>
+            (<span>Error </span>
+            <span ng-bind-html="::error.title"></span>)
           </div>
-          <div>
-            <span>Some other options:</span>
-            <ul>
-              <li><a ng-href="{{::page.router.index()}}">Return to the homepage</a></li>
-              <li><a ng-if="::page.models.Login.isLoggedIn()" ng-href="{{::page.router.profile()}}">See your Databrary profile</a></li>
-              <li>Check out our <a href="//databrary.org/access/guide.html">user guide</a></li>
-              <li>Need help or more support? Feel free to <a href="//databrary.org/about/support.html">contact us</a></li>
-            </ul>
+          <div class="error-container" ng-if="::(error.status === 404 || error.status === 403) && !page.models.Login.isLoggedIn()">
+            <div class="error-section">
+              You might try logging in:
+              <login-form></login-form>
+            </div>
+          </div>
+          <div class="error-container">
+            <div class="error-section">
+              <span>Some other options:</span>
+              <ul>
+                <li><a ng-href="{{::page.router.index()}}">Return to the homepage</a></li>
+                <li><a ng-if="::page.models.Login.isLoggedIn()" ng-href="{{::page.router.profile()}}">See your Databrary profile</a></li>
+                <li>Check out our <a href="//databrary.org/access/guide.html">user guide</a></li>
+                <li>Need help or more support? Feel free to <a href="//databrary.org/about/support.html">contact us</a></li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>
