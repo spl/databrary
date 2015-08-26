@@ -13,7 +13,7 @@
             <span ng-if="::(error.status === 404)">Unfortunately, the page you requested doesn't exist: </span>
             <i ng-bind="page.$location.url()"></i>
           </div>
-          <div ng-if="::(error.status === 403) && !page.models.Login.isLoggedIn()">
+          <div ng-if="::(error.status===404) || (error.status === 403) && !page.models.Login.isLoggedIn()">
             You might try logging in:
             <login-form></login-form>
           </div>
