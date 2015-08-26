@@ -8,10 +8,23 @@
         </hgroup>
 
         <div class="col">
-          <div ng-bind="page.$location.url()"></div>
-          <div ng-if="::(error.status === 403 || error.status === 404) && !page.models.Login.isLoggedIn()">
+          <div>
+            <span ng-if="::(error.status === 403)">Sorry, you don't have access to the following page: </span>
+            <span ng-if="::(error.status === 404)">Unfortunately, the page you requested doesn't exist: </span>
+            <i ng-bind="page.$location.url()"></i>
+          </div>
+          <div ng-if="::(error.status === 403) && !page.models.Login.isLoggedIn()">
             You might try logging in:
             <login-form></login-form>
+          </div>
+          <div>
+            <span>Some other options:</span>
+              <ul>
+              <li><a ng-href="{{::page.router.index()}}">Return to the homepage</a></li>
+              <li><a ng-if="::!!page.models.Login.isLoggedIn()" ng-href="{{::page.router.profile()}}">See your Databrary profile</a></li>
+              <li>Check out our <a href="//databrary.org/access/guide.html">user guide</a></li>
+              <li>Need help or more support? Feel free to <a href="//databrary.org/about/support.html">contact us</a></li>
+            </ul>
           </div>
         </div>
       </div>
