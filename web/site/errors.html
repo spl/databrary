@@ -11,13 +11,13 @@
             <span ng-bind-html="::error.title"></span>)
           </div>
           <div class="error-container error-login" ng-if="::(error.status === 404 || error.status === 403) && !page.models.Login.isLoggedIn()">
-            <div class="error-section">
+            <div class="view-center-block">
               You might try logging in:
               <login-form></login-form>
             </div>
           </div>
           <div class="error-container">
-            <div class="error-section">
+            <div class="view-center-block">
               <span>Some other options:</span>
               <ul>
                 <li><a ng-href="{{::page.router.index()}}">Return to the homepage</a></li>
