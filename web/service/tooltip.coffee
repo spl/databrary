@@ -5,7 +5,8 @@ app.factory 'tooltipService', [
   ($rootScope, $timeout, $document) ->
 
     delay = 500
-    list = {}
+    all = {}
+    list = []
 
     namespace = '.tooltip'
     focusElements = {INPUT:true, SELECT:true, TEXTAREA:true}
@@ -20,7 +21,9 @@ app.factory 'tooltipService', [
 
     class BaseTooltip
       constructor: () ->
-        list[@id] = @
+        if @id of all
+          throw new Error('duplicate Tooltip ' + @id)
+        all[@id] = @
 
       cancelTimeout: () ->
         return unless @timeout
@@ -29,10 +32,12 @@ app.factory 'tooltipService', [
 
       out: () ->
         @cancelTimeout()
-        @active = undefined
+        if @active
+          @active = undefined
+          list.remove @
 
       remove: () ->
-        delete list[@id]
+        delete all[@id]
 
     class Tooltip extends BaseTooltip
       constructor: (@message) ->
@@ -49,6 +54,8 @@ app.factory 'tooltipService', [
         target.on ev.in, (event) =>
           @cancelTimeout()
           @timeout = $timeout () =>
+              @timeout = undefined
+              list.push @ unless @active
               @active = event.target
             , delay
 
@@ -61,8 +68,10 @@ app.factory 'tooltipService', [
       remove: (target) ->
         ev = events(target)
         target.off(ev.in + ' ' + ev.out)
-        @cancelTimeout()
-        @active = undefined if target.is(@active)
+        if target.is(@active)
+          @out()
+        else
+          @cancelTimeout()
 
         @target = @target.not(target)
         unless @target.length
@@ -74,7 +83,9 @@ app.factory 'tooltipService', [
         $document.on mouseEvents.in, @target, (event) =>
           @cancelTimeout()
           @timeout = $timeout () =>
+              @timeout = undefined
               if document.body.contains(event.target) && $(event.target).is(@target) # may have changed
+                list.push @ unless @active
                 @active = event.target
             , delay
 
@@ -92,15 +103,13 @@ app.factory 'tooltipService', [
       list: list
       add: (target, message) ->
         if typeof target == 'string'
-          if target of list
-            throw new Error('duplicate LiveTooltip')
           new LiveTooltip(target, message)
         else
-          cur = list[message] || new Tooltip(message)
+          cur = all[message] || new Tooltip(message)
           cur.add(target)
           cur
       clear: () ->
-        for i, t of list
+        for i, t of all
           t.out()
         return
     }

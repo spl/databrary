@@ -83,7 +83,7 @@ htmlAngular debug nojs auth = H.docTypeHtml H.! ngAttribute "app" "databraryModu
     H.preEscapedString "<errors></errors>"
     htmlFooter
     H.preEscapedString "<messages></messages>"
-    H.preEscapedString "<tooltip ng-repeat=\"tooltip in page.tooltips.list\" ng-if=\"tooltip.active\"></tooltip>"
+    H.preEscapedString "<tooltip ng-repeat=\"tooltip in page.tooltips.list\"></tooltip>"
     H.div
       H.! HA.id "loading"
       H.! HA.class_ "loading"
