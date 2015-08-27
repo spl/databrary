@@ -9,12 +9,11 @@ import Crypto.MAC.HMAC (HMAC, hmac)
 import qualified Data.ByteString as BS
 import qualified Data.Configurator as C
 import qualified Data.Configurator.Types as C
-import qualified Data.Text as T
 
 import Databrary.Model.URL
 
 data Static = Static
-  { staticAuthorizeAddr :: T.Text
+  { staticAuthorizeAddr :: BS.ByteString
   , staticInvestigator :: Maybe URI
   , staticKey :: BS.ByteString -> HMAC Hash.SHA256
   }

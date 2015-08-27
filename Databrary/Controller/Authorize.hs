@@ -8,6 +8,7 @@ module Databrary.Controller.Authorize
 
 import Control.Applicative ((<|>))
 import Control.Monad (when, liftM2, mfilter)
+import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Lazy as BSL
 import qualified Data.ByteString.Lazy.Char8 as BSLC
@@ -59,7 +60,7 @@ partyDelegates p =
     . filter ((PermissionADMIN <=) . accessPermission)
     <$> lookupAuthorizedChildren p False
 
-authorizeAddr :: Static -> [Either T.Text Account]
+authorizeAddr :: Static -> [Either BS.ByteString Account]
 authorizeAddr = return . Left . staticAuthorizeAddr
 
 postAuthorize :: ActionRoute (API, PartyTarget, AuthorizeTarget)
@@ -79,7 +80,7 @@ postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarge
         req <- peek
         sendMail (map Right dl ++ authaddr)
           ("Databrary authorization request from " <> partyName child)
-          $ BSL.fromChunks [TE.encodeUtf8 (partyName child), " <", maybe "" TE.encodeUtf8 agent, "> has requested to be authorized by ", TE.encodeUtf8 (partyName parent), ". \
+          $ BSL.fromChunks [TE.encodeUtf8 (partyName child), " <", Fold.fold agent, "> has requested to be authorized by ", TE.encodeUtf8 (partyName parent), ". \
             \To approve or reject this authorization request, go to:\n\n" ] <>
             BSB.toLazyByteString (actionURL (Just req) viewPartyEdit (TargetParty $ partyId parent) [("page", Just "grant")]) <> "#auth-" <> BSLC.pack (show $ partyId child) <> "\n\n\
             \Find more information about authorizing and managing affiliates here: \
@@ -146,5 +147,5 @@ postAuthorizeNotFound = action POST (pathAPI </> pathPartyTarget </< "notfound")
   authaddr <- peeks authorizeAddr
   sendMail authaddr
     ("Databrary authorization request from " <> partyName p)
-    $ BSL.fromChunks [TE.encodeUtf8 (partyName p), " <", maybe "" TE.encodeUtf8 agent, "> has requested to be authorized by ", TE.encodeUtf8 name, maybe "" (\it -> " (" <> TE.encodeUtf8 it <> ")") info, ".\n"]
+    $ BSL.fromChunks [TE.encodeUtf8 (partyName p), " <", Fold.fold agent, "> has requested to be authorized by ", TE.encodeUtf8 name, maybe "" (\it -> " (" <> TE.encodeUtf8 it <> ")") info, ".\n"]
   return $ emptyResponse noContent204 []

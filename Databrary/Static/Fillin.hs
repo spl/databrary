@@ -40,6 +40,6 @@ staticSendInvestigator p t rc@Service{ serviceStatic = Static{ staticAuthorizeAd
     , ("id", BSC.pack $ show $ partyId p)
     , ("name", TE.encodeUtf8 $ partyName p)
     , ("date", BSC.pack $ formatTime defaultTimeLocale "%B %e, %Y" t)
-    , ("mail", TE.encodeUtf8 a)
+    , ("mail", a)
     ]
 staticSendInvestigator _ _ _ = return ()

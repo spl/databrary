@@ -23,7 +23,6 @@ import Control.Monad.Trans.Control (liftWith)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.Foldable as Fold
-import Data.Maybe (fromMaybe)
 import Data.Monoid (mempty)
 import qualified Data.Text as T
 import Data.Time.Format (formatTime)
@@ -104,7 +103,7 @@ inputTextarea :: H.ToMarkup a => Maybe a -> Field
 inputTextarea val ref dat = H.textarea
   H.! HA.id    ref
   H.! HA.name  ref
-  $ fromMaybe mempty $ fmap byteStringHtml dat <|> fmap H.toHtml val
+  $ Fold.fold $ fmap byteStringHtml dat <|> fmap H.toHtml val
 
 inputPassword :: Field
 inputPassword ref _ = H.input

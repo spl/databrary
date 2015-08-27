@@ -52,7 +52,7 @@ htmlPartyView p@Party{..} req = htmlTemplate req (Just $ partyName p) $ \js -> d
       H.dd $ H.a H.! HA.href (H.stringValue us) $ H.string us
     Fold.forM_ (partyEmail p) $ \e -> do
       H.dt "email"
-      H.dd $ H.a H.! HA.href (H.textValue $ "mailto:" <> e) $ H.text e
+      H.dd $ H.a H.! HA.href (byteStringValue $ "mailto:" <> e) $ byteStringHtml e
     Fold.forM_ partyORCID $ \o -> do
       H.dt "orcid"
       H.dd $ H.a H.! HA.href (H.stringValue $ show $ orcidURL o) $ H.string $ show o
@@ -112,7 +112,7 @@ htmlPartyAdmin pf pl req = htmlForm "party admin" adminParties ()
           H.td $ H.a H.! actionLink viewParty (HTML, TargetParty partyId) js
             $ H.string $ show partyId
           H.td $ H.text $ partyName p
-          H.td $ Fold.mapM_ (H.text . accountEmail) partyAccount
+          H.td $ Fold.mapM_ (byteStringHtml . accountEmail) partyAccount
           H.td $ Fold.mapM_ H.text partyAffiliation
           H.td $ do
             actionForm resendInvestigator partyId js

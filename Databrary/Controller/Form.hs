@@ -19,9 +19,10 @@ import Control.Monad.Trans.Class (lift)
 import qualified Crypto.BCrypt as BCrypt
 import qualified Data.Aeson as JSON
 import qualified Data.ByteString as BS
+import qualified Data.ByteString.Char8 as BSC
+import Data.Char (toLower)
 import qualified Data.Foldable as Fold
 import Data.Monoid ((<>))
-import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Word (Word64)
 import Network.HTTP.Types (badRequest400)
@@ -77,15 +78,17 @@ emailRegex :: Regex.Regex
 emailRegex = Regex.makeRegexOpts Regex.compIgnoreCase Regex.blankExecOpt
   ("^[-a-z0-9!#$%&'*+/=?^_`{|}~.]*@[a-z0-9][a-z0-9\\.-]*[a-z0-9]\\.[a-z][a-z\\.]*[a-z]$" :: String)
 
-emailTextForm :: (Functor m, Monad m) => DeformT f m T.Text
-emailTextForm = deformRegex "Invalid email address" emailRegex =<< deform
+emailTextForm :: (Functor m, Monad m) => DeformT f m BS.ByteString
+emailTextForm = do
+  e <- deformCheck "Invalid email address" (Regex.matchTest emailRegex) =<< deform
+  return $ maybe e (uncurry ((. BSC.map toLower) . (<>)) . flip BS.splitAt e) $ BSC.elemIndex '@' e
 
 passwordForm :: (MonadIO m, MonadHasPasswd c m) => Account -> DeformT f m BS.ByteString
 passwordForm acct = do
   p <- "once" .:> do
     p <- deform
     deformGuard "Password too short. Must be 7 characters." (7 <= BS.length p)
-    c <- lift $ passwdCheck p (TE.encodeUtf8 $ accountEmail acct) (TE.encodeUtf8 $ partyName $ accountParty acct)
+    c <- lift $ passwdCheck p (accountEmail acct) (TE.encodeUtf8 $ partyName $ accountParty acct)
     Fold.mapM_ (deformError . ("Insecure password: " <>) . TE.decodeLatin1) c
     return p
   "again" .:> do

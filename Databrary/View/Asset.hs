@@ -3,7 +3,7 @@ module Databrary.View.Asset
   ( htmlAssetEdit
   ) where
 
-import Data.Maybe (fromMaybe)
+import Data.Foldable (fold)
 import Data.Monoid ((<>), mempty)
 
 import Databrary.Model.Volume
@@ -27,5 +27,5 @@ htmlAssetForm asset = do
 htmlAssetEdit :: AssetTarget -> Context -> FormHtml f
 htmlAssetEdit (AssetTargetVolume v) = htmlForm "Create asset" createAsset     (HTML, volumeId v) (htmlAssetForm Nothing) (const mempty)
 htmlAssetEdit (AssetTargetSlot s)   = htmlForm "Create asset" createSlotAsset (HTML, slotId s) (field "container" (inputHidden $ show $ containerId $ slotContainer s) >> htmlAssetForm Nothing) (const mempty)
-htmlAssetEdit (AssetTargetAsset t)  = htmlForm ("Edit asset " <> fromMaybe "" (assetName a)) postAsset (HTML, assetId a) (htmlAssetForm (Just a)) (const mempty)
+htmlAssetEdit (AssetTargetAsset t)  = htmlForm ("Edit asset " <> fold (assetName a)) postAsset (HTML, assetId a) (htmlAssetForm (Just a)) (const mempty)
   where a = slotAsset t

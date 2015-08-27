@@ -38,7 +38,7 @@ data Party = Party
   }
 
 data Account = Account
-  { accountEmail :: T.Text
+  { accountEmail :: BS.ByteString
   , accountParty :: Party
   }
 

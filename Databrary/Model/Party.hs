@@ -70,7 +70,7 @@ emailPermission = PermissionSHARED
 showEmail :: Identity -> Bool
 showEmail i = accessSite i >= emailPermission
 
-partyEmail :: Party -> Maybe T.Text
+partyEmail :: Party -> Maybe BS.ByteString
 partyEmail p =
   guard (partyPermission p >= emailPermission) >> accountEmail <$> partyAccount p
 
@@ -135,19 +135,19 @@ lookupAuthParty i = do
   lookupFixedParty i ident `orElseM`
     dbQuery1 $(selectQuery (selectAuthParty 'ident) "$WHERE party.id = ${i}")
 
-lookupSiteAuthByEmail :: MonadDB m => Bool -> T.Text -> m (Maybe SiteAuth)
+lookupSiteAuthByEmail :: MonadDB m => Bool -> BS.ByteString -> m (Maybe SiteAuth)
 lookupSiteAuthByEmail ic e = do
   r <- dbQuery1 $(selectQuery selectSiteAuth "WHERE account.email = ${e}")
   if ic && isNothing r
     then do
-      a <- dbQuery $(selectQuery selectSiteAuth "WHERE lower(account.email) = ${T.toLower e} LIMIT 2")
+      a <- dbQuery $(selectQuery selectSiteAuth "WHERE lower(account.email) = lower(${e}) LIMIT 2")
       return $ case a of
         [x] -> Just x
         _ -> Nothing
     else
       return r
 
-auditAccountLogin :: (MonadHasRequest c m, MonadDB m) => Bool -> Party -> T.Text -> m ()
+auditAccountLogin :: (MonadHasRequest c m, MonadDB m) => Bool -> Party -> BS.ByteString -> m ()
 auditAccountLogin success who email = do
   ip <- getRemoteIp
   dbExecute1' [pgSQL|INSERT INTO audit.account (audit_action, audit_user, audit_ip, id, email) VALUES

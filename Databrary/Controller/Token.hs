@@ -9,8 +9,8 @@ module Databrary.Controller.Token
 import Control.Monad (mfilter)
 #endif
 import Control.Monad (when, unless)
+import qualified Data.ByteString as BS
 import Data.Maybe (isJust)
-import qualified Data.Text as T
 
 import Databrary.Ops
 import Databrary.Has
@@ -31,7 +31,7 @@ import Databrary.Controller.Login
 import Databrary.Controller.Angular
 import Databrary.View.Token
 
-lookupPasswordResetAccount :: MonadDB m => T.Text -> m (Maybe SiteAuth)
+lookupPasswordResetAccount :: MonadDB m => BS.ByteString -> m (Maybe SiteAuth)
 lookupPasswordResetAccount email =
 #if !defined(DEVEL) && !defined(SANDBOX)
   mfilter ((PermissionADMIN >) . accessMember) <$> 

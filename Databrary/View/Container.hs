@@ -3,7 +3,7 @@ module Databrary.View.Container
   ( htmlContainerEdit
   ) where
 
-import Data.Maybe (fromMaybe)
+import Data.Foldable (fold)
 import Data.Monoid ((<>), mempty)
 
 import Databrary.Model.Volume
@@ -23,4 +23,4 @@ htmlContainerForm cont = do
 
 htmlContainerEdit :: Either Volume Container -> Context -> FormHtml f
 htmlContainerEdit (Left v)  = htmlForm "Create container" createContainer (HTML, volumeId v) (htmlContainerForm Nothing) (const mempty)
-htmlContainerEdit (Right c) = htmlForm ("Edit container " <> fromMaybe "" (containerName c)) postContainer (HTML, containerSlotId $ containerId c) (htmlContainerForm $ Just c) (const mempty)
+htmlContainerEdit (Right c) = htmlForm ("Edit container " <> fold (containerName c)) postContainer (HTML, containerSlotId $ containerId c) (htmlContainerForm $ Just c) (const mempty)

@@ -12,7 +12,7 @@ import qualified Data.Foldable as Fold
 import Data.Function (on)
 import qualified Data.HashMap.Strict as HM
 import Data.List (stripPrefix, sortBy, nubBy)
-import Data.Maybe (fromMaybe, mapMaybe)
+import Data.Maybe (mapMaybe)
 import Data.Monoid ((<>))
 import Data.Ord (comparing, Down(..))
 import Data.String (IsString(..))
@@ -116,11 +116,11 @@ parseFundRefs = JSON.withArray "fundrefs" $
     name <- j JSON..: "value"
     alts <- j JSON..:? "other_names"
     country <- j JSON..:? "country"
-    return $ annotateFunder (Funder i name) (fromMaybe [] alts) country
+    return $ annotateFunder (Funder i name) (Fold.fold alts) country
 
 searchFundRef :: T.Text -> HTTPClient -> IO [Funder]
 searchFundRef q hcm = do
   req <- HC.setQueryString [("q", Just $ TE.encodeUtf8 q)]
     <$> HC.parseUrl "http://search.crossref.org/funders"
   j <- httpRequestJSON req hcm
-  return $ fromMaybe [] $ JSON.parseMaybe parseFundRefs =<< j
+  return $ Fold.fold $ JSON.parseMaybe parseFundRefs =<< j

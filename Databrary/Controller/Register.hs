@@ -7,6 +7,7 @@ module Databrary.Controller.Register
   , resendInvestigator
   ) where
 
+import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Lazy as BSL
 import Data.Monoid ((<>), mempty)
@@ -33,7 +34,7 @@ import Databrary.Controller.Token
 import Databrary.Controller.Angular
 import Databrary.View.Register
 
-resetPasswordMail :: Either T.Text SiteAuth -> T.Text -> (Maybe BSL.ByteString -> BSL.ByteString) -> ActionM ()
+resetPasswordMail :: Either BS.ByteString SiteAuth -> T.Text -> (Maybe BSL.ByteString -> BSL.ByteString) -> ActionM ()
 resetPasswordMail (Left email) subj body =
   sendMail [Left email] subj (body Nothing)
 resetPasswordMail (Right auth) subj body = do
