@@ -29,6 +29,7 @@ fixPerms :: PackageDescription -> LocalBuildInfo -> CopyDest -> IO ()
 fixPerms desc lbi copy = do
   setFileExecutable (dir </> "transctl.sh")
   setFileExecutable (dir </> "transcode")
+  setFileExecutable (dir </> "ezid" </> "doi.py")
   where dir = datadir $ absoluteInstallDirs desc lbi copy
 
 main :: IO ()
