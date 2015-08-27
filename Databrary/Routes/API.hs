@@ -1,11 +1,13 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, RecordWildCards #-}
 module Databrary.Routes.API
   ( swagger
   ) where
 
+import Control.Applicative ((<$>))
 import Data.Aeson.Types
+import Data.Char (toLower)
 import qualified Data.HashMap.Strict as HM
-import Data.Monoid (mempty)
+import Data.Maybe (maybeToList, mapMaybe)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Version (showVersion)
@@ -50,12 +52,61 @@ import Databrary.Controller.Ingest
 import Databrary.Controller.Web
 -}
 
-op :: T.Text -> Route r a -> a -> [T.Text] -> (T.Text, Object)
-op i r a p = (swaggerPath (routePath r) a p, HM.singleton (T.toLower (TE.decodeLatin1 (routeMethod r))) $ object
-  [ "operationId" .= i
-  , "summary" .= String mempty
-  , "description" .= String mempty
-  ])
+data Type
+  = TypeBoolean
+  | TypeInteger
+  | TypeNumber
+  | TypeString
+  -- | TypeArray ...
+  | TypeFile
+  deriving (Eq, Enum, Bounded, Show)
+
+instance ToJSON Type where
+  toJSON = String . T.pack . n . show where
+    n ('T':'y':'p':'e':c:r) = toLower c : r 
+    n s = error ("toJSON Type: " ++ s)
+
+data DataType = DataType
+  { _dataType :: Type
+  , _dataFormat :: Maybe T.Text
+  }
+
+dataTypeInt32 :: DataType
+dataTypeInt32 = DataType TypeInteger (Just "int32")
+
+dataTypeJSON :: DataType -> [Pair]
+dataTypeJSON (DataType t f) = ("type" .= t) : maybeToList (("format" .=) <$> f)
+
+data Parameter
+  = PathParameter
+    { parameterName :: T.Text
+    , parameterType :: DataType
+    , parameterDescription :: T.Text
+    }
+
+instance ToJSON Parameter where
+  toJSON PathParameter{..} = object $
+    [ "name" .= parameterName
+    , "in" .= String "path"
+    , "description" .= parameterDescription
+    , "required" .= True
+    ] ++ dataTypeJSON parameterType
+
+pathParameters :: [Parameter] -> [T.Text]
+pathParameters = mapMaybe pp where
+  pp PathParameter{ parameterName = n } = Just n
+  pp _ = Nothing
+
+op :: T.Text -> Route r a -> a -> T.Text -> T.Text -> [Parameter] -> (T.Text, Object)
+op i r a summary desc p =
+  ( swaggerPath (routePath r) a $ pathParameters p
+  , HM.singleton (T.toLower (TE.decodeLatin1 (routeMethod r))) $ object
+    [ "operationId" .= i
+    , "summary" .= summary
+    , "description" .= desc
+    , "parameters" .= p
+    ]
+  )
 
 swagger :: Value
 swagger = object
@@ -65,18 +116,38 @@ swagger = object
     , "version" .= showVersion version
     ]
   , "schemes" .= [String "https"]
+  , "produces" .= [String "application/json"]
   , "paths" .= HM.fromListWith HM.union
-    [ op "get" viewRoot (JSON) []
-    , op "getUser" viewUser () []
-    , op "postUser" postUser (JSON) []
-    , op "postLogin" postLogin (JSON) []
-    , op "postLogout" postLogout (JSON) []
+    [ op "get" viewRoot (JSON)
+        "No-op"
+        "Do nothing beyond standard request processing. Can be used to ensure endpoint is active."
+        []
+    , op "getUser" viewUser ()
+        "Current Account"
+        "Return the identity of the currently logged-in user from the session cookie."
+        []
+    , op "postUser" postUser (JSON)
+        "Change Account"
+        "Change the account information of the current user."
+        []
+    , op "postLogin" postLogin (JSON)
+        "Login"
+        "Request a new session given a set of credentials."
+        []
+    , op "postLogout" postLogout (JSON)
+        "Logout"
+        "Terminate the current session."
+        []
 
-    , op "getParty" viewParty (JSON, TargetParty party) ["party"]
+    , op "getParty" viewParty (JSON, TargetParty aparty)
+        "Lookup Party"
+        "Lookup information about a specific party."
+        [pparty]
     ]
   ] where
   -- token = Id ""
-  party = Id 0
+  aparty = Id 0
+  pparty = PathParameter "party" dataTypeInt32 "Party ID"
   -- volume = Id 0
   -- slot = Id (SlotId (Id 0) emptySegment)
   -- container = containerSlotId (Id 0)
