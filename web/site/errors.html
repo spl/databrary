@@ -4,11 +4,10 @@
       <div class="row">
         <div class="col">
           <div class="error-container error-message">
-            <span ng-if="::error.message" ng-bind="::error.message"></span>: 
+            <span ng-bind="::error.message"></span>: 
             <i ng-bind="::page.$location.url()"></i>
             <br>
-            (<span>Error </span>
-            <span ng-bind-html="::error.title"></span>)
+            (<span ng-bind-html="::error.title"></span>)
           </div>
           <div class="error-container error-login" ng-if="::(error.status === 404 || error.status === 403) && !page.models.Login.isLoggedIn()">
             <div class="view-center-block">
@@ -20,10 +19,10 @@
             <div class="view-center-block">
               <span>Some other options:</span>
               <ul>
-                <li><a ng-href="{{::page.router.index()}}">Return to the homepage</a></li>
-                <li><a ng-if="::page.models.Login.isLoggedIn()" ng-href="{{::page.router.profile()}}">See your Databrary profile</a></li>
+                <li>Return to the <a ng-href="{{::page.router.index()}}">homepage</a></li>
+                <li ng-if="::page.models.Login.isLoggedIn()">Go to <a ng-href="{{::page.router.profile()}}">your profile</a></li>
                 <li>Check out our <a href="//databrary.org/access/guide.html">user guide</a></li>
-                <li>Need help or more support? Feel free to <a href="//databrary.org/about/support.html">contact us</a></li>
+                <li>Need help? Feel free to <a href="//databrary.org/about/support.html">contact us</a></li>
               </ul>
             </div>
           </div>
