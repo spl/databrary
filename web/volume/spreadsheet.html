@@ -1,12 +1,12 @@
 <ng-form name="form">
-<div class="release-legend" ng-if="::editing && !top" ng-show="key.id === 'slot'">
+<div class="spreadsheet-dynamic-info" ng-if="::editing && !top" ng-show="key.id === 'slot'">
   <a href="" ng-click="showConsents=false" ng-show="showConsents">
     Hide legend of session release levels
   </a>
   <a href="" ng-click="showConsents=true" ng-hide="showConsents">
     Show legend of session release levels
   </a>
-  <ul ng-show="showConsents">
+  <ul class="release-legend" ng-show="showConsents">
     <li ng-repeat="(i,c) in page.constants.release" ng-if="i>=0">
       <span class="icon release" ng-class="c"></span>
       <span ng-bind="'release.'+c+'.title' | message"></span>: 
@@ -14,7 +14,7 @@
     </li>
   </ul>
 </div>
-<div ng-if="::editing && !top" ng-show="key.id !== 'slot'">
+<div class="spreadsheet-dynamic-info" ng-if="::editing && !top" ng-show="key.id !== 'slot'">
   You are in <span class="icon list"></span> <em><span ng-bind="key.name"></span> view</em>. 
   Here you can manage the list of labels in this category. 
   Return to the <a href="" ng-click="setKey('slot')">folder view</a> to edit session data.
