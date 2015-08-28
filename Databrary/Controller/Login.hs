@@ -93,7 +93,7 @@ postUser = action POST (pathAPI </< "user") $ \api -> withAuth $ do
   auth' <- runForm (api == HTML ?> htmlUserForm acct) $ do
     csrfForm
     "auth" .:> (deformGuard "Incorrect password" . (`checkPassword` auth) =<< deform)
-    email <- "email" .:> deform
+    email <- "email" .:> emailTextForm
     passwd <- "password" .:> deformNonEmpty (passwordForm acct)
     let acct' = acct
           { accountEmail = email
