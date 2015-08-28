@@ -148,7 +148,7 @@ processParty api p = do
 viewPartyEdit :: ActionRoute PartyTarget
 viewPartyEdit = action GET (pathHTML >/> pathPartyTarget </< "edit") $ \i -> withAuth $ do
   angular
-  p <- getParty (Just PermissionADMIN) i
+  p <- getParty (Just PermissionEDIT) i
   peeks $ blankForm . htmlPartyEdit (Just p)
 
 viewPartyCreate :: ActionRoute ()
@@ -158,7 +158,7 @@ viewPartyCreate = action GET (pathHTML </< "party" </< "create") $ \() -> withAu
 
 postParty :: ActionRoute (API, PartyTarget)
 postParty = multipartAction $ action POST (pathAPI </> pathPartyTarget) $ \(api, i) -> withAuth $ do
-  p <- getParty (Just PermissionADMIN) i
+  p <- getParty (Just PermissionEDIT) i
   (p', a) <- processParty api (Just p)
   changeParty p'
   Fold.mapM_ (changeAvatar p') a

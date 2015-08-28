@@ -13,12 +13,11 @@ module Databrary.Model.Party.SQL
   , deleteAccount
   ) where
 
-import Control.Applicative ((<|>))
 import qualified Data.ByteString as BS
 import qualified Data.Foldable as Fold
+import Data.Monoid ((<>))
 import qualified Language.Haskell.TH as TH
 
-import Databrary.Ops
 import Databrary.Has (Has, view)
 import Databrary.Model.SQL.Select
 import Databrary.Model.Audit.SQL
@@ -45,10 +44,13 @@ selectPermissionParty = selectJoin 'makeParty
   ]
 
 permissionParty :: Has (Id Party) a => (Permission -> Maybe Access -> a) -> Maybe Access -> Identity -> a
-permissionParty pf a ident = p where
+permissionParty pf a' ident = p where
   p = pf
-    (max PermissionPUBLIC $ min PermissionREAD $ accessSite ident)
-    (((identitySuperuser ident || foldIdentity False (((view p :: Id Party) ==) . view) ident) ?> maxBound) <|> a)
+    (maybe id (max . accessPermission') a $ max PermissionPUBLIC $ min PermissionREAD $ accessSite ident)
+    a
+  a | foldIdentity False (((view p :: Id Party) ==) . view) ident = Just maxBound
+    | identityAdmin ident = Just $ maybe id (<>) a' $ view ident
+    | otherwise = a'
 
 selectParty :: TH.Name -- ^ 'Identity'
   -> Selector -- ^ @'Party'@

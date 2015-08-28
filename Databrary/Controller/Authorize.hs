@@ -87,7 +87,7 @@ postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarge
             \http://databrary.org/access/guide/investigators/authorization/affiliates.html\n"
       return $ Just $ fromMaybe c' c
     else do
-      su <- peeks identitySuperuser
+      su <- peeks identityAdmin
       now <- peek
       let maxexp = addGregorianYearsRollOver 2 $ utctDay now
           minexp = fromGregorian 2000 1 1
