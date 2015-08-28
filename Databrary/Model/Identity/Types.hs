@@ -4,6 +4,7 @@ module Databrary.Model.Identity.Types
   , MonadHasIdentity
   , foldIdentity
   , identityVerf
+  , identityAdmin
   , identitySuperuser
   ) where
 
@@ -46,8 +47,11 @@ foldIdentity u _ _ = u
 identityVerf :: Identity -> Maybe BS.ByteString
 identityVerf = foldIdentity Nothing (Just . sessionVerf)
 
-identitySuperuser :: Identity -> Bool
-identitySuperuser (Identified t) = sessionSuperuser t
-identitySuperuser (ReIdentified _) = True
-identitySuperuser _ = False
+identitySuperuserFor :: (Access -> Permission) -> Identity -> Bool
+identitySuperuserFor f (Identified t) = sessionSuperuser t && f (view t) == PermissionADMIN
+identitySuperuserFor _ (ReIdentified _) = True
+identitySuperuserFor _ _ = False
 
+identityAdmin, identitySuperuser :: Identity -> Bool
+identityAdmin = identitySuperuserFor accessMember
+identitySuperuser = identitySuperuserFor accessPermission

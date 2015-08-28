@@ -31,7 +31,7 @@ postVolumeAccess = action POST (pathAPI </> pathId </> pathVolumeAccessTarget) $
   v <- getVolume PermissionADMIN vi
   a <- maybeAction =<< lookupVolumeAccessParty v ap
   u <- peek
-  let su = identitySuperuser u
+  let su = identityAdmin u
       ru = unId ap > 0
   a' <- runForm (api == HTML ?> htmlVolumeAccessForm a) $ do
     csrfForm

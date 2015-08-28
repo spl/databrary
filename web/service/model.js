@@ -337,7 +337,7 @@ app.factory('modelService', [
     };
 
     Model.prototype.checkPermission = function (level) {
-      return this.permission >= level || Login.user.superuser;
+      return this.permission >= level;
     };
 
     /* a little hacky, but to get people SUPER on themselves: */
@@ -357,8 +357,6 @@ app.factory('modelService', [
       get: 'getUser',
       login: 'postLogin',
       logout: 'postLogout',
-      // superuserOn: 'superuserOn',
-      // superuserOff: 'superuserOff'
     }, function(api, f){
       Login[f] = function (data) {
         return router.http(router.controllers[api], data).then(loginRes);
