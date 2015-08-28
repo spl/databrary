@@ -1064,7 +1064,7 @@ app.directive 'spreadsheet', [
           if !info.t
             for c in info.cell.classList when c.startsWith('ss-')
               styles.set('.' + c + '{background-color:' +
-                (if c.includes('_', 4) then 'rgba(226,217,0,0.6)' else 'rgba(242,238,100,0.4)') +
+                (if c.includes('_', 4) then 'rgba(243,180,140,0.7)' else 'rgba(243,180,140,0.4)') +
                 ';\n text-}')
               info.cell.classList.add('selected')
 
