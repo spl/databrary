@@ -15,6 +15,8 @@ import Data.Version (showVersion)
 import Paths_databrary (version)
 import Databrary.HTTP.Route
 import Databrary.HTTP.Path.Swagger
+import Databrary.Model.Enum
+import Databrary.Model.Permission
 import Databrary.Model.Id.Types
 {-
 import Databrary.Model.Segment
@@ -71,30 +73,54 @@ data DataType = DataType
   , _dataFormat :: Maybe T.Text
   }
 
-dataTypeInt32 :: DataType
+dataTypeInt32, dataTypeString, dataTypePassword, dataTypeEmail :: DataType
 dataTypeInt32 = DataType TypeInteger (Just "int32")
+dataTypeString = DataType TypeString Nothing
+dataTypePassword = DataType TypeString (Just "password")
+dataTypeEmail = DataType TypeString (Just "email")
 
 dataTypeJSON :: DataType -> [Pair]
 dataTypeJSON (DataType t f) = ("type" .= t) : maybeToList (("format" .=) <$> f)
 
-data Parameter
-  = PathParameter
-    { parameterName :: T.Text
-    , parameterType :: DataType
-    , parameterDescription :: T.Text
-    }
+data ParameterLoc
+  = InPath
+  | InQuery
+  | InData
+
+instance ToJSON ParameterLoc where
+  toJSON InPath = String "path"
+  toJSON InQuery = String "query"
+  toJSON InData = String "formData" -- also "body", sort of
+
+data Parameter = Parameter
+  { parameterLoc :: ParameterLoc
+  , parameterName :: T.Text
+  , parameterType :: DataType
+  , parameterFields :: [Pair]
+  }
 
 instance ToJSON Parameter where
-  toJSON PathParameter{..} = object $
+  toJSON Parameter{..} = object $
     [ "name" .= parameterName
-    , "in" .= String "path"
-    , "description" .= parameterDescription
-    , "required" .= True
+    , "in" .= parameterLoc
     ] ++ dataTypeJSON parameterType
+    ++ parameterFields
+
+pathParameter :: T.Text -> DataType -> T.Text -> [Pair] -> Parameter
+pathParameter name dt desc =
+  Parameter InPath name dt . ("required" .= True :) . ("description" .= desc :)
+
+queryParameter :: T.Text -> DataType -> Bool -> T.Text -> [Pair] -> Parameter
+queryParameter name dt empty desc =
+  Parameter InQuery name dt . ("description" .= desc :) . ("allowEmptyValue" .= empty :)
+
+formParameter :: T.Text -> DataType -> Bool -> T.Text -> [Pair] -> Parameter
+formParameter name dt req desc =
+  Parameter InData name dt . ("required" .= req :) . ("description" .= desc :)
 
 pathParameters :: [Parameter] -> [T.Text]
 pathParameters = mapMaybe pp where
-  pp PathParameter{ parameterName = n } = Just n
+  pp Parameter{ parameterLoc = InPath, parameterName = n } = Just n
   pp _ = Nothing
 
 op :: T.Text -> Route r a -> a -> T.Text -> T.Text -> [Parameter] -> (T.Text, Object)
@@ -111,11 +137,13 @@ op i r a summary desc p =
 swagger :: Value
 swagger = object
   [ "swagger" .= String "2.0"
-  , "info" .=
+  , "info" .= object
     [ "title" .= String "Databrary"
     , "version" .= showVersion version
+    , "description" .= String "All POST operations accepting formData parameters equivalently accept a JSON object body with corresponding keys, where '.' in field names are replaced by nested objects."
     ]
   , "schemes" .= [String "https"]
+  , "consumes" .= [String "application/json", String "application/x-www-form-urlencoded", String "multipart/form-data"]
   , "produces" .= [String "application/json"]
   , "paths" .= HM.fromListWith HM.union
     [ op "get" viewRoot (JSON)
@@ -129,25 +157,44 @@ swagger = object
     , op "postUser" postUser (JSON)
         "Change Account"
         "Change the account information of the current user."
-        []
+        [ formParameter "auth" dataTypePassword True "Current (old) password" []
+        , formParameter "email" dataTypeEmail False "New email address for user" []
+        , formParameter "password.once" dataTypePassword False "New password for user" []
+        , formParameter "password.again" dataTypePassword False "New password for user (must match password.once)" []
+        ]
     , op "postLogin" postLogin (JSON)
         "Login"
-        "Request a new session given a set of credentials."
-        []
+        "Request and issue a new session given a set of credentials."
+        [ formParameter "email" dataTypeEmail True "Email address of account to login" []
+        , formParameter "password" dataTypePassword True "Password of account to login" []
+        ]
     , op "postLogout" postLogout (JSON)
         "Logout"
-        "Terminate the current session."
+        "Terminate and invalidate the current session."
         []
 
     , op "getParty" viewParty (JSON, TargetParty aparty)
         "Lookup Party"
         "Lookup information about a specific party."
-        [pparty]
+        [ pparty
+        , queryParameter "parents" dataTypeString True "Include 'parents' in the response, optionally including 'authorization' in each parent."
+          [ "enum" .= [String "authorization"] ]
+        , queryParameter "children" dataTypeString True "Include 'children' in the response."
+          [ "enum" .= emptyArray ]
+        , queryParameter "volumes" dataTypeString True "Include 'volumes' in the response, optionally including 'access' in each volume."
+          [ "enum" .= [String "access"] ]
+        , queryParameter "access" dataTypeString True  "Include 'access' in the response for all volumes with at least the given permission level."
+          [ "default" .= String "EDIT"
+          , "enum" .= map snd (pgEnumValues :: [(Permission, String)])
+          ]
+        , queryParameter "authorization" dataTypeString True  "Include 'authorization' in the response."
+          [ "enum" .= emptyArray ]
+        ]
     ]
   ] where
   -- token = Id ""
   aparty = Id 0
-  pparty = PathParameter "party" dataTypeInt32 "Party ID"
+  pparty = pathParameter "party" dataTypeInt32 "Party ID" []
   -- volume = Id 0
   -- slot = Id (SlotId (Id 0) emptySegment)
   -- container = containerSlotId (Id 0)
