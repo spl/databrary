@@ -1,9 +1,11 @@
 <ng-form name="volumeEditOverviewForm">
   <scroll-float>
     <fieldset class="clean">
-      <button ng-click="volumeEditOverviewForm.save()" message="save" class="green" ng-disabled="volumeEditOverviewForm.$pristine || volumeEditOverviewForm.$invalid || volumeEditOverviewForm.$submitted"></button>
-      <button ng-if="::!!volume" ng-click="volumeEditOverviewForm.resetAll()" message="revert" ng-disabled="volumeEditOverviewForm.$pristine"></button>
-      <button ng-if="::!volume" ng-click="page.router.back()" message="volume.edit.cancel"></a>
+      <div class="col">
+        <button ng-click="volumeEditOverviewForm.save()" message="save" class="green" ng-disabled="volumeEditOverviewForm.$pristine || volumeEditOverviewForm.$invalid || volumeEditOverviewForm.$submitted"></button>
+        <button ng-if="::!!volume" ng-click="volumeEditOverviewForm.resetAll()" message="revert" ng-disabled="volumeEditOverviewForm.$pristine"></button>
+        <button ng-if="::!volume" ng-click="page.router.back()" message="volume.edit.cancel"></a>
+      </button>
     </fieldset>
   </scroll-float>
   <fieldset ng-if="::!volume">
