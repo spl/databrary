@@ -11,8 +11,8 @@
   <fieldset ng-show="partyEditGrantForm.data.length > 0">
     <legend message="auth.grant.legend"></legend>
     <article ng-repeat="auth in partyEditGrantForm.data track by auth.party.id" id="auth-{{::auth.party.id}}" class="permission-auth cf peg anchor">
-      <div class="row">
-        <div class="col-desktop-1 col-tablet-1 col-mobile-1">
+      <div class="col">
+        <div class="col-desktop-1 col-tablet-1 hide-mobile">
           <figure class="figure-avatar" ng-class="::{inst: auth.party.institution}">
             <img ng-src="{{::auth.party.avatarRoute()}}">
           </figure>
@@ -21,12 +21,12 @@
         <div>
           <div class="row">
             <div class="permission-heading">
-              <a ng-href="{{::auth.party.route()}}" class="permission-auth-username" ng-bind="::auth.party.name"></a> 
+              <a ng-href="{{::auth.party.route()}}" class="permission-auth-username" ng-bind="::auth.party.name"></a><wbr>
               <span class="permission-auth-email" ng-if="::!!auth.party.email" ng-bind="::auth.party.email"></span> 
               <button ng-click="authGrantForm.deny()" class="icon trash"></button>
             </div>
 
-            <div class="col-desktop-11 col-tablet-7 col-mobile-4">
+            <div class="col-desktop-11 col-tablet-7 col-mobile-6">
               <auth-grant-form></auth-grant-form>
             </div>
           </div>

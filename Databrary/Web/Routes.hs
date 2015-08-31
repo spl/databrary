@@ -7,7 +7,7 @@ module Databrary.Web.Routes
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as B
 import Data.Monoid ((<>))
-import System.IO (withBinaryFile, IOMode(WriteMode), hPutStr, hPutStrLn)
+import System.IO (withBinaryFile, IOMode(WriteMode), hPutStr, hPutStrLn, hFlush)
 
 import Databrary.JSON (quoteByteString)
 import Databrary.HTTP.Path.JS
@@ -27,5 +27,6 @@ generateRoutesJS = staticWebGenerate $ \f ->
   withBinaryFile f WriteMode $ \h -> do
     hPutStrLn h "'use strict';"
     hPutStr h "app.constant('routeData',{"
-    B.hPutBuilder h jsRoutes
+    hFlush h                 -- need this
+    B.hPutBuilder h jsRoutes -- or this hangs
     hPutStrLn h "});"

@@ -7,16 +7,16 @@
   <fieldset ng-show="partyEditApplyForm.data.length > 0">
     <legend message="auth.apply.legend"></legend>
     <article ng-repeat="auth in partyEditApplyForm.data track by auth.party.id" id="auth-{{::auth.party.id}}" class="permission-auth cf foot pef anchor">
-      <div ng-if="!auth.new" class="row">
-        <div class="col-desktop-1 col-tablet-1 col-mobile-1">
+      <div ng-if="!auth.new" class="col">
+        <div class="col-desktop-1 col-tablet-1 hide-mobile">
           <figure class="figure-avatar" ng-class="::{inst: auth.party.institution}">
             <img ng-src="{{::auth.party.avatarRoute()}}">
           </figure>
         </div>
 
-        <div class="col-desktop-14 col-tablet-8 col-mobile-5">
+        <div class="col-desktop-14 col-tablet-8 col-mobile-6">
           <div class="permission-heading">
-            <a ng-href="{{::auth.party.route()}}" class="permission-auth-username" ng-bind="::auth.party.name"></a>
+            <a ng-href="{{::auth.party.route()}}" class="permission-auth-username" ng-bind="::auth.party.name"></a><wbr>
             <span class="permission-auth-email" ng-if="::!!auth.party.email" ng-bind="::auth.party.email"></span>
             <span ng-if="::!(auth.member || auth.site)" message="auth.pending" class="permission-auth-pending"></span>
           </div>
