@@ -1,8 +1,8 @@
 <div id="sponsors" class="network-parents-region">
   <h4 class="view-title smaller" message="auth.parents.title"></h4>
-  <p class="view-subtitle" message="auth.parents.subtitle"></p>
+  <p class="view-subtitle" message="auth.parents.subtitle" ng-if="partyParentsCount > 0"></p>
 
-  <article id="network-parent-{{::parent.id}}" class="permission-auth cf" ng-repeat="parent in party.parents" ng-if="::!isAdmin || isAdmin && (parent.member || parent.site)">
+  <article id="network-parent-{{::parent.id}}" class="cf" ng-repeat="parent in party.parents" ng-if="::!isAdmin || isAdmin && (parent.member || parent.site)">
     <div class="row">
       <div class="network-avatar col-desktop-1 col-tablet-1 col-mobile-1">
         <figure class="figure-avatar" fill ng-class="::{inst: parent.party.institution}">
@@ -13,7 +13,7 @@
       <div class="col-desktop-14 col-tablet-8 col-mobile-5">
         <div class="row">
           <div class="permission-heading col-desktop-15 col-tablet-9 col-mobile-6">
-            <a ng-href="{{::parent.party.route()}}" class="permission-auth-username">{{parent.party.name}}</a>
+            <a ng-href="{{::parent.party.route()}}" class="permission-auth-username">{{parent.party.name}}</a><wbr>
             <span class="permission-auth-email" ng-if="::!!parent.party.email" ng-bind="::parent.party.email"></span>
           </div>
 
@@ -31,9 +31,9 @@
 
 <div id="affiliates" class="network-children-region">
   <h4 class="view-title smaller" message="auth.children.title"></h4>
-  <p class="view-subtitle" message="auth.children.subtitle"></p>
+  <p class="view-subtitle" message="auth.children.subtitle" ng-if="partyChildrenCount > 0"></p>
 
-  <article id="network-child-{{::child.id}}" class="permission-auth cf" ng-repeat="child in party.children">
+  <article id="network-child-{{::child.id}}" class="cf" ng-repeat="child in party.children">
     <div class="row">
       <div class="col-desktop-1 col-tablet-1 col-mobile-1">
         <figure class="figure-avatar" ng-class="::{inst: child.party.institution}">
@@ -44,7 +44,7 @@
       <div class="col-desktop-14 col-tablet-8 col-mobile-5">
         <div class="row">
           <div class="permission-heading col-desktop-14 col-tablet-8 col-mobile-5">
-            <a ng-href="{{::child.party.route()}}" class="permission-auth-username" ng-bind="::child.party.name"></a>
+            <a ng-href="{{::child.party.route()}}" class="permission-auth-username" ng-bind="::child.party.name"></a><wbr>
             <span class="permission-auth-email" ng-if="::!!child.party.email" ng-bind="::child.party.email"></span>
           </div>
         </div>
