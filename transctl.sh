@@ -31,11 +31,14 @@ while getopts 'i:h:d:v:c:k:f:r:t' opt ; do case "$opt" in
 	?) exit 1 ;;
 esac ; done
 
+hcmd=./transcode${version:+-$version}
+
 if [[ -n $test ]] ; then
 	if [[ -z $dir ]] ; then
 		false
 	elif [[ -n $host ]] ; then
 		ssh "$host" test -d "$dir"
+		rsync -p "$cmd" "$host:$hcmd"
 	else
 		test -d "$dir"
 	fi
@@ -45,15 +48,6 @@ fi
 if [[ -z $id || -z $dir || -z $collect$kill && ( -z $src || -z $url ) ]] ; then
 	echo "$0: usage error: $*" >&2
 	exit 1
-fi
-
-if [[ -n $host ]] ; then
-	hcmd=`basename "$cmd"`
-	if [[ -n $version ]] ; then
-		hcmd=$hcmd-$version
-		rsync -p "$cmd" "$host:$hcmd"
-	fi
-	cmd=./$hcmd
 fi
 
 if [[ -n $collect ]] ; then
@@ -68,7 +62,7 @@ elif [[ -n $host ]] ; then
 	if [[ -z $kill ]] ; then
 		rsync "$src" "$host:$dir/$id"
 	fi
-	ssh "$host" "$cmd" `escape "$@"` | sed 's/^\([0-9]\+\)\.[.a-z0-9-]*$/\1/'
+	ssh "$host" "$hcmd" `escape "$@"` | sed 's/^\([0-9]\+\)\.[.a-z0-9-]*$/\1/'
 elif [[ -n $kill ]] ; then
 	"$cmd" "$@"
 else

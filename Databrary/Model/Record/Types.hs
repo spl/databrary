@@ -22,7 +22,7 @@ type instance IdType Record = Int32
 data Record = Record
   { recordId :: Id Record
   , recordVolume :: Volume
-  , recordCategory :: Maybe RecordCategory
+  , recordCategory :: RecordCategory
   , recordRelease :: Maybe Release
   , recordMeasures :: Measures
   }
@@ -42,8 +42,6 @@ instance Kinded Measure where
 type Measures = [Measure]
 
 makeHasRec ''Record ['recordId, 'recordVolume, 'recordCategory, 'recordRelease]
-instance Has (Maybe (Id RecordCategory)) Record where
-  view = fmap recordCategoryId . recordCategory
 
 instance Has Record Measure where
   view = measureRecord
@@ -53,9 +51,9 @@ instance Has Volume Measure where
   view = view . measureRecord
 instance Has (Id Volume) Measure where
   view = view . measureRecord
-instance Has (Maybe RecordCategory) Measure where
+instance Has RecordCategory Measure where
   view = view . measureRecord
-instance Has (Maybe (Id RecordCategory)) Measure where
+instance Has (Id RecordCategory) Measure where
   view = view . measureRecord
 instance Has Permission Measure where
   view = view . measureRecord

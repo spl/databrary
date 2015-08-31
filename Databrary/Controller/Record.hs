@@ -9,15 +9,16 @@ module Databrary.Controller.Record
   , deleteRecordSlot
   ) where
 
-import Control.Monad (when)
+import Control.Monad (when, unless)
 import Control.Monad.Trans.Class (lift)
 import Data.Maybe (isNothing, fromMaybe)
 import qualified Data.Text as T
 import Network.HTTP.Types (StdMethod(DELETE), noContent204, conflict409)
 
 import Databrary.Ops
-import Databrary.Has (view)
+import Databrary.Has
 import Databrary.Action.Route
+import Databrary.Action.Response
 import Databrary.Action
 import Databrary.Model.Id
 import Databrary.Model.Volume
@@ -38,32 +39,32 @@ import Databrary.Controller.Slot
 import Databrary.Controller.Permission
 import Databrary.View.Record
 
-getRecord :: Permission -> Id Record -> AuthActionM Record
+getRecord :: Permission -> Id Record -> ActionM Record
 getRecord p i =
   checkPermission p =<< maybeAction =<< lookupRecord i
 
-viewRecord :: AppRoute (API, Id Record)
+viewRecord :: ActionRoute (API, Id Record)
 viewRecord = action GET (pathAPI </> pathId) $ \(api, i) -> withAuth $ do
   rec <- getRecord PermissionPUBLIC i
-  case api of
+  return $ case api of
     JSON -> okResponse [] $ recordJSON rec
     HTML -> okResponse [] $ T.pack $ show $ recordId rec -- TODO
 
-createRecord :: AppRoute (API, Id Volume)
+createRecord :: ActionRoute (API, Id Volume)
 createRecord = action POST (pathAPI </> pathId </< "record") $ \(api, vi) -> withAuth $ do
   vol <- getVolume PermissionEDIT vi
   br <- runForm (api == HTML ?> htmlRecordForm vol) $ do
     csrfForm
-    cat <- "category" .:> (flatMapM ((`orElseM` Nothing <$ deformError "No such record category.") . getRecordCategory) =<< deformNonEmpty deform)
+    cat <- "category" .:> (deformMaybe' "No such record category." . getRecordCategory =<< deform)
     return (blankRecord vol)
       { recordCategory = cat
       }
   rec <- addRecord br
   case api of
-    JSON -> okResponse [] $ recordJSON rec
-    HTML -> redirectRouteResponse [] viewRecord (api, recordId rec) []
+    JSON -> return $ okResponse [] $ recordJSON rec
+    HTML -> peeks $ otherRouteResponse [] viewRecord (api, recordId rec)
 
-postRecordMeasure :: AppRoute (API, Id Record, Id Metric)
+postRecordMeasure :: ActionRoute (API, Id Record, Id Metric)
 postRecordMeasure = action POST (pathAPI </>> pathId </> pathId) $ \(api, ri, mi) -> withAuth $ do
   rec <- getRecord PermissionEDIT ri
   met <- maybeAction $ getMetric mi
@@ -78,22 +79,22 @@ postRecordMeasure = action POST (pathAPI </>> pathId </> pathId) $ \(api, ri, mi
         when (isNothing r) $ deformError $ T.pack $ "Invalid " ++ show (metricType met)
         return $ fromMaybe rec r)
   case api of
-    JSON -> okResponse [] $ recordJSON rec'
-    HTML -> redirectRouteResponse [] viewRecord (api, recordId rec') []
+    JSON -> return $ okResponse [] $ recordJSON rec'
+    HTML -> peeks $ otherRouteResponse [] viewRecord (api, recordId rec')
 
-deleteRecord :: AppRoute (API, Id Record)
+deleteRecord :: ActionRoute (API, Id Record)
 deleteRecord = action DELETE (pathAPI </> pathId) $ \(api, ri) -> withAuth $ do
   guardVerfHeader
   rec <- getRecord PermissionEDIT ri
   r <- removeRecord rec
-  guardAction r $ case api of
-    JSON -> returnResponse conflict409 [] (recordJSON rec)
-    HTML -> returnResponse conflict409 [] ("This record is still used." :: T.Text)
+  unless r $ result $ case api of
+    JSON -> response conflict409 [] (recordJSON rec)
+    HTML -> response conflict409 [] ("This record is still used." :: T.Text)
   case api of
-    JSON -> emptyResponse noContent204 []
-    HTML -> redirectRouteResponse [] viewVolume (api, view rec) []
+    JSON -> return $ emptyResponse noContent204 []
+    HTML -> peeks $ otherRouteResponse [] viewVolume (api, view rec)
 
-postRecordSlot :: AppRoute (API, Id Slot, Id Record)
+postRecordSlot :: ActionRoute (API, Id Slot, Id Record)
 postRecordSlot = action POST (pathAPI </>> pathSlotId </> pathId) $ \(api, si, ri) -> withAuth $ do
   slot <- getSlot PermissionEDIT Nothing si
   rec <- getRecord PermissionEDIT ri
@@ -102,18 +103,18 @@ postRecordSlot = action POST (pathAPI </>> pathSlotId </> pathId) $ \(api, si, r
     "src" .:> deformNonEmpty deform
   r <- moveRecordSlot (RecordSlot rec slot{ slotSegment = fromMaybe emptySegment src }) (slotSegment slot)
   case api of
-    HTML | r      -> redirectRouteResponse [] viewSlot (api, (Just (view slot), slotId slot)) []
-      | otherwise -> redirectRouteResponse [] viewRecord (api, recordId rec) []
-    JSON | r      -> okResponse [] $ recordSlotJSON (RecordSlot rec slot)
-      | otherwise -> okResponse [] $ recordJSON rec
+    HTML | r      -> peeks $ otherRouteResponse [] viewSlot (api, (Just (view slot), slotId slot))
+      | otherwise -> peeks $ otherRouteResponse [] viewRecord (api, recordId rec)
+    JSON | r      -> return $ okResponse [] $ recordSlotJSON (RecordSlot rec slot)
+      | otherwise -> return $ okResponse [] $ recordJSON rec
 
-deleteRecordSlot :: AppRoute (API, Id Slot, Id Record)
+deleteRecordSlot :: ActionRoute (API, Id Slot, Id Record)
 deleteRecordSlot = action DELETE (pathAPI </>> pathSlotId </> pathId) $ \(api, si, ri) -> withAuth $ do
   guardVerfHeader
   slot <- getSlot PermissionEDIT Nothing si
   rec <- getRecord PermissionEDIT ri
   r <- moveRecordSlot (RecordSlot rec slot) emptySegment
   case api of
-    HTML | r -> redirectRouteResponse [] viewRecord (api, recordId rec) []
-    JSON | r -> okResponse [] $ recordJSON rec
-    _ -> emptyResponse noContent204 []
+    HTML | r -> peeks $ otherRouteResponse [] viewRecord (api, recordId rec)
+    JSON | r -> return $ okResponse [] $ recordJSON rec
+    _ -> return $ emptyResponse noContent204 []

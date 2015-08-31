@@ -5,7 +5,7 @@ module Databrary.Controller.VolumeAccess
   ) where
 
 import Databrary.Ops
-import Databrary.Has (peek)
+import Databrary.Has
 import qualified Databrary.JSON as JSON
 import Databrary.Model.Id
 import Databrary.Model.Permission
@@ -20,18 +20,18 @@ import Databrary.Controller.Form
 import Databrary.Controller.Volume
 import Databrary.View.VolumeAccess
 
-viewVolumeAccess :: AppRoute (Id Volume, VolumeAccessTarget)
+viewVolumeAccess :: ActionRoute (Id Volume, VolumeAccessTarget)
 viewVolumeAccess = action GET (pathHTML >/> pathId </> pathVolumeAccessTarget) $ \(vi, VolumeAccessTarget ap) -> withAuth $ do
   v <- getVolume PermissionADMIN vi
   a <- maybeAction =<< lookupVolumeAccessParty v ap
-  blankForm (htmlVolumeAccessForm a)
+  peeks $ blankForm . htmlVolumeAccessForm a
 
-postVolumeAccess :: AppRoute (API, (Id Volume, VolumeAccessTarget))
+postVolumeAccess :: ActionRoute (API, (Id Volume, VolumeAccessTarget))
 postVolumeAccess = action POST (pathAPI </> pathId </> pathVolumeAccessTarget) $ \(api, arg@(vi, VolumeAccessTarget ap)) -> withAuth $ do
   v <- getVolume PermissionADMIN vi
   a <- maybeAction =<< lookupVolumeAccessParty v ap
   u <- peek
-  let su = identitySuperuser u
+  let su = identityAdmin u
       ru = unId ap > 0
   a' <- runForm (api == HTML ?> htmlVolumeAccessForm a) $ do
     csrfForm
@@ -49,7 +49,7 @@ postVolumeAccess = action POST (pathAPI </> pathId </> pathVolumeAccessTarget) $
       { volumeAccessIndividual = individual
       , volumeAccessChildren = children
       }
-  _ <- changeVolumeAccess a'
+  r <- changeVolumeAccess a'
   case api of
-    JSON -> okResponse [] $ JSON.Object $ volumeAccessJSON a
-    HTML -> redirectRouteResponse [] viewVolumeAccess arg []
+    JSON -> return $ okResponse [] $ JSON.Object $ volumeAccessPartyJSON (if r then a' else a)
+    HTML -> peeks $ otherRouteResponse [] viewVolumeAccess arg

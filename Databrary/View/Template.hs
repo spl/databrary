@@ -21,8 +21,8 @@ import Paths_databrary (version)
 import Databrary.Ops
 import Databrary.Has (view)
 import Databrary.Model.Identity
+import Databrary.Action.Types
 import Databrary.Action
-import Databrary.Action.Auth
 import Databrary.Controller.Paths
 import Databrary.View.Html
 
@@ -90,7 +90,7 @@ htmlFooter = H.footer H.! HA.id "site-footer" H.! HA.class_ "site-footer" $
           H.string $ showVersion version
           "]"
 
-htmlTemplate :: AuthRequest -> Maybe T.Text -> (JSOpt -> H.Html) -> H.Html
+htmlTemplate :: Context -> Maybe T.Text -> (JSOpt -> H.Html) -> H.Html
 htmlTemplate req title body = H.docTypeHtml $ do
   H.head $ do
     htmlHeader canon hasjs
@@ -119,7 +119,7 @@ htmlTemplate req title body = H.docTypeHtml $ do
               H.button
                 H.! HA.type_ "submit"
                 $ "logout")
-          $ authIdentity req
+          $ contextIdentity req
     Fold.mapM_ (H.h1 . H.toHtml) title
     r <- body hasjs
     H.hr

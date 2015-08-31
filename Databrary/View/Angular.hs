@@ -17,7 +17,7 @@ import qualified Text.Blaze.Html5.Attributes as HA
 import Databrary.Ops
 import Databrary.Has (view)
 import Databrary.Model.Identity
-import Databrary.Action.Auth
+import Databrary.Action.Types
 import Databrary.Action
 import Databrary.Web (WebFilePath, webFileRelRaw)
 import Databrary.Web.Libs (allWebLibs)
@@ -32,7 +32,7 @@ ngAttribute = H.customAttribute . H.stringTag . ("ng-" <>)
 webURL :: BS.ByteString -> H.AttributeValue
 webURL p = builderValue $ actionURL Nothing webFile (Just $ StaticPath p) []
 
-htmlAngular :: Maybe [WebFilePath] -> BSB.Builder -> AuthRequest -> H.Html
+htmlAngular :: Maybe [WebFilePath] -> BSB.Builder -> Context -> H.Html
 htmlAngular debug nojs auth = H.docTypeHtml H.! ngAttribute "app" "databraryModule" $ do
   H.head $ do
     htmlHeader Nothing def
@@ -83,7 +83,7 @@ htmlAngular debug nojs auth = H.docTypeHtml H.! ngAttribute "app" "databraryModu
     H.preEscapedString "<errors></errors>"
     htmlFooter
     H.preEscapedString "<messages></messages>"
-    H.preEscapedString "<tooltip ng-repeat=\"tooltip in page.tooltips.list track by tooltip.id\" ng-if=\"tooltip.target\"></tooltip>"
+    H.preEscapedString "<tooltip ng-repeat=\"tooltip in page.tooltips.list\"></tooltip>"
     H.div
       H.! HA.id "loading"
       H.! HA.class_ "loading"

@@ -8,9 +8,6 @@ app.directive('hint', [
     _.each(constants.permission, function (a) {
       hints['permission-' + a] =
         constants.message('access.' + a, 'You');
-      if ('access.edit.' + a + '.who' in constants.messages)
-        hints['access-edit-' + a] =
-          constants.message('access.edit.' + a + '.who', 'You');
     });
 
     _.each(constants.release, function (a) {
@@ -34,11 +31,7 @@ app.directive('hint', [
     });
 
     _.each(hints, function (hint, name) {
-      new tooltips({
-        live: true,
-        $target: '.hint-' + name,
-        message: hint
-      });
+      tooltips.add('.hint-' + name, hint);
     });
 
     var link = function ($scope, $element, $attrs) {

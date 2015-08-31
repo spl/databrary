@@ -20,9 +20,9 @@ import Databrary.HTTP
 import Databrary.Action
 import Databrary.Model.Format
 
-fileResponse :: (MonadAppAction c m, MonadIO m) => RawFilePath -> Format -> Maybe BS.ByteString -> BS.ByteString -> m (ResponseHeaders, Maybe Wai.FilePart)
+fileResponse :: (MonadAction c m, MonadIO m) => RawFilePath -> Format -> Maybe BS.ByteString -> BS.ByteString -> m (ResponseHeaders, Maybe Wai.FilePart)
 fileResponse file fmt save etag = do
-  (sz, mt) <- fromMaybeM (result =<< notFoundResponse) =<< liftIO (fileInfo file)
+  (sz, mt) <- maybeAction =<< liftIO (fileInfo file)
   let szi = toInteger sz
       fh = 
         [ ("etag", quoteHTTP etag)
@@ -37,13 +37,13 @@ fileResponse file fmt save etag = do
       notmod
         | null ifnm = Fold.any (mt <=) $ (parseHTTPTimestamp =<<) $ lookupRequestHeader hIfModifiedSince req
         | otherwise = any (\m -> m == "*" || m == etag) ifnm
-  when notmod $ result =<< emptyResponse notModified304 fh
+  when notmod $ result $ emptyResponse notModified304 fh
   let ifrng = unquoteHTTP <$> lookupRequestHeader hIfRange req
       part = mfilter (etag /=) ifrng $> -- allow range detection
         Wai.FilePart 0 szi szi -- force full file
   return (fh, part)
 
-serveFile :: (MonadAppAction c m, MonadIO m) => RawFilePath -> Format -> Maybe BS.ByteString -> BS.ByteString -> m Response
+serveFile :: (MonadAction c m, MonadIO m) => RawFilePath -> Format -> Maybe BS.ByteString -> BS.ByteString -> m Response
 serveFile file fmt save etag = do
   (fh, part) <- fileResponse file fmt save etag
-  okResponse fh (file, part)
+  return $ okResponse fh (file, part)

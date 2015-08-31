@@ -5,7 +5,7 @@
   </div>
   <div class="wrap toolbar-main" ng-class="{'hover-nav-bg': hoverNav}">
     <div class="row">
-      <div class="title cf col-desktop-9" ng-class="{'col-tablet-7 col-mobile-4': !hoverNav&&page.models.Login.isLoggedIn(), 'col-tablet-6 col-mobile-2': !hoverNav&&!page.models.Login.isLoggedIn(),'col-mobile-6':hoverNav}">
+      <div class="title cf col-desktop-9" ng-class="{'col-tablet-7 col-mobile-3': !hoverNav&&page.models.Login.isLoggedIn(), 'col-tablet-6 col-mobile-2': !hoverNav&&!page.models.Login.isLoggedIn(),'col-mobile-6':hoverNav}">
         <div class="toolbar-site" ng-show="page.$route.current.controller!=='site/home'">
           <a ng-class="::{sandbox:page.constants.sandbox}" ng-href="{{::page.router.index()}}" title="Databrary: An Open Data Library"></a>
         </div>
@@ -55,7 +55,7 @@
         </nav>
       </div>
 
-      <div class="toolbar-user" ng-class="{'col-mobile-2': page.models.Login.isLoggedIn(), 'col-mobile-4': !page.models.Login.isLoggedIn()}" ng-if="!hoverNav">
+      <div class="toolbar-user" ng-class="{'col-mobile-3': page.models.Login.isLoggedIn(), 'col-mobile-4': !page.models.Login.isLoggedIn()}" ng-if="!hoverNav">
 
         <span ng-if="!page.models.Login.isLoggedIn()">
           <a ng-href="{{::page.router.login()}}" message="toolbar.login"></a>

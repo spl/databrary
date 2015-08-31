@@ -2,16 +2,29 @@
   <article class="view error-view">
     <div class="wrap">
       <div class="row">
-        <hgroup class="col">
-          <h1 class="panel-context" message="error.title"></h1>
-          <h2 ng-if="::error.status != null" class="panel-title with-context" message="error.r{{error.status}}"></h2>
-        </hgroup>
-
         <div class="col">
-          <div ng-bind="page.$location.url()"></div>
-          <div ng-if="::error.message" ng-bind-html="::error.message"></div>
-          <div ng-if="::(error.status === 403 || error.status === 404) && !page.models.Login.isLoggedIn()">
-            You might try <a ng-href="{{::page.router.login()}}">logging in</a>.
+          <div class="error-container error-message">
+            <span ng-bind="::error.message"></span>: 
+            <i ng-bind="::page.$location.url()"></i>
+            <br>
+            (<span ng-bind-html="::error.title"></span>)
+          </div>
+          <div class="error-container error-login" ng-if="::(error.status === 404 || error.status === 403) && !page.models.Login.isLoggedIn()">
+            <div class="view-center-block">
+              You might try logging in:
+              <login-form></login-form>
+            </div>
+          </div>
+          <div class="error-container">
+            <div class="view-center-block">
+              <span>Some other options:</span>
+              <ul>
+                <li>Return to the <a ng-href="{{::page.router.index()}}">homepage</a></li>
+                <li ng-if="::page.models.Login.isLoggedIn()">Go to <a ng-href="{{::page.router.profile()}}">your profile</a></li>
+                <li>Check out our <a href="//databrary.org/access/guide.html">user guide</a></li>
+                <li>Need help? Feel free to <a href="//databrary.org/about/support.html">contact us</a></li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>

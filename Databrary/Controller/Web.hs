@@ -5,8 +5,7 @@ module Databrary.Controller.Web
   , webFile
   ) where
 
-import Control.Monad ((<=<))
-import Crypto.Hash (digestToHexByteString)
+import Data.ByteArray.Encoding (convertToBase, Base(Base16))
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import Data.Char (isAscii, isAlphaNum)
@@ -21,6 +20,8 @@ import Databrary.Has (focusIO)
 import Databrary.Files
 import Databrary.Model.Format
 import Databrary.Action.Route
+import Databrary.Action.Types
+import Databrary.Action.Response
 import Databrary.Action
 import Databrary.HTTP.File
 import Databrary.HTTP.Path.Parser (PathParser(..), (>/>))
@@ -48,9 +49,9 @@ parseStaticPath = fmap (StaticPath . joinPath) . mapM component where
 pathStatic :: PathParser (Maybe StaticPath)
 pathStatic = invMap parseStaticPath (maybe [] $ map TE.decodeLatin1 . splitDirectories . staticFilePath) PathAny
 
-webFile :: AppRoute (Maybe StaticPath)
-webFile = action GET ("web" >/> pathStatic) $ \sp -> do
+webFile :: ActionRoute (Maybe StaticPath)
+webFile = action GET ("web" >/> pathStatic) $ \sp -> withoutAuth $ do
   StaticPath p <- maybeAction sp
-  (wf, wfi) <- either (result <=< returnResponse notFound404 [] . T.pack) return =<< focusIO (lookupWebFile p)
+  (wf, wfi) <- either (result . response notFound404 [] . T.pack) return =<< focusIO (lookupWebFile p)
   let wfp = toRawFilePath wf
-  serveFile wfp (unknownFormat{ formatMimeType = webFileFormat wfi }) Nothing (digestToHexByteString $ webFileHash wfi)
+  serveFile wfp (unknownFormat{ formatMimeType = webFileFormat wfi }) Nothing (convertToBase Base16 $ webFileHash wfi)

@@ -53,7 +53,6 @@ app.directive('volumeEditOverviewForm', [
 
             init(vol);
             form.$setPristine();
-            form.$setUnsubmitted();
 
             if (!volume)
               $location.url(vol.editRoute());

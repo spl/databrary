@@ -14,10 +14,11 @@ module Databrary.Controller.Party
   ) where
 
 import Control.Applicative (Applicative, (<*>), pure, optional)
-import Control.Monad (unless, when, void)
+import Control.Monad (unless, when)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
-import Data.Maybe (isJust, fromMaybe)
+import qualified Data.Foldable as Fold
+import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>), mempty)
 import qualified Data.Text.Encoding as TE
 import qualified Data.Traversable as Trav
@@ -48,7 +49,7 @@ import Databrary.Store.Temp
 import Databrary.HTTP.Path.Parser
 import Databrary.HTTP.Form.Deform
 import Databrary.Action.Route
-import Databrary.Action.Auth
+import Databrary.Action.Types
 import Databrary.Action
 import Databrary.Controller.Paths
 import Databrary.Controller.Permission
@@ -58,14 +59,14 @@ import Databrary.Controller.AssetSegment
 import Databrary.Controller.Web
 import Databrary.View.Party
 
-getParty :: Maybe Permission -> PartyTarget -> AuthActionM Party
+getParty :: Maybe Permission -> PartyTarget -> ActionM Party
 getParty (Just p) (TargetParty i) =
   checkPermission p =<< maybeAction =<< lookupAuthParty i
 getParty _ mi = do
   u <- accountParty <$> authAccount
   let isme TargetProfile = True
       isme (TargetParty i) = partyId u == i
-  unless (isme mi) $ result =<< forbiddenResponse
+  unless (isme mi) $ result =<< peeks forbiddenResponse
   return u
 
 partyJSONField :: (MonadDB m, MonadHasIdentity c m, MonadHas Timestamp c m) => Party -> BS.ByteString -> Maybe BS.ByteString -> m (Maybe JSON.Value)
@@ -73,7 +74,7 @@ partyJSONField p "parents" o = do
   now <- peek
   fmap (Just . JSON.toJSON) . mapM (\a -> do
     let ap = authorizeParent (authorization a)
-    acc <- if auth then Just . accessSite <$> lookupAuthorization ap rootParty else return Nothing
+    acc <- if auth && authorizeActive a now then Just . accessSite <$> lookupAuthorization ap rootParty else return Nothing
     return $ (if admin then authorizeJSON a else mempty)
       JSON..+ ("party" JSON..= (partyJSON ap JSON..+? (("authorization" JSON..=) <$> acc)))
       JSON..+? (admin && authorizeExpired a now ?> "expired" JSON..= True))
@@ -103,15 +104,15 @@ partyJSONField _ _ _ = return Nothing
 partyJSONQuery :: (MonadDB m, MonadHasIdentity c m, MonadHas Timestamp c m) => Party -> JSON.Query -> m JSON.Object
 partyJSONQuery p = JSON.jsonQuery (partyJSON p) (partyJSONField p)
 
-viewParty :: AppRoute (API, PartyTarget)
+viewParty :: ActionRoute (API, PartyTarget)
 viewParty = action GET (pathAPI </> pathPartyTarget) $ \(api, i) -> withAuth $ do
   when (api == HTML) angular
   p <- getParty (Just PermissionNONE) i
   case api of
-    JSON -> okResponse [] =<< partyJSONQuery p =<< peeks Wai.queryString
-    HTML -> okResponse [] =<< peeks (htmlPartyView p)
+    JSON -> okResponse [] <$> (partyJSONQuery p =<< peeks Wai.queryString)
+    HTML -> peeks $ okResponse [] . htmlPartyView p
 
-processParty :: API -> Maybe Party -> AuthActionM (Party, Maybe Asset)
+processParty :: API -> Maybe Party -> ActionM (Party, Maybe (Maybe Asset))
 processParty api p = do
   (p', a) <- runFormFiles [("avatar", maxAvatarSize)] (api == HTML ?> htmlPartyEdit p) $ do
     csrfForm
@@ -121,11 +122,11 @@ processParty api p = do
     affiliation <- "affiliation" .:> deformNonEmpty deform
     url <- "url" .:> deformNonEmpty deform
     avatar <- "avatar" .:>
-      (Trav.mapM (\a -> do
+      (maybe (deformOptional $ return Nothing) (\a -> do
         f <- deformCheck "Must be an image." formatIsImage =<<
           deformMaybe' "Unknown or unsupported file format."
           (getFormatByFilename (fileName a))
-        return (a, f)) =<< deform)
+        return $ Just $ Just (a, f)) =<< deform)
     return ((fromMaybe blankParty p)
       { partySortName = name
       , partyPreName = prename
@@ -133,7 +134,7 @@ processParty api p = do
       , partyAffiliation = affiliation
       , partyURL = url
       }, avatar)
-  a' <- Trav.forM a $ \(af, fmt) -> do
+  a' <- Trav.forM a $ Trav.mapM $ \(af, fmt) -> do
     a' <- addAsset (blankAsset coreVolume)
       { assetFormat = fmt
       , assetRelease = Just ReleasePUBLIC
@@ -144,58 +145,56 @@ processParty api p = do
   return (p', a')
   where maxAvatarSize = 10*1024*1024
 
-viewPartyEdit :: AppRoute PartyTarget
+viewPartyEdit :: ActionRoute PartyTarget
 viewPartyEdit = action GET (pathHTML >/> pathPartyTarget </< "edit") $ \i -> withAuth $ do
   angular
-  p <- getParty (Just PermissionADMIN) i
-  blankForm $ htmlPartyEdit $ Just p
+  p <- getParty (Just PermissionEDIT) i
+  peeks $ blankForm . htmlPartyEdit (Just p)
 
-viewPartyCreate :: AppRoute ()
+viewPartyCreate :: ActionRoute ()
 viewPartyCreate = action GET (pathHTML </< "party" </< "create") $ \() -> withAuth $ do
   checkMemberADMIN
-  blankForm $ htmlPartyEdit Nothing
+  peeks $ blankForm . htmlPartyEdit Nothing
 
-postParty :: AppRoute (API, PartyTarget)
+postParty :: ActionRoute (API, PartyTarget)
 postParty = multipartAction $ action POST (pathAPI </> pathPartyTarget) $ \(api, i) -> withAuth $ do
-  p <- getParty (Just PermissionADMIN) i
+  p <- getParty (Just PermissionEDIT) i
   (p', a) <- processParty api (Just p)
   changeParty p'
-  when (isJust a) $
-    void $ changeAvatar p' a
+  Fold.mapM_ (changeAvatar p') a
   case api of
-    JSON -> okResponse [] $ partyJSON p'
-    HTML -> redirectRouteResponse [] viewParty (api, i) []
+    JSON -> return $ okResponse [] $ partyJSON p'
+    HTML -> peeks $ otherRouteResponse [] viewParty (api, i)
 
-createParty :: AppRoute API
+createParty :: ActionRoute API
 createParty = multipartAction $ action POST (pathAPI </< "party") $ \api -> withAuth $ do
   checkMemberADMIN
   (bp, a) <- processParty api Nothing
   p <- addParty bp
-  when (isJust a) $
-    void $ changeAvatar p a
+  Fold.mapM_ (changeAvatar p) a
   case api of
-    JSON -> okResponse [] $ partyJSON p
-    HTML -> redirectRouteResponse [] viewParty (api, TargetParty $ partyId p) []
+    JSON -> return $ okResponse [] $ partyJSON p
+    HTML -> peeks $ otherRouteResponse [] viewParty (api, TargetParty $ partyId p)
 
-deleteParty :: AppRoute (Id Party)
+deleteParty :: ActionRoute (Id Party)
 deleteParty = action POST (pathHTML >/> pathId </< "delete") $ \i -> withAuth $ do
   checkMemberADMIN
   p <- getParty (Just PermissionADMIN) (TargetParty i)
   r <- removeParty p
-  if r
+  return $ if r
     then okResponse [] $ partyName p <> " deleted"
-    else returnResponse badRequest400 [] $ partyName p <> " not deleted"
+    else response badRequest400 [] $ partyName p <> " not deleted"
 
-viewPartyDelete :: AppRoute (Id Party)
+viewPartyDelete :: ActionRoute (Id Party)
 viewPartyDelete = action GET (pathHTML >/> pathId </< "delete") $ \i -> withAuth $ do
   checkMemberADMIN
   p <- getParty (Just PermissionADMIN) (TargetParty i)
-  blankForm $ htmlPartyDelete p
+  peeks $ blankForm . htmlPartyDelete p
 
-viewAvatar :: AppRoute (Id Party)
+viewAvatar :: ActionRoute (Id Party)
 viewAvatar = action GET (pathId </< "avatar") $ \i -> withoutAuth $
   maybe
-    (redirectRouteResponse [] webFile (Just $ staticPath ["images", "avatar.png"]) [])
+    (peeks $ otherRouteResponse [] webFile (Just $ staticPath ["images", "avatar.png"]))
     (serveAssetSegment False . assetSlotSegment . assetNoSlot)
     =<< lookupAvatar i
 
@@ -208,18 +207,18 @@ partySearchForm = PartyFilter
   <*> pure Nothing
   <*> paginateForm
 
-queryParties :: AppRoute API
+queryParties :: ActionRoute API
 queryParties = action GET (pathAPI </< "party") $ \api -> withAuth $ do
   when (api == HTML) angular
   pf <- runForm (api == HTML ?> htmlPartySearch mempty []) partySearchForm
   p <- findParties pf
   case api of
-    JSON -> okResponse [] $ JSON.toJSON $ map partyJSON p
-    HTML -> blankForm $ htmlPartySearch pf p
+    JSON -> return $ okResponse [] $ JSON.toJSON $ map partyJSON p
+    HTML -> peeks $ blankForm . htmlPartySearch pf p
 
-adminParties :: AppRoute ()
+adminParties :: ActionRoute ()
 adminParties = action GET ("party" </< "admin") $ \() -> withAuth $ do
   checkMemberADMIN
   pf <- runForm (Just $ htmlPartyAdmin mempty []) partySearchForm
   p <- findParties pf
-  blankForm $ htmlPartyAdmin pf p
+  peeks $ blankForm . htmlPartyAdmin pf p

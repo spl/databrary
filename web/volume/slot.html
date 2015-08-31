@@ -76,7 +76,8 @@
               <div ng-init="updatePlayerHeight()" id="player-viewport" class="player-viewport">
                 <div ng-if="editing && current.type === 'asset' && !current.file && !current.asset" flow-drop flow-btn flow-drag-enter="dropClasses['over-zone'] = true" flow-drag-leave="dropClasses['over-zone'] = false" ng-class="dropClasses" class="player-drop">
                   <span class="icon line add"></span>
-                  <span class="dropzone-message" message="asset.add-drop{{current.asset ? '.replace' : ''}}"></span>
+                  <span class="dropzone-message" message="asset.add-drop{{::current.asset ? '.replace' : ''}}"></span>
+                  <span class="dropzone-message">See our <a ng-href="{{::page.router.helpFormats()}}" target="_blank">list of accepted file types</a>.</span>
                 </div>
                 <upload-progress class="upload-progress-info" ng-if="!!current.file" progress-value="current.progress"></upload-progress>
                 <asset-display ng-repeat="asset in [asset]" ng-if="!!asset" asset="asset"></asset-display>
@@ -212,7 +213,7 @@
                   <img class="slot-track-asset-thumb" ng-if="!!t.asset && t.asset.checkPermission(page.constants.permission.VIEW)" ng-src="{{t.asset.thumbRoute(24)}}">
                   <div class="slot-track-asset-info-name" ng-class="{uploading: !!t.file}">
                     <span ng-bind="t.asset.name || t.data.name || t.file.file.name"></span>
-                    <span ng-if="t.asset.excerpt != null"> (highlight)</span>
+                    <span ng-if="!!t.fullExcerpt"> (highlight)</span>
                     <span class="track-status" ng-if="t.asset && !t.asset.duration && t.asset.format.type==='video'"> (processing)</span>
                   </div>
                   <upload-progress class="upload-progress-info" ng-if="!!t.file" progress-value="t.progress"></upload-progress>

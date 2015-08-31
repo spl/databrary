@@ -6,5 +6,5 @@ import Databrary.Model.Record.Types
 import Databrary.Model.Metric.Types
 import Databrary.Action
 
-createRecord :: AppRoute (API, Id Volume)
-postRecordMeasure :: AppRoute (API, Id Record, Id Metric)
+createRecord :: ActionRoute (API, Id Volume)
+postRecordMeasure :: ActionRoute (API, Id Record, Id Metric)

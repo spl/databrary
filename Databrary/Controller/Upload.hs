@@ -39,6 +39,7 @@ import Databrary.Store.Upload
 import Databrary.Store.Asset
 import Databrary.HTTP.Form.Deform
 import Databrary.HTTP.Path.Parser
+import Databrary.Action.Response
 import Databrary.Action
 import Databrary.Controller.Paths
 import Databrary.Controller.Form
@@ -47,7 +48,7 @@ import Databrary.Controller.Volume
 fileSizeForm :: (Functor m, Monad m) => DeformT f m Int64
 fileSizeForm = deformCheck "Invalid file size." (0 <) =<< deform
 
-uploadStart :: AppRoute (Id Volume)
+uploadStart :: ActionRoute (Id Volume)
 uploadStart = action POST (pathJSON >/> pathId </< "upload") $ \vi -> withAuth $ do
   vol <- getVolume PermissionEDIT vi
   (filename, size) <- runForm Nothing $ (,)
@@ -59,9 +60,9 @@ uploadStart = action POST (pathJSON >/> pathId </< "upload") $ \vi -> withAuth $
     (openFd file WriteOnly (Just 0o600) defaultFileFlags{ exclusive = True })
     closeFd
     (`setFdSize` COff size)
-  okResponse [] $ unId (view tok :: Id Token)
+  return $ okResponse [] $ unId (view tok :: Id Token)
 
-chunkForm :: DeformT f (ReaderT AuthRequest IO) (Upload, Int64, Word64)
+chunkForm :: DeformT f (ReaderT Context IO) (Upload, Int64, Word64)
 chunkForm = do
   csrfForm
   up <- "flowIdentifier" .:> (lift . (maybeAction <=< lookupUpload) =<< deform)
@@ -75,7 +76,7 @@ chunkForm = do
   l <- "flowCurrentChunkSize" .:> (deformCheck "Current chunk size out of range." (\l -> (c == l || i == pred n) && o + l <= z) =<< deform)
   return (up, o, fromIntegral l)
 
-uploadChunk :: AppRoute ()
+uploadChunk :: ActionRoute ()
 uploadChunk = action POST (pathJSON </< "upload") $ \() -> withAuth $ do
   (up, off, len) <- runForm Nothing chunkForm
   file <- peeks $ uploadFile up
@@ -83,7 +84,7 @@ uploadChunk = action POST (pathJSON </< "upload") $ \() -> withAuth $ do
         | n /= len = do
           t <- peek
           focusIO $ logMsg t ("uploadChunk: wrong size " ++ show n ++ "/" ++ show len)
-          result =<< returnResponse badRequest400 [] ("Incorrect content length: file being uploaded may have moved or changed" :: JSON.Value)
+          result $ response badRequest400 [] ("Incorrect content length: file being uploaded may have moved or changed" :: JSON.Value)
         | otherwise = return ()
   bl <- peeks Wai.requestBodyLength
   case bl of
@@ -103,16 +104,16 @@ uploadChunk = action POST (pathJSON </< "upload") $ \() -> withAuth $ do
                   write b' = do
                     w <- BSU.unsafeUseAsCStringLen b' $ \(buf, siz) -> fdWriteBuf h (castPtr buf) (fromIntegral siz)
                     if w < fromIntegral (BS.length b')
-                      then write $ BS.drop (fromIntegral w) b'
+                      then write $! BS.drop (fromIntegral w) b'
                       else block n'
               if n' > len
                 then return n'
                 else write b
     block 0
   checkLength n -- TODO: clear block (maybe wait for calloc)
-  emptyResponse noContent204 []
+  return $ emptyResponse noContent204 []
 
-testChunk :: AppRoute ()
+testChunk :: ActionRoute ()
 testChunk = action GET (pathJSON </< "upload") $ \() -> withAuth $ do
   (up, off, len) <- runForm Nothing chunkForm
   file <- peeks $ uploadFile up
@@ -129,8 +130,8 @@ testChunk = action GET (pathJSON </< "upload") $ \() -> withAuth $ do
               then return False -- really should be error
               else if any (0 /=) a
                 then return True
-                else block $ n - r
+                else block $! n - r
       block (CSize len)
-  emptyResponse (if r then ok200 else noContent204) []
+  return $ emptyResponse (if r then ok200 else noContent204) []
   where
   bufsiz = fromIntegral defaultChunkSize

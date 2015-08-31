@@ -1,17 +1,23 @@
-<div class="release-legend" ng-if="::editing && !top">
+<ng-form name="form">
+<div class="spreadsheet-dynamic-info" ng-if="::editing && !top" ng-show="key.id === 'slot'">
   <a href="" ng-click="showConsents=false" ng-show="showConsents">
     Hide legend of session release levels
   </a>
   <a href="" ng-click="showConsents=true" ng-hide="showConsents">
     Show legend of session release levels
   </a>
-  <ul ng-show="showConsents">
+  <ul class="release-legend" ng-show="showConsents">
     <li ng-repeat="(i,c) in page.constants.release" ng-if="i>=0">
       <span class="icon release" ng-class="c"></span>
       <span ng-bind="'release.'+c+'.title' | message"></span>: 
       <span ng-bind="'release.'+c+'.description' | message"></span>
     </li>
   </ul>
+</div>
+<div class="spreadsheet-dynamic-info" ng-if="::editing && !top" ng-show="key.id !== 'slot'">
+  You are in <span class="icon list"></span> <em><span ng-bind="key.name"></span> view</em>. 
+  Here you can manage the list of labels in this category. 
+  Return to the <a href="" ng-click="setKey('slot')">folder view</a> to edit session data.
 </div>
 
 <div class="spreadsheet-options">
@@ -23,29 +29,21 @@
     <colgroup ng-repeat="g in groups track by g.category.id">
       <col ng-repeat="metric in g.metrics track by metric.id" ng-class="[g.category.name, metric.name]"/>
     </colgroup>
-    <colgroup ng-if="categories.length">
-      <col class="add">
-    </colgroup>
     <thead>
       <tr class="spreadsheet-head-groups">
         <th class="metric-col" ng-repeat="col in groups track by col.category.id" id="{{::id}}-category_{{::col.category.id}}" colspan="{{col.metrics.length}}" ng-class="::'col'+col.category.id">
-          <span class="spreadsheet-tab-name" ng-bind="::col.category.name"></span>
+          <span class="spreadsheet-tab-name" ng-bind="::col.category.name" tooltip="col.category.description"></span>
           <span class="icon list spreadsheet-tab-options-icon" ng-click="tabOptionsToggle($event)" ng-if="key === col.category && views.length > 1" tooltip="'spreadsheet.switchview' | message"></span>
-          <span class="icon add spreadsheet-tab-options-icon" ng-if="::editing && !col.category.fixed" ng-click="clickCategoryAdd($event, col)" tooltip="'spreadsheet.add.metric' | message:col.category.name"></span>
-
           <ul class="flat spreadsheet-tab-options" click-elsewhere="tabOptionsToggle($event)" ng-if="key === col.category && tabOptionsClick">
             <li ng-repeat="c in views track by c.id" class="spreadsheet-tab-option" ng-click="setKey(c.id)" ng-if="key !== c">
               <span ng-if="::key.id !== 'slot' && c.id == 'slot'" ng-bind="::'back to '+c.name+' view'" class="default"></span>
               <span ng-if="::key.id !== 'slot' && c.id !== 'slot' || key.id === 'slot'" ng-bind="::c.name+' view'"></span>
             </li>
           </ul>
-
         </th>
-        <th ng-if="categories.length" class="add" ng-click="clickAdd($event)" tooltip="'spreadsheet.add.category' | message"></th>
       </tr>
       <tr class="spreadsheet-head-metrics">
-        <th ng-repeat="col in cols" id="{{::id}}-metric_{{::$index}}" ng-click="clickMetric(col)" ng-class="colClasses(col)" ng-bind="col.metric.name"></th>
-        <th ng-if="categories.length" class="first last"></th>
+        <th ng-repeat="col in cols" id="{{::id}}-metric_{{::$index}}" ng-click="clickMetric(col)" ng-class="colClasses(col)" ng-bind="col.metric.name" tooltip="col.metric.description"></th>
       </tr>
     </thead>
     <tbody class="spreadsheet-tbody" id="{{::id}}">
@@ -58,7 +56,8 @@
   </table>
 </div>
 
-<a ng-if="::!editing && !top" ng-href="{{::volume.zipRoute()}}">
+<a ng-if="::!editing && !top" ng-href="{{::page.router.volumeDescription([volume.id])}}">
   <span class="icon download"></span>
   <span class="download" message="download.zip"></span>
 </a>
+</ng-form>

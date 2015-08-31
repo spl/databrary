@@ -15,13 +15,7 @@ app.directive('wizardStep', [
         },
         post: function ($scope, $element, $attrs, wizard) {
           $scope.$scope = $scope.$$childHead;
-
-          $scope.allow = $attrs.allow === undefined || $scope.$parent.$eval($attrs.allow);
-          $scope.complete = $attrs.complete && $scope.$parent.$eval($attrs.complete);
-          var enabled = $attrs.enabled === undefined || $scope.$parent.$eval($attrs.enabled);
-
-          if (enabled)
-            wizard.addStep($scope);
+          wizard.addStep($scope);
         }
       }
     };

@@ -22,7 +22,7 @@ import Databrary.Service.DB.Schema (updateDBSchema)
 import Databrary.Service.Init (loadConfig, withService)
 import Databrary.Service.Periodic (forkPeriodic)
 import Databrary.Web.Rules (generateWebFiles)
-import Databrary.Action (runAppRoute)
+import Databrary.Action (runActionRoute)
 import Databrary.Routes (routeMap)
 import Databrary.Routes.API (swagger)
 import Databrary.Warp (runWarp)
@@ -63,4 +63,4 @@ main = do
     runReaderT (liftDBM $ updateDBSchema schema) (serviceDB rc)
 #endif
     void $ forkPeriodic rc
-    runWarp conf rc (runAppRoute routes rc)
+    runWarp conf rc (runActionRoute routes rc)

@@ -36,9 +36,9 @@ instance Has Record RecordSlot where
   view = slotRecord
 instance Has (Id Record) RecordSlot where
   view = view . slotRecord
-instance Has (Maybe RecordCategory) RecordSlot where
+instance Has RecordCategory RecordSlot where
   view = view . slotRecord
-instance Has (Maybe (Id RecordCategory)) RecordSlot where
+instance Has (Id RecordCategory) RecordSlot where
   view = view . slotRecord
 instance Has Volume RecordSlot where
   view = view . slotRecord

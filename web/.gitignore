@@ -22,11 +22,14 @@
 /party/authSearch.js
 /party/comments.js
 /party/data.js
+/party/editApply.js
+/party/editGrant.js
 /party/profile.js
 /party/search.js
 /service/offset.js
 /service/play.js
 /service/styles.js
+/service/tooltip.js
 /service/upload.js
 /site/errors.js
 /site/inputCompleter.js
@@ -37,6 +40,7 @@
 /volume/accessSearch.js
 /volume/comments.js
 /volume/csv.js
+/volume/design.js
 /volume/editLinks.js
 /volume/excerpts.js
 /volume/fundingSearch.js

@@ -1,83 +1,65 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Databrary.Action
   ( Request
+  , Context
   , ActionM
   , Action
   , MonadAction
-  , AppRequest
-  , AppActionM
-  , AppAction
-  , MonadAppAction
-  , AuthRequest
-  , AuthActionM
-  , AuthAction
-  , MonadAuthAction
 
   , Response
-  , returnResponse
+  , response
   , emptyResponse
   , redirectRouteResponse
+  , otherRouteResponse
   , forbiddenResponse
   , notFoundResponse
   , okResponse
   , result
-  , guardAction
   , maybeAction
 
   , module Databrary.Action.Route
-  , AppRoute
+  , ActionRoute
 
   , withAuth
-  , runAppRoute
+  , runActionRoute
   ) where
 
 import Control.Monad.IO.Class (MonadIO)
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Lazy as BSL
 import Data.Maybe (fromMaybe)
-import Data.Monoid (mempty)
-import Network.HTTP.Types (Status, ok200, seeOther303, forbidden403, notFound404, ResponseHeaders, hLocation, Query)
+import Network.HTTP.Types (Status, seeOther303, forbidden403, notFound404, ResponseHeaders, hLocation)
 import qualified Network.Wai as Wai
 
-import Databrary.Has (peek, peeks)
+import Databrary.Has (peeks)
 import Databrary.HTTP.Request
 import Databrary.Action.Types
 import Databrary.Action.Response
-import Databrary.Action.App
-import Databrary.Action.Auth
 import Databrary.Action.Route
 import Databrary.Service.Types
 import Databrary.HTTP.Route
 import {-# SOURCE #-} Databrary.View.Error
 
-emptyResponse :: MonadAction q m => Status -> ResponseHeaders -> m Response
-emptyResponse s h = returnResponse s h (mempty :: BSB.Builder)
+redirectRouteResponse :: Status -> ResponseHeaders -> Route r a -> a -> Request -> Response
+redirectRouteResponse s h r a req =
+  emptyResponse s ((hLocation, BSL.toStrict $ BSB.toLazyByteString $ actionURL (Just req) r a (Wai.queryString req)) : h)
 
-redirectRouteResponse :: MonadAction c m => ResponseHeaders -> Route r a -> a -> Query -> m Response
-redirectRouteResponse h r a q = do
-  req <- peek
-  emptyResponse seeOther303 ((hLocation, BSL.toStrict $ BSB.toLazyByteString $ actionURL (Just req) r a q) : h)
+otherRouteResponse :: ResponseHeaders -> Route r a -> a -> Request -> Response
+otherRouteResponse = redirectRouteResponse seeOther303
 
-forbiddenResponse :: MonadAppAction q m => m Response
-forbiddenResponse = returnResponse forbidden403 [] =<< peeks htmlForbidden
+forbiddenResponse :: Context -> Response
+forbiddenResponse = response forbidden403 [] . htmlForbidden
 
-notFoundResponse :: MonadAppAction q m => m Response
-notFoundResponse = returnResponse notFound404 [] =<< peeks htmlNotFound
+notFoundResponse :: Context -> Response
+notFoundResponse = response notFound404 [] . htmlNotFound
 
-okResponse :: (MonadAction q m, ResponseData r) => ResponseHeaders -> r -> m Response
-okResponse = returnResponse ok200
-
-guardAction :: (MonadAction q m, MonadIO m) => Bool -> m Response -> m ()
-guardAction True _ = return ()
-guardAction False r = result =<< r
-
-maybeAction :: (MonadAppAction q m, MonadIO m) => Maybe a -> m a
+maybeAction :: (MonadAction q m, MonadIO m) => Maybe a -> m a
 maybeAction (Just a) = return a
-maybeAction Nothing = result =<< notFoundResponse
+maybeAction Nothing = result =<< peeks notFoundResponse
 
-type AppRoute a = Route AppAction a
+type ActionRoute a = Route Action a
 
-runAppRoute :: RouteMap AppAction -> Service -> Wai.Application
-runAppRoute rm rc req = runApp rc
-  (fromMaybe notFoundResponse (lookupRoute req rm))
+runActionRoute :: RouteMap Action -> Service -> Wai.Application
+runActionRoute rm rc req = runAction rc
+  (fromMaybe (withoutAuth $ peeks notFoundResponse) (lookupRoute req rm))
   req

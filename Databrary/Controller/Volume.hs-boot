@@ -4,11 +4,11 @@ import Databrary.Model.Id.Types
 import Databrary.Model.Volume.Types
 import Databrary.Action
 
-viewVolume :: AppRoute (API, Id Volume)
-viewVolumeEdit :: AppRoute (Id Volume)
-postVolume :: AppRoute (API, Id Volume)
-createVolume :: AppRoute API
-viewVolumeLinks :: AppRoute (Id Volume)
-postVolumeLinks :: AppRoute (API, Id Volume)
-thumbVolume :: AppRoute (Id Volume)
-queryVolumes :: AppRoute API
+viewVolume :: ActionRoute (API, Id Volume)
+viewVolumeEdit :: ActionRoute (Id Volume)
+postVolume :: ActionRoute (API, Id Volume)
+createVolume :: ActionRoute API
+viewVolumeLinks :: ActionRoute (Id Volume)
+postVolumeLinks :: ActionRoute (API, Id Volume)
+thumbVolume :: ActionRoute (Id Volume)
+queryVolumes :: ActionRoute API

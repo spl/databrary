@@ -8,7 +8,7 @@ import qualified Data.Aeson as JSON
 import Data.Monoid ((<>), mempty)
 import qualified Text.Blaze.Html5 as H
 
-import Databrary.Action.Auth
+import Databrary.Action.Types
 import Databrary.Action.Route
 import Databrary.Model.Id.Types
 import Databrary.Model.Volume
@@ -31,7 +31,7 @@ htmlIngestStatus (IngestCompleted cl) js = do
   H.ul $ forM_ cl $ \c ->
     H.li $ H.a H.! actionLink viewContainer (HTML, (Nothing, Id c)) js $ H.toMarkup c
 
-htmlIngestForm :: Volume -> IngestStatus -> AuthRequest -> FormHtml JSON.Value
+htmlIngestForm :: Volume -> IngestStatus -> Context -> FormHtml JSON.Value
 htmlIngestForm v s = htmlForm
   ("Ingest " <> volumeName v)
   postIngest (volumeId v)

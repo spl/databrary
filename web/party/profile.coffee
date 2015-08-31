@@ -1,18 +1,16 @@
 'use strict'
 
 app.controller 'party/profile', [
-  '$scope', '$filter', 'displayService', 'constantService', 'modelService', 'party'
-  ($scope, $filter, display, constants, models, party) ->
+  '$rootScope', '$scope', '$location', '$filter', 'displayService', 'constantService', 'modelService', 'messageService', 'party'
+  ($rootScope, $scope, $location, $filter, display, constants, models, messages, party) ->
     display.title = party.name
     $scope.party = party
 
     class Item
-      selected = false
-
       class: () ->
         switch s = @selected
           when true then ["radio-selected"]
-          when undefined then (if selected then [] else ["radio"])
+          when undefined then (if $scope.selected then [] else ["radio"])
           else ["user-access", constants.permission[s.individual]]
 
       Object.defineProperty @prototype, 'selected',
@@ -21,13 +19,21 @@ app.controller 'party/profile', [
       select: () ->
         s = @selected
         @constructor.selection = {}
+        messages.clear(Item)
         if s == true
-          selected = false
+          $scope.selected = undefined
+          $scope.editable = undefined
           @constructor.foreign.selection = {}
         else
-          selected = true
+          $scope.selected = @
+          $scope.editable = @volume?.checkPermission(constants.permission.ADMIN)
           @constructor.selection[@id] = true
           @constructor.foreign.selection = @access
+          messages.add
+            body: "Highlighting " + @selectionMessage()
+            type: 'dark'
+            owner: Item
+          @selectionMessage()
         return
 
     class Party extends Item
@@ -45,6 +51,15 @@ app.controller 'party/profile', [
 
       @selection = {}
 
+      selectionMessage: ->
+        constants.message('profile.parties.selected', @party.name)
+
+      edit: (t) ->
+        if $scope.editable
+          $scope.selected.editAccess(@party)
+        else if t
+          $location.url(party.editRoute(t)+'#auth-'+@party.id)
+
     class Volume extends Item
       constructor: (@volume) ->
         @access = {}
@@ -59,6 +74,22 @@ app.controller 'party/profile', [
         get: -> @access[party.id]
 
       @selection = {}
+
+      selectionMessage: ->
+        constants.message('profile.volumes.selected', @volume.displayName)
+
+      editAccess: (p) ->
+        $location.url(@volume.editRoute('access'))
+        if p
+          remove = $rootScope.$on 'volumeEditAccessForm-init', (event, form) ->
+            form.preSelect(p)
+            remove()
+
+      edit: () ->
+        if (s = $scope.selected) && (s == @ || p = s.party) && @volume.checkPermission(constants.permission.ADMIN)
+          @editAccess(p)
+        else if @volume.checkPermission(constants.permission.EDIT)
+          $location.url(@volume.editRoute())
 
     Party.foreign = Volume
     Volume.foreign = Party

@@ -5,7 +5,7 @@ module Databrary.Static.Fillin
 
 import Control.Concurrent (forkIO)
 import Control.Monad (void, when)
-import qualified Crypto.Hash as Hash
+import Data.ByteArray.Encoding (convertToBase, Base(Base16))
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.Foldable as Fold
 import Data.Maybe (isNothing)
@@ -36,10 +36,10 @@ staticSendInvestigator p t rc@Service{ serviceStatic = Static{ staticAuthorizeAd
     logMsg t ("staticSendInvestigator: call failed" :: LogStr) (view rc)
   where
   fields =
-    [ ("auth", Hash.digestToHexByteString $ Hash.hmacGetDigest $ key $ Fold.foldMap snd $ tail fields)
+    [ ("auth", convertToBase Base16 $ key $ Fold.foldMap snd $ tail fields)
     , ("id", BSC.pack $ show $ partyId p)
     , ("name", TE.encodeUtf8 $ partyName p)
     , ("date", BSC.pack $ formatTime defaultTimeLocale "%B %e, %Y" t)
-    , ("mail", TE.encodeUtf8 a)
+    , ("mail", a)
     ]
 staticSendInvestigator _ _ _ = return ()

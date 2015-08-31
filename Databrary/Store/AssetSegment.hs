@@ -75,7 +75,7 @@ genVideoClip _ src (Just clip) _ dst | Nothing <- Range.getPoint clip =
   ub = Range.bound $ Range.upperBound clip
   sb = (showFixed True :: Milli -> String) . offsetMilli
 genVideoClip av src frame sz dst =
-  avFrame src (offsetDiffTime <$> (Range.getPoint =<< frame)) sz Nothing (either (const Nothing) Just dst) av
+  avFrame src (offsetDiffTime <$> (Range.getPoint =<< frame)) sz Nothing (rightJust dst) av
     >>= Fold.mapM_ (\b -> send b >> send BS.empty) 
   where send = either id (const $ const $ return ()) dst
 

@@ -6,15 +6,17 @@ app.directive('userPasswordForm', [
     var link = function ($scope) {
       var form = $scope.userPasswordForm;
 
-      form.data = {
-        email: undefined,
+      var init = function () {
+        form.data = {
+          email: undefined,
+        };
       };
 
       //
 
       form.resetSuccessFn = undefined;
 
-      form.reset = function () {
+      form.send = function () {
         page.messages.clear(form);
         page.models.Login.issuePassword($scope.userPasswordForm.data)
           .then(function () {
@@ -26,7 +28,7 @@ app.directive('userPasswordForm', [
               owner: form
             });
 
-            page.$location.url(page.router.index());
+            init();
           }, function (res) {
             form.validator.server(res);
           });

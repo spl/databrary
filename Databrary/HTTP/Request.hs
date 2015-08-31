@@ -46,4 +46,4 @@ boolQueryParameter q = any boolParameterValue . lookupQueryParameters q
 requestHost :: Wai.Request -> BS.ByteString
 requestHost req =
   (if Wai.isSecure req then "https://" else "http://")
-  <> fromMaybe "databrary.org" (lookupRequestHeader "host" req)
+  <> fromMaybe "databrary.org" (Wai.requestHeaderHost req)

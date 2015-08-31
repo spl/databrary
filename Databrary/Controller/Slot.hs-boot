@@ -5,4 +5,4 @@ import Databrary.Model.Volume.Types
 import Databrary.Model.Slot.Types
 import Databrary.Action
 
-viewSlot :: AppRoute (API, (Maybe (Id Volume), Id Slot))
+viewSlot :: ActionRoute (API, (Maybe (Id Volume), Id Slot))

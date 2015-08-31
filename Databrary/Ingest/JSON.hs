@@ -4,7 +4,7 @@ module Databrary.Ingest.JSON
   ) where
 
 import Control.Arrow (left)
-import Control.Monad (join, when, unless, void)
+import Control.Monad (join, when, unless, void, mfilter)
 import Control.Monad.Except (ExceptT(..), runExceptT, mapExceptT, catchError)
 import Control.Monad.IO.Class (MonadIO(liftIO))
 import Control.Monad.Trans.Class (lift)
@@ -52,9 +52,9 @@ import Databrary.Model.Asset
 import Databrary.Model.AssetSlot
 import Databrary.Model.Transcode
 import Databrary.Model.Ingest
-import Databrary.Action.Auth
+import Databrary.Action.Types
 
-type IngestM a = JE.ParseT T.Text (ReaderT AuthRequest IO) a
+type IngestM a = JE.ParseT T.Text (ReaderT Context IO) a
 
 jsErr :: (Functor m, Monad m) => Either (V.Vector JS.ValErr) a -> ExceptT [T.Text] m a
 jsErr = ExceptT . return . left V.toList
@@ -87,8 +87,8 @@ asDate = JE.withString (maybe (Left "expecting %F") Right . parseTime defaultTim
 asRelease :: IngestM (Maybe Release)
 asRelease = JE.perhaps JE.fromAesonParser
 
-asCategory :: IngestM (Maybe RecordCategory)
-asCategory = JE.perhaps $ do
+asCategory :: IngestM RecordCategory
+asCategory =
   JE.withIntegral (err . getRecordCategory . Id) `catchError` \_ -> do
     JE.withText (\n -> err $ find ((n ==) . recordCategoryName) allRecordCategories)
   where err = maybe (Left "category not found") Right
@@ -107,7 +107,7 @@ asStageFile b = do
   a <- fromMaybeM (throwPE "stage file not found") =<< lift (focusIO (stageFile r))
   return $ StageFile r a
 
-ingestJSON :: Volume -> J.Value -> Bool -> Bool -> AuthActionM (Either [T.Text] [Container])
+ingestJSON :: Volume -> J.Value -> Bool -> Bool -> ActionM (Either [T.Text] [Container])
 ingestJSON vol jdata' run overwrite = runExceptT $ do
   schema <- mapExceptT liftIO loadSchema
   jdata <- jsErr $ JS.validate schema jdata'
@@ -175,11 +175,13 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
             o <- lift $ moveRecordSlot (RecordSlot r $ Slot c (if null rs' then emptySegment else fullSegment)) seg
             unless o $ throwPE "record link failed"
       _ <- JE.key "assets" $ JE.eachInArray $ do
-        a <- asset dir
+        (a, probe) <- asset dir
         inObj a $ do
           as' <- lift $ lookupAssetAssetSlot a
           seg <- JE.keyOrDefault "position" (maybe fullSegment slotSegment $ assetSlot as') $
-            JE.withTextM (\t -> if t == "auto" then Right . Segment . Range.point <$> findAssetContainerEnd c else return $ Left "invalid asset position")
+            JE.withTextM (\t -> if t == "auto"
+              then maybe (Right . Segment . Range.point <$> probeAutoPosition c probe) (return . Right . slotSegment) $ mfilter (on (==) containerId c . slotContainer) (assetSlot as')
+              else return $ Left "invalid asset position")
               `catchError` \_ -> asSegment
           let seg'
                 | Just p <- Range.getPoint (segmentRange seg)
@@ -212,7 +214,7 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
           throwPE "id mismatch"
         _ <- JE.key "category" $ do
           category <- asCategory
-          category' <- (category <$) <$> on check (fmap recordCategoryName) (recordCategory r) category
+          category' <- (category <$) <$> on check recordCategoryName (recordCategory r) category
           Fold.forM_ category' $ \c -> lift $ changeRecord r
             { recordCategory = c
             }
@@ -260,11 +262,11 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
         Fold.forM_ orig $ \o -> lift $ replaceSlotAsset o a'
         return a')
       ae
-    t <- inObj a $ case probe of
+    inObj a $ case probe of
       ProbePlain _ -> do
         noKey "clip"
         noKey "options"
-        return a
+        return (a, probe)
       ProbeVideo _ av -> do
         clip <- JE.keyOrDefault "clip" fullSegment asSegment
         opts <- JE.keyOrDefault "options" defaultTranscodeOptions $ JE.eachInArray JE.asString
@@ -274,5 +276,4 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
             _ <- startTranscode t
             return t)
           =<< flatMapM (\_ -> findTranscode a clip opts) ae
-        return $ transcodeAsset t
-    return t
+        return (transcodeAsset t, probe)

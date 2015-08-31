@@ -9,7 +9,7 @@ module Databrary.Store.Asset
 import Control.Monad ((<=<), unless)
 import Control.Monad.IO.Class (liftIO)
 import Crypto.Hash (Digest, SHA1)
-import Data.Byteable (toBytes)
+import Data.ByteArray (convert)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Lazy as BSL
@@ -52,7 +52,7 @@ getAssetFile a = do
 storeAssetFile :: MonadStorage c m => Asset -> RawFilePath -> m Asset
 storeAssetFile ba fp = peeks storageMaster >>= \sm -> liftIO $ do
   size <- (fromIntegral . fileSize              <$> getFileStatus fp) `fromMaybeM` assetSize ba
-  sha1 <- ((toBytes :: Digest SHA1 -> BS.ByteString) <$> hashFile fp) `fromMaybeM` assetSHA1 ba
+  sha1 <- ((convert :: Digest SHA1 -> BS.ByteString) <$> hashFile fp) `fromMaybeM` assetSHA1 ba
   let a = ba
         { assetSize = Just size
         , assetSHA1 = Just sha1

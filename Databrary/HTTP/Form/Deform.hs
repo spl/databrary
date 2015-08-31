@@ -16,7 +16,6 @@ module Databrary.HTTP.Form.Deform
   , deformCheck
   , deformParse
   , deformRead
-  , deformRegex
   , deformRequired
   ) where
 
@@ -45,7 +44,6 @@ import qualified Network.URI as URI
 import Network.Wai.Parse (FileInfo)
 import System.Locale (defaultTimeLocale)
 import Text.Read (readEither)
-import qualified Text.Regex.Posix as Regex
 
 import Databrary.Ops
 import Databrary.Model.URL
@@ -86,7 +84,7 @@ instance Monad m => Monad (DeformT f m) where
     (ex, mx) <- x d
     case mx of
       Nothing -> return (ex, Nothing)
-      Just vx -> first (ex <>) `liftM` runDeformT (f vx) d
+      Just vx -> first (ex <>) `liftM` runDeformT (f $! vx) d
   fail = deformError' . T.pack
 
 instance Monad m => MonadPlus (DeformT f m) where
@@ -318,9 +316,6 @@ readParser = left T.pack . readEither
 
 deformRead :: (Functor m, Monad m) => Read a => a -> DeformT f m a
 deformRead def = deformEither def . readParser =<< deform
-
-deformRegex :: (Functor m, Monad m) => FormErrorMessage -> Regex.Regex -> T.Text -> DeformT f m T.Text
-deformRegex err regex = deformCheck err (Regex.matchTest regex . T.unpack)
 
 deformRequired :: (Functor m, Monad m) => T.Text -> DeformT f m T.Text
 deformRequired = deformCheck "Required" (not . T.null)

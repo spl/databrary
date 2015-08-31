@@ -17,7 +17,7 @@
         <fieldset class="skinny clean radio-set access-grant-radioset">
           <div class="access-grant-radioset-options" ng-repeat="(val, name) in page.constants.permission" ng-if="::accessGrantForm.canGrantAccess(val)">
             <input type="radio" ng-model="accessGrantForm.data.individual" name="access-{{access.party.id}}-individual" ng-value="val" required>
-            <label class="option" hint="access-edit-{{::name}}">
+            <label class="option" tooltip="'access.edit.'+name+'.who' | message">
               <span class="icon user-access" ng-class="::name"></span> 
               <span ng-bind="::'access.edit.'+name | message:access.party.name"></span>
             </label>
@@ -29,7 +29,7 @@
             <label class="option inline">
               <span class="icon network"></span> 
               <span ng-bind="::'access.grant.inherit' | possessive:access.party"></span>
-              <a ng-href="{{::access.party.route()}}#affiliates" target="_blank"> affiliates</a>
+              <a ng-href="{{::page.router.party(access.party.id)}}#affiliates" target="_blank"> affiliates</a>
             </label>
 
           </div>

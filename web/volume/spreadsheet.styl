@@ -1,6 +1,6 @@
-.release-legend
+.spreadsheet-dynamic-info
   margin-bottom 30px
-  ul
+  .release-legend
     hide
     margin-bottom 0
     li
@@ -28,10 +28,16 @@
 .spreadsheet.edit
   .spreadsheet-table
     td.add
+      background-color green43
       cursor pointer
+      color neutral52
     td.add:hover
-      background-color #AFCCC7
-      color: #ffffff
+      background-color green52
+      color white
+    td.folder-type:hover
+      cursor pointer
+    .input-completer-choices
+      background-color rgba(255,255,255,0.85)
 
 .spreadsheet-table
   width auto
@@ -79,6 +85,7 @@
 
   td
     border 1px solid dark
+    border-collapse initial
     padding 3px
     height 1+f3
     display table-cell
@@ -92,11 +99,13 @@
 
     a.session.icon
       background-size contain
-      background-position-y 50%
-      margin-right b8
       width b23
-    .release.icon
+    .icon
       vertical-align top
+  
+  td.folder-type
+    .icon
+      margin-right b8    
 
   td.icon
     background-position 50% 50%
@@ -106,8 +115,8 @@
     min-width 32px
     background-position 40px
 
-
   td.null
+    color neutral11
     background-color gray
     font-size 0.8em
     text-align center
@@ -155,8 +164,8 @@
     td
       overflow visible
       text-overflow clip
-      // word-break break-all
-      // word-break break-word
+    td.long.selected
+      white-space pre-wrap
 
 .spreadsheet-head-groups
   th
@@ -173,12 +182,16 @@
       left 0
       right 0
       margin-top b8
+      z-index -1
 
     &.col-materials
       min-width 240px
 
     &.col-800
       min-width 78px
+    
+    .icon.list:hover
+      opacity 0.4
 
 
 .spreadsheet-head-metrics
@@ -232,6 +245,8 @@
 .top-level-materials
   font-style oblique
   color #999
+  .icon
+    margin-right b8
   
 .spreadsheet-tab-options
   left 0

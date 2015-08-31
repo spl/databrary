@@ -19,14 +19,15 @@ app.directive('wizard', [
           $scope.steps.push(step);
           $scope.step[step.name] = step;
 
-          $scope.registerStep(step);
+          if ($scope.registerStep)
+            $scope.registerStep(step);
 
           if (!$scope.activeStep || target === step.name)
             $scope.activateStep(step);
         };
 
         $scope.activateStep = function (newStep) {
-          if (!newStep.allow || $scope.activeStep === newStep)
+          if (newStep.disabled || $scope.activeStep === newStep)
             return;
 
           if ($scope.switchStep && !$scope.switchStep(newStep))

@@ -17,7 +17,6 @@ import Network.HTTP.Types (methodGet, StdMethod(..), renderStdMethod, Query, ren
 
 import qualified Databrary.Iso as I
 import Databrary.HTTP.Request
-import Databrary.Action.Types
 import Databrary.HTTP.Path.Parser
 import Databrary.HTTP.Route
 
@@ -26,7 +25,7 @@ actionURL req r@Route{ routeMethod = g } a q
   | g == methodGet = routeURL req r a <> renderQueryBuilder True q
   | otherwise = error $ "actionURL: " ++ BSC.unpack g
 
-action :: StdMethod -> PathParser a -> (a -> Action q) -> Route (Action q) a
+action :: StdMethod -> PathParser a -> (a -> r) -> Route r a
 action m = Route (renderStdMethod m) False
 
 multipartAction :: Route q a -> Route q a

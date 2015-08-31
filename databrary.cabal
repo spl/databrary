@@ -19,6 +19,7 @@ data-files:
   transctl.sh,
   transcode,
   volume.json,
+  ezid/*.py,
   web/*.min.css,
   web/*.min.js,
   web/icons/*.ico,
@@ -98,18 +99,16 @@ Executable databrary
     process,
     data-default-class,
     text,
-    base64-bytestring,
     utf8-string,
     hashable >= 1.2.1,
     unordered-containers,
     attoparsec,
-    byteable,
     network,
     network-uri,
     http-types,
     wai,
     wai-extra,
-    warp == 3.0.*,
+    warp,
     case-insensitive,
     aeson,
     vector,
@@ -118,8 +117,8 @@ Executable databrary
     resource-pool,
     scientific,
     postgresql-typed == 0.4.0,
-    cryptohash,
-    entropy,
+    memory >= 0.8,
+    cryptonite,
     resourcet,
     streaming-commons,
     blaze-builder >= 0.4,
@@ -136,7 +135,7 @@ Executable databrary
     split
 
   if flag(tls)
-    Build-depends: warp-tls == 3.0.*
+    Build-depends: warp-tls
 
   default-language: Haskell2010
   default-extensions: MultiParamTypeClasses, FlexibleContexts, FlexibleInstances, ScopedTypeVariables, ConstraintKinds, PatternGuards

@@ -48,4 +48,5 @@ metricJSON m@Metric{..} = JSON.record metricId $ catMaybes
   , "options" JSON..= metricOptions <!? null metricOptions
   , ("assumed" JSON..=) <$> metricAssumed
   , "long" JSON..= True <? metricLong m
+  , ("description" JSON..=) <$> metricDescription
   ]

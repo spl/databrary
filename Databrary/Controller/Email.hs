@@ -8,6 +8,6 @@ import Databrary.Action
 import Databrary.View.Email
 import Databrary.HTTP.Path.Parser
 
-testEmail :: AppRoute ()
+testEmail :: ActionRoute ()
 testEmail = action GET ("email" </< "test") $ \() -> do
   okResponse [] emailNewlyAuthorized

@@ -1,7 +1,8 @@
 'use strict';
 
 app.directive('authGrantForm', [
-  'pageService', function (page) {
+  '$filter', 'constantService', 'messageService', 'displayService', 'modelService',
+  function ($filter, constants, messages, display, models) {
     var link = function ($scope) {
       var party = $scope.party;
       var auth = $scope.auth;
@@ -11,7 +12,7 @@ app.directive('authGrantForm', [
         form.data = {
           site: auth.site,
           member: auth.member,
-          expires: auth.expires && page.$filter('date')(auth.expires, 'yyyy-MM-dd')
+          expires: auth.expires && $filter('date')(auth.expires, 'yyyy-MM-dd')
         };
       }
       fill();
@@ -22,33 +23,33 @@ app.directive('authGrantForm', [
       //
 
       form.presetName = function (type, name, party) {
-        return '<strong>' + page.constants.message('auth.' + type + '.' + name + '.title') + '</strong>: ' + page.$filter('possessive')('auth.' + type + '.' + name, party);
+        return '<strong>' + constants.message('auth.' + type + '.' + name + '.title') + '</strong>: ' + $filter('possessive')('auth.' + type + '.' + name, party);
       };
 
       $scope.canGrantSite = function (p) {
-        return p == page.permission.NONE ||
-          p == page.permission.READ ||
-          p > page.permission.READ &&
-          page.models.Login.checkAuthorization(p + 1) ||
-          page.models.Login.checkAuthorization(page.permission.ADMIN);
+        return p == constants.permission.NONE ||
+          p == constants.permission.READ ||
+          p > constants.permission.READ &&
+          models.Login.checkAuthorization(p + 1) ||
+          models.Login.checkAuthorization(constants.permission.ADMIN);
       };
 
       $scope.canGrantMember = function (p) {
-        return p == page.permission.NONE ||
-          p == page.permission.READ ||
-          p == page.permission.EDIT ||
-          p == page.permission.ADMIN ||
-          page.models.Login.checkAuthorization(page.permission.ADMIN);
+        return p == constants.permission.NONE ||
+          p == constants.permission.READ ||
+          p == constants.permission.EDIT ||
+          p == constants.permission.ADMIN ||
+          models.Login.checkAuthorization(constants.permission.ADMIN);
       };
 
       //
 
       form.save = function () {
-        page.messages.clear(form);
+        messages.clear(form);
         return party.authorizeSave(auth.party.id, form.data).then(function (res) {
           form.validator.server({});
-          page.messages.add({
-            body: page.constants.message('auth.grant.save.success'),
+          messages.add({
+            body: constants.message('auth.grant.save.success'),
             type: 'green',
             owner: form
           });
@@ -61,30 +62,35 @@ app.directive('authGrantForm', [
           form.$setPristine();
         }, function (res) {
           form.validator.server(res);
-          page.display.scrollTo(form.$element);
+          display.scrollTo(form.$element);
         });
       };
+
+      $scope.$on('authGrantSave', function () {
+        if (form.$dirty)
+          form.save();
+      });
 
       //
 
       form.deny = function () {
-        page.messages.clear(form);
+        messages.clear(form);
         if (auth.new) {
-          form.denySuccessFn(auth);
+          $scope.authDenySuccessFn(auth, form);
           return;
         }
         party.authorizeRemove(auth.party.id).then(function () {
           form.validator.server({});
-          page.messages.add({
-            body: page.constants.message('auth.grant.remove.success'),
+          messages.add({
+            body: constants.message('auth.grant.remove.success'),
             type: 'green',
             owner: form
           });
           form.$setPristine();
-          form.denySuccessFn(auth);
+          $scope.authDenySuccessFn(auth, form);
         }, function (res) {
           form.validator.server(res);
-          page.display.scrollTo(form.$element);
+          display.scrollTo(form.$element);
         });
       };
 
@@ -92,7 +98,7 @@ app.directive('authGrantForm', [
 
       form.validator.client({
         expires: {
-          tips: page.constants.message('auth.grant.expires.help')
+          tips: constants.message('auth.grant.expires.help')
         }
       }, true);
 

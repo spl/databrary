@@ -10,9 +10,9 @@
         <strong message="auth.site.{{::name}}.title"></strong>: 
         {{'auth.site.'+name | possessive:party}} 
         <span class="icon info" ng-if="val >= party.authorization" tooltip="'auth.site.disabled' | message:('auth.site.'+page.constants.permission[val+1]+'.title' | message)"></span>
-
       </label>
     </div>
+    <s class="permission-auth-warning" ng-show="authGrantForm.data.site" ng-bind="'auth.site.warning' | possessive:auth.party"></s>
   </fieldset>
 
   <fieldset class="skinny clean radio-set">
@@ -23,8 +23,8 @@
     <div ng-repeat="(val, name) in page.constants.permission" ng-if="::canGrantMember(val)">
       <input type="radio" ng-model="authGrantForm.data.member" name="auth-{{auth.party.id}}-member" ng-value="val" ng-selected="val == authGrantForm.data.member">
       <label class="option">
-        <strong message="auth.member.{{::name}}.title"></strong>: 
-        {{'auth.member.'+name | possessive:party}}
+        <strong message="auth.member.{{::name}}.title"></strong>
+        : {{'auth.member.'+name | possessive:party}}
       </label>
     </div>
   </fieldset>
@@ -33,7 +33,6 @@
     <validator name="expires" label="auth.expiration">
       <input input-date ng-model="authGrantForm.data.expires" name="expires" class="half" key-enter="authGrantForm.save()">
     </validator>
-
   </fieldset>
 
 </ng-form>

@@ -15,7 +15,7 @@ import Databrary.Controller.Paths
 
 import {-# SOURCE #-} Databrary.Controller.Authorize
 
-htmlAuthorizeForm :: Authorize -> AuthRequest -> FormHtml f
+htmlAuthorizeForm :: Authorize -> Context -> FormHtml f
 htmlAuthorizeForm a = htmlForm
   ("Authorize " `T.append` partyName child)
   postAuthorize (HTML, TargetParty (partyId parent), AuthorizeTarget False (partyId child))

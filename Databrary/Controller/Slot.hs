@@ -9,7 +9,9 @@ module Databrary.Controller.Slot
 import Control.Monad (when, mfilter)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
+import Data.Maybe (isJust)
 import qualified Data.Text as T
+import Network.HTTP.Types.Status (movedPermanently301)
 import qualified Network.Wai as Wai
 
 import Databrary.Ops
@@ -39,7 +41,7 @@ import Databrary.Controller.Container
 import Databrary.Controller.Web
 import {-# SOURCE #-} Databrary.Controller.AssetSegment
 
-getSlot :: Permission -> Maybe (Id Volume) -> Id Slot -> AuthActionM Slot
+getSlot :: Permission -> Maybe (Id Volume) -> Id Slot -> ActionM Slot
 getSlot p mv i =
   checkPermission p =<< maybeAction . maybe id (\v -> mfilter $ (v ==) . view) mv =<< lookupSlot i
 
@@ -65,22 +67,23 @@ slotJSONQuery o = JSON.jsonQuery (slotJSON o) (slotJSONField o)
 
 slotDownloadName :: Slot -> [T.Text]
 slotDownloadName s =
-  containerDownloadName (slotContainer s)
+  containerDownloadName Nothing (slotContainer s)
 
-viewSlot :: AppRoute (API, (Maybe (Id Volume), Id Slot))
+viewSlot :: ActionRoute (API, (Maybe (Id Volume), Id Slot))
 viewSlot = action GET (pathAPI </> pathMaybe pathId </> pathSlotId) $ \(api, (vi, i)) -> withAuth $ do
-  when (api == HTML) angular
+  when (api == HTML && isJust vi) angular
   c <- getSlot PermissionPUBLIC vi i
   case api of
-    JSON -> okResponse [] =<< slotJSONQuery c =<< peeks Wai.queryString
-    HTML -> okResponse [] $ BSC.pack $ show $ containerId $ slotContainer c -- TODO
+    JSON -> okResponse [] <$> (slotJSONQuery c =<< peeks Wai.queryString)
+    HTML
+      | isJust vi -> return $ okResponse [] $ BSC.pack $ show $ containerId $ slotContainer c -- TODO
+      | otherwise -> peeks $ redirectRouteResponse movedPermanently301 [] viewSlot (api, (Just (view c), slotId c))
 
-thumbSlot :: AppRoute (Maybe (Id Volume), Id Slot)
+thumbSlot :: ActionRoute (Maybe (Id Volume), Id Slot)
 thumbSlot = action GET (pathMaybe pathId </> pathSlotId </< "thumb") $ \(vi, i) -> withAuth $ do
   s <- getSlot PermissionPUBLIC vi i
   e <- lookupSlotThumb s
-  q <- peeks Wai.queryString
   maybe
-    (redirectRouteResponse [] webFile (Just $ staticPath ["images", "draft.png"]) q)
-    (\as -> redirectRouteResponse [] downloadAssetSegment (slotId $ view as, assetId $ view as) q)
+    (peeks $ otherRouteResponse [] webFile (Just $ staticPath ["images", "draft.png"]))
+    (\as -> peeks $ otherRouteResponse [] downloadAssetSegment (slotId $ view as, assetId $ view as))
     e

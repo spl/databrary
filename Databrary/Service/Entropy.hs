@@ -1,21 +1,16 @@
 module Databrary.Service.Entropy
   ( Entropy
   , initEntropy
-  , finiEntropy
   , entropyBytes
   ) where
 
-import Control.Applicative ((<$>))
-import Data.ByteString (ByteString)
-import qualified System.Entropy as Entropy
+import Data.ByteArray (ByteArray)
+import Crypto.Random.EntropyPool
 
-newtype Entropy = Entropy Entropy.CryptHandle
+type Entropy = EntropyPool
 
 initEntropy :: IO Entropy
-initEntropy = Entropy <$> Entropy.openHandle
+initEntropy = createEntropyPool
 
-finiEntropy :: Entropy -> IO ()
-finiEntropy (Entropy h) = Entropy.closeHandle h
-
-entropyBytes :: Int -> Entropy -> IO ByteString
-entropyBytes n (Entropy e) = Entropy.hGetEntropy e n
+entropyBytes :: ByteArray a => Int -> Entropy -> IO a
+entropyBytes = flip getEntropyFrom

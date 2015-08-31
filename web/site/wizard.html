@@ -2,10 +2,10 @@
   <div class="row">
     <div class="wizard-list col-desktop-3 col-tablet-2 col-mobile-2">
       <ul class="flat">
-        <li ng-repeat="step in steps" ng-class="{active:step.active, complete:step.complete, error:step.error, incomplete:!(step.complete||step.error), blocked:!step.allow}" ng-click="activateStep(step)">
+        <li ng-repeat="step in steps" ng-class="{active:step.active, complete:step.complete, error:step.error, incomplete:!(step.complete||step.error), blocked:step.disabled}" ng-click="activateStep(step)">
           <strong class="wizard-list-name" message="wizard.{{::step.id}}.name"></strong>
 
-          <p class="wizard-list-description" message="wizard.{{::step.id}}.description"></p>
+          <p class="hide-mobile wizard-list-description" message="wizard.{{::step.id}}.description"></p>
         </li>
       </ul>
     </div>

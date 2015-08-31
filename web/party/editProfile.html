@@ -31,12 +31,16 @@
 
     <validator name="avatar" label="party.edit.avatar.title">
       <div class="col-desktop-1 col-tablet-1 col-mobile-1">
-        <figure class="party-edit-profile-avatar">
+        <figure class="party-edit-profile-avatar-figure">
           <img ng-src="{{partyEditProfileForm.avatarUrl}}">
         </figure>
       </div>
-      <div class="col-desktop-11 col-tablet-5 col-mobile-3">
-        <input type="file" name="avatar" file-model="partyEditProfileForm.data.avatar">
+      <div class="party-edit-profile-avatar-options col-desktop-11 col-tablet-5 col-mobile-3">
+        <div>
+          <span>Replace: </span>
+          <input type="file" name="avatar" file-model="partyEditProfileForm.data.avatar">
+        </div>
+        <button class="neutral mini" ng-click="partyEditProfileForm.removeAvatar()">Remove</button>
       </div>
     </validator>
   </fieldset>

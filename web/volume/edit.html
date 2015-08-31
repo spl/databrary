@@ -1,3 +1,4 @@
+<ng-form name="volumeEditForm">
 <article class="view volume-edit-view">
   <div class="wrap">
     <div class="row">
@@ -19,34 +20,34 @@
         If you would like to begin contributing data while your authorization is still pending, please <a href="mailto:help@databrary.org">contact us</a>.
       </div>
 
-      <div class="col" ng-show="::volume || owners.length">
+      <div class="col" ng-if="::!!(volume || owners.length)">
         <wizard name="volume-edit">
-          <wizard-step name="overview">
+          <wizard-page name="overview">
             <volume-edit-overview-form></volume-edit-overview-form>
-          </wizard-step>
+          </wizard-page>
 
-          <wizard-step name="access" ng-if="::!!volume" enabled="volume.checkPermission(page.permission.ADMIN)">
+          <wizard-page name="access" ng-if="::volume.checkPermission(page.permission.ADMIN)">
             <volume-edit-access-form></volume-edit-access-form>
-          </wizard-step>
+          </wizard-page>
 
-          <wizard-step name="materials" ng-if="::!!volume">
-            <spreadsheet edit top></spreadsheet>
-          </wizard-step>
+          <wizard-page name="design" ng-if="::!!volume">
+            <volume-design></volume-design>
+          </wizard-page>
 
-          <wizard-step name="data" ng-if="::!!volume">
+          <wizard-page name="data" ng-if="::!!volume">
             <spreadsheet edit></spreadsheet>
-          </wizard-step>
+          </wizard-page>
 
-          <wizard-step name="links" ng-if="::!!volume">
+          <wizard-page name="links" ng-if="::!!volume">
             <volume-edit-links-form></volume-edit-links-form>
-          </wizard-step>
+          </wizard-page>
 
-          <wizard-step name="funding" ng-if="::!!volume">
+          <wizard-page name="funding" ng-if="::!!volume">
             <volume-edit-funding-form></volume-edit-funding-form>
-          </wizard-step>
+          </wizard-page>
         </wizard>
       </div>
     </div>
   </div>
 </article>
-
+</ng-form>

@@ -203,7 +203,7 @@ ol
       font-size .75
       font-style italic
       text-align right
-      color blue
+      color green
       width b1
       top b12
       left -b4
@@ -213,7 +213,7 @@ ul
   > li
     &:before
       content ""
-      background-color blue
+      background-color green
       border-radius b1
       size b4
       top b4 + b6
@@ -403,9 +403,14 @@ sup
 
 //
 
-small
+small, .small
   font-line .75
-
+  &.reminder
+    color blue
+  &.attention
+    color yellow
+  &.warning
+    color red
 
 // ins, del
 
@@ -426,25 +431,23 @@ del
 
 s
 mark
-  border = 1px
   font-line .9 (2/3)
-  border-width border 0
-  border-style solid
-  // border-padding-height border f8
+  border-width 0
+  border-radius b8
   padding-width f4
   text-decoration none
+  // if display block, line-height 1.
 
 
 mark
   color = green
   background-color mix(color, white, 15%)
-  border-color color
-
+  color color
 
 s
   color = red
   background-color mix(color, white, 15%)
-  border-color color
+  color color
 
 
 // dfn, var, abbr
@@ -474,7 +477,8 @@ address
 // p
 
 p
-  text-align justify
+  @media screen and (min-width: grid-mobile-width)
+    text-align justify
 
   small
     line-height f2

@@ -12,7 +12,7 @@ import Databrary.View.Form
 
 import {-# SOURCE #-} Databrary.Controller.Token
 
-htmlPasswordToken :: Id LoginToken -> AuthRequest -> FormHtml f
+htmlPasswordToken :: Id LoginToken -> Context -> FormHtml f
 htmlPasswordToken tok = htmlForm "Reset Password"
   postPasswordToken (HTML, tok)
   (do

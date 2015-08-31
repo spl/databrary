@@ -21,10 +21,8 @@ import Databrary.Model.Permission
 import Databrary.Model.Identity.Types
 
 determineIdentity :: (MonadHasService c m, MonadHasRequest c m, MonadDB m) => m Identity
-determineIdentity = do
-  c <- getSignedCookie "session"
-  s <- flatMapM lookupSession c
-  return $ maybe UnIdentified Identified s
+determineIdentity =
+  maybe NotIdentified Identified <$> (flatMapM lookupSession =<< getSignedCookie "session")
 
 maybeIdentity :: (MonadHasIdentity c m) => m a -> (Session -> m a) -> m a
 maybeIdentity u i = foldIdentity u i =<< peek
@@ -33,5 +31,5 @@ identityJSON :: Identity -> JSON.Object
 identityJSON i = partyJSON (view i) JSON..++ catMaybes
   [ Just $ "authorization" JSON..= accessSite i
   , ("csverf" JSON..=) <$> identityVerf i
-  , identitySuperuser i ?> ("superuser" JSON..= True)
+  , identityAdmin i ?> ("superuser" JSON..= True)
   ]

@@ -7,7 +7,7 @@ module Databrary.View.Party
   , htmlPartyDelete
   ) where
 
-import Control.Monad (void, when, forM_)
+import Control.Monad (when, forM_, void)
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.Foldable as Fold
 import Data.Maybe (fromMaybe)
@@ -18,12 +18,12 @@ import qualified Text.Blaze.Html5.Attributes as HA
 
 import Databrary.Ops
 import Databrary.Has (view)
-import Databrary.Action.Auth
-import Databrary.Action
 import Databrary.Model.Permission
 import Databrary.Model.Party
 import Databrary.Model.ORCID
 import Databrary.Store.Temp
+import Databrary.Action.Types
+import Databrary.Action
 import Databrary.Controller.Paths
 import Databrary.View.Html
 import Databrary.View.Template
@@ -35,7 +35,7 @@ import {-# SOURCE #-} Databrary.Controller.Party
 import {-# SOURCE #-} Databrary.Controller.Volume
 import {-# SOURCE #-} Databrary.Controller.Register
 
-htmlPartyView :: Party -> AuthRequest -> H.Html
+htmlPartyView :: Party -> Context -> H.Html
 htmlPartyView p@Party{..} req = htmlTemplate req (Just $ partyName p) $ \js -> do
   when (view p >= PermissionEDIT) $
     H.p $
@@ -52,7 +52,7 @@ htmlPartyView p@Party{..} req = htmlTemplate req (Just $ partyName p) $ \js -> d
       H.dd $ H.a H.! HA.href (H.stringValue us) $ H.string us
     Fold.forM_ (partyEmail p) $ \e -> do
       H.dt "email"
-      H.dd $ H.a H.! HA.href (H.textValue $ "mailto:" <> e) $ H.text e
+      H.dd $ H.a H.! HA.href (byteStringValue $ "mailto:" <> e) $ byteStringHtml e
     Fold.forM_ partyORCID $ \o -> do
       H.dt "orcid"
       H.dd $ H.a H.! HA.href (H.stringValue $ show $ orcidURL o) $ H.string $ show o
@@ -66,7 +66,7 @@ htmlPartyForm t = do
   field "affiliation" $ inputText $ partyAffiliation =<< t
   field "url" $ inputText $ show <$> (partyURL =<< t)
 
-htmlPartyEdit :: Maybe Party -> AuthRequest -> FormHtml TempFile
+htmlPartyEdit :: Maybe Party -> Context -> FormHtml TempFile
 htmlPartyEdit t = maybe
   (htmlForm "Create party" createParty HTML)
   (\p -> htmlForm
@@ -89,13 +89,13 @@ htmlPartySearchForm pf = do
   field "authorization" $ inputEnum False $ partyFilterAuthorization pf
   field "institution" $ inputCheckbox $ fromMaybe False $ partyFilterInstitution pf
 
-htmlPartySearch :: PartyFilter -> [Party] -> AuthRequest -> FormHtml f
+htmlPartySearch :: PartyFilter -> [Party] -> Context -> FormHtml f
 htmlPartySearch pf pl req = htmlForm "Search users" queryParties HTML
   (htmlPartySearchForm pf)
   (\js -> htmlPaginate (htmlPartyList js) (partyFilterPaginate pf) pl (view req))
   req
 
-htmlPartyAdmin :: PartyFilter -> [Party] -> AuthRequest -> FormHtml f
+htmlPartyAdmin :: PartyFilter -> [Party] -> Context -> FormHtml f
 htmlPartyAdmin pf pl req = htmlForm "party admin" adminParties ()
   (htmlPartySearchForm pf)
   (\js -> htmlPaginate
@@ -112,7 +112,7 @@ htmlPartyAdmin pf pl req = htmlForm "party admin" adminParties ()
           H.td $ H.a H.! actionLink viewParty (HTML, TargetParty partyId) js
             $ H.string $ show partyId
           H.td $ H.text $ partyName p
-          H.td $ Fold.mapM_ (H.text . accountEmail) partyAccount
+          H.td $ Fold.mapM_ (byteStringHtml . accountEmail) partyAccount
           H.td $ Fold.mapM_ H.text partyAffiliation
           H.td $ do
             actionForm resendInvestigator partyId js
@@ -123,8 +123,15 @@ htmlPartyAdmin pf pl req = htmlForm "party admin" adminParties ()
     (partyFilterPaginate pf) pl (view req))
   req
 
+<<<<<<< HEAD
 htmlPartyDelete :: Party -> AuthRequest -> FormHtml f
 htmlPartyDelete p@Party{..} = htmlForm ("delete " <> partyName p) deleteParty partyId
   (return ())
+=======
+htmlPartyDelete :: Party -> Context -> FormHtml f
+htmlPartyDelete p@Party{..} = htmlForm ("delete " <> partyName p)
+  deleteParty partyId
+  (return ())   
+>>>>>>> master
   (\js -> void $ H.a H.! actionLink viewParty (HTML, TargetParty partyId) js
     $ H.text $ partyName p)

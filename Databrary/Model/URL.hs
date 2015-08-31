@@ -15,6 +15,7 @@ import Data.Maybe (fromMaybe)
 import qualified Data.Text as T
 import Database.PostgreSQL.Typed.Types (PGParameter(..), PGColumn(..))
 import Language.Haskell.TH.Lift (deriveLiftMany)
+import qualified Text.Blaze as H
 
 import Control.Monad (guard)
 import Data.Char (isDigit)
@@ -40,6 +41,10 @@ instance ToJSON URI where
 
 instance C.Configured URI where
   convert = parseAbsoluteURI . T.unpack <=< C.convert
+
+instance H.ToValue URI where
+  toValue = H.stringValue . show
+  preEscapedToValue = H.preEscapedStringValue . show
 
 deriveLiftMany [''URIAuth, ''URI]
 

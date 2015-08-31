@@ -4,6 +4,7 @@ module Databrary.Model.Identity.Types
   , MonadHasIdentity
   , foldIdentity
   , identityVerf
+  , identityAdmin
   , identitySuperuser
   ) where
 
@@ -18,14 +19,15 @@ import Databrary.Model.Party.Types
 import Databrary.Model.Token.Types
 
 data Identity
-  = UnIdentified
+  = PreIdentified
+  | NotIdentified
   | Identified Session
   | ReIdentified SiteAuth
 
 instance Has SiteAuth Identity where
-  view UnIdentified = nobodySiteAuth
   view (Identified Session{ sessionAccountToken = AccountToken{ tokenAccount = t } }) = t
   view (ReIdentified a) = a
+  view _ = nobodySiteAuth
 
 instance Has Party Identity where
   view = view . (view :: Identity -> SiteAuth)
@@ -45,8 +47,11 @@ foldIdentity u _ _ = u
 identityVerf :: Identity -> Maybe BS.ByteString
 identityVerf = foldIdentity Nothing (Just . sessionVerf)
 
-identitySuperuser :: Identity -> Bool
-identitySuperuser UnIdentified = False
-identitySuperuser (Identified t) = sessionSuperuser t
-identitySuperuser (ReIdentified _) = True
+identitySuperuserFor :: (Access -> Permission) -> Identity -> Bool
+identitySuperuserFor f (Identified t) = sessionSuperuser t && f (view t) == PermissionADMIN
+identitySuperuserFor _ (ReIdentified _) = True
+identitySuperuserFor _ _ = False
 
+identityAdmin, identitySuperuser :: Identity -> Bool
+identityAdmin = identitySuperuserFor accessMember
+identitySuperuser = identitySuperuserFor accessPermission

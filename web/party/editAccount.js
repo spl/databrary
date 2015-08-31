@@ -18,6 +18,8 @@ app.directive('partyEditAccountForm', [
       });
 
       form.save = function () {
+        if (form.data.password && !(form.data.password.once || form.data.password.again))
+          delete form.data.password;
         form.$setSubmitted();
         page.messages.clear(form);
         party.saveAccount(form.data).then(
@@ -30,7 +32,6 @@ app.directive('partyEditAccountForm', [
               owner: form
             });
 
-            form.$setUnsubmitted();
             init();
             form.$setPristine();
           }, function (res) {

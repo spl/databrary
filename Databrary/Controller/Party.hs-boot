@@ -5,12 +5,12 @@ import Databrary.Model.Id.Types
 import Databrary.Model.Party.Types
 import Databrary.Controller.Paths
 
-viewParty :: AppRoute (API, PartyTarget)
-viewPartyEdit :: AppRoute PartyTarget
-postParty :: AppRoute (API, PartyTarget)
-createParty :: AppRoute API
-deleteParty :: AppRoute (Id Party)
-viewPartyDelete :: AppRoute (Id Party)
-viewAvatar :: AppRoute (Id Party)
-queryParties :: AppRoute API
-adminParties :: AppRoute ()
+viewParty :: ActionRoute (API, PartyTarget)
+viewPartyEdit :: ActionRoute PartyTarget
+postParty :: ActionRoute (API, PartyTarget)
+createParty :: ActionRoute API
+deleteParty :: ActionRoute (Id Party)
+viewPartyDelete :: ActionRoute (Id Party)
+viewAvatar :: ActionRoute (Id Party)
+queryParties :: ActionRoute API
+adminParties :: ActionRoute ()

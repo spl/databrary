@@ -63,20 +63,14 @@ auditAssetSegmentDownload success AssetSegment{ segmentAsset = AssetSlot{ slotAs
             | otherwise = AuditActionAttempt
 
 assetSegmentJSON :: AssetSegment -> JSON.Object
-assetSegmentJSON as@AssetSegment{..}
-  | assetSegmentFull as = assetSlotJSON segmentAsset JSON..++ catMaybes fields
-  | otherwise = JSON.object $ catMaybes $
-    [ Just $ "asset" JSON..= assetSegmentJSON (assetFullSegment as)
-    , Just $ ("segment" JSON..= assetSegment)
-    , view segmentAsset == fmt ?!> "format" JSON..= formatId fmt
-    ] ++ fields
-  where
-  fields =
-    [ -- ("release" JSON..=) <$> (view as :: Maybe Release)
-      Just $ "permission" JSON..= dataPermission as
-    , ("excerpt" JSON..=) . excerptRelease <$> assetExcerpt
-    ]
-  fmt = view as
+assetSegmentJSON as@AssetSegment{..} = JSON.object $ catMaybes $
+  [ Just $ "asset" JSON..= assetSlotJSON segmentAsset
+  , Just $ ("segment" JSON..= assetSegment)
+  , view segmentAsset == fmt ?!> "format" JSON..= formatId fmt
+  -- , ("release" JSON..=) <$> (view as :: Maybe Release)
+  , Just $ "permission" JSON..= dataPermission as
+  , ("excerpt" JSON..=) . excerptRelease <$> assetExcerpt
+  ] where fmt = view as
 
 assetSegmentInterp :: Float -> AssetSegment -> AssetSegment
 assetSegmentInterp f as = as{ assetSegment = segmentInterp f (assetSegment as) }

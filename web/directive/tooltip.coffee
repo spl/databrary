@@ -6,17 +6,8 @@ app.directive 'tooltip', [
     restrict: 'A'
     scope: false
     link: ($scope, $element, $attrs) ->
-      tooltip = {}
-
-      if 'tooltipId' of $attrs
-        tooltip.id = $attrs.tooltipId
-      if 'tooltipClass' of $attrs
-        tooltip.cls = $attrs.tooltipClass
-      tooltip.message = $scope.$eval($attrs.tooltip)
-      tooltip.$target = $element
-
-      if tooltip.message
-        new tooltips(tooltip)
-
+      if message = $scope.$eval($attrs.tooltip)
+        t = tooltips.add($element, message)
+        $scope.$on '$destroy', () -> t.remove($element)
       return
 ]

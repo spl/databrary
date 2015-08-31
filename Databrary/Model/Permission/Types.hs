@@ -17,6 +17,10 @@ useTPG
 
 makeDBEnum "permission" "Permission"
 
+instance Monoid Permission where
+  mempty = PermissionNONE
+  mappend = max
+
 data Access = Access
   { accessSite' :: !Permission
   , accessMember' :: !Permission
@@ -35,7 +39,7 @@ instance Bounded Access where
   maxBound = Access maxBound maxBound
 
 instance Monoid Access where
-  mempty = Access PermissionNONE PermissionNONE
-  mappend (Access s1 m1) (Access s2 m2) = Access (max s1 s2) (max m1 m2)
+  mempty = Access mempty mempty
+  mappend (Access s1 m1) (Access s2 m2) = Access (mappend s1 s2) (mappend m1 m2)
 
 deriveLiftMany [''Permission, ''Access]

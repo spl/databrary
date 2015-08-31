@@ -106,7 +106,7 @@ app.controller('volume/slot', [
           seekOffset(o)
           unless ruler.selection.contains(o) || ruler.selection.u == o # "loose" contains
             ruler.selection = new TimeSegment(null)
-            finalizeSelection()
+            updateSelection()
         return
 
       style: ->
@@ -192,7 +192,7 @@ app.controller('volume/slot', [
           seekOffset(@l)
         else if @full
           seekOffset(undefined)
-        finalizeSelection()
+        updateSelection()
         event?.stopPropagation()
 
     ################################### Global state
@@ -206,6 +206,7 @@ app.controller('volume/slot', [
       selection: new TimeSegment(if 'select' of target then target.select else null) # current temporal selection
       position: new TimePoint(Offset.parse(target.pos)) # current position, also asset seek point (should be within selection)
       zoomed: 'range' of target # are we currently zoomed in?
+    playrange = undefined # ruler.selection.intersect($scope.asset.segment)
 
     searchLocation = (url) ->
       url
@@ -289,9 +290,9 @@ app.controller('volume/slot', [
             $scope.current.setPosition(ruler.position.o - o)
           else
             ruler.position.o = $scope.asset.segment.l + o
-            if ruler.selection.uBounded && ruler.position.o >= ruler.selection.u
+            if playrange?.uBounded && ruler.position.o >= playrange.u
               video[0].pause()
-              seekOffset(ruler.selection.l) if ruler.selection.lBounded
+              seekOffset(playrange.l)
         return
       ended: ->
         $scope.playing = 0
@@ -397,7 +398,7 @@ app.controller('volume/slot', [
 
         blank.fillData() if blank && this == blank
         $scope.playing = 0
-        finalizeSelection()
+        updateSelection()
         updatePlayerHeight()
         autoplay = ap
         true
@@ -425,8 +426,10 @@ app.controller('volume/slot', [
           # We don't want to have the item snap to itself.
 
           # We want to have all the times that are finite in our array to compare against
-          listOfAllPlacements.push i.lt if i.lt.defined
-          listOfAllPlacements.push i.ut if i.ut.defined
+          listOfAllPlacements.push i.lt if i.lt.defined()
+          listOfAllPlacements.push i.ut if i.ut.defined()
+
+        listOfAllPlacements.push ruler.position if ruler.position.defined()
 
         # If there aren't any items in the timeline that we can snap to, let's just break
         # out and return the original time sent in.
@@ -462,7 +465,7 @@ app.controller('volume/slot', [
             new TimeSegment(Math.min(sel.l, pos), pos)
           else
             new TimeSegment(pos, Math.max(sel.u, pos))
-      finalizeSelection()
+      updateSelection()
       return
 
     $scope.dragSelection = (down, up, c) ->
@@ -480,7 +483,7 @@ app.controller('volume/slot', [
           new TimeSegment(startPos)
         else
           new TimeSegment(null)
-      finalizeSelection() if up.type != 'mousemove'
+      updateSelection() if up.type != 'mousemove'
       return
 
     $scope.zoom = (seg) ->
@@ -494,11 +497,12 @@ app.controller('volume/slot', [
       searchLocation($location.replace())
       return
 
-    $scope.updateSelection = finalizeSelection = ->
+    $scope.updateSelection = updateSelection = ->
       if editing
         return false if $scope.editing == 'position'
         $scope.editing = true
         $scope.current.updateExcerpt() if $scope.current?.excerpts
+      playrange = $scope.asset?.segment.intersect(ruler.selection)
       for t in $scope.tags
         t.update()
       for c in $scope.comments
@@ -723,6 +727,11 @@ app.controller('volume/slot', [
           $scope.updatePosition()
         return
 
+      Object.defineProperty @prototype, 'fullExcerpt',
+        get: ->
+          if @excerpts && @excerpts.length == 1 && @excerpts[0].contains(@)
+            @excerpts[0]
+
       updateExcerpt: () ->
         @excerpt = undefined
         return unless @asset && @excerpts
@@ -886,7 +895,7 @@ app.controller('volume/slot', [
             return
 
       metrics: ->
-        ident = constants.category[@record.category]?.ident || [constants.metricName.ID.id]
+        ident = constants.category[@record.category].ident || [constants.metricName.ID.id]
         (constants.metric[m] for m of @record.measures when !(+m in ident)).sort(byId)
 
       rePosition: () ->
@@ -963,7 +972,7 @@ app.controller('volume/slot', [
     $scope.setCategory = (c) ->
       if c?
         rs = {}
-        for ri, r of $scope.addRecord.records when `(r.category || 0) == c`
+        for ri, r of $scope.addRecord.records when `r.category == c`
           rs[ri] = r.displayName
         $scope.addRecord.options = rs
       else
@@ -983,7 +992,7 @@ app.controller('volume/slot', [
         $scope.addRecord.records = rs
         rc = {}
         for ri, r of rs
-          rc[r.category || 0] = null
+          rc[r.category] = null
         $scope.addRecord.categories = rc
         $scope.addRecord.select = null
         $scope.setCategory($scope.addRecord.category)
@@ -1105,7 +1114,7 @@ app.controller('volume/slot', [
         $scope.commentReply = if event
           this.select(event)
           this
-        finalizeSelection()
+        updateSelection()
 
     $scope.addComment = (message, replyTo) ->
       slot.postComment {text:message}, getSelection(), replyTo?.comment.id
@@ -1138,7 +1147,7 @@ app.controller('volume/slot', [
     $scope.playing = 0
     Record.place()
     updateRange()
-    finalizeSelection()
+    updateSelection()
 
     if editing
       done = $scope.$on '$locationChangeStart', (event, url) ->

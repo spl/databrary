@@ -4,6 +4,7 @@ module Databrary.Controller.Format
   , formatIcon
   ) where
 
+import Control.Applicative ((<$>))
 import Control.Monad.Trans.Reader (asks)
 import Data.Monoid ((<>))
 import System.Posix.FilePath (splitFileName, splitExtension)
@@ -11,12 +12,13 @@ import System.Posix.FilePath (splitFileName, splitExtension)
 import Databrary.Iso.Types (invMap)
 import Databrary.Model.Format
 import Databrary.HTTP.Path.Parser
+import Databrary.Action.Types
 import Databrary.Action
-import Databrary.Action.Auth
 import Databrary.Controller.Web
+import Databrary.Controller.Angular
 import Databrary.View.Format
 
-formatIcon :: AppRoute Format
+formatIcon :: ActionRoute Format
 formatIcon = invMap pf fp webFile where
   fp f = Just $ staticPath
     [ "images", "filetype", "16px"
@@ -28,6 +30,7 @@ formatIcon = invMap pf fp webFile where
     , Just f <- getFormatByExtension e = f
   pf _ = unknownFormat
 
-viewFormats :: AppRoute ()
-viewFormats = action GET ("asset" >/> "formats") $ \() -> withoutAuth $
-  okResponse [] =<< asks htmlFormats
+viewFormats :: ActionRoute ()
+viewFormats = action GET ("asset" >/> "formats") $ \() -> withoutAuth $ do
+  angular
+  okResponse [] <$> asks htmlFormats

@@ -11,11 +11,11 @@ module Databrary.Store.AV
   , avFrame
   ) where
 
-import Control.Applicative ((<*>))
+import Control.Applicative ((<*>), (<|>))
 import Control.Arrow (first)
 import Control.Concurrent.MVar (MVar, newMVar, takeMVar, putMVar)
 import Control.Exception (Exception, throwIO, bracket, bracket_, finally, onException)
-import Control.Monad (void, when, forM, forM_)
+import Control.Monad ((<=<), void, when, forM, forM_)
 import qualified Data.ByteString as BS
 import qualified Data.Foldable as Fold
 import Data.Int (Int32, Int64)
@@ -23,6 +23,8 @@ import Data.List (isPrefixOf)
 import Data.Maybe (isNothing)
 import Data.Ratio (Ratio, (%), numerator, denominator)
 import Data.Time.Clock (DiffTime)
+import Data.Time.Format (parseTime)
+import Data.Time.LocalTime (ZonedTime)
 import qualified Data.Traversable as Trav
 import Data.Typeable (Typeable)
 import Data.Word (Word16, Word32)
@@ -30,11 +32,12 @@ import Foreign.C.Error (throwErrnoIfNull)
 import Foreign.C.String (CString, CStringLen, peekCAString, withCAString)
 import Foreign.C.Types (CInt(..), CUInt(..), CSize(..))
 import Foreign.Marshal.Alloc (allocaBytes)
-import Foreign.Marshal.Utils (with)
+import Foreign.Marshal.Utils (with, maybePeek)
 import Foreign.Ptr (Ptr, FunPtr, nullPtr, plusPtr)
 import Foreign.StablePtr
 import Foreign.Storable
 import System.IO.Unsafe (unsafeDupablePerformIO)
+import System.Locale (defaultTimeLocale)
 
 import Databrary.Ops
 import Databrary.Files
@@ -48,6 +51,7 @@ type AVPixelFormat = #type enum AVPixelFormat
 type AVCodecID = #type enum AVCodecID
 
 data AVDictionary
+data AVDictionaryEntry
 data AVInputFormat
 data AVFrame
 data AVPacket
@@ -63,6 +67,9 @@ foreign import ccall unsafe "libavutil/error.h av_strerror"
 
 foreign import ccall unsafe "libavutil/mem.h av_free"
   avFree :: Ptr a -> IO ()
+
+foreign import ccall unsafe "libavutil/dict.h av_dict_get"
+  avDictGet :: Ptr AVDictionary -> CString -> Ptr AVDictionaryEntry -> CInt -> IO (Ptr AVDictionaryEntry)
 
 foreign import ccall unsafe "libavutil/dict.h av_dict_set"
   avDictSet :: Ptr (Ptr AVDictionary) -> CString -> CString -> CInt -> IO CInt
@@ -241,6 +248,11 @@ withAVDictionary :: (Ptr (Ptr AVDictionary) -> IO a) -> IO a
 withAVDictionary f = with nullPtr $ \d ->
   f d `finally` avDictFree d
 
+getAVDictionary :: Ptr AVDictionary -> String -> IO (Maybe String)
+getAVDictionary dict key =
+  withCAString key $ \ckey ->
+    maybePeek (peekCAString <=< #{peek AVDictionaryEntry, value}) =<< avDictGet dict ckey nullPtr 0
+
 setAVDictionary :: Ptr (Ptr AVDictionary) -> String -> String -> IO ()
 setAVDictionary dict key val =
   withCAString key $ \ckey ->
@@ -359,6 +371,7 @@ data AVProbe = AVProbe
   { avProbeFormat :: BS.ByteString
   , avProbeDuration :: DiffTime
   , avProbeStreams :: [BS.ByteString]
+  , avProbeDate :: Maybe ZonedTime
   }
 
 -- |Test if this represents a video in standard format.
@@ -375,6 +388,7 @@ avTime t = realToFrac $ t % #{const AV_TIME_BASE}
 avProbe :: RawFilePath -> AV -> IO AVProbe
 avProbe f AV = withAVInput f Nothing $ \ic -> do
   findAVStreamInfo ic
+  meta <- #{peek AVFormatContext, metadata} ic
   AVProbe
     <$> (BS.packCString =<< #{peek AVInputFormat, name} =<< #{peek AVFormatContext, iformat} ic)
     <*> (avTime <$> #{peek AVFormatContext, duration} ic)
@@ -383,6 +397,8 @@ avProbe f AV = withAVInput f Nothing $ \ic -> do
       ss <- #{peek AVFormatContext, streams} ic
       forM [0..pred (fromIntegral nb)] $ \i ->
         BS.packCString =<< avcodecGetName =<< #{peek AVCodecContext, codec_id} =<< #{peek AVStream, codec} =<< peekElemOff ss i
+    <*> ((=<<) (\t -> parseTime defaultTimeLocale "%F %T%Z" t <|> parseTime defaultTimeLocale "%F %T %Z" t) <$>
+      ((`orElseM` getAVDictionary meta "creation_time") =<< getAVDictionary meta "date"))
 
 
 avSeekStream :: Ptr AVFormatContext -> Ptr AVStream -> Ptr AVFrame -> Maybe DiffTime -> IO ()

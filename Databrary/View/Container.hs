@@ -3,14 +3,14 @@ module Databrary.View.Container
   ( htmlContainerEdit
   ) where
 
-import Data.Maybe (fromMaybe)
+import Data.Foldable (fold)
 import Data.Monoid ((<>), mempty)
 
-import Databrary.Action.Auth
-import Databrary.Action
 import Databrary.Model.Volume
 import Databrary.Model.Container
 import Databrary.Model.Slot
+import Databrary.Action.Types
+import Databrary.Action
 import Databrary.View.Form
 
 import {-# SOURCE #-} Databrary.Controller.Container
@@ -21,6 +21,6 @@ htmlContainerForm cont = do
   field "date" $ inputDate (containerDate =<< cont)
   field "release" $ inputEnum False (containerRelease =<< cont)
 
-htmlContainerEdit :: Either Volume Container -> AuthRequest -> FormHtml f
+htmlContainerEdit :: Either Volume Container -> Context -> FormHtml f
 htmlContainerEdit (Left v)  = htmlForm "Create container" createContainer (HTML, volumeId v) (htmlContainerForm Nothing) (const mempty)
-htmlContainerEdit (Right c) = htmlForm ("Edit container " <> fromMaybe "" (containerName c)) postContainer (HTML, containerSlotId $ containerId c) (htmlContainerForm $ Just c) (const mempty)
+htmlContainerEdit (Right c) = htmlForm ("Edit container " <> fold (containerName c)) postContainer (HTML, containerSlotId $ containerId c) (htmlContainerForm $ Just c) (const mempty)

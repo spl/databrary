@@ -296,7 +296,7 @@ app.provider('routerService', [
 
             return checkPermission(page.$q,
               page.models.Volume.get(page.$route.current.params.id,
-                {access:'', citation:'', links:'', top:'', funding:'', records:'', containers:'records', tags:'keyword'}),
+                {access:'', citation:'', links:'', top:'', funding:'', records:'', containers:'all', tags:'keyword', metrics:''}),
               page.permission.EDIT)
               .then(function (volume) {
                 return volume.top.getSlot(volume.top.segment, ['assets'])
@@ -320,14 +320,14 @@ app.provider('routerService', [
         volume: [
           'pageService', function (page) {
             return page.models.Volume.get(page.$route.current.params.id,
-              {access:'', citation:'', links:'', funding:'', top:'', tags:'', excerpts:'', comments:'', records:'', containers:'all'});
+              {access:'', citation:'', links:'', funding:'', top:'', tags:'', excerpts:'', comments:'', records:'', containers:'all', metrics:''});
           }
         ]
       },
       reloadOnSearch: false,
     });
 
-    routes.volumeZip = makeRoute(controllers.zipVolume, ['id'], {
+    routes.volumeDescription = makeRoute(controllers.viewVolumeDescription, ['id'], {
       controller: 'volume/zip',
       templateUrl: 'volume/zip.html',
       resolve: {
@@ -419,6 +419,7 @@ app.provider('routerService', [
     routes.assetThumb = makeRoute(controllers.thumbAssetSegment, ['cid', 'segment', 'id', 'size']);
     routes.slotThumb = makeRoute(controllers.thumbSlot, ['id','cid','segment', 'size']);
     routes.assetDownload = makeRoute(controllers.downloadAssetSegment, ['cid', 'segment', 'id', 'inline']);
+    routes.volumeZip = makeRoute(controllers.zipVolume, ['id']);
 
     $routeProvider.otherwise('/');
 

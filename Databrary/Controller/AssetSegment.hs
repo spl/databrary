@@ -12,9 +12,10 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy as BSL
-import Data.Maybe (fromJust, listToMaybe)
+import Data.Maybe (isJust, fromJust, listToMaybe)
 import Data.Monoid ((<>))
 import qualified Data.Text as T
+import Network.HTTP.Types.Status (movedPermanently301)
 import qualified Network.Wai as Wai
 import Text.Read (readMaybe)
 
@@ -46,7 +47,7 @@ import Databrary.Controller.Slot
 import Databrary.Controller.Asset
 import Databrary.Controller.Format
 
-getAssetSegment :: Permission -> Maybe (Id Volume) -> Id Slot -> Id Asset -> AuthActionM AssetSegment
+getAssetSegment :: Permission -> Maybe (Id Volume) -> Id Slot -> Id Asset -> ActionM AssetSegment
 getAssetSegment p mv s a =
   checkPermission p =<< maybeAction . maybe id (\v -> mfilter $ (v ==) . view) mv =<< lookupSlotAssetSegment s a
 
@@ -60,15 +61,17 @@ assetSegmentDownloadName :: AssetSegment -> [T.Text]
 assetSegmentDownloadName a =
   volumeDownloadName (view a) ++ slotDownloadName (view a) ++ assetDownloadName (view a)
 
-viewAssetSegment :: AppRoute (API, Maybe (Id Volume), Id Slot, Id Asset)
+viewAssetSegment :: ActionRoute (API, Maybe (Id Volume), Id Slot, Id Asset)
 viewAssetSegment = action GET (pathAPI </>>> pathMaybe pathId </>> pathSlotId </> pathId) $ \(api, vi, si, ai) -> withAuth $ do
-  when (api == HTML) angular
+  when (api == HTML && isJust vi) angular
   as <- getAssetSegment PermissionPUBLIC vi si ai
   case api of
-    JSON -> okResponse [] =<< assetSegmentJSONQuery as =<< peeks Wai.queryString
-    HTML -> okResponse [] $ T.pack $ show $ assetId $ slotAsset $ segmentAsset as -- TODO
+    JSON -> okResponse [] <$> (assetSegmentJSONQuery as =<< peeks Wai.queryString)
+    HTML
+      | isJust vi -> return $ okResponse [] $ T.pack $ show $ assetId $ slotAsset $ segmentAsset as -- TODO
+      | otherwise -> peeks $ redirectRouteResponse movedPermanently301 [] viewAssetSegment (api, Just (view as), slotId $ view as, view as)
 
-serveAssetSegment :: Bool -> AssetSegment -> AuthAction
+serveAssetSegment :: Bool -> AssetSegment -> ActionM Response
 serveAssetSegment dl as = do
   _ <- checkDataPermission as
   sz <- peeks $ readMaybe . BSC.unpack <=< join . listToMaybe . lookupQueryParameters "size"
@@ -79,23 +82,20 @@ serveAssetSegment dl as = do
   either
     (okResponse hd)
     (okResponse hd . (, part))
-    =<< getAssetSegmentStore as sz
+    <$> getAssetSegmentStore as sz
   where
   a = slotAsset $ segmentAsset as
 
-downloadAssetSegment :: AppRoute (Id Slot, Id Asset)
+downloadAssetSegment :: ActionRoute (Id Slot, Id Asset)
 downloadAssetSegment = action GET (pathSlotId </> pathId </< "download") $ \(si, ai) -> withAuth $ do
   as <- getAssetSegment PermissionPUBLIC Nothing si ai
   inline <- peeks $ boolQueryParameter "inline"
   serveAssetSegment (not inline) as
 
-thumbAssetSegment :: AppRoute (Id Slot, Id Asset)
+thumbAssetSegment :: ActionRoute (Id Slot, Id Asset)
 thumbAssetSegment = action GET (pathSlotId </> pathId </< "thumb") $ \(si, ai) -> withAuth $ do
   as <- getAssetSegment PermissionPUBLIC Nothing si ai
-  q <- peeks Wai.queryString
   let as' = assetSegmentInterp 0.25 as
   if formatIsImage (view as') && assetBacked (view as)
-    then do
-      redirectRouteResponse [] downloadAssetSegment (slotId $ view as', assetId $ view as') q
-    else
-      redirectRouteResponse [] formatIcon (view as) q
+    then peeks $ otherRouteResponse [] downloadAssetSegment (slotId $ view as', assetId $ view as')
+    else peeks $ otherRouteResponse [] formatIcon (view as)

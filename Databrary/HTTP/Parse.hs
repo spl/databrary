@@ -22,9 +22,8 @@ import Network.Wai.Parse
 import System.IO (Handle)
 
 import Databrary.Has (peek, peeks)
-import Databrary.Action.App
+import Databrary.Action.Types
 import Databrary.Store.Temp
-import Databrary.Action.Types (MonadAction)
 import Databrary.HTTP.Request (lookupRequestHeader)
 import Databrary.Action.Response (response, result)
 
@@ -101,7 +100,7 @@ maxTextSize :: Word64
 maxTextSize = 1024*1024
 
 class FileContent a where
-  parseFileContent :: IO BS.ByteString -> AppActionM a
+  parseFileContent :: IO BS.ByteString -> ActionM a
 
 instance FileContent () where
   parseFileContent _ = result requestTooLarge
@@ -116,21 +115,21 @@ parseFormContent :: (MonadIO m, MonadAction c m) => RequestBodyType -> m (Conten
 parseFormContent t = uncurry ContentForm
   <$> limitRequestChunks maxTextSize (liftIO . sinkRequestBody rejectBackEnd t)
 
-parseFormFileContent :: (MonadIO m, MonadAppAction c m, FileContent a) => (FileInfo BS.ByteString -> Word64) -> RequestBodyType -> m (Content a)
+parseFormFileContent :: (MonadIO m, MonadAction c m, FileContent a) => (FileInfo BS.ByteString -> Word64) -> RequestBodyType -> m (Content a)
 parseFormFileContent ff rt = do
   app <- peek
   (p, f) <- liftIO $ do
     let be fn fi fb = case ff fi{ fileContent = fn } of
           0 -> result requestTooLarge
           m -> limitChunks m (\b -> runReaderT (parseFileContent b) app) fb
-    sinkRequestBody be rt (requestBody $ appRequest app)
+    sinkRequestBody be rt (requestBody $ contextRequest app)
   return $ ContentForm p f
 
 parseJSONContent :: (MonadIO m, MonadAction c m) => m (Content a)
 parseJSONContent = maybe ContentUnknown ContentJSON . AP.maybeResult
   <$> limitRequestChunks maxTextSize (liftIO . parserChunks JSON.json)
 
-parseRequestContent :: (MonadIO m, MonadAppAction c m, FileContent a) => (BS.ByteString -> Word64) -> m (Content a)
+parseRequestContent :: (MonadIO m, MonadAction c m, FileContent a) => (BS.ByteString -> Word64) -> m (Content a)
 parseRequestContent ff = do
   ct <- peeks $ lookupRequestHeader hContentType
   case fmap parseContentType ct of

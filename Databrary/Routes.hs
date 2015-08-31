@@ -17,6 +17,7 @@ import Databrary.Controller.Funding
 import Databrary.Controller.Container
 import Databrary.Controller.Slot
 import Databrary.Controller.Record
+import Databrary.Controller.Metric
 import Databrary.Controller.Citation
 import Databrary.Controller.Upload
 import Databrary.Controller.Format
@@ -33,7 +34,7 @@ import Databrary.Controller.Ingest
 import Databrary.Controller.Web
 import Databrary.Controller.Search
 
-routeMap :: RouteMap AppAction
+routeMap :: RouteMap Action
 routeMap = fromRouteList
   [ route viewRoot
   , route viewRobotsTxt
@@ -79,6 +80,7 @@ routeMap = fromRouteList
   , route createVolume
   , route queryVolumes
   , route zipVolume
+  , route viewVolumeDescription
   , route thumbVolume
   , route csvVolume
 
@@ -114,6 +116,9 @@ routeMap = fromRouteList
   , route deleteRecord
   , route postRecordSlot
   , route deleteRecordSlot
+
+  , route postVolumeMetric
+  , route deleteVolumeMetric
 
   , route queryTags
   , route postTag

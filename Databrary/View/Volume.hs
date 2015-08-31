@@ -14,7 +14,6 @@ import qualified Text.Blaze.Html5.Attributes as HA
 
 import Databrary.Ops
 import Databrary.Has (view)
-import Databrary.Action.Auth
 import Databrary.Action
 import Databrary.Model.Permission
 import Databrary.Model.Volume
@@ -30,7 +29,7 @@ import {-# SOURCE #-} Databrary.Controller.Angular
 import {-# SOURCE #-} Databrary.Controller.Party
 import {-# SOURCE #-} Databrary.Controller.Volume
 
-htmlVolumeView :: Volume -> AuthRequest -> H.Html
+htmlVolumeView :: Volume -> Context -> H.Html
 htmlVolumeView v req = htmlTemplate req (Just (volumeName v)) $ \js -> do
   when (view v >= PermissionEDIT) $
     H.p $
@@ -61,11 +60,11 @@ htmlVolumeForm vol cite = do
     field "url" $ inputText $ fmap show $ citationURL =<< cite
     field "year" $ inputText $ fmap show $ citationYear =<< cite
 
-htmlVolumeEdit :: Maybe (Volume, Maybe Citation) -> AuthRequest -> FormHtml f
+htmlVolumeEdit :: Maybe (Volume, Maybe Citation) -> Context -> FormHtml f
 htmlVolumeEdit Nothing = htmlForm "Create volume" createVolume HTML (htmlVolumeForm Nothing Nothing) (const mempty)
 htmlVolumeEdit (Just (v, cite)) = htmlForm ("Edit " <> volumeName v) postVolume (HTML, volumeId v) (htmlVolumeForm (Just v) cite) (const mempty)
 
-htmlVolumeLinksEdit :: Volume -> [Citation] -> AuthRequest -> FormHtml f
+htmlVolumeLinksEdit :: Volume -> [Citation] -> Context -> FormHtml f
 htmlVolumeLinksEdit vol links = htmlForm "Edit volume links" postVolumeLinks (HTML, volumeId vol)
   (withSubFormsViews links $ \link -> do
     field "head" $ inputText $ citationHead <$> link
@@ -82,7 +81,7 @@ htmlVolumeList js vl = H.ul $ forM_ vl $ \v -> H.li $ do
       $ H.text o
   Fold.mapM_ (H.p . H.text) $ volumeBody v
 
-htmlVolumeSearch :: VolumeFilter -> [Volume] -> AuthRequest -> FormHtml f
+htmlVolumeSearch :: VolumeFilter -> [Volume] -> Context -> FormHtml f
 htmlVolumeSearch VolumeFilter{..} vl req = htmlForm "Volume search" queryVolumes HTML
   (field "query" $ inputText volumeFilterQuery)
   (\js -> htmlPaginate (htmlVolumeList js) volumeFilterPaginate vl (view req))

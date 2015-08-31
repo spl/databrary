@@ -1,8 +1,13 @@
 .profile-highlight
+  background-color orange52
+.profile-affiliate-highlight
   background-color orange51
-
 .profile-volumes, .profile-parties
   padding-top b1
+  .button.icon, .button.icon:hover
+    width 16px
+    height 16px
+    padding 0
   ul
     padding-left 0
     padding-right 0
@@ -10,8 +15,22 @@
     content none
   li
     overflow hidden
+  li:hover
+    .profile-hover-link
+      display inline-block
+      visibility visible
   a
     overflow hidden
+  .button:not(.icon)
+    font-size 12px
+    line-height 12px
+    background-color white
+    padding-top b8
+    padding-bottom b8
+    &:hover
+      background-color neutral51
+    &:focus
+      background-color neutral52
 
 .profile-volumes
   ul
@@ -32,11 +51,11 @@
   ul
     margin 0
     padding b2 0
+    .profile-additional
+      margin-left b1
   li
     padding b8 0 0 b6
     margin 0
-  .profile-additional
-    margin-left b1
 
 .profile-section
   margin-bottom b2
@@ -44,26 +63,14 @@
     
 .profile-section-header
   font-line f1
-  font-weight bold
   border-bottom 1px dotted neutral
-  .button:not(.icon)
-    font-size 12px
-    line-height 12px
-    padding-top b8
-    padding-bottom b8
-    background-color white
   .icon, .button, .button:hover
     margin 0 0 0 8px
-  .button.icon, .button.icon:hover
-    width 16px
-    height 16px
-    padding 0
   
 .profile-subsection-header
   margin-top b4
   font-size b2
   line-height b2
-  font-weight bold
   .icon
     size b2
     
@@ -89,6 +96,11 @@
   overflow hidden
   vertical-align text-top
   line-height 22px
+
+.profile-hover-link
+  display none
+  visibility hidden
+  margin-left b3
   
 .profile-mobile-header
   background-color green51

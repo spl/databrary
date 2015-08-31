@@ -5,5 +5,5 @@ import Databrary.Model.Volume.Types
 import Databrary.Action
 import Databrary.Controller.Paths
 
-viewVolumeAccess :: AppRoute (Id Volume, VolumeAccessTarget)
-postVolumeAccess :: AppRoute (API, (Id Volume, VolumeAccessTarget))
+viewVolumeAccess :: ActionRoute (Id Volume, VolumeAccessTarget)
+postVolumeAccess :: ActionRoute (API, (Id Volume, VolumeAccessTarget))
