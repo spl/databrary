@@ -1,19 +1,21 @@
 <ng-form name="volumeEditLinksForm">
   <scroll-float>
     <fieldset class="clean">
-      <button ng-click="volumeEditLinksForm.save()" class="green" message="save" ng-disabled="volumeEditLinksForm.$pristine || volumeEditLinksForm.$invalid || volumeEditLinksForm.$submitted"></button>
-      <button ng-click="volumeEditLinksForm.resetAll()" class="neutral" message="revert" ng-disabled="volumeEditLinksForm.$pristine"></button>
+      <div class="col">
+        <button ng-click="volumeEditLinksForm.save()" class="green" message="save" ng-disabled="volumeEditLinksForm.$pristine || volumeEditLinksForm.$invalid || volumeEditLinksForm.$submitted"></button>
+        <button ng-click="volumeEditLinksForm.resetAll()" class="neutral" message="revert" ng-disabled="volumeEditLinksForm.$pristine"></button>
+      </div>
     </fieldset>
   </scroll-float>
   <div class="link-label">
-    <label class="col-desktop-7 col-tablet-4" message="link.head.title"></label>
-    <label class="col-desktop-8 col-tablet-5" message="link.url.title"></label>
+    <span class="col-desktop-7 col-tablet-4 col-mobile-3" message="link.head.title"></span>
+    <span class="col-desktop-8 col-tablet-5 col-mobile-3" message="link.url.title"></span>
   </div>
   <fieldset class="link-field clean skinny" ng-repeat="link in volumeEditLinksForm.data" ng-show="!link.removed">
-    <validator class="col-desktop-7 col-tablet-4 col-mobile-6" name="{{$index}}.head">
+    <validator class="col-desktop-7 col-tablet-4 col-mobile-3" name="{{$index}}.head">
       <input type="text" name="{{$index}}.head" ng-model="link.head" placeholder="{{::'link.head' | message}}">
     </validator>
-    <validator class="col-desktop-7 col-tablet-4 col-mobile-5" name="{{$index}}.url">
+    <validator class="col-desktop-7 col-tablet-4 col-mobile-3" name="{{$index}}.url">
       <input type="text" name="{{$index}}.url" ng-model="link.url" placeholder="{{::'link.url' | message}}" ng-pattern="/^((doi:)?10\.[\.0-9]+|ftp:/|http:/|https:/)//" ng-change="volumeEditLinksForm.change()">
     </validator>
     <button class="mini icon trash" ng-if="$index < volumeEditLinksForm.data.length-1" ng-click="volumeEditLinksForm.remove(link)"></button>
