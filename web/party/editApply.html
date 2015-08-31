@@ -7,7 +7,7 @@
   <fieldset ng-show="partyEditApplyForm.data.length > 0">
     <legend message="auth.apply.legend"></legend>
     <article ng-repeat="auth in partyEditApplyForm.data track by auth.party.id" id="auth-{{::auth.party.id}}" class="permission-auth cf foot pef anchor">
-      <div ng-if="!auth.new" class="row">
+      <div ng-if="!auth.new" class="col">
         <div class="col-desktop-1 col-tablet-1 hide-mobile">
           <figure class="figure-avatar" ng-class="::{inst: auth.party.institution}">
             <img ng-src="{{::auth.party.avatarRoute()}}">
