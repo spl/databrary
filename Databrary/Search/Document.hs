@@ -43,6 +43,7 @@ metricSuffix Metric{ metricType = MeasureTypeText, metricOptions = [] } = "t"
 metricSuffix Metric{ metricType = MeasureTypeText } = "s"
 metricSuffix Metric{ metricType = MeasureTypeNumeric } = "td"
 metricSuffix Metric{ metricType = MeasureTypeDate } = "tdt"
+metricSuffix Metric{ metricType = MeasureTypeVoid } = "b"
 
 metricField :: Metric -> T.Text
 metricField m = safeField (metricName m) <> ('_' `T.cons` metricSuffix m)
@@ -50,6 +51,7 @@ metricField m = safeField (metricName m) <> ('_' `T.cons` metricSuffix m)
 -- slight hack because we actually index dates as datetimes
 metricDatum :: Metric -> MeasureDatum -> JSON.Value
 metricDatum Metric{ metricType = MeasureTypeDate } d = JSON.toJSON $ d <> "T12:00:00Z"
+metricDatum Metric{ metricType = MeasureTypeVoid } _ = JSON.toJSON True
 metricDatum _ d = JSON.toJSON d
 
 instance JSON.ToJSON SolrRecordMeasures where
@@ -117,7 +119,7 @@ data SolrDocument
     , solrSegment :: SolrSegment
     , solrSegmentDuration_td :: Maybe Offset
     , solrRecordId_i :: Id Record
-    , solrRecordCategory_s :: Maybe T.Text
+    , solrRecordCategory_s :: T.Text
     , solrRecordMeasures :: SolrRecordMeasures
     , solrRecordAge_ti :: Maybe Age
     }

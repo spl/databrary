@@ -2,4 +2,4 @@ module Databrary.Controller.Search where
 
 import Databrary.Action
 
-postUpdateIndex :: AppRoute ()
+postUpdateIndex :: ActionRoute ()

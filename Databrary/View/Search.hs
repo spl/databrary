@@ -5,12 +5,12 @@ module Databrary.View.Search
 
 import Data.Monoid (mempty)
 
-import Databrary.Action.Auth
+import Databrary.Action.Types
 import Databrary.View.Form
 
 import {-# SOURCE #-} Databrary.Controller.Search
 
-htmlUpdateIndex :: AuthRequest -> FormHtml f
+htmlUpdateIndex :: Context -> FormHtml f
 htmlUpdateIndex = htmlForm
   "update index"
   postUpdateIndex ()

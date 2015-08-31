@@ -9,7 +9,7 @@ import Control.Monad (when)
 import Data.Maybe (fromMaybe)
 
 import Databrary.Ops
-import Databrary.Has (peek, focusIO)
+import Databrary.Has
 import qualified Databrary.JSON as JSON
 import Databrary.Model.Paginate
 import Databrary.Search.Solr
@@ -22,7 +22,7 @@ import Databrary.Controller.Angular
 import Databrary.Controller.Permission
 import Databrary.View.Search
 
-postSearch :: AppRoute API
+postSearch :: ActionRoute API
 postSearch = action GET (pathAPI </< "search") $ \api -> withAuth $ do
   when (api == HTML) angular
   (query, p) <- runForm Nothing $ do
@@ -30,15 +30,15 @@ postSearch = action GET (pathAPI </< "search") $ \api -> withAuth $ do
     p <- paginateForm
     return (query, p)
   jsonResp <- flatMapM (\q -> search q (paginateOffset p) (paginateLimit p)) query
-  okResponse [] $ fromMaybe JSON.Null jsonResp
+  return $ okResponse [] $ fromMaybe JSON.Null jsonResp
 
-getUpdateIndex :: AppRoute ()
+getUpdateIndex :: ActionRoute ()
 getUpdateIndex = action GET ("search" >/> "index") $ \() -> withAuth $ do
   checkMemberADMIN
-  blankForm htmlUpdateIndex
+  peeks $ blankForm . htmlUpdateIndex
 
-postUpdateIndex :: AppRoute ()
+postUpdateIndex :: ActionRoute ()
 postUpdateIndex = action POST ("search" >/> "index") $ \() -> withAuth $ do
   checkMemberADMIN
   focusIO . updateIndex =<< peek
-  okResponse [] ("done" :: String)
+  return $ okResponse [] ("done" :: String)

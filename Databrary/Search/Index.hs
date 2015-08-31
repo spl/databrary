@@ -123,7 +123,7 @@ solrRecord rs@RecordSlot{ slotRecord = r@Record{..}, recordSlot = Slot{..} } = S
   , solrContainerId_i = containerId slotContainer
   , solrSegment = SolrSegment slotSegment
   , solrSegmentDuration_td = segmentLength slotSegment
-  , solrRecordCategory_s = recordCategoryName <$> recordCategory
+  , solrRecordCategory_s = recordCategoryName recordCategory
   , solrRecordMeasures = SolrRecordMeasures $ map (\m -> (measureMetric m, measureDatum m)) $ getRecordMeasures r
   , solrRecordAge_ti = recordSlotAge rs
   }
@@ -147,15 +147,15 @@ solrTag vi TagUseId{ useTagId = Tag{..}, tagSlotId = SlotId{..}, ..} = SolrTag
 newtype SolrContext = SolrContext { solrService :: Service }
 
 instance Has Identity SolrContext where
-  view _ = UnIdentified
+  view _ = NotIdentified
 instance Has SiteAuth SolrContext where
-  view _ = view UnIdentified
+  view _ = view NotIdentified
 instance Has Party SolrContext where
-  view _ = view UnIdentified
+  view _ = view NotIdentified
 instance Has (Id Party) SolrContext where
-  view _ = view UnIdentified
+  view _ = view NotIdentified
 instance Has Access SolrContext where
-  view _ = view UnIdentified
+  view _ = view NotIdentified
 
 makeHasRec ''SolrContext ['solrService]
 

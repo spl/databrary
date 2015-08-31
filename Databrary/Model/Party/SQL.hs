@@ -14,6 +14,7 @@ module Databrary.Model.Party.SQL
   , deleteAccount
   ) where
 
+import Control.Applicative ((<$>))
 import qualified Data.ByteString as BS
 import qualified Data.Foldable as Fold
 import Data.Monoid ((<>))

@@ -6,18 +6,9 @@ queryStart,
 Query
 ) where
 
-import System.Environment
-import System.IO
-import System.IO.Error
-import Data.List
-import Data.List.Split
-import Data.Maybe
-import Data.Aeson
-import qualified Data.Text as T
-import Control.Applicative
-import Control.Monad
-import qualified Data.ByteString.Lazy as B
-import GHC.Generics
+import Data.List (isInfixOf, intercalate)
+import Data.List.Split (splitOn)
+import Data.Maybe (fromMaybe, mapMaybe)
 
 
 -- Some consts
