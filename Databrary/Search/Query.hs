@@ -1,33 +1,16 @@
-module Databrary.Search.Query (
-createQuery,
-queryToString,
-queryLimit,
-queryStart,
-Query
-) where
+module Databrary.Search.Query 
+  ( createQuery
+  , queryToString
+  , queryLimit
+  , queryStart
+  , Query
+  ) where
 
 import Data.List (isInfixOf, intercalate)
 import Data.List.Split (splitOn)
 import Data.Maybe (fromMaybe, mapMaybe)
 
-
--- Some consts
-containerType = "container"
-recordType = "record"
-volumeType = "volume"
-assetType = "segment_asset"
-tagType = "segment_tag"
-segmentType = "segment_record"
-
-queryPrefix = "select?q="
-querySuffix = "&wt=json&indent=true"
-
-doctypePrefix = "container_type:"
-titlePrefix = "title:"
-agePrefix = "age:"
-
 -- Type for all of our documents
-data DocType = Container | Record | Volume | AssetSegment | TagSegment | Segment | Unknown
 data QueryPart = QueryArg String String | QueryJoin String String String
                     | QuerySearchTerm String | QueryLimit Int | QueryStart Int
                     | QueryType String deriving Show
@@ -38,42 +21,6 @@ data Query = Query {qJoin :: Maybe QueryPart,
                     qLimit :: Maybe QueryPart,
                     qStart :: Maybe QueryPart,
                     qContentType :: Maybe QueryPart} deriving Show
-
-instance Show DocType where
-        show Container = containerType
-        show Record = recordType
-        show Volume = volumeType
-        show TagSegment = tagType
-        show Segment = segmentType
-        show AssetSegment = assetType
-
-selectType :: DocType -> String
-selectType Container = doctypePrefix ++ containerType
-selectType Record = doctypePrefix ++ recordType
-selectType Volume = doctypePrefix ++ volumeType
-selectType AssetSegment = doctypePrefix ++ assetType
-selectType TagSegment = doctypePrefix ++ tagType
-selectType Segment = doctypePrefix ++ segmentType
-selectType Unknown = "ERROR: Unknown type"
-
--- Function for generating age specific parts of the query
-selectAge :: Int -> Int -> String
-selectAge a b = agePrefix ++ "[" ++ show a ++ "," ++ show b ++ "]"
-
--- Specify which tables you're joining together
-joinTypes :: DocType -> DocType -> String
-joinTypes a b = "{!join from=" ++ show a ++ "_" ++ show b ++ "_id_i to=" ++ show b ++ "_id_i} "
-
-stringToType :: String -> DocType
-stringToType x
-   | x == containerType = Container
-   | x == recordType = Record
-   | x == volumeType = Volume
-   | x == assetType = AssetSegment
-   | x == tagType = TagSegment
-   | x == segmentType = Segment
-   | otherwise = Unknown
-
 
 -- Join a bunch of query strings together with AND clauses
 -- Note: has to be JOIN-MODIFIER ARGUMENT-MODIFIERS SEARCH-TERMS
@@ -139,10 +86,10 @@ parseQueryPart x
 
 -- Joins look like join=type,type and we just want the types
 parseQueryJoin :: String -> QueryPart
-parseQueryJoin x = QueryJoin arg1 arg2 filter
+parseQueryJoin x = QueryJoin arg1 arg2 filt
                      where
                         args = splitOn "," $ concat $ drop 1 $ splitOn "=" x
-                        [arg1,arg2, filter] = args
+                        [arg1,arg2, filt] = args
 
 -- Args looks like arg=argname:value
 parseQueryArg :: String -> QueryPart

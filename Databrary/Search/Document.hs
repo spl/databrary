@@ -8,7 +8,7 @@ module Databrary.Search.Document
 import qualified Data.Aeson as JSON
 import qualified Data.Aeson.TH as JTH
 import qualified Data.ByteString as BS
-import Data.Char (isAlphaNum, isUpper, toLower)
+import Data.Char (isAlphaNum, toLower)
 import Data.Int (Int16)
 import qualified Data.HashMap.Strict as HM
 import Data.Monoid ((<>))
@@ -29,6 +29,7 @@ import Databrary.Model.Age
 import Databrary.Model.Record.Types
 import Databrary.Model.Metric.Types
 import Databrary.Model.Tag.Types
+import Databrary.Search.Util
 
 safeField :: T.Text -> T.Text
 safeField = T.map safeChar where
@@ -139,17 +140,13 @@ $(return []) -- force new decl group for splice:
 
 solrToJSON :: SolrDocument -> JSON.Value
 solrToJSON =
-  $(let uncamel "" = ""
-        uncamel (c:s)
-          | isUpper c = '_':toLower c:uncamel s
-          | otherwise = c:uncamel s
-  in JTH.mkToJSON JTH.defaultOptions
-    { JTH.fieldLabelModifier = \('s':'o':'l':'r':c:s) -> toLower c:uncamel s
-    , JTH.constructorTagModifier = \('S':'o':'l':'r':c:s) -> toLower c:uncamel s
+  $(JTH.mkToJSON JTH.defaultOptions
+    { JTH.fieldLabelModifier = \('s':'o':'l':'r':c:s) -> toLower c:unCamel s
+    , JTH.constructorTagModifier = \('S':'o':'l':'r':c:s) -> toLower c:unCamel s
     , JTH.omitNothingFields = True
     , JTH.sumEncoding = JTH.TaggedObject
       { JTH.tagFieldName = "content_type"
-      , JTH.contentsFieldName = error "contentsFieldName"
+      , JTH.contentsFieldName = error "solrToJSON: contentsFieldName"
       }
     } ''SolrDocument)
 
