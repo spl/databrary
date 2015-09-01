@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<enumsConfig>
+  <!-- TODO: autogenerate -->
+  <enum name="permission">
+    <value>NONE</value>
+    <value>PUBLIC</value>
+    <value>SHARED</value>
+    <value>READ</value>
+    <value>EDIT</value>
+    <value>ADMIN</value>
+  </enum>
+  <enum name="release">
+    <value>PRIVATE</value>
+    <value>SHARED</value>
+    <value>EXCERPTS</value>
+    <value>PUBLIC</value>
+  </enum>
+</enumsConfig>

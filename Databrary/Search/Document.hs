@@ -39,15 +39,17 @@ safeField = T.map safeChar where
 
 newtype SolrRecordMeasures = SolrRecordMeasures [(Metric, MeasureDatum)]
 
-metricSuffix :: Metric -> T.Text
-metricSuffix Metric{ metricType = MeasureTypeText, metricOptions = [] } = "t"
-metricSuffix Metric{ metricType = MeasureTypeText } = "s"
-metricSuffix Metric{ metricType = MeasureTypeNumeric } = "td"
-metricSuffix Metric{ metricType = MeasureTypeDate } = "tdt"
-metricSuffix Metric{ metricType = MeasureTypeVoid } = "b"
+metricLabel :: Metric -> T.Text
+metricLabel Metric{ metricType = MeasureTypeText, metricOptions = _:_ } = "enum"
+metricLabel m@Metric{ metricType = MeasureTypeText }
+  | metricLong m = "long"
+  | otherwise = "text"
+metricLabel Metric{ metricType = MeasureTypeNumeric } = "numeric"
+metricLabel Metric{ metricType = MeasureTypeDate } = "date"
+metricLabel Metric{ metricType = MeasureTypeVoid } = "void"
 
 metricField :: Metric -> T.Text
-metricField m = safeField (metricName m) <> ('_' `T.cons` metricSuffix m)
+metricField m = metricLabel m <> ('_' `T.cons` safeField (metricName m))
 
 -- slight hack because we actually index dates as datetimes
 metricDatum :: Metric -> MeasureDatum -> JSON.Value
@@ -67,73 +69,74 @@ instance JSON.ToJSON SolrSegment where
 data SolrDocument
   = SolrParty
     { solrId :: !BS.ByteString
-    , solrPartyId_i :: Id Party
-    , solrPartyName_s :: T.Text
-    , solrPartyPreName_s :: Maybe T.Text
-    , solrPartyAffiliation_s :: Maybe T.Text
-    , solrPartyIsInstitution_b :: Bool
-    , solrPartyAuthorization_i :: Maybe Permission
+    , solrPartyId :: Id Party
+    , solrPartyName :: T.Text
+    , solrPartyPreName :: Maybe T.Text
+    , solrPartyAffiliation :: Maybe T.Text
+    , solrPartyHasAccount :: Bool
+    , solrPartyAuthorization :: Maybe Permission
     }
   | SolrVolume
     { solrId :: !BS.ByteString
-    , solrVolumeId_i :: Id Volume
-    , solrName_t :: Maybe T.Text
-    , solrBody_t :: Maybe T.Text -- body
-    , solrVolumeOwnerIds_is :: [Id Party]
-    , solrVolumeOwnerNames_ss :: [T.Text]
-    , solrCitation_t :: Maybe T.Text
-    , solrCitationUrl_s :: Maybe URI
-    , solrCitationYear_i :: Maybe Int16
+    , solrVolumeId :: Id Volume
+    , solrName :: Maybe T.Text
+    , solrBody :: Maybe T.Text -- body
+    , solrVolumeOwnerIds :: [Id Party]
+    , solrVolumeOwnerNames :: [T.Text]
+    , solrCitation :: Maybe T.Text
+    , solrCitationUrl :: Maybe URI
+    , solrCitationYear :: Maybe Int16
     }
   | SolrContainer
     { solrId :: !BS.ByteString
-    , solrVolumeId_i :: Id Volume
-    , solrContainerId_i :: Id Container
-    , solrName_t :: Maybe T.Text
-    , solrContainerTop_b :: Bool
-    , solrRelease_i :: Maybe Release
+    , solrVolumeId :: Id Volume
+    , solrContainerId :: Id Container
+    , solrName :: Maybe T.Text
+    , solrDate :: Maybe MaskedDate
+    , solrContainerTop :: Bool
+    , solrRelease :: Maybe Release
     }
   | SolrAsset -- Slot
     { solrId :: !BS.ByteString
-    , solrVolumeId_i :: Id Volume
-    , solrContainerId_i :: Id Container
+    , solrVolumeId :: Id Volume
+    , solrContainerId :: Id Container
     , solrSegment :: SolrSegment
-    , solrSegmentDuration_td :: Maybe Offset
-    , solrAssetId_i :: Id Asset
-    , solrName_t :: Maybe T.Text
-    , solrFormat_i :: Id Format
-    , solrRelease_i :: Maybe Release
+    , solrSegmentDuration :: Maybe Offset
+    , solrAssetId :: Id Asset
+    , solrName :: Maybe T.Text
+    , solrFormatId :: Id Format
+    , solrRelease :: Maybe Release
     }
   | SolrExcerpt
     { solrId :: !BS.ByteString
-    , solrVolumeId_i :: Id Volume
-    , solrContainerId_i :: Id Container
+    , solrVolumeId :: Id Volume
+    , solrContainerId :: Id Container
     , solrSegment :: SolrSegment
-    , solrSegmentDuration_td :: Maybe Offset
-    , solrAssetId_i :: Id Asset
-    , solrRelease_i :: Maybe Release
+    , solrSegmentDuration :: Maybe Offset
+    , solrAssetId :: Id Asset
+    , solrRelease :: Maybe Release
     }
   | SolrRecord -- Slot
     { solrId :: !BS.ByteString
-    , solrVolumeId_i :: Id Volume
-    , solrContainerId_i :: Id Container
+    , solrVolumeId :: Id Volume
+    , solrContainerId :: Id Container
     , solrSegment :: SolrSegment
-    , solrSegmentDuration_td :: Maybe Offset
-    , solrRecordId_i :: Id Record
-    , solrRecordCategory_s :: T.Text
+    , solrSegmentDuration :: Maybe Offset
+    , solrRecordId :: Id Record
+    , solrRecordCategoryId :: Id RecordCategory
     , solrRecordMeasures :: SolrRecordMeasures
-    , solrRecordAge_ti :: Maybe Age
+    , solrRecordAge :: Maybe Age
     }
   | SolrTag -- Use
     { solrId :: !BS.ByteString
-    , solrVolumeId_i :: Id Volume
-    , solrContainerId_i :: Id Container
+    , solrVolumeId :: Id Volume
+    , solrContainerId :: Id Container
     , solrSegment :: SolrSegment
-    , solrSegmentDuration_td :: Maybe Offset
-    , solrTagId_i :: Id Tag
-    , solrTag_s :: TagName
-    , solrKeyword_s :: Maybe TagName
-    , solrPartyId_i :: Id Party
+    , solrSegmentDuration :: Maybe Offset
+    , solrTagId :: Id Tag
+    , solrTag :: TagName
+    , solrKeyword :: Maybe TagName
+    , solrPartyId :: Id Party
     }
 
 $(return []) -- force new decl group for splice:

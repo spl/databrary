@@ -81,11 +81,11 @@ removeContainer c = do
     then return False
     else isRight <$> dbTryJust (guard . isForeignKeyViolation) (dbExecute1 $(deleteContainer 'ident 'c))
 
+getContainerDate :: Container -> Maybe MaskedDate
+getContainerDate c = maskDateIf (dataPermission c == PermissionNONE) <$> containerDate c
+
 formatContainerDate :: Container -> Maybe String
-formatContainerDate c = formatTime defaultTimeLocale fmt <$> containerDate c where
-  fmt
-    | dataPermission c > PermissionNONE = "%Y-%m-%d"
-    | otherwise = "%Y-XX-XX"
+formatContainerDate c = formatTime defaultTimeLocale "%Y-%m-%d" <$> getContainerDate c
 
 containerJSON :: Container -> JSON.Object
 containerJSON c@Container{..} = JSON.record containerId $ catMaybes

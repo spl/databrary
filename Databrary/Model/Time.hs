@@ -3,6 +3,8 @@
 module Databrary.Model.Time
   ( Date
   , Timestamp
+  , MaskedDate
+  , maskDateIf
   ) where
 
 import Data.Fixed (Fixed(..))
@@ -18,3 +20,32 @@ deriveLiftMany [''Fixed, ''DiffTime, ''Day, ''UTCTime]
 
 instance Has Day Timestamp where
   view = utctDay
+
+data MaskedDate
+  = MaskedDate !Int
+  | UnmaskedDate !Date
+
+dateYear :: Date -> Int
+dateYear d = fromInteger y where (y,_,_) = toGregorian d
+
+maskDate :: Date -> MaskedDate
+maskDate = MaskedDate . dateYear
+
+maskDateIf :: Bool -> Date -> MaskedDate
+maskDateIf True = maskDate
+maskDateIf False = UnmaskedDate
+
+maskedYear :: MaskedDate -> Int
+maskedYear (MaskedDate y) = y
+maskedYear (UnmaskedDate d) = dateYear d
+
+instance FormatTime MaskedDate where
+  formatCharacter 'D' = Just (\locale _ -> formatTime locale "%m/%d/%y")
+  formatCharacter 'F' = Just (\locale _ -> formatTime locale "%Y-%m-%d")
+  formatCharacter 'x' = Just (\locale _ -> formatTime locale (dateFmt locale))
+  formatCharacter c = f <$> formatCharacter c where
+    f g l o (UnmaskedDate d) = g l o d
+    f g l o (MaskedDate y)
+      | c `elem` "YyCGgf" = r
+      | otherwise = map (const 'X') r
+      where r = g l o $ fromGregorian y 11 21

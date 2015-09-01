@@ -71,7 +71,7 @@ containerPf = "container_ethnicity_s^5 container_gender_s^5 container_race_s^5 c
 -- formQuery q = SolrQuery q
 
 submitQuery :: HC.Request -> HTTPClient -> IO (Maybe Value)
-submitQuery q = httpRequestJSONSolr q
+submitQuery q = httpRequestJSON q
 
 generatePostReq :: SolrQuery -> Solr -> HC.Request
 generatePostReq sr Solr{ solrRequest = req } = req
@@ -80,10 +80,6 @@ generatePostReq sr Solr{ solrRequest = req } = req
   , HC.requestBody = HC.RequestBodyLBS $ encode sr
   , HC.requestHeaders = ("content-type", "application/json") : HC.requestHeaders req
   }
-
-httpRequestJSONSolr :: HC.Request -> HTTPClient -> IO (Maybe Value)
-httpRequestJSONSolr req = httpRequest req "text/plain" $ \rb ->
-  P.maybeResult <$> P.parseWith rb json BS.empty
 
 search :: (MonadSolr c m) => String -> Int32 -> Int32 -> m (Maybe Value)
 search q offset limit = do
