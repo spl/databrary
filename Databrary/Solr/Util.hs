@@ -1,4 +1,4 @@
-module Databrary.Search.Util
+module Databrary.Solr.Util
   ( unCamel
   ) where
 

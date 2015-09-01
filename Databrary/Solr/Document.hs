@@ -1,5 +1,5 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving, TemplateHaskell, OverloadedStrings #-}
-module Databrary.Search.Document
+module Databrary.Solr.Document
   ( SolrDocument(..)
   , SolrRecordMeasures(..)
   , SolrSegment(..)
@@ -31,7 +31,7 @@ import Databrary.Model.Record.Types
 import Databrary.Model.RecordCategory.Types
 import Databrary.Model.Metric
 import Databrary.Model.Tag.Types
-import Databrary.Search.Util
+import Databrary.Solr.Util
 
 safeField :: T.Text -> T.Text
 safeField = T.map safeChar where

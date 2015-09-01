@@ -18,7 +18,7 @@ import Databrary.Service.Log (Logs)
 import Databrary.Service.Messages (Messages)
 import Databrary.Web.Types (Web)
 import Databrary.Static.Service (Static)
-import Databrary.Search.Service (Solr)
+import Databrary.Solr.Service (Solr)
 import Databrary.Ingest.Service (Ingest)
 import Databrary.Model.Time
 

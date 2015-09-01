@@ -1,4 +1,4 @@
-module Databrary.Search.Query 
+module Databrary.Solr.Query 
   ( createQuery
   , queryToString
   , queryLimit

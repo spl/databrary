@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings, RecordWildCards #-}
-module Databrary.Search.Solr
-( search
-) where
+module Databrary.Solr.Search
+  ( search
+  ) where
 
 import Control.Monad.IO.Class (liftIO)
 import Data.Monoid ((<>))
@@ -11,8 +11,8 @@ import Databrary.Has
 import qualified Databrary.JSON as J
 import Databrary.HTTP.Client
 import Databrary.Model.Paginate
-import Databrary.Search.Service
-import qualified Databrary.Search.Query as Q
+import Databrary.Solr.Service
+import qualified Databrary.Solr.Query as Q
 
 data SolrQuery = SolrQuery 
   { solrQuery :: String

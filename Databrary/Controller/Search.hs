@@ -11,8 +11,8 @@ import Data.Maybe (fromMaybe)
 import Databrary.Ops
 import Databrary.Has
 import qualified Databrary.JSON as JSON
-import Databrary.Search.Solr
-import Databrary.Search.Index
+import Databrary.Solr.Search
+import Databrary.Solr.Index
 import Databrary.Action
 import Databrary.HTTP.Path.Parser
 import Databrary.HTTP.Form.Deform

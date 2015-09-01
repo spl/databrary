@@ -20,7 +20,7 @@ import Databrary.Service.Log (initLogs, finiLogs)
 import Databrary.Service.Messages (initMessages)
 import Databrary.Web.Service (initWeb)
 import Databrary.Static.Service (initStatic)
-import Databrary.Search.Service (initSolr, finiSolr)
+import Databrary.Solr.Service (initSolr, finiSolr)
 import Databrary.Ingest.Service (initIngest)
 import Databrary.Service.Types
 

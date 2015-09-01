@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings, RecordWildCards, GeneralizedNewtypeDeriving, TemplateHaskell #-}
-module Databrary.Search.Index
+module Databrary.Solr.Index
   ( updateIndex
   ) where
 
@@ -48,8 +48,8 @@ import Databrary.Model.Record.Types
 import Databrary.Model.RecordSlot
 import Databrary.Model.Measure
 import Databrary.Model.Tag
-import Databrary.Search.Service
-import Databrary.Search.Document
+import Databrary.Solr.Service
+import Databrary.Solr.Document
 
 solrDocId :: forall a . (Kinded a, Show (Id a)) => Id a -> BS.ByteString
 solrDocId i = kindOf (undefined :: a) <> BSC.pack ('_' : show i)

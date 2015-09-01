@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Databrary.Search.Service
+module Databrary.Solr.Service
   ( Solr(..)
   , initSolr
   , finiSolr

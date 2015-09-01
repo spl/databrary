@@ -14,7 +14,7 @@ import Databrary.Service.Types
 import Databrary.Service.Log
 import Databrary.Model.Token
 import Databrary.Model.Volume
-import Databrary.Search.Index -- TODO
+import Databrary.Solr.Index -- TODO
 
 threadDelay' :: Micro -> IO ()
 threadDelay' (MkFixed t)
