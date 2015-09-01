@@ -3,7 +3,7 @@
 ##################
 ### Config
 ##################
-solr_version=5.1.0
+solr_version=5.3.0
 solr_archive_url="https://archive.apache.org/dist/lucene/solr/$solr_version/solr-$solr_version.zip"
 ##################
 

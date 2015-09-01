@@ -93,7 +93,7 @@ containerJSON :: Container -> JSON.Object
 containerJSON c@Container{..} = JSON.record containerId $ catMaybes
   [ "top" JSON..= containerTop <? containerTop
   , ("name" JSON..=) <$> containerName
-  , ("date" JSON..=) <$> getContainerDate c
+  , ("date" JSON..=) <$> formatContainerDate c
   , ("release" JSON..=) <$> containerRelease
   ]
 

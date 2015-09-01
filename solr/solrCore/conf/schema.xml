@@ -107,6 +107,7 @@
   <fieldType name="tdouble" class="solr.TrieDoubleField" precisionStep="8" positionIncrementGap="0"/>
   <fieldType name="date" class="solr.TrieDateField" precisionStep="0" positionIncrementGap="0"/>
   <fieldType name="tdate" class="solr.TrieDateField" precisionStep="6" positionIncrementGap="0"/>
+  <fieldType name="daterange" class="solr.DateRangeField"/>
 
   <fieldType name="binary" class="solr.BinaryField"/>
   <fieldType name="random" class="solr.RandomSortField" indexed="true" />

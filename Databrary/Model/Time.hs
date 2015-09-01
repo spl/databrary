@@ -26,6 +26,9 @@ deriveLiftMany [''Fixed, ''DiffTime, ''Day, ''UTCTime]
 instance Has Day Timestamp where
   view = utctDay
 
+instance JSON.ToJSON Date where
+  toJSON = JSON.toJSON . formatTime defaultTimeLocale "%F"
+
 data MaskedDate
   = MaskedDate !Int
   | UnmaskedDate !Date
@@ -56,4 +59,5 @@ instance FormatTime MaskedDate where
       where r = g l o $ fromGregorian (toInteger y) 11 21
 
 instance JSON.ToJSON MaskedDate where
-  toJSON = JSON.toJSON . formatTime defaultTimeLocale "%F"
+  toJSON (MaskedDate y) = JSON.toJSON y
+  toJSON (UnmaskedDate d) = JSON.toJSON d
