@@ -11,7 +11,7 @@
           </div>
           <div class="error-container error-login" ng-if="::(error.status === 404 || error.status === 403) && !page.models.Login.isLoggedIn()">
             <div class="view-center-block">
-              You might try logging in:
+              <span class="attention">You might try logging in:</span>
               <login-form></login-form>
             </div>
           </div>
