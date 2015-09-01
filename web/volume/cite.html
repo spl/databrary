@@ -3,11 +3,12 @@
   {{::volume.name}}. 
   <em>Databrary</em>. 
   Retrieved {{::today | date:'longDate'}} from <a ng-href="{{::permalink}}" ng-bind="::permalink"></a>. 
+  <wbr>
   <span ng-if="::volume.doi">
-    <a class="button mini citation-download" ng-href="http://data.datacite.org/application/x-research-info-systems/{{::volume.doi}}">
+    <a class="button mini icon-text" ng-href="http://data.datacite.org/application/x-research-info-systems/{{::volume.doi}}">
       <span class="icon download"></span>RIS
     </a> 
-    <a class="button mini citation-download" ng-href="http://data.datacite.org/application/x-bibtex/{{::volume.doi}}">
+    <a class="button mini icon-text" ng-href="http://data.datacite.org/application/x-bibtex/{{::volume.doi}}">
       <span class="icon download"></span>BibTeX
     </a> 
   </span>
