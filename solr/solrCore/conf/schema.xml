@@ -67,21 +67,21 @@
   <field name="record_category_id" type="id" indexed="true" stored="true"/>
   <field name="record_age" type="tint" indexed="true" stored="true"/>
 
-  <field name="record_text_*" type="text_ws" indexed="true" stored="true"/>
+  <dynamicField name="record_text_*" type="text_ws" indexed="true" stored="true"/>
   <copyField source="record_text_*" dest="text_en"/>
   <copyField source="record_text_*" dest="text_gen"/>
   <copyField source="record_text_*" dest="text_rev"/>
-  <field name="record_long_*" type="text_en" indexed="true" stored="true"/>
+  <dynamicField name="record_long_*" type="text_en" indexed="true" stored="true"/>
   <copyField source="record_long_*" dest="text_en"/>
   <copyField source="record_long_*" dest="text_gen"/>
   <copyField source="record_long_*" dest="text_rev"/>
-  <field name="record_enum_*" type="string" indexed="true" stored="true" omitNorms="false"/>
+  <dynamicField name="record_enum_*" type="string" indexed="true" stored="true" omitNorms="false"/>
   <copyField source="record_enum_*" dest="text_en"/>
   <copyField source="record_enum_*" dest="text_gen"/>
   <copyField source="record_enum_*" dest="text_rev"/>
-  <field name="record_numeric_*" type="tdouble" indexed="true" stored="true"/>
-  <field name="record_date_*" type="tdate" indexed="true" stored="true"/>
-  <field name="record_void_*" type="boolean" indexed="true" stored="true"/>
+  <dynamicField name="record_numeric_*" type="tdouble" indexed="true" stored="true"/>
+  <dynamicField name="record_date_*" type="tdate" indexed="true" stored="true"/>
+  <dynamicField name="record_void_*" type="boolean" indexed="true" stored="true"/>
 
   <field name="tag_id" type="id"/>
   <field name="tag_name" type="string" indexed="true" stored="true" omitNorms="false"/>
