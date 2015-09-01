@@ -11,7 +11,6 @@ import Data.Maybe (fromMaybe)
 import Databrary.Ops
 import Databrary.Has
 import qualified Databrary.JSON as JSON
-import Databrary.Model.Paginate
 import Databrary.Search.Solr
 import Databrary.Search.Index
 import Databrary.Action
@@ -29,7 +28,7 @@ postSearch = action GET (pathAPI </< "search") $ \api -> withAuth $ do
     query <- ("query" .:> deformNonEmpty deform)
     p <- paginateForm
     return (query, p)
-  jsonResp <- flatMapM (\q -> search q (paginateOffset p) (paginateLimit p)) query
+  jsonResp <- flatMapM (\q -> search q p) query
   return $ okResponse [] $ fromMaybe JSON.Null jsonResp
 
 getUpdateIndex :: ActionRoute ()
