@@ -55,6 +55,7 @@
 
   <field name="container_id" type="id"/>
   <field name="container_top" type="boolean" indexed="true" stored="true"/>
+  <field name="container_date" type="daterange" indexed="true" stored="true"/>
   <field name="release" type="release" indexed="true" stored="true"/>
   <field name="segment" type="string" indexed="false" stored="true"/>
   <field name="segment_duration" type="tdouble" indexed="true" stored="false"/>
@@ -83,10 +84,10 @@
   <field name="record_void_*" type="boolean" indexed="true" stored="true"/>
 
   <field name="tag_id" type="id"/>
-  <field name="tag" type="string" indexed="true" stored="true" omitNorms="false"/>
-  <copyField source="tag" dest="text_en"/>
-  <copyField source="tag" dest="text_gen"/>
-  <copyField source="tag" dest="text_rev"/>
+  <field name="tag_name" type="string" indexed="true" stored="true" omitNorms="false"/>
+  <copyField source="tag_name" dest="text_en"/>
+  <copyField source="tag_name" dest="text_gen"/>
+  <copyField source="tag_name" dest="text_rev"/>
   <field name="keyword" type="string" indexed="true" stored="true" omitNorms="false"/> <!-- same as tag, but for boosting -->
 
 

@@ -25,9 +25,11 @@ import Databrary.Model.Offset
 import Databrary.Model.Segment
 import Databrary.Model.Format.Types
 import Databrary.Model.Asset.Types
+import Databrary.Model.Time
 import Databrary.Model.Age
 import Databrary.Model.Record.Types
-import Databrary.Model.Metric.Types
+import Databrary.Model.RecordCategory.Types
+import Databrary.Model.Metric
 import Databrary.Model.Tag.Types
 import Databrary.Search.Util
 
@@ -70,7 +72,7 @@ data SolrDocument
   = SolrParty
     { solrId :: !BS.ByteString
     , solrPartyId :: Id Party
-    , solrPartyName :: T.Text
+    , solrPartySortName :: T.Text
     , solrPartyPreName :: Maybe T.Text
     , solrPartyAffiliation :: Maybe T.Text
     , solrPartyHasAccount :: Bool
@@ -92,8 +94,8 @@ data SolrDocument
     , solrVolumeId :: Id Volume
     , solrContainerId :: Id Container
     , solrName :: Maybe T.Text
-    , solrDate :: Maybe MaskedDate
     , solrContainerTop :: Bool
+    , solrContainerDate :: Maybe MaskedDate
     , solrRelease :: Maybe Release
     }
   | SolrAsset -- Slot
@@ -134,7 +136,7 @@ data SolrDocument
     , solrSegment :: SolrSegment
     , solrSegmentDuration :: Maybe Offset
     , solrTagId :: Id Tag
-    , solrTag :: TagName
+    , solrTagName :: TagName
     , solrKeyword :: Maybe TagName
     , solrPartyId :: Id Party
     }

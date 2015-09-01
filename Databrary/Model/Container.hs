@@ -9,6 +9,7 @@ module Databrary.Model.Container
   , addContainer
   , changeContainer
   , removeContainer
+  , getContainerDate
   , formatContainerDate
   , containerJSON
   ) where
@@ -25,6 +26,7 @@ import Databrary.Has (view, peek)
 import Databrary.Service.DB
 import qualified Databrary.JSON as JSON
 import Databrary.Model.SQL (selectQuery, isForeignKeyViolation)
+import Databrary.Model.Time
 import Databrary.Model.Permission
 import Databrary.Model.Id.Types
 import Databrary.Model.Party.Types
@@ -91,7 +93,7 @@ containerJSON :: Container -> JSON.Object
 containerJSON c@Container{..} = JSON.record containerId $ catMaybes
   [ "top" JSON..= containerTop <? containerTop
   , ("name" JSON..=) <$> containerName
-  , ("date" JSON..=) <$> formatContainerDate c
+  , ("date" JSON..=) <$> getContainerDate c
   , ("release" JSON..=) <$> containerRelease
   ]
 

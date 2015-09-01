@@ -4,6 +4,7 @@ module Databrary.Model.Metric
   , allMetrics
   , getMetric
   , getMetric'
+  , metricLong
   , birthdateMetric
   , metricJSON
   ) where

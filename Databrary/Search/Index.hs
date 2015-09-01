@@ -15,7 +15,7 @@ import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy as BSL
 import qualified Data.Foldable as Fold
-import Data.Maybe (isNothing)
+import Data.Maybe (isJust)
 import Data.Monoid ((<>))
 import Data.Time.Clock (getCurrentTime, diffUTCTime)
 import qualified Network.HTTP.Client as HC
@@ -57,75 +57,76 @@ solrDocId i = kindOf (undefined :: a) <> BSC.pack ('_' : show i)
 solrParty :: Party -> Maybe Permission -> SolrDocument
 solrParty Party{..} auth = SolrParty
   { solrId = solrDocId partyId
-  , solrPartyId_i = partyId
-  , solrPartyName_s = partySortName
-  , solrPartyPreName_s = partyPreName
-  , solrPartyAffiliation_s = partyAffiliation
-  , solrPartyIsInstitution_b = isNothing partyAccount
-  , solrPartyAuthorization_i = auth
+  , solrPartyId = partyId
+  , solrPartySortName = partySortName
+  , solrPartyPreName = partyPreName
+  , solrPartyAffiliation = partyAffiliation
+  , solrPartyHasAccount = isJust partyAccount
+  , solrPartyAuthorization = auth
   }
 
 solrVolume :: Volume -> Maybe Citation -> SolrDocument
 solrVolume Volume{..} cite = SolrVolume
   { solrId = solrDocId volumeId
-  , solrVolumeId_i = volumeId
-  , solrName_t = Just volumeName
-  , solrBody_t = volumeBody
-  , solrVolumeOwnerIds_is = ownerIds
-  , solrVolumeOwnerNames_ss = ownerNames
-  , solrCitation_t = citationHead <$> cite
-  , solrCitationUrl_s = citationURL =<< cite
-  , solrCitationYear_i = citationYear =<< cite
+  , solrVolumeId = volumeId
+  , solrName = Just volumeName
+  , solrBody = volumeBody
+  , solrVolumeOwnerIds = ownerIds
+  , solrVolumeOwnerNames = ownerNames
+  , solrCitation = citationHead <$> cite
+  , solrCitationUrl = citationURL =<< cite
+  , solrCitationYear = citationYear =<< cite
   } where
   (ownerIds, ownerNames) = unzip volumeOwners
 
 solrContainer :: Container -> SolrDocument
-solrContainer Container{..} = SolrContainer
+solrContainer c@Container{..} = SolrContainer
   { solrId = solrDocId containerId
-  , solrContainerId_i = containerId
-  , solrVolumeId_i = volumeId containerVolume
-  , solrName_t = containerName
-  , solrContainerTop_b = containerTop
-  , solrRelease_i = containerRelease
+  , solrContainerId = containerId
+  , solrVolumeId = volumeId containerVolume
+  , solrName = containerName
+  , solrContainerTop = containerTop
+  , solrContainerDate = getContainerDate c
+  , solrRelease = containerRelease
   }
 
 solrAsset :: Asset -> SlotId -> SolrDocument
 solrAsset Asset{..} SlotId{..} = SolrAsset
   { solrId = solrDocId assetId
-  , solrAssetId_i = assetId
-  , solrVolumeId_i = volumeId assetVolume
-  , solrContainerId_i = slotContainerId
+  , solrAssetId = assetId
+  , solrVolumeId = volumeId assetVolume
+  , solrContainerId = slotContainerId
   , solrSegment = SolrSegment slotSegmentId
-  , solrSegmentDuration_td = segmentLength slotSegmentId
-  , solrName_t = assetName
-  , solrRelease_i = assetRelease
-  , solrFormat_i = formatId assetFormat
+  , solrSegmentDuration = segmentLength slotSegmentId
+  , solrName = assetName
+  , solrRelease = assetRelease
+  , solrFormatId = formatId assetFormat
   }
 
 solrExcerpt :: Excerpt -> SolrDocument
 solrExcerpt Excerpt{ excerptAsset = AssetSegment{ segmentAsset = AssetSlot{ slotAsset = Asset{..}, assetSlot = ~(Just Slot{ slotContainer = container }) }, assetSegment = seg }, ..} = SolrExcerpt
   { solrId = BSC.pack $ "excerpt_" <> show assetId
     <> maybe "" (('_':) . show) (lowerBound $ segmentRange seg)
-  , solrAssetId_i = assetId
-  , solrVolumeId_i = volumeId assetVolume
-  , solrContainerId_i = containerId container
+  , solrAssetId = assetId
+  , solrVolumeId = volumeId assetVolume
+  , solrContainerId = containerId container
   , solrSegment = SolrSegment seg
-  , solrSegmentDuration_td = segmentLength seg
-  , solrRelease_i = assetRelease
+  , solrSegmentDuration = segmentLength seg
+  , solrRelease = assetRelease
   }
 
 solrRecord :: RecordSlot -> SolrDocument
 solrRecord rs@RecordSlot{ slotRecord = r@Record{..}, recordSlot = Slot{..} } = SolrRecord
   { solrId = solrDocId recordId
     <> BSC.pack ('_' : show (containerId slotContainer))
-  , solrRecordId_i = recordId
-  , solrVolumeId_i = volumeId recordVolume
-  , solrContainerId_i = containerId slotContainer
+  , solrRecordId = recordId
+  , solrVolumeId = volumeId recordVolume
+  , solrContainerId = containerId slotContainer
   , solrSegment = SolrSegment slotSegment
-  , solrSegmentDuration_td = segmentLength slotSegment
-  , solrRecordCategory_s = recordCategoryName recordCategory
+  , solrSegmentDuration = segmentLength slotSegment
+  , solrRecordCategoryId = recordCategoryId recordCategory
   , solrRecordMeasures = SolrRecordMeasures $ map (\m -> (measureMetric m, measureDatum m)) $ getRecordMeasures r
-  , solrRecordAge_ti = recordSlotAge rs
+  , solrRecordAge = recordSlotAge rs
   }
 
 solrTag :: Id Volume -> TagUseId -> SolrDocument
@@ -134,14 +135,14 @@ solrTag vi TagUseId{ useTagId = Tag{..}, tagSlotId = SlotId{..}, ..} = SolrTag
     <> ('_' : show slotContainerId)
     <> (if tagKeywordId then "" else '_' : show tagWhoId)
     <> maybe "" (('_':) . show) (lowerBound $ segmentRange slotSegmentId)
-  , solrVolumeId_i = vi
-  , solrContainerId_i = slotContainerId
+  , solrVolumeId = vi
+  , solrContainerId = slotContainerId
   , solrSegment = SolrSegment slotSegmentId
-  , solrSegmentDuration_td = segmentLength slotSegmentId
-  , solrTagId_i = tagId
-  , solrTag_s = tagName
-  , solrKeyword_s = tagKeywordId ?> tagName
-  , solrPartyId_i = tagWhoId
+  , solrSegmentDuration = segmentLength slotSegmentId
+  , solrTagId = tagId
+  , solrTagName = tagName
+  , solrKeyword = tagKeywordId ?> tagName
+  , solrPartyId = tagWhoId
   }
 
 newtype SolrContext = SolrContext { solrService :: Service }

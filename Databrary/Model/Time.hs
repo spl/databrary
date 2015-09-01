@@ -5,11 +5,16 @@ module Databrary.Model.Time
   , Timestamp
   , MaskedDate
   , maskDateIf
+  , maskedYear
   ) where
 
+import Control.Applicative ((<$>))
+import qualified Data.Aeson as JSON
 import Data.Fixed (Fixed(..))
-import Data.Time (Day(..), UTCTime(..), DiffTime)
+import Data.Time (Day(..), UTCTime(..), DiffTime, toGregorian, fromGregorian)
+import Data.Time.Format (FormatTime(..), formatTime)
 import Language.Haskell.TH.Lift (deriveLiftMany)
+import System.Locale (defaultTimeLocale, dateFmt)
 
 import Databrary.Has (Has(..))
 
@@ -48,4 +53,7 @@ instance FormatTime MaskedDate where
     f g l o (MaskedDate y)
       | c `elem` "YyCGgf" = r
       | otherwise = map (const 'X') r
-      where r = g l o $ fromGregorian y 11 21
+      where r = g l o $ fromGregorian (toInteger y) 11 21
+
+instance JSON.ToJSON MaskedDate where
+  toJSON = JSON.toJSON . formatTime defaultTimeLocale "%F"
