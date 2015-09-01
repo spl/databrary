@@ -72,7 +72,7 @@ exec >$LOG 2>&1
 sleep 5 # hope server knows job has started by now
 
 ls -s "$IN"
-ffmpeg -loglevel warning -benchmark -threads ${PBS_NP:-1} -i "$IN" -metadata comment="encoded by databrary.org ${dir##*/}/$version" -metadata description="resource located at http://databrary.org/asset/$id" "${args[@]}" -threads ${PBS_NP:-1} -f mp4 -g 60 -c:v libx264 -pix_fmt yuvj420p -c:a libfdk_aac -y "$OUT"
+ffmpeg -loglevel warning -benchmark -threads ${PBS_NP:-1} -i "$IN" -metadata comment="databrary.org ${dir##*/}/$version" -metadata description="http://databrary.org/asset/$id" "${args[@]}" -threads ${PBS_NP:-1} -f mp4 -g 60 -c:v libx264 -pix_fmt yuvj420p -c:a libfdk_aac -y "$OUT"
 r=$?
 [[ -f "$OUT" ]] && ls -s "$OUT"
 if [[ $r -ne 0 ]] ; then
