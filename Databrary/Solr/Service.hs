@@ -73,14 +73,13 @@ initSolr conf = do
     }
 
   req <- HC.parseUrl $ "http://" ++ host ++ "/solr/" ++ core ++ "/"
-  let solr = Solr
-        { solrRequest = req
-          { HC.port = port
-          , HC.redirectCount = 0
-          }
-        , solrProcess = ph
-        }
-  return solr
+  return Solr
+    { solrRequest = req
+      { HC.port = port
+      , HC.redirectCount = 0
+      }
+    , solrProcess = ph
+    }
 
 finiSolr :: Solr -> IO ()
 finiSolr Solr{ solrProcess = ph } = do

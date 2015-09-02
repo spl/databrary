@@ -16,9 +16,6 @@
 /npm-debug.log
 /databrary.conf
 /unreset.dump
-/solr/solrInstance/
-/solr/solrData/
-/solr/solrInstall/
 .idea
 /dbrary/
 /logs/
