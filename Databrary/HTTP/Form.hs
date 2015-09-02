@@ -16,7 +16,7 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.Foldable as Fold
 import qualified Data.HashMap.Strict as HM
-import qualified Data.Map as Map
+import qualified Data.Map.Strict as Map
 import Data.Monoid (Monoid(..), (<>))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -98,22 +98,26 @@ subForm key form = form' where
     , formFile = getFormFile form'
     }
 
-formEmpty :: Form a -> Bool
-formEmpty Form{ formJSON = Just _ } = False
-formEmpty Form{ formPathBS = p, formData = FormData{..} } =
-  me formDataQuery || me formDataPost where
-  me = not . Fold.any (sk . fst) . Map.lookupGE p
-  sk s = p `BS.isPrefixOf` s && (l == BS.length s || BSC.index s l == '.')
-  l = BS.length p
+jsonSubForms :: Form a -> [(FormKey, Form a)]
+jsonSubForms f = maybe [] jfk (formJSON f) where
+  jfk (JSON.Array a) = V.toList $ V.imap (sfj . FormIndex) a
+  jfk (JSON.Object o) = HM.elems $ HM.mapWithKey (sfj . FormField) o
+  jfk _ = []
+  sfj k v = (k, (subForm k f){ formJSON = Just v, formDatum = FormDatumJSON v })
 
-subForms :: Form a -> [Form a]
-subForms form = sf 0 where
-  n | Just (JSON.Array v) <- formJSON form = V.length v
-    | otherwise = 0
-  sf i
-    | i >= n && formEmpty el = []
-    | otherwise = el : sf (succ i)
-    where el = subForm (FormIndex i) form
+subFormsFor :: (FormData a -> Map.Map BS.ByteString b) -> Form a -> [(FormKey, Form a)]
+subFormsFor m f =
+  map (sf . FormField . TE.decodeUtf8) $ uniq $ map (BSC.takeWhile ('.' /=) . BS.drop l') $ takeWhile (BS.isPrefixOf p') $ Map.keys $ snd $ Map.split p' $ m $ formData f where
+  sf k = (k, subForm k f)
+  p' = BSC.snoc (formPathBS f) '.'
+  l' = BS.length p'
+  uniq (a:bl@(b:_))
+    | a == b = uniq bl
+    | otherwise = a : uniq bl
+  uniq l = l
+
+subForms :: Form a -> [(FormKey, Form a)]
+subForms f = subFormsFor formDataPost f ++ jsonSubForms f ++ subFormsFor formDataQuery f
 
 jsonFormDatum :: Form a -> FormDatum
 jsonFormDatum Form{ formJSON = j } = Fold.foldMap FormDatumJSON j

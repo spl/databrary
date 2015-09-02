@@ -4,7 +4,7 @@ module Databrary.Action.Form
 
 import Control.Monad.IO.Class (MonadIO)
 import qualified Data.ByteString as BS
-import qualified Data.Map as Map
+import qualified Data.Map.Strict as Map
 import Data.Maybe (fromMaybe)
 import Data.Word (Word64)
 import qualified Network.Wai as Wai

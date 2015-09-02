@@ -1,14 +1,14 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, TupleSections #-}
 module Databrary.Controller.Search
   ( postSearch
   , getUpdateIndex
   , postUpdateIndex
   ) where
 
+import Control.Applicative (Applicative, (<$>), (<*>))
 import Control.Monad (when)
 import Data.Maybe (fromMaybe)
 
-import Databrary.Ops
 import Databrary.Has
 import qualified Databrary.JSON as JSON
 import Databrary.Solr.Search
@@ -21,14 +21,18 @@ import Databrary.Controller.Angular
 import Databrary.Controller.Permission
 import Databrary.View.Search
 
+searchForm :: (Applicative m, Monad m) => DeformT f m SearchQuery
+searchForm = SearchQuery
+  <$> ("query" .:> deformNonEmpty deform)
+  <*> ("terms" .:> withSubDeforms (\k -> (view k, ) <$> deform))
+  <*> ("volume" .:> deformNonEmpty deform)
+  <*> paginateForm
+
 postSearch :: ActionRoute API
 postSearch = action GET (pathAPI </< "search") $ \api -> withAuth $ do
   when (api == HTML) angular
-  (query, p) <- runForm Nothing $ do
-    query <- ("query" .:> deformNonEmpty deform)
-    p <- paginateForm
-    return (query, p)
-  jsonResp <- flatMapM (\q -> search q p) query
+  q <- runForm Nothing searchForm
+  jsonResp <- search q
   return $ okResponse [] $ fromMaybe JSON.Null jsonResp
 
 getUpdateIndex :: ActionRoute ()

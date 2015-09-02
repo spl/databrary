@@ -278,7 +278,7 @@ postVolumeLinks = action POST (pathAPI </> pathId </< "link") $ \arg@(api, vi) -
   links <- lookupVolumeLinks v
   links' <- runForm (api == HTML ?> htmlVolumeLinksEdit v links) $ do
     csrfForm
-    withSubDeforms $ Citation
+    withSubDeforms $ \_ -> Citation
       <$> ("head" .:> deform)
       <*> ("url" .:> (Just <$> deform))
       <$- Nothing

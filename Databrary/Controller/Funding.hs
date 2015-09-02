@@ -42,7 +42,7 @@ postVolumeFunding = action POST (pathJSON >/> pathId </> pathId) $ \(vi, fi) -> 
   f <- maybeAction =<< lookupFunderRef fi
   a <- runForm Nothing $ do
     csrfForm
-    "awards" .:> filter (not . T.null) <$> withSubDeforms deform
+    "awards" .:> filter (not . T.null) <$> withSubDeforms (\_ -> deform)
   let fa = Funding f a
   _ <- changeVolumeFunding v fa
   return $ okResponse [] $ fundingJSON fa

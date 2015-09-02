@@ -133,9 +133,9 @@ infixr 2 .:>
 (.:>) :: (Functor m, Monad m) => T.Text -> DeformT f m a -> DeformT f m a
 (.:>) = withSubDeform . FormField
 
-withSubDeforms :: (Functor m, Monad m) => DeformT f m a -> DeformT f m [a]
-withSubDeforms (DeformT a) = DeformT $
-  fmap (unsubFormsErrors *** sequence) . mapAndUnzipM a . subForms
+withSubDeforms :: (Functor m, Monad m) => (FormKey -> DeformT f m a) -> DeformT f m [a]
+withSubDeforms s = DeformT $
+  fmap (unsubFormsErrors *** sequence) . mapAndUnzipM (uncurry $ runDeformT . s) . subForms
 
 deformErrorWith :: Monad m => Maybe a -> FormErrorMessage -> DeformT f m a
 deformErrorWith r e = DeformT $ \_ -> return (singletonFormError e, r)

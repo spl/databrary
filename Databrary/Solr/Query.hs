@@ -1,25 +1,21 @@
 module Databrary.Solr.Query 
   ( createQuery
   , queryToString
-  , queryLimit
-  , queryStart
   , Query
   ) where
 
 import Data.List (isInfixOf, intercalate)
 import Data.List.Split (splitOn)
-import Data.Maybe (fromMaybe, mapMaybe)
+import Data.Maybe (mapMaybe)
 
 -- Type for all of our documents
 data QueryPart = QueryArg String String | QueryJoin String String String
-                    | QuerySearchTerm String | QueryLimit Int | QueryStart Int
+                    | QuerySearchTerm String
                     | QueryType String deriving Show
 
 data Query = Query {qJoin :: Maybe QueryPart,
                     qArguments :: Maybe [QueryPart],
                     qSearchTerms :: Maybe [QueryPart],
-                    qLimit :: Maybe QueryPart,
-                    qStart :: Maybe QueryPart,
                     qContentType :: Maybe QueryPart} deriving Show
 
 -- Join a bunch of query strings together with AND clauses
@@ -28,17 +24,13 @@ createQuery :: String -> Query
 createQuery x = formQuery $ parseQuery x
 
 formQuery :: [QueryPart] -> Query
-formQuery qs = Query j a t limit start contentType
+formQuery qs = Query j a t contentType
    where
       joinTest =  mapMaybe filterJoin qs
-      limitTest = mapMaybe filterLimit qs
-      startTest = mapMaybe filterStart qs
       contentTest = mapMaybe filterContentType qs
       j = if length joinTest >= 1 then Just $ head joinTest else Nothing
       a = Just $ mapMaybe filterArg qs
       t = Just $ concat $ mapMaybe filterTerm qs
-      limit = if length limitTest >= 1 then Just $ head limitTest else Nothing
-      start = if length startTest >= 1 then Just $ head startTest else Nothing
       contentType = if length contentTest >= 1 then Just $ head contentTest else Nothing
 
 filterArg :: QueryPart -> Maybe QueryPart
@@ -59,14 +51,6 @@ filterContentType :: QueryPart -> Maybe QueryPart
 filterContentType (QueryType x) = Just $ QueryType x
 filterContentType _ = Nothing
 
-filterLimit :: QueryPart -> Maybe QueryPart
-filterLimit (QueryLimit x) = Just $ QueryLimit x
-filterLimit _ = Nothing
-
-filterStart :: QueryPart -> Maybe QueryPart
-filterStart (QueryStart x) = Just $ QueryStart x
-filterStart _ = Nothing
-
 -- parseQueryString: We're given a query string from somewhere, figure out
 -- what to do with it.
 -- The format looks like "joinstuff,argstuff,free text stuff"
@@ -77,12 +61,10 @@ parseQuery q = map parseQueryPart x
 
 parseQueryPart :: String -> QueryPart
 parseQueryPart x
-   | isInfixOf "join=" x = parseQueryJoin x
-   | isInfixOf "arg=" x = parseQueryArg x
-   | isInfixOf "start=" x = parseQueryStart x
-   | isInfixOf "rows=" x = parseQueryLimit x
-   | isInfixOf "type=" x = parseQueryType x
-   | otherwise = parseTerm x
+   | isInfixOf "join=" x = parseQueryJoin x -- used
+   | isInfixOf "arg=" x = parseQueryArg x -- used
+   | isInfixOf "type=" x = parseQueryType x -- used
+   | otherwise = parseTerm x -- used
 
 -- Joins look like join=type,type and we just want the types
 parseQueryJoin :: String -> QueryPart
@@ -97,19 +79,6 @@ parseQueryArg x = QueryArg argName argVal
                      where
                         args = splitOn ":" $ concat $ drop 1 $ splitOn "=" x
                         [argName,argVal] = args
-
--- For passing in start/rows parameters to the query
-parseQueryLimit :: String -> QueryPart
-parseQueryLimit q = QueryLimit (read limit :: Int)
-                     where
-                        args = splitOn "=" q
-                        [_, limit] = args
-
-parseQueryStart :: String -> QueryPart
-parseQueryStart q = QueryStart (read limit :: Int)
-                     where
-                        args = splitOn "=" q
-                        [_, limit] = args
 
 parseQueryType :: String -> QueryPart
 parseQueryType q = QueryType contentType
@@ -173,14 +142,3 @@ queryToString q = (query, args, join, contentType) where
 -- TODO Break query to string up into a function where the joins and args
 -- are separated into their own strings, so it is Query ->
 -- String,String,String
-
-queryLimit :: Query -> Int
-queryLimit q = queryPartInt' $ fromMaybe (QueryLimit 10) (qLimit q)
-
-queryPartInt' :: QueryPart -> Int
-queryPartInt' (QueryLimit l) = l
-queryPartInt' (QueryStart s) = s
-queryPartInt' _ = 0
-
-queryStart :: Query -> Int
-queryStart q = queryPartInt' $ fromMaybe (QueryStart 0) (qStart q)

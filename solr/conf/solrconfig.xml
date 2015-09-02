@@ -64,17 +64,16 @@
      <lst name="defaults">
        <str name="echoParams">explicit</str>
        <int name="rows">10</int>
-       <str name="df">text</str>
+       <str name="df">text_gen</str>
      </lst>
   </requestHandler>
-  <requestHandler name="/query" class="solr.SearchHandler">
+  <requestHandler name="/search" class="solr.SearchHandler">
      <lst name="defaults">
-       <str name="echoParams">explicit</str>
+       <str name="rows">10</str>
        <str name="wt">json</str>
-       <str name="df">text</str>
 
        <str name="spellcheck.dictionary">default</str>
-       <str name="spellcheck">on</str>
+       <str name="spellcheck">true</str>
        <str name="spellcheck.extendedResults">true</str>
        <str name="spellcheck.count">10</str>
        <str name="spellcheck.alternativeTermCount">5</str>
@@ -96,11 +95,6 @@
      </lst>
   </requestHandler>
 
-  <initParams path="/update/**,/query,/select,/tvrh,/elevate,/spell,/browse">
-    <lst name="defaults">
-      <str name="df">text</str>
-    </lst>
-  </initParams>
   <requestHandler name="/update" class="solr.UpdateRequestHandler">
   </requestHandler>
 
