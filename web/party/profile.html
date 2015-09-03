@@ -38,7 +38,7 @@
 
       <div class="profile-section" ng-if="::parties.parents.length">
         <div class="profile-section-header">
-          <span ng-bind="::'profile.parties.'+parties.parents.type+'.title' | message"></span>
+          <strong ng-bind="::'profile.parties.'+parties.parents.type+'.title' | message"></strong>
           <a ng-href="{{::party.editRoute('apply')}}" class="button icon edit neutral"></a>
         </div>
         <ul>
