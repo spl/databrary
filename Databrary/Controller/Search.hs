@@ -5,7 +5,7 @@ module Databrary.Controller.Search
   , postUpdateIndex
   ) where
 
-import Control.Applicative (Applicative, (<$>), (<*>))
+import Control.Applicative (Applicative, (<$>), (<*>), (<|>))
 import Control.Monad (when)
 import Data.Maybe (fromMaybe)
 
@@ -25,8 +25,11 @@ searchForm :: (Applicative m, Monad m) => DeformT f m SearchQuery
 searchForm = SearchQuery
   <$> ("query" .:> deformNonEmpty deform)
   <*> ("terms" .:> withSubDeforms (\k -> (view k, ) <$> deform))
-  <*> ("volume" .:> deformNonEmpty deform)
+  <*> ("volume" .:> fromMaybe SearchVolumes <$> deformOptional ((SearchVolume <$> deform) <|> (sv <$> deform)))
   <*> paginateForm
+  where
+  sv False = SearchParties
+  sv True = SearchVolumes
 
 postSearch :: ActionRoute API
 postSearch = action GET (pathAPI </< "search") $ \api -> withAuth $ do

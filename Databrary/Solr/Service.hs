@@ -72,7 +72,7 @@ initSolr conf = do
     , Proc.env = Just $ env ++ [("SOLR_PID_DIR", home), ("LOG4J_PROPS", dir </> "log4j.properties")]
     }
 
-  req <- HC.parseUrl $ "http://" ++ host ++ "/solr/" ++ core ++ "/"
+  req <- HC.parseUrl $ "http://" ++ host ++ "/solr/" ++ core ++ "/search"
   return Solr
     { solrRequest = req
       { HC.port = port
