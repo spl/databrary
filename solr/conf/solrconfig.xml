@@ -9,7 +9,7 @@
   <schemaFactory class="ClassicIndexSchemaFactory"/>
   <indexConfig>
     <lockType>${solr.lock.type:native}</lockType>
-     <infoStream>true</infoStream>
+    <infoStream>true</infoStream>
   </indexConfig>
   <jmx />
 
@@ -18,13 +18,13 @@
       <str name="dir">${solr.ulog.dir:}</str>
       <int name="numVersionBuckets">${solr.ulog.numVersionBuckets:65536}</int>
     </updateLog>
-     <autoCommit>
-       <maxTime>${solr.autoCommit.maxTime:15000}</maxTime>
-       <openSearcher>false</openSearcher>
-     </autoCommit>
-     <autoSoftCommit>
-       <maxTime>${solr.autoSoftCommit.maxTime:-1}</maxTime>
-     </autoSoftCommit>
+    <autoCommit>
+      <maxTime>${solr.autoCommit.maxTime:15000}</maxTime>
+      <openSearcher>false</openSearcher>
+    </autoCommit>
+    <autoSoftCommit>
+      <maxTime>${solr.autoSoftCommit.maxTime:-1}</maxTime>
+    </autoSoftCommit>
   </updateHandler>
   <query>
     <maxBooleanClauses>1024</maxBooleanClauses>
@@ -61,46 +61,46 @@
   </requestDispatcher>
 
   <requestHandler name="/select" class="solr.SearchHandler">
-     <lst name="defaults">
-       <str name="echoParams">explicit</str>
-       <int name="rows">10</int>
-       <str name="df">text_gen</str>
-     </lst>
+    <lst name="defaults">
+      <str name="echoParams">explicit</str>
+      <int name="rows">10</int>
+      <str name="df">text_gen</str>
+    </lst>
   </requestHandler>
   <requestHandler name="/search" class="solr.SearchHandler">
-     <lst name="defaults">
-       <str name="rows">10</str>
-       <str name="wt">json</str>
-       <str name="fl">
-         id:party_id sortname:party_sort_name prename:party_pre_name affiliation:party_affiliation institution:party_is_institution
-         id:volume_id name body owners:volume_owner_names
-         id:container_id top:container_top date:container_date segment
-         tag:tag_name
-       </str>
-       <str name="omitHeader">true</str>
+    <lst name="defaults">
+      <str name="rows">10</str>
+      <str name="wt">json</str>
+      <str name="fl">
+	id:party_id sortname:party_sort_name prename:party_pre_name affiliation:party_affiliation institution:party_is_institution
+	id:volume_id name body owners:volume_owner_names
+	id:container_id top:container_top date:container_date segment
+	tag:tag_name
+      </str>
+      <str name="omitHeader">true</str>
 
-       <str name="spellcheck">true</str>
-       <str name="spellcheck.dictionary">default</str>
-       <str name="spellcheck.count">3</str>
-       <str name="spellcheck.alternativeTermCount">3</str>
-       <str name="spellcheck.maxResultsForSuggest">3</str>
-       <str name="spellcheck.collate">true</str>
-       <str name="spellcheck.maxCollationTries">10</str>
-       <str name="spellcheck.maxCollations">5</str>
-       <!-- debugging? -->
-       <str name="spellcheck.extendedResults">true</str>
-       <str name="spellcheck.collateExtendedResults">true</str>
+      <str name="spellcheck">true</str>
+      <str name="spellcheck.dictionary">default</str>
+      <str name="spellcheck.count">3</str>
+      <str name="spellcheck.alternativeTermCount">3</str>
+      <str name="spellcheck.maxResultsForSuggest">3</str>
+      <str name="spellcheck.collate">true</str>
+      <str name="spellcheck.maxCollationTries">10</str>
+      <str name="spellcheck.maxCollations">5</str>
+      <!-- debugging? -->
+      <str name="spellcheck.extendedResults">true</str>
+      <str name="spellcheck.collateExtendedResults">true</str>
     </lst>
     <arr name="last-components">
       <str>spellcheck</str>
     </arr>
   </requestHandler>
   <requestHandler name="/get" class="solr.RealTimeGetHandler">
-     <lst name="defaults">
-       <str name="omitHeader">true</str>
-       <str name="wt">json</str>
-       <str name="indent">true</str>
-     </lst>
+    <lst name="defaults">
+      <str name="omitHeader">true</str>
+      <str name="wt">json</str>
+      <str name="indent">true</str>
+    </lst>
   </requestHandler>
 
   <requestHandler name="/update" class="solr.UpdateRequestHandler">
@@ -131,7 +131,7 @@
 
   <searchComponent name="terms" class="solr.TermsComponent"/>
   <requestHandler name="/terms" class="solr.SearchHandler" startup="lazy">
-     <lst name="defaults">
+    <lst name="defaults">
       <bool name="terms">true</bool>
       <bool name="distrib">false</bool>
     </lst>
