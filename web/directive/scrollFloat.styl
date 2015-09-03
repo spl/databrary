@@ -2,10 +2,13 @@
   position fixed
   top b1*toolbarheight //toolbar
   z-index 10
-  width 78%
   box-shadow 0px 3px 3px -3px black
   background-color white
   margin-left -b2
   padding-left b2
+  @media screen and (max-width: grid-mobile-width)
+    width 100%
+  @media screen and (min-width: grid-mobile-width+1)
+    width 78%
   &.sandbox
     top b1*(toolbarheight+sandboxheight) //toolbar+sandbox

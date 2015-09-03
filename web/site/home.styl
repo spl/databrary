@@ -72,8 +72,8 @@
 .home-supportad
   margin-left b1*2
   margin-right b1*2
-  padding b1
-  border solid b3 orange52
+  padding b23
+  border-color orange52
   @media screen and (max-width: grid-tablet-width)
     font-size 0.8em
     line-height 1.2em
@@ -182,30 +182,32 @@
       position relative
       size 160px 160px
       margin b1
-      padding b3
-      padding-top b1
+      padding b8
+      padding-top b23
       border-radius b3
-      border 3px solid white
       background-color white
       display inline-table
       box-shadow 0px 3px 3px -3px black
       transition transition
-      @media screen and (max-width: grid-mobile-width+1)
+      @media screen and (min-width: grid-mobile-width+1)
+        border-top b3 solid white      
+        border-bottom b3 solid white
+      @media screen and (max-width: grid-mobile-width)
         display block
         width 100%
         height auto
         border-radius 0
         padding b3
-        margin 0
+        margin 0px 0px 3px 0px
         box-shadow none
         border-collapse collapse
       .button-title
         display block
         font-weight 700
         a
-          color orange
+          color green
         a:hover
-          color orange53
+          color green52
       p
         font-size f34
         line-height b23
@@ -215,7 +217,9 @@
       img
         height b1*2
     div.bigbutton:hover
-      border 3px solid orange
+      border-color orange53
+      @media screen and (max-width: grid-mobile-width)
+        background-color neutral51
 
 .home-activity
   dl.home-section-text

@@ -17,7 +17,6 @@ app.directive('partyNetwork', [
       });
 
       $scope.isAdmin = $scope.party.checkPermission(constants.permission.ADMIN);
-
       if ($scope.isAdmin)
       _.each($scope.party.children, function (party) {
         if (!party.member && !party.site) {
@@ -66,6 +65,9 @@ app.directive('partyNetwork', [
           remove();
         });
       };
+
+      $scope.partyChildrenCount = Object.keys($scope.party.children).length;
+      $scope.partyParentsCount = Object.keys($scope.party.parents).length;
     }
     };
   }

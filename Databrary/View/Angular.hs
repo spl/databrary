@@ -45,7 +45,7 @@ htmlAngular debug nojs auth = H.docTypeHtml H.! ngAttribute "app" "databraryModu
       H.! HA.content "IE=edge"
     H.meta 
       H.! HA.name "viewport"
-      H.! HA.content "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+      H.! HA.content "width=device-width, initial-scale=1.0, minimum-scale=1.0"
     H.title
       H.! ngAttribute "bind" (byteStringValue $ "page.display.title + ' || " <> title <> "'")
       $ H.unsafeByteString title

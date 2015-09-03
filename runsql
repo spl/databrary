@@ -1,5 +1,6 @@
 #!/bin/bash -e
 set -o pipefail
+umask 077
 
 top=`git rev-parse --show-cdup || echo "Assuming $PWD is top." >&2`
 schema=${top}schema
@@ -22,10 +23,7 @@ if [[ -z ${db[db]} || -z ${db[user]} ]] ; then
 fi
 
 if [[ -n ${db[pass]} && ! -f ~/.pgpass ]] ; then
-	um=`umask -p`
-	umask 077
 	echo "${db[host]:-localhost}:${db[port]}:${db[db]}:${db[user]}:${db[pass]}" >> ~/.pgpass
-	$um
 fi
 
 declare -a args
