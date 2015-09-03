@@ -109,7 +109,7 @@ subFormsFor :: (FormData a -> Map.Map BS.ByteString b) -> Form a -> [(FormKey, F
 subFormsFor m f =
   map (sf . FormField . TE.decodeUtf8) $ uniq $ map (BSC.takeWhile ('.' /=) . BS.drop l') $ takeWhile (BS.isPrefixOf p') $ Map.keys $ snd $ Map.split p' $ m $ formData f where
   sf k = (k, subForm k f)
-  p' = BSC.snoc (formPathBS f) '.'
+  p' = formPathBS f `dotBS` ""
   l' = BS.length p'
   uniq (a:bl@(b:_))
     | a == b = uniq bl
