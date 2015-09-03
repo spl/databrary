@@ -6,7 +6,7 @@ module Databrary.Model.Tag.Types
   , MonadHasTag
   , TagUse(..)
   , MonadHasTagUse
-  , TagUseId(..)
+  , TagUseRow(..)
   , TagCoverage(..)
   , MonadHasTagCoverage
   , TagWeight(..)
@@ -75,11 +75,11 @@ data TagUse = TagUse
 
 makeHasRec ''TagUse ['useTag, 'tagWho, 'tagSlot]
 
-data TagUseId = TagUseId
-  { useTagId :: Tag
-  , tagKeywordId :: Bool
-  , tagWhoId :: Id Party
-  , tagSlotId :: SlotId
+data TagUseRow = TagUseRow
+  { useTagRow :: Tag
+  , tagRowKeyword :: Bool
+  , tagRowWhoId :: Id Party
+  , tagRowSlotId :: SlotId
   }
 
 data TagWeight = TagWeight

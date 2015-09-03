@@ -1,7 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 module Databrary.Model.Tag.SQL
   ( selectTag
-  , selectTagUseId
+  , selectTagUseRow
   , insertTagUse
   , deleteTagUse
   , selectTagWeight
@@ -32,17 +32,17 @@ tagUseTable :: Bool -> String
 tagUseTable False = "tag_use"
 tagUseTable True = "keyword_use"
 
-makeTagUseId :: Id Party -> Id Container -> Segment -> Maybe Bool -> Tag -> TagUseId
-makeTagUseId w c s k t = TagUseId t (fromMaybe False k) w (SlotId c s)
+makeTagUseRow :: Id Party -> Id Container -> Segment -> Maybe Bool -> Tag -> TagUseRow
+makeTagUseRow w c s k t = TagUseRow t (fromMaybe False k) w (SlotId c s)
 
-tagUseIdRow :: Selector -- ' @'Tag' -> 'TagUseId'@
-tagUseIdRow = addSelects '($)
-  (selectColumns 'makeTagUseId "tag_use" ["who", "container", "segment"])
+tagUseRow :: Selector -- ' @'Tag' -> 'TagUseRow'@
+tagUseRow = addSelects '($)
+  (selectColumns 'makeTagUseRow "tag_use" ["who", "container", "segment"])
   [SelectExpr "tag_use.tableoid = 'keyword_use'::regclass::oid"]
 
-selectTagUseId :: Selector -- ^ @'TagUseId'@
-selectTagUseId = selectJoin '($)
-  [ tagUseIdRow
+selectTagUseRow :: Selector -- ^ @'TagUseId'@
+selectTagUseRow = selectJoin '($)
+  [ tagUseRow
   , joinOn "tag_use.tag = tag.id"
     tagRow
   ]

@@ -2,6 +2,7 @@
 module Databrary.Model.Comment.SQL
   ( selectContainerComment
   , selectComment
+  , selectCommentRow
   ) where
 
 import Data.Maybe (fromMaybe)
@@ -43,6 +44,12 @@ selectComment ident = selectJoin '($)
   , joinOn "comment.container = container.id"
     $ selectContainer ident
   ]
+
+makeCommentRow :: Id Comment -> Id Container -> Segment -> Id Party -> Timestamp -> T.Text -> CommentRow
+makeCommentRow i c s w t x = CommentRow i w (SlotId c s) t x
+
+selectCommentRow :: Selector -- ^ @'CommentRow'@
+selectCommentRow = selectColumns 'makeCommentRow "comment" ["id", "container", "segment", "who", "time", "text"]
 
 _commentSets :: String -- ^ @'Comment'@
   -> [(String, String)]

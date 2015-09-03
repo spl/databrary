@@ -14,7 +14,6 @@ import qualified Data.HashMap.Strict as HM
 import Data.Monoid ((<>))
 import qualified Data.Text as T
 
-import Databrary.Model.URL
 import Databrary.Model.Id.Types
 import Databrary.Model.Permission.Types
 import Databrary.Model.Release.Types
@@ -31,6 +30,7 @@ import Databrary.Model.Record.Types
 import Databrary.Model.RecordCategory.Types
 import Databrary.Model.Metric
 import Databrary.Model.Tag.Types
+import Databrary.Model.Comment.Types
 import Databrary.Solr.Util
 
 safeField :: T.Text -> T.Text
@@ -75,7 +75,7 @@ data SolrDocument
     , solrPartySortName :: T.Text
     , solrPartyPreName :: Maybe T.Text
     , solrPartyAffiliation :: Maybe T.Text
-    , solrPartyHasAccount :: Bool
+    , solrPartyIsInstitution :: Bool
     , solrPartyAuthorization :: Maybe Permission
     }
   | SolrVolume
@@ -86,7 +86,6 @@ data SolrDocument
     , solrVolumeOwnerIds :: [Id Party]
     , solrVolumeOwnerNames :: [T.Text]
     , solrCitation :: Maybe T.Text
-    , solrCitationUrl :: Maybe URI
     , solrCitationYear :: Maybe Int16
     }
   | SolrContainer
@@ -139,6 +138,16 @@ data SolrDocument
     , solrTagName :: TagName
     , solrKeyword :: Maybe TagName
     , solrPartyId :: Id Party
+    }
+  | SolrComment
+    { solrId :: !BS.ByteString
+    , solrVolumeId :: Id Volume
+    , solrContainerId :: Id Container
+    , solrSegment :: SolrSegment
+    , solrSegmentDuration :: Maybe Offset
+    , solrCommentId :: Id Comment
+    , solrPartyId :: Id Party
+    , solrBody :: Maybe T.Text
     }
 
 $(return []) -- force new decl group for splice:

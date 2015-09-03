@@ -2,6 +2,7 @@
 module Databrary.Model.Comment.Types
   ( Comment(..)
   , MonadHasComment
+  , CommentRow(..)
   ) where
 
 import qualified Data.Text as T
@@ -28,3 +29,11 @@ instance Kinded Comment where
   kindOf _ = "comment"
 
 makeHasRec ''Comment ['commentId, 'commentWho, 'commentSlot, 'commentTime]
+
+data CommentRow = CommentRow
+  { commentRowId :: Id Comment
+  , commentRowWhoId :: Id Party
+  , commentRowSlotId :: SlotId
+  , commentRowTime :: Timestamp
+  , commentRowText :: T.Text
+  }

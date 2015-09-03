@@ -15,10 +15,11 @@ import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy as BSL
 import qualified Data.Foldable as Fold
-import Data.Maybe (isJust)
+import Data.Maybe (isNothing)
 import Data.Monoid ((<>))
 import Data.Time.Clock (getCurrentTime, diffUTCTime)
 import qualified Network.HTTP.Client as HC
+import Network.HTTP.Types.Method (methodPost)
 import Network.HTTP.Types.Header (hContentType)
 
 import Control.Invert
@@ -48,6 +49,7 @@ import Databrary.Model.Record.Types
 import Databrary.Model.RecordSlot
 import Databrary.Model.Measure
 import Databrary.Model.Tag
+import Databrary.Model.Comment
 import Databrary.Solr.Service
 import Databrary.Solr.Document
 
@@ -61,7 +63,7 @@ solrParty Party{..} auth = SolrParty
   , solrPartySortName = partySortName
   , solrPartyPreName = partyPreName
   , solrPartyAffiliation = partyAffiliation
-  , solrPartyHasAccount = isJust partyAccount
+  , solrPartyIsInstitution = isNothing partyAccount
   , solrPartyAuthorization = auth
   }
 
@@ -74,7 +76,6 @@ solrVolume Volume{..} cite = SolrVolume
   , solrVolumeOwnerIds = ownerIds
   , solrVolumeOwnerNames = ownerNames
   , solrCitation = citationHead <$> cite
-  , solrCitationUrl = citationURL =<< cite
   , solrCitationYear = citationYear =<< cite
   } where
   (ownerIds, ownerNames) = unzip volumeOwners
@@ -129,11 +130,11 @@ solrRecord rs@RecordSlot{ slotRecord = r@Record{..}, recordSlot = Slot{..} } = S
   , solrRecordAge = recordSlotAge rs
   }
 
-solrTag :: Id Volume -> TagUseId -> SolrDocument
-solrTag vi TagUseId{ useTagId = Tag{..}, tagSlotId = SlotId{..}, ..} = SolrTag
+solrTag :: Id Volume -> TagUseRow -> SolrDocument
+solrTag vi TagUseRow{ useTagRow = Tag{..}, tagRowSlotId = SlotId{..}, ..} = SolrTag
   { solrId = BSC.pack $ "tag_" <> show tagId
     <> ('_' : show slotContainerId)
-    <> (if tagKeywordId then "" else '_' : show tagWhoId)
+    <> (if tagRowKeyword then "" else '_' : show tagRowWhoId)
     <> maybe "" (('_':) . show) (lowerBound $ segmentRange slotSegmentId)
   , solrVolumeId = vi
   , solrContainerId = slotContainerId
@@ -141,8 +142,20 @@ solrTag vi TagUseId{ useTagId = Tag{..}, tagSlotId = SlotId{..}, ..} = SolrTag
   , solrSegmentDuration = segmentLength slotSegmentId
   , solrTagId = tagId
   , solrTagName = tagName
-  , solrKeyword = tagKeywordId ?> tagName
-  , solrPartyId = tagWhoId
+  , solrKeyword = tagRowKeyword ?> tagName
+  , solrPartyId = tagRowWhoId
+  }
+
+solrComment :: Id Volume -> CommentRow -> SolrDocument
+solrComment vi CommentRow{ commentRowSlotId = SlotId{..}, ..} = SolrComment
+  { solrId = BSC.pack $ "comment_" <> show commentRowId
+  , solrVolumeId = vi
+  , solrContainerId = slotContainerId
+  , solrSegment = SolrSegment slotSegmentId
+  , solrSegmentDuration = segmentLength slotSegmentId
+  , solrCommentId = commentRowId
+  , solrPartyId = commentRowWhoId
+  , solrBody = Just commentRowText
   }
 
 newtype SolrContext = SolrContext { solrService :: Service }
@@ -175,7 +188,7 @@ writeUpdate :: SolrM () -> SolrM ()
 writeUpdate f = do
   writeBlock "{\"delete\":{\"query\":\"*:*\""
   f
-  writeBlock "}}"
+  writeBlock "},\"commit\":{\"waitSearcher\":true,\"expungeDeletes\":true},\"optimize\":{\"waitSearcher\":true}}"
 
 joinContainers :: (a -> Slot -> b) -> [Container] -> [(a, SlotId)] -> [b]
 joinContainers _ _ [] = []
@@ -193,7 +206,8 @@ writeVolume (v, vc) = do
   -- this could be more efficient, but there usually aren't many:
   writeDocuments . map solrExcerpt =<< lookupVolumeExcerpts v
   writeDocuments . map solrRecord . joinContainers RecordSlot cl =<< lookupVolumeRecordSlotIds v
-  writeDocuments . map (solrTag (volumeId v)) =<< lookupVolumeTagUseIds v
+  writeDocuments . map (solrTag (volumeId v)) =<< lookupVolumeTagUseRows v
+  writeDocuments . map (solrComment (volumeId v)) =<< lookupVolumeCommentRows v
 
 writeAllDocuments :: SolrM ()
 writeAllDocuments = do
@@ -206,8 +220,7 @@ updateIndex t rc = handle
   $ do
     _ <- HC.httpNoBody req
       { HC.path = HC.path req <> "update/json"
-      , HC.queryString = "?commit=true"
-      , HC.method = "POST"
+      , HC.method = methodPost
       , HC.requestBody = HC.RequestBodyStreamChunked $ \wf -> do
         w <- runInvert $ runReaderT (runSolrM (writeUpdate writeAllDocuments)) (SolrContext rc)
         wf $ Fold.fold <$> w

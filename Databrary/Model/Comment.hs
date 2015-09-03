@@ -4,6 +4,7 @@ module Databrary.Model.Comment
   , blankComment
   , lookupComment
   , lookupSlotComments
+  , lookupVolumeCommentRows
   , addComment
   , commentJSON
   ) where
@@ -20,6 +21,7 @@ import Databrary.Model.SQL
 import Databrary.Model.Id.Types
 import Databrary.Model.Party
 import Databrary.Model.Identity
+import Databrary.Model.Volume.Types
 import Databrary.Model.Container
 import Databrary.Model.Segment
 import Databrary.Model.Slot
@@ -47,6 +49,10 @@ lookupSlotComments :: (MonadDB m, MonadHasIdentity c m) => Slot -> Int -> m [Com
 lookupSlotComments (Slot c s) n = do
   ident <- peek
   dbQuery $ ($ c) <$> $(selectQuery (selectContainerComment 'ident) "$!WHERE comment.container = ${containerId c} AND comment.segment && ${s} ORDER BY comment.thread LIMIT ${fromIntegral n :: Int64}")
+
+lookupVolumeCommentRows :: MonadDB m => Volume -> m [CommentRow]
+lookupVolumeCommentRows v =
+  dbQuery $(selectQuery selectCommentRow "JOIN container ON comment.container = container.id WHERE container.volume = ${volumeId v} ORDER BY container")
 
 addComment :: MonadDB m => Comment -> m Comment
 addComment c@Comment{..} = do

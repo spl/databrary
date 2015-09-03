@@ -4,7 +4,7 @@ module Databrary.Model.Tag
   , lookupTag
   , findTags
   , addTag
-  , lookupVolumeTagUseIds
+  , lookupVolumeTagUseRows
   , addTagUse
   , removeTagUse
   , lookupTopTagWeight
@@ -47,9 +47,9 @@ addTag :: MonadDB m => TagName -> m Tag
 addTag n =
   dbQuery1' $ (`Tag` n) <$> [pgSQL|!SELECT get_tag(${n})|]
 
-lookupVolumeTagUseIds :: MonadDB m => Volume -> m [TagUseId]
-lookupVolumeTagUseIds v =
-  dbQuery $(selectQuery selectTagUseId "JOIN container ON tag_use.container = container.id WHERE container.volume = ${volumeId v} ORDER BY container.id")
+lookupVolumeTagUseRows :: MonadDB m => Volume -> m [TagUseRow]
+lookupVolumeTagUseRows v =
+  dbQuery $(selectQuery selectTagUseRow "JOIN container ON tag_use.container = container.id WHERE container.volume = ${volumeId v} ORDER BY container.id")
 
 addTagUse :: MonadDB m => TagUse -> m Bool
 addTagUse t = either (const False) id <$> do
