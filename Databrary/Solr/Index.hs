@@ -90,15 +90,15 @@ solrContainer c@Container{..} = SolrContainer
   , solrRelease = containerRelease
   }
 
-solrAsset :: Asset -> SlotId -> SolrDocument
-solrAsset Asset{..} SlotId{..} = SolrAsset
+solrAsset :: AssetSlot -> SolrDocument
+solrAsset as@AssetSlot{ slotAsset = Asset{..}, assetSlot = ~(Just Slot{..}) } = SolrAsset
   { solrId = solrDocId assetId
   , solrAssetId = assetId
   , solrVolumeId = volumeId assetVolume
-  , solrContainerId = slotContainerId
-  , solrSegment = SolrSegment slotSegmentId
-  , solrSegmentDuration = segmentLength slotSegmentId
-  , solrName = assetName
+  , solrContainerId = containerId slotContainer
+  , solrSegment = SolrSegment slotSegment
+  , solrSegmentDuration = segmentLength slotSegment
+  , solrName = assetSlotName as
   , solrRelease = assetRelease
   , solrFormatId = formatId assetFormat
   }
@@ -189,10 +189,10 @@ writeVolume (v, vc) = do
   writeDocuments [solrVolume v vc]
   cl <- lookupVolumeContainers v
   writeDocuments $ map solrContainer cl
-  writeDocuments . map (uncurry solrAsset) =<< lookupVolumeAssetSlotIds v
+  writeDocuments . map solrAsset . joinContainers ((. Just) . AssetSlot) cl =<< lookupVolumeAssetSlotIds v
   -- this could be more efficient, but there usually aren't many:
   writeDocuments . map solrExcerpt =<< lookupVolumeExcerpts v
-  writeDocuments . map solrRecord =<< joinContainers RecordSlot cl <$> lookupVolumeRecordSlotIds v
+  writeDocuments . map solrRecord . joinContainers RecordSlot cl =<< lookupVolumeRecordSlotIds v
   writeDocuments . map (solrTag (volumeId v)) =<< lookupVolumeTagUseIds v
 
 writeAllDocuments :: SolrM ()

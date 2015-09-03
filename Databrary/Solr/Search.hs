@@ -51,7 +51,10 @@ defaultParams = B.string7 "qf=\"text_en^0.6 text_gen^1.5 keyword^10 tag_name^5 p
 search :: MonadSolr c m => SearchQuery -> m (Maybe J.Value)
 search SearchQuery{..} = do
   req <- peeks solrRequest
-  focusIO $ httpRequestJSON req{ HC.queryString = renderSimpleQuery True query }
+  focusIO $ httpRequestJSON req
+    { HC.path = HC.path req <> "search"
+    , HC.queryString = renderSimpleQuery True query
+    }
   where
   query = 
     [ ("q", BSL.toStrict $ B.toLazyByteString $ qt <> uw ql)
