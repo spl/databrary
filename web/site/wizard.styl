@@ -4,7 +4,7 @@
   ul
     @media screen and (min-width:grid-mobile-width+1)
       margin 0
-      border-right 1px solid green
+      border-right 1px solid neutral12
       padding-left 0
       padding-top f4
       padding-bottom 2
@@ -39,7 +39,7 @@
         margin-left 0
         padding-right f1
         margin-right -1px
-        border 1px solid green
+        border 1px solid neutral12
         border-right-width 0
       @media screen and (max-width:grid-mobile-width)
         background-color green51
@@ -47,6 +47,7 @@
         border-left b8 solid green52
 
     &:hover:not(.active)
+    &:hover:not(.blocked)
       @media screen and (min-width:grid-mobile-width+1)
         margin-left 0
         padding-right f1
@@ -56,15 +57,18 @@
     &.error
       background-color red51
 
-    &.incomplete
-      background-color yellow51
+    &.incomplete.active
+      background-color orange52
+      @media screen and (max-width:grid-mobile-width)
+        border-left b8 solid orange53
 
     &.blocked
       background-color mix(pale, white, 50%)
 
       &:hover
-        margin-left f2
-        padding-right f2
+        @media screen and (min-width:grid-mobile-width+1)
+          margin-left f2
+          padding-right f2
 
         .wizard-list-name
           text-decoration none

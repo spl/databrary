@@ -24,18 +24,20 @@ app.provider('routerService', [
         if (value == null)
           return;
 
-        if (!Array.isArray(value)) {
-          value = [value];
-        }
-
-        value.forEach(function (v) {
-          if (angular.isObject(v)) {
+        var add = function (v) {
+          if (angular.isObject(v))
             v = angular.toJson(v);
-          }
 
-          url += (q ? '&' : '?') + encodeUri(key) + '=' + encodeUri(v);
+          url += (q ? '&' : '?') + encodeUri(key);
+          if (v !== true)
+            url += '=' + encodeUri(v);
           q = true;
-        });
+        };
+
+        if (Array.isArray(value))
+          value.forEach(add);
+        else
+          add(value);
       });
 
       return url;
@@ -232,7 +234,7 @@ app.provider('routerService', [
       resolve: {
         party: [
           'modelService', function (models) {
-            return models.Login.user.get({parents:'', children:'', volumes:'access'});
+            return models.Login.user.get({parents:true, children:true, volumes:'access'});
           }
         ]
       },
@@ -296,7 +298,7 @@ app.provider('routerService', [
 
             return checkPermission(page.$q,
               page.models.Volume.get(page.$route.current.params.id,
-                {access:'', citation:'', links:'', top:'', funding:'', records:'', containers:'all', tags:'keyword', metrics:''}),
+                {access:true, citation:true, links:true, top:true, funding:true, records:true, containers:'all', tags:'keyword', metrics:true}),
               page.permission.EDIT)
               .then(function (volume) {
                 return volume.top.getSlot(volume.top.segment, ['assets'])
@@ -320,7 +322,7 @@ app.provider('routerService', [
         volume: [
           'pageService', function (page) {
             return page.models.Volume.get(page.$route.current.params.id,
-              {access:'', citation:'', links:'', funding:'', top:'', tags:'', excerpts:'', comments:'', records:'', containers:'all', metrics:''});
+              {access:true, citation:true, links:true, funding:true, top:true, tags:true, excerpts:true, comments:true, records:true, containers:'all', metrics:true});
           }
         ]
       },
