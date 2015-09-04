@@ -65,5 +65,5 @@ search SearchQuery{..} = do
   ql = maybe id ((:) . bp defaultParams) searchString $ map (uncurry bt) searchTerms
   bt f = bp (B.string7 "qf=" <> quoteQuery escapeTextWith f)
   bp p v = B.string7 "_query_:" <> quoteQuery escapeLazyByteStringCharsWith (B.toLazyByteString $ qe <> B.string7 "{!dismax " <> p <> B.char7 '}' <> TE.encodeUtf8Builder v)
-  uw [] = B.char7 '*'
+  uw [] = B.string7 "*:*"
   uw (t:l) = t <> foldMap (B.char7 ' ' <>) l

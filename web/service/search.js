@@ -59,14 +59,16 @@ app.factory('searchService', [
 
     ///////////////////////////////// search
 
+    Party.limit = 24;
+    Party.volume = 'false';
     Party.search = function (params) {
-      if (params.volume && params.volume !== 'false')
+      if (params.volume && params.volume !== Party.volume)
         return;
       if (!params.volume) {
         params.volume = false;
         params.limit = 12;
       } else
-        params.limit = 24;
+        params.limit = Party.limit;
       return router.http(router.controllers.postSearch, params)
         .then(function (res) {
           partyMakeArray(res.data.response.docs);
@@ -74,14 +76,16 @@ app.factory('searchService', [
         });
     };
 
+    Volume.limit = 8;
+    Volume.volume = true;
     Volume.search = function (params) {
-      if (params.volume === 'false')
+      if (params.volume === Party.volume)
         return;
       if (!params.volume) {
         params.volume = true;
         params.limit = 4;
       } else
-        params.limit = 8;
+        params.limit = Volume.limit;
       return router.http(router.controllers.postSearch, params)
         .then(function (res) {
           volumeMakeArray(res.data.response.docs);

@@ -1,17 +1,49 @@
 'use strict'
 
 app.controller 'site/search', [
-  '$scope', '$location', 'displayService', 'parties', 'volumes',
-  ($scope, $location, display, parties, volumes) ->
-    $scope.parties = parties?.response.docs
-    $scope.volumes = volumes?.response.docs
+  '$scope', '$location', 'displayService', 'searchService', 'parties', 'volumes',
+  ($scope, $location, display, Search, parties, volumes) ->
+    display.title = 'Search'
+
+    process = (r) ->
+      list = r.response.docs
+      list.count = r.response.numFound
+      list
+
+    if parties
+      $scope.parties = process(parties)
+      unless volumes
+        type = Search.Party
+        $scope.count = $scope.parties.count
+    if volumes
+      $scope.volumes = process(volumes)
+      unless parties
+        type = Search.Volume
+        $scope.count = $scope.volumes.count
 
     params = $location.search()
     $scope.query = params.query || ''
+    offset = parseInt(params.offset, 10) || 0
+    if type
+      $scope.page = 1 + (offset / type.limit)
+      $scope.pages = Math.ceil($scope.count / type.limit)
 
     $scope.search = () ->
       $location.replace()
         .search('query', $scope.query)
+        .search('volume', type?.volume)
+        .search('offset', offset || undefined)
+      return
+
+    $scope.searchParties = () ->
+      type = Search.Party
+      $scope.search()
+    $scope.searchVolumes = () ->
+      type = Search.Volume
+      $scope.search()
+    $scope.searchPage = (n) ->
+      offset = type.limit*(n-1)
+      $scope.search()
 
     return
 

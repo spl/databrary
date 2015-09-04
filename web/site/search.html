@@ -54,14 +54,18 @@
       <small class="status" ng-if="suggestedQuery.length > 0">
         Did you mean <a class="search-suggestion" ng-click="search(suggestedQuery)">{{suggestedQuery}}</a>?
       </small>
-      <div ng-if="::parties">
+      <div ng-if="::!!parties">
         <h3>Users</h3>
+        <button ng-if="::!!volumes" ng-click="searchParties()">show all {{::parties.count}}</button>
+        <small ng-if="::!volumes">{{::parties.count}} total</small>
         <div class="row search-party-results">
           <portrait class="col-desktop-5 col-tablet-4 col-mobile-6" ng-repeat="party in ::parties"></portrait>
         </div>
       </div>
-      <div ng-if="::volumes">
+      <div ng-if="::!!volumes">
         <h3>Volumes</h3>
+        <button ng-if="::!!parties" ng-click="searchVolumes()">show all {{::volumes.count}}</button>
+        <small ng-if="::!parties">{{::volumes.count}} total</small>
         <ul class="row search-volume-results">
           <li ng-repeat="volume in ::volumes">
             <h1 class="search-volume-result-title">
@@ -75,15 +79,6 @@
             </div>
 
             <div class="volume-list-body" ng-bind="::volume.body.replace('\n', ' ') | truncate:200"></div>
-
-            <div class="search-volume-result-keywords" ng-if="result.volume_keywords_ss.length > 0">
-              <span>Keywords: </span>
-              <ul class="inline-block comma">
-                <li ng-repeat="k in result.tags">{{k}}</li>
-              </ul>
-            </div>
-
-            <div >
 
             <div class="search-volume-containers" ng-if="retrievedContainers[result.id] !== undefined">
               <small class="status" ng-if="retrievedContainers[result.id].length <= 0">No matching records or assets found</small>
@@ -104,19 +99,13 @@
           </li>
         </ul>
       </div>
-      <div class="search-pages" ng-if="totalCount > 0">
-        <span ng-if="prev">
-          <a ng-if="prev" ng-click="prev()">&lt; </a>
+      <div class="search-pages" ng-if="::count">
+        <span ng-if="::page != 1">
+          <a ng-click="searchPage(1)">1</a> <a ng-click="searchPage(page-1)">&lt;</a> 
         </span>
-        <b ng-repeat="i in pageRange">
-          <b ng-if="number == i">| {{i}} </b>
-          <span ng-if="number != i">
-            <a ng-click="goToPage(i)">| {{i}} </a>
-          </span>
-        </b>
-        |
-        <span ng-if="next">
-          <a ng-click="next()"> &gt;</a>
+        <input type="number" ng-model="page" key-enter="searchPage(page)"/>
+        <span ng-if="::page != pages">
+          <a ng-click="searchPage(page+1)">&gt;</a> <a ng-click="searchPage(pages)" ng-bind="::pages"></a>
         </span>
       </div>
     </div>
