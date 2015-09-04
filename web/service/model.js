@@ -57,7 +57,7 @@ app.factory('modelService', [
       if (Array.isArray(options)) {
         for (var i = 0; i < options.length; i ++)
           if (!hasField(obj, options[i])) {
-            opts[options[i]] = '';
+            opts[options[i]] = true;
             need = opts;
           }
       }
