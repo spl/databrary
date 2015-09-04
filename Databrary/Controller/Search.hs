@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings, TupleSections #-}
 module Databrary.Controller.Search
   ( postSearch
-  , getUpdateIndex
+  , viewUpdateIndex
   , postUpdateIndex
   ) where
 
@@ -38,8 +38,8 @@ postSearch = action GET (pathAPI </< "search") $ \api -> withAuth $ do
   jsonResp <- search q
   return $ okResponse [] $ fromMaybe JSON.Null jsonResp
 
-getUpdateIndex :: ActionRoute ()
-getUpdateIndex = action GET ("search" >/> "index") $ \() -> withAuth $ do
+viewUpdateIndex :: ActionRoute ()
+viewUpdateIndex = action GET ("search" >/> "index") $ \() -> withAuth $ do
   checkMemberADMIN
   peeks $ blankForm . htmlUpdateIndex
 

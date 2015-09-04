@@ -48,7 +48,7 @@ enumForm :: forall a m f . (Functor m, Monad m, DBEnum a) => DeformT f m a
 enumForm = deformParse minBound fv where
   fv (FormDatumBS b) = maybe e return $ readDBEnum $ BSC.unpack b
   fv (FormDatumJSON j) = left T.pack $ JSON.parseEither parseJSONEnum j
-  fv FormDatumNone = e
+  fv _ = e
   e = Left $ "Invalid " `T.append` kindOf (undefined :: a)
 
 makeDBEnum :: String -> String -> TH.DecsQ

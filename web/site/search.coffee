@@ -1,14 +1,24 @@
 'use strict'
 
 app.controller 'site/search', [
-  '$scope', '$location', 'displayService', 'results', 'pageService', 'solrModelService',
-  ($scope, $location, display, results, page, solrModel) ->
-    console.log("results")
-    console.log(results)
+  '$scope', '$location', 'displayService', 'parties', 'volumes',
+  ($scope, $location, display, parties, volumes) ->
+    $scope.parties = parties?.response.docs
+    $scope.volumes = volumes?.response.docs
 
-  ###########################
-  # Some constants
-  ###########################
+    params = $location.search()
+    $scope.query = params.query || ''
+
+    $scope.search = () ->
+      $location.replace()
+        .search('query', $scope.query)
+
+    return
+
+
+    ###########################
+    # Some constants
+    ###########################
     $scope.selectedType = ""
     $scope.selectedVolume = ""
     $scope.selectedFilter = ""

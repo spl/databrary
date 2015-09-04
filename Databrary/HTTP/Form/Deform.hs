@@ -186,6 +186,7 @@ deformParseJSON def p = do
     FormDatumJSON j -> case JSON.fromJSON j of
       JSON.Error e -> def <$ deformError (T.pack e)
       JSON.Success r -> return r
+    FormDatumFlag -> deformEither def $ p Nothing
 
 class Deform f a where
   deform :: (Functor m, Monad m) => DeformT f m a
@@ -250,6 +251,7 @@ instance Deform f Bool where
     fv (FormDatumJSON (JSON.Number n)) = return $ n /= 0
     fv (FormDatumJSON (JSON.Bool b)) = return b
     fv (FormDatumJSON JSON.Null) = return False
+    fv FormDatumFlag = return True
     fv _ = Left "Boolean value required"
 
 instance Deform f Int where

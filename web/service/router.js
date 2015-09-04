@@ -216,16 +216,20 @@ app.provider('routerService', [
       controller: 'site/search',
       templateUrl: "site/search.html",
       resolve: {
-        results: [
-          'pageService', function (page) {
-            return page.router.http(page.router.controllers.postSearch, page.$route.current.params)
-              .then(function (res) {
-                return res.data;
-              });
+        parties: [
+          '$route', 'searchService',
+          function ($route, search) {
+            return search.Party.search($route.current.params);
+          }
+        ],
+        volumes: [
+          '$route', 'searchService',
+          function ($route, search) {
+            return search.Volume.search($route.current.params);
           }
         ]
       },
-      reloadOnSearch: false,
+      reloadOnSearch: true
     });
 
     routes.profile = makeRoute(controllers.viewProfile, [], {

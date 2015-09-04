@@ -62,7 +62,8 @@ data FormDatum
   = FormDatumNone
   | FormDatumBS !BS.ByteString
   | FormDatumJSON !JSON.Value
-  deriving (Show)
+  | FormDatumFlag
+  deriving (Eq)
 
 instance Monoid FormDatum where
   mempty = FormDatumNone
@@ -124,7 +125,7 @@ jsonFormDatum Form{ formJSON = j } = Fold.foldMap FormDatumJSON j
 
 queryFormDatum :: Form a -> FormDatum
 queryFormDatum Form{ formData = FormData{ formDataQuery = m }, formPathBS = p } =
-  Fold.foldMap (maybe (FormDatumJSON JSON.Null) FormDatumBS) $ Map.lookup p m
+  Fold.foldMap (maybe FormDatumFlag FormDatumBS) $ Map.lookup p m
 
 postFormDatum :: Form a -> FormDatum
 postFormDatum Form{ formData = FormData{ formDataPost = m }, formPathBS = p } =

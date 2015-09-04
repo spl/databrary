@@ -61,6 +61,7 @@ value = do
     FormDatumNone -> Nothing
     FormDatumJSON _ -> Nothing -- that's weird
     FormDatumBS b -> BS.null b ?!> b
+    FormDatumFlag -> Nothing
 
 errorList :: [FormErrorMessage] -> H.Html
 errorList [] = mempty

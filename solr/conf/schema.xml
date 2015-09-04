@@ -40,7 +40,7 @@
   <copyField source="body" dest="text_en"/>
   <copyField source="body" dest="text_gen"/>
   <copyField source="body" dest="text_rev"/>
-  <field name="volume_owner_ids" type="id" indexed="true" multiValued="true"/>
+  <field name="volume_owner_ids" type="id" indexed="true" stored="true" multiValued="true"/>
   <field name="volume_owner_names" type="text" indexed="true" stored="true" multiValued="true"/>
   <copyField source="volume_owner_names" dest="party_name"/>
   <copyField source="volume_owner_names" dest="text_en"/>

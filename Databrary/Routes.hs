@@ -127,7 +127,7 @@ routeMap = fromRouteList
   , route postComment
 
   , route postSearch
-  , route getUpdateIndex
+  , route viewUpdateIndex
   , route postUpdateIndex
 
   , route uploadStart

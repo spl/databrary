@@ -1,11 +1,11 @@
 <article class="view search-view">
   <div class="wrap">
+    <ng-form name="searchForm">
     <div class="row">
       <div class="col">
         <h1 class="panel-title smaller">
           <span>Search </span>
-          <ng-form isolate>
-            <input class="search-input" type="search" ng-model="searchBoxQuery" key-enter="searchBox()"/>
+            <input class="search-input" type="search" ng-model="query" key-enter="search()"/>
           </ng-form>
         </h1>
       </div>
@@ -48,38 +48,33 @@
       <button ng-click="resetFilters()">Clear Filters</button>
 
     </div>
+    </ng-form>
+
     <div class="search-results col-desktop-12 col-tablet-7 col-mobile-6">
-      <small class="status">{{totalCount}} results found. </small>
       <small class="status" ng-if="suggestedQuery.length > 0">
         Did you mean <a class="search-suggestion" ng-click="search(suggestedQuery)">{{suggestedQuery}}</a>?
       </small>
-      <div ng-if="partyCount > 0">
+      <div ng-if="::parties">
         <h3>Users</h3>
         <div class="row search-party-results">
-          <aside class="col-desktop-5 col-tablet-4 col-mobile-6 portrait ng-cloak" ng-repeat="result in partyModels">
-            <a ng-href="{{::page.router.party([result.id])}}">
-              <figure class="figure-avatar" ng-class="::{inst: party.institution}">
-                <img ng-src="{{::page.router.partyAvatar([result.id, size || 56], {})}}">
-              </figure>
-            </a>
-            <div class="portrait-info">
-              <a class="portrait-name" ng-href="{{::page.router.party([result.id])}}" ng-bind="::result.prename + ' ' + result.sortname"></a>
-              <span class="portrait-extra" ng-bind="::result.affiliation"></span>
-            </div>
-          </aside>
+          <portrait class="col-desktop-5 col-tablet-4 col-mobile-6" ng-repeat="party in ::parties"></portrait>
         </div>
       </div>
-      <div ng-if="volumeCount > 0">
+      <div ng-if="::volumes">
         <h3>Volumes</h3>
         <ul class="row search-volume-results">
-          <li ng-repeat="result in volumeModels">
+          <li ng-repeat="volume in ::volumes">
             <h1 class="search-volume-result-title">
               <span ng-if="retrievedContainers[result.id] === undefined" ng-click="searchContainers(result)" class="icon radio"></span>
               <span ng-if="retrievedContainers[result.id] !== undefined" ng-click="clearContainers(result)" class="icon radio-selected"></span>
-              <a ng-href="volume/{{result.id}}">{{result.name}}</a>
+              <a ng-href="{{::volume.route()}}" ng-bind="::volume.name"></a>
             </h1>
 
-            <div ng-bind="formVolumeResult(result)"></div>
+            <div class="volume-list-investigators">
+              <volume-owners></volume-owners>
+            </div>
+
+            <div class="volume-list-body" ng-bind="::volume.body.replace('\n', ' ') | truncate:200"></div>
 
             <div class="search-volume-result-keywords" ng-if="result.volume_keywords_ss.length > 0">
               <span>Keywords: </span>

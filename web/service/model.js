@@ -198,6 +198,8 @@ app.factory('modelService', [
         return $q.successful(p);
     }
 
+    Party.peek = partyPeek;
+
     Party.get = function (id, options) {
       return partyGet(id, partyPeek(id), options);
     };
