@@ -64,7 +64,7 @@
               <p>New shared data</p>
               <img class="volume-thumb" ng-src="{{::volume.thumbRoute(72)}}">
               <div>
-                <a ng-href="{{::volume.route()}}" ng-bind="::volume.name"></a>
+                <a class="volume-name" ng-href="{{::volume.route()}}" ng-bind="::volume.name"></a>
                 <div class="volume-list-investigators">
                   <volume-owners></volume-owners>
                 </div>
@@ -84,9 +84,9 @@
         <div class="home-tags">
           <span class="home-sections-title"><span class="icon tag"></span>Top Tags</span>
           <ol>
-            <li ng-repeat="tag in ::tags" class="home-tags-item tags-item">
-              <a ng-href="{{::page.router.volumeSearch()}}?query={{::tag.id}}" ng-bind="::tag.id"></a>
-            </li>
+            <a ng-href="{{::page.router.volumeSearch()}}?query={{::tag.id}}" ng-repeat="tag in ::tags"><li class="home-tags-item tags-item">
+              <span ng-bind="::tag.id"></span>
+            </li></a>
           </ol>
         </div>
       </div>
