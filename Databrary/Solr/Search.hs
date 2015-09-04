@@ -28,6 +28,7 @@ data SearchType
   = SearchVolumes
   | SearchParties
   | SearchVolume (Id Volume)
+  deriving (Eq)
 
 data SearchQuery = SearchQuery
   { searchString :: Maybe T.Text
@@ -38,12 +39,6 @@ data SearchQuery = SearchQuery
 
 quoteQuery :: (Char -> String -> a -> B.Builder) -> a -> B.Builder
 quoteQuery e s = B.char7 '"' <> e '\\' "\"\\" s <> B.char7 '"'
-
-quoteBuilder :: B.Builder -> B.Builder
-quoteBuilder = quoteQuery escapeLazyByteStringCharsWith . B.toLazyByteString
-
-quoteText :: T.Text -> B.Builder
-quoteText = quoteQuery escapeTextWith
 
 defaultParams :: B.Builder
 defaultParams = B.string7 "qf=\"text_en^0.6 text_gen^1.5 keyword^10 tag_name^5 party_name^4\" pf=\"tag_name^5 keyword^10 party_name^4\" ps=3"
@@ -57,18 +52,18 @@ search SearchQuery{..} = do
     }
   where
   query = 
-    [ ("q", BSL.toStrict $ B.toLazyByteString $ qt <> uw ql)
-    , ("q.op", "AND")
+    [ ("q", BSL.toStrict $ B.toLazyByteString $ qp <> uw ql)
+    , ("q.op", qop)
     , ("start", BSC.pack $ show $ paginateOffset searchPaginate)
     , ("rows", BSC.pack $ show $ paginateLimit searchPaginate)
     , ("fq", "content_type:" <> ct)
     ]
-  (ct, qt) = case searchType of
-    SearchVolumes -> ("volume", B.string7 "{!join from=volume_id to=volume_id}")
-    SearchParties -> ("party", mempty)
-    SearchVolume v -> ("(-volume)", B.string7 "volume_id:" <> B.int32Dec (unId v) <> B.char7 ' ')
+  (ct, qp, qe, qop) = case searchType of
+    SearchVolumes -> ("volume", mempty, B.string7 "{!join from=volume_id to=volume_id}", "AND")
+    SearchParties -> ("party", mempty, mempty, "AND")
+    SearchVolume v -> ("(-volume)", B.string7 "volume_id:" <> B.int32Dec (unId v) <> B.char7 ' ', mempty, "OR")
   ql = maybe id ((:) . bp defaultParams) searchString $ map (uncurry bt) searchTerms
-  bt f = bp (B.string7 "qf=" <> quoteText f)
-  bp p v = B.string7 "_query_:" <> quoteBuilder (B.string7 "{!dismax " <> p <> B.char7 '}' <> TE.encodeUtf8Builder v)
+  bt f = bp (B.string7 "qf=" <> quoteQuery escapeTextWith f)
+  bp p v = B.string7 "_query_:" <> quoteQuery escapeLazyByteStringCharsWith (B.toLazyByteString $ qe <> B.string7 "{!dismax " <> p <> B.char7 '}' <> TE.encodeUtf8Builder v)
   uw [] = B.char7 '*'
   uw (t:l) = t <> foldMap (B.char7 ' ' <>) l
