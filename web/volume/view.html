@@ -13,11 +13,11 @@
   </panel>
   <panel id="panel-tags" panel-title="tags.title" fold ng-if="::page.models.Login.isAuthorized() || volume.tags" edit-link="{{::volume.checkPermission(page.permission.EDIT) ? volume.editRoute('overview')+'#overview-keywords' : ''}}">
     <div class="panel-tags-legend" tooltip="'keywords.display.description' | message">
-      <span class="panel-tags-item legend keyword"></span>
+      <span class="panel-tags-item tags-item legend keyword"></span>
       <span message="keywords.title"></span>
     </div>
     <div class="panel-tags-legend" tooltip="'tags.display.description' | message">
-      <span class="panel-tags-item legend"></span>
+      <span class="panel-tags-item tags-item legend"></span>
       <span message="tags.title"></span>
     </div>
     <hr>

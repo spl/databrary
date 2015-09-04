@@ -1,8 +1,8 @@
 <div class="panel-tags-list">
   <ng-form name="tagForm" isolate>
     <ul class="panel-tags-items">
-      <li ng-repeat="tag in tags" class="panel-tags-item" ng-class="::{'keyword': tag.keyword}">
-        <div class="panel-tag-name">
+      <li ng-repeat="tag in tags" class="panel-tags-item tags-item" ng-class="::{'keyword': tag.keyword}">
+        <div class="tag-name">
           <span ng-bind="::tag.id"></span>
         </div>
         <div class="panel-tag-controls" ng-if="::target">
@@ -14,7 +14,7 @@
           </button>
         </div>
       </li>
-      <li class="panel-tags-item tag-add" ng-if="::target">
+      <li class="panel-tags-item tags-item tag-add" ng-if="::target">
         <tag-add ng-if="::!keyword"></tag-add>
         <tag-add ng-if="::keyword" keyword></tag-add>
       </li>

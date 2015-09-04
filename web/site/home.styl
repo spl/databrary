@@ -36,7 +36,6 @@
   margin-bottom 0
   cursor pointer
 
-
 .home-section-text
   position relative
   background white
@@ -78,64 +77,25 @@
     font-size 0.8em
     line-height 1.2em
     margin-right 0
-  @media screen and (max-width: grid-mobile-width)
     margin-left 0
 
 .home-tags
   overflow hidden
   ol
-    list-style-type none
     padding 0
-    font-size 0.8em
-    ul
-      padding 0
-      padding-left b3
-  span
-    font-weight 700
-  @media screen and (min-width: grid-mobile-width+1)
+  @media screen and (min-width: grid-tablet-width+1)
     padding-left b1*2
 
 .home-tags-item
-  font-line 1 1.25
-  height b1 + b4
   display block
-  margin-right f2
-  border-radius b1
-  border 1px solid pale
-  padding-width f3
   margin-bottom f2
   max-width 250px
   overflow hidden
-
-  &:before
-    display none
+  text-overflow ellipsis
+  white-space nowrap
 
   &.keyword
     border 1px solid orange52
-
-  .home-tag-weight
-    position relative
-    font-weight bold
-    float left
-    background green51
-    border-radius b3
-    margin-right f4
-    margin-top f4
-    margin-bottom f4
-    min-width b1
-    font-line f34 f23
-    text-align center
-
-  .home-tag-name
-    position relative
-    float left
-    height b1
-    top -b12
-    word-break break-all
-    overflow hidden
-    text-overflow ellipsis
-    max-width 200px
-    width 80%
 
 .home-bigbuttons
   background-color #2c3e51
@@ -172,7 +132,7 @@
     position relative
     margin-right auto
     margin-left auto
-    width 625px
+    width max-content
     @media screen and (max-width: grid-mobile-width+1)
       width auto
       padding-top b3
@@ -192,6 +152,8 @@
       @media screen and (min-width: grid-mobile-width+1)
         border-top b3 solid white      
         border-bottom b3 solid white
+      @media screen and (min-width: grid-mobile-width+1) and (max-width: grid-tablet-width)
+        margin-width b2
       @media screen and (max-width: grid-mobile-width)
         display block
         width 100%
