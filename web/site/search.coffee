@@ -1,9 +1,10 @@
 'use strict'
 
 app.controller 'site/search', [
-  '$scope', '$location', 'displayService', 'searchService', 'parties', 'volumes',
-  ($scope, $location, display, Search, parties, volumes) ->
+  '$scope', '$location', 'constantService', 'displayService', 'searchService', 'parties', 'volumes',
+  ($scope, $location, constants, display, Search, parties, volumes) ->
     display.title = 'Search'
+    $scope.constants = constants
 
     process = (r) ->
       list = r.response.docs
@@ -22,20 +23,28 @@ app.controller 'site/search', [
         $scope.count = $scope.volumes.count
 
     params = $location.search()
-    $scope.query = params.query || ''
+    $scope.query = params.q || ''
     offset = parseInt(params.offset, 10) || 0
     if type
       $scope.page = 1 + (offset / type.limit)
       $scope.pages = Math.ceil($scope.count / type.limit)
+    $scope.terms = terms = {}
+    for t, v of params
+      if t.startsWith('t.')
+        terms[t.substr(2)] = v
 
     $scope.search = () ->
       $location.replace()
-        .search('query', $scope.query)
+        .search('q', $scope.query)
         .search('volume', type?.volume)
         .search('offset', offset || undefined)
+      for t, v of terms
+        $location.search('t.'+t, v)
       return
 
-    $scope.searchParties = () ->
+    $scope.searchParties = (auth, inst) ->
+      terms.party_authorization = auth
+      terms.party_is_institution = inst
       type = Search.Party
       $scope.search()
     $scope.searchVolumes = () ->

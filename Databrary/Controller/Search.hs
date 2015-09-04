@@ -23,8 +23,8 @@ import Databrary.View.Search
 
 searchForm :: (Applicative m, Monad m) => DeformT f m SearchQuery
 searchForm = SearchQuery
-  <$> ("query" .:> deformNonEmpty deform)
-  <*> ("terms" .:> withSubDeforms (\k -> (view k, ) <$> deform))
+  <$> ("q" .:> deformNonEmpty deform)
+  <*> ("t" .:> withSubDeforms (\k -> (view k, ) <$> deform))
   <*> ("volume" .:> fromMaybe SearchVolumes <$> deformOptional ((SearchVolume <$> deform) <|> (sv <$> deform)))
   <*> paginateForm
   where
