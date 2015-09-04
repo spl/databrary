@@ -134,7 +134,6 @@ app.factory('modelService', [
     Party.prototype.fields = {
       id: true,
       permission: false,
-      name: true,
       sortname: true,
       prename: true,
       orcid: true,
@@ -144,6 +143,12 @@ app.factory('modelService', [
       url: true,
       authorization: false,
     };
+
+    Object.defineProperty(Party.prototype, 'name', {
+      get: function () {
+        return (this.prename ? this.prename + ' ' : '') + this.sortname;
+      }
+    });
 
     Party.prototype.init = function (init) {
       Model.prototype.init.call(this, init);

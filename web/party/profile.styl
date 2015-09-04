@@ -4,6 +4,14 @@
   background-color orange51
 .profile-volumes, .profile-parties
   padding-top b1
+  @media screen and (max-width:grid-mobile-width)
+    border-top 1px solid pale
+    margin-top b1
+    margin-bottom b2
+  legend
+    margin-top -b1*1.5
+    background-color white
+    margin-bottom b2
   .button.icon, .button.icon:hover
     width 16px
     height 16px
@@ -101,11 +109,3 @@
   display none
   visibility hidden
   margin-left b3
-  
-.profile-mobile-header
-  background-color green51
-  margin-bottom b2
-  margin-left -12%
-  margin-right -b2
-  padding-left 12% 
-  padding-right b2
