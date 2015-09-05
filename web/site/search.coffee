@@ -29,17 +29,25 @@ app.controller 'site/search', [
       $scope.page = 1 + (offset / type.limit)
       $scope.pages = Math.ceil($scope.count / type.limit)
     $scope.fields = fields = {}
+    $scope.metrics = metrics = {}
     for f, v of params
       if f.startsWith('f.')
         fields[f.substr(2)] = v
+      else if f.startsWith('m.')
+        metrics[f.substr(2)] = v
 
     $scope.search = () ->
+      if !$scope.query && !offset && $.isEmptyObject(fields) && $.isEmptyObject(metrics)
+        $location.replace().search({})
+        return
       $location.replace()
         .search('q', $scope.query)
         .search('volume', type?.volume)
         .search('offset', offset || undefined)
       for f, v of fields
         $location.search('f.'+f, v)
+      for f, v of metrics
+        $location.search('m.'+f, v)
       return
 
     $scope.searchParties = (auth, inst) ->

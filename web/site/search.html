@@ -18,6 +18,16 @@
         <li ng-click="searchParties()" ng-class="::{b:fields.party_authorization == null && fields.party_is_institution == null}">All users and groups</li>
       </ul>
 
+      <div ng-if="::!!volumes">
+        <div>
+          <input type="checkbox" ng-model="fields.container_top" ng-true-value="'false'" ng-false-value="undefined" ng-change="searchVolumes()"/>
+          Volumes with sessions
+        </div>
+        <div>
+          <input type="checkbox" ng-model="fields.content_type" ng-true-value="'excerpt'" ng-false-value="undefined" ng-change="searchVolumes()"/>
+          Volumes with highlights
+        </div>
+      </div>
 
 <!--
       <div class="search-filter">
