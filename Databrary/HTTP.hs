@@ -23,7 +23,7 @@ import Databrary.Model.Time
 
 -- |Same as 'encodePathSegments' but for absolute paths (empty results in a single slash)
 encodePathSegments' :: [T.Text] -> BSB.Builder
-encodePathSegments' [] = BSB.char7 '/'
+encodePathSegments' [] = BSB.char8 '/'
 encodePathSegments' p = encodePathSegments p
 
 -- |Same as 'encodePath' but using 'encodePathSegments''

@@ -32,11 +32,11 @@ wordHtmlEscaped =
         (P.liftFixedToBounded P.word8) P.emptyB
   where
   fixed4 x = P.liftFixedToBounded $ const x P.>$<
-    P.char7 P.>*< P.char7 P.>*< P.char7 P.>*< P.char7
+    P.char8 P.>*< P.char8 P.>*< P.char8 P.>*< P.char8
   fixed5 x = P.liftFixedToBounded $ const x P.>$<
-    P.char7 P.>*< P.char7 P.>*< P.char7 P.>*< P.char7 P.>*< P.char7
+    P.char8 P.>*< P.char8 P.>*< P.char8 P.>*< P.char8 P.>*< P.char8
   fixed6 x = P.liftFixedToBounded $ const x P.>$<
-    P.char7 P.>*< P.char7 P.>*< P.char7 P.>*< P.char7 P.>*< P.char7 P.>*< P.char7
+    P.char8 P.>*< P.char8 P.>*< P.char8 P.>*< P.char8 P.>*< P.char8 P.>*< P.char8
 
 fromHtmlEscapedWord :: Word8 -> B.Builder
 fromHtmlEscapedWord = P.primBounded wordHtmlEscaped

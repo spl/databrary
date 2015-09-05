@@ -38,10 +38,10 @@ data SearchQuery = SearchQuery
   }
 
 quoteQuery :: (Char -> String -> a -> B.Builder) -> a -> B.Builder
-quoteQuery e s = B.char7 '"' <> e '\\' "\"\\" s <> B.char7 '"'
+quoteQuery e s = B.char8 '"' <> e '\\' "\"\\" s <> B.char8 '"'
 
 defaultParams :: B.Builder
-defaultParams = B.string7 "qf=\"text_en^0.6 text_gen^1.5 keyword^10 tag_name^5 party_name^4\" pf=\"tag_name^5 keyword^10 party_name^4\" ps=3"
+defaultParams = B.string8 "qf=\"text_en^0.6 text_gen^1.5 keyword^10 tag_name^5 party_name^4\" pf=\"tag_name^5 keyword^10 party_name^4\" ps=3"
 
 search :: MonadSolr c m => SearchQuery -> m (Maybe J.Value)
 search SearchQuery{..} = do
@@ -59,11 +59,11 @@ search SearchQuery{..} = do
     , ("fq", "content_type:" <> ct)
     ]
   (ct, qp, qe, qop) = case searchType of
-    SearchVolumes -> ("volume", mempty, B.string7 "{!join from=volume_id to=volume_id}", "AND")
+    SearchVolumes -> ("volume", mempty, B.string8 "{!join from=volume_id to=volume_id}", "AND")
     SearchParties -> ("party", mempty, mempty, "AND")
-    SearchVolume v -> ("(-volume)", B.string7 "volume_id:" <> B.int32Dec (unId v) <> B.char7 ' ', mempty, "OR")
+    SearchVolume v -> ("(-volume)", B.string8 "volume_id:" <> B.int32Dec (unId v) <> B.char8 ' ', mempty, "OR")
   ql = maybe id ((:) . bp defaultParams) searchString $ map (uncurry bt) searchTerms
-  bt f = bp (B.string7 "qf=" <> quoteQuery escapeTextWith f)
-  bp p v = B.string7 "_query_:" <> quoteQuery escapeLazyByteStringCharsWith (B.toLazyByteString $ qe <> B.string7 "{!dismax " <> p <> B.char7 '}' <> TE.encodeUtf8Builder v)
-  uw [] = B.string7 "*:*"
-  uw (t:l) = t <> foldMap (B.char7 ' ' <>) l
+  bt f = bp (B.string8 "qf=" <> quoteQuery escapeTextWith f)
+  bp p v = B.string8 "_query_:" <> quoteQuery escapeLazyByteStringCharsWith (B.toLazyByteString $ qe <> B.string8 "{!dismax " <> p <> B.char8 '}' <> TE.encodeUtf8Builder v)
+  uw [] = B.string8 "*:*"
+  uw (t:l) = t <> foldMap (B.char8 ' ' <>) l

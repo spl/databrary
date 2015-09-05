@@ -27,9 +27,9 @@ buildFilename t = fc (T.unpack t) len True where
   fc [] _ _ = mempty
   fc _ 0 _ = mempty
   fc (c:s) n p
-    | c < ',' || c `elem` "/?\\" = if p then r True else BSB.char7 '_' <> r True
+    | c < ',' || c `elem` "/?\\" = if p then r True else BSB.char8 '_' <> r True
     | otherwise = BSB.charUtf8 c <> r False
     where r = fc s (pred n)
 
 makeFilename :: [T.Text] -> BS.ByteString
-makeFilename = BSL.toStrict . BSB.toLazyByteString . mconcat . intersperse (BSB.char7 '-') . map buildFilename
+makeFilename = BSL.toStrict . BSB.toLazyByteString . mconcat . intersperse (BSB.char8 '-') . map buildFilename

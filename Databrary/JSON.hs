@@ -98,13 +98,13 @@ wordEscaped q =
   BP.condB (== c2w '\n') (backslash 'n') $
   BP.condB (== c2w '\r') (backslash 'r') $
   BP.condB (== c2w '\t') (backslash 't') $
-    BP.liftFixedToBounded $ (\c -> ('\\', ('u', fromIntegral c))) BP.>$< BP.char7 BP.>*< BP.char7 BP.>*< BP.word16HexFixed
+    BP.liftFixedToBounded $ (\c -> ('\\', ('u', fromIntegral c))) BP.>$< BP.char8 BP.>*< BP.char8 BP.>*< BP.word16HexFixed
   where
-  backslash c = BP.liftFixedToBounded $ const ('\\', c) BP.>$< BP.char7 BP.>*< BP.char7
+  backslash c = BP.liftFixedToBounded $ const ('\\', c) BP.>$< BP.char8 BP.>*< BP.char8
 
 -- | Escape (but do not quote) a ByteString
 escapeByteString :: Char -> BS.ByteString -> B.Builder
 escapeByteString = BP.primMapByteStringBounded . wordEscaped
 
 quoteByteString :: Char -> BS.ByteString -> B.Builder
-quoteByteString q s = B.char7 q <> escapeByteString q s <> B.char7 q
+quoteByteString q s = B.char8 q <> escapeByteString q s <> B.char8 q

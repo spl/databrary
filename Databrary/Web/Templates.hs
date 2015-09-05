@@ -36,7 +36,7 @@ generateTemplatesJS fo@(f, _) = do
     (withBinaryFile (toFilePath f) WriteMode $ \h -> do
       hPutStrLn h "app.run(['$templateCache',function(t){"
       forM_ tl $ \tf -> do
-        BSB.hPutBuilder h $ BSB.string7 "t.put(" <> JSON.quoteByteString q (webFileRelRaw tf) <> BSB.char7 ',' <> BSB.char7 q
+        BSB.hPutBuilder h $ BSB.string8 "t.put(" <> JSON.quoteByteString q (webFileRelRaw tf) <> BSB.char8 ',' <> BSB.char8 q
         processTemplate (webFileAbsRaw tf) $ \s -> do
           let j = JSON.escapeByteString q s
           BSB.hPutBuilder h j -- this is hanging

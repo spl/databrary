@@ -78,7 +78,7 @@ serveAssetSegment dl as = do
   when dl $ auditAssetSegmentDownload True as
   store <- maybeAction =<< getAssetFile a
   (hd, part) <- fileResponse store (view as) (dl ?> makeFilename (assetSegmentDownloadName as)) (BSL.toStrict $ BSB.toLazyByteString $
-    BSB.byteStringHex (fromJust (assetSHA1 a)) <> BSB.string7 (assetSegmentTag as sz))
+    BSB.byteStringHex (fromJust (assetSHA1 a)) <> BSB.string8 (assetSegmentTag as sz))
   either
     (okResponse hd)
     (okResponse hd . (, part))

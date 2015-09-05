@@ -39,7 +39,7 @@ htmlAngular debug nojs auth = H.docTypeHtml H.! ngAttribute "app" "databraryModu
     H.noscript $
       H.meta
         H.! HA.httpEquiv "Refresh"
-        H.! HA.content (builderValue $ BSB.string7 "0;url=" <> nojs)
+        H.! HA.content (builderValue $ BSB.string8 "0;url=" <> nojs)
     H.meta
       H.! HA.httpEquiv "X-UA-Compatible"
       H.! HA.content "IE=edge"

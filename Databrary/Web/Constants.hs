@@ -52,7 +52,7 @@ constantsJSONB :: BSB.Builder
 constantsJSONB = JSON.encodeToBuilder constantsJSON
 
 constantsJS :: BSB.Builder
-constantsJS = BSB.string7 "app.constant('constantData'," <> constantsJSONB <> BSB.string7 ");"
+constantsJS = BSB.string8 "app.constant('constantData'," <> constantsJSONB <> BSB.string8 ");"
 
 regenerateConstants :: BSB.Builder -> WebGenerator
 regenerateConstants b = staticWebGenerate $ \f ->

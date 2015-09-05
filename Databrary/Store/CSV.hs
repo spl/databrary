@@ -25,7 +25,7 @@ csvCell t
     (BP.liftFixedToBounded BP.word8)
 
 csvRow :: [BS.ByteString] -> B.Builder
-csvRow r = inter (B.char7 ',') (map csvCell r) <> B.char7 '\n'
+csvRow r = inter (B.char8 ',') (map csvCell r) <> B.char8 '\n'
 
 buildCSV :: [[BS.ByteString]] -> B.Builder
 buildCSV = mconcat . map csvRow

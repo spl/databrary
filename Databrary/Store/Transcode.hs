@@ -54,7 +54,7 @@ transcodeArgs t@Transcode{..} = do
   auth <- peeks $ transcodeAuth t
   return $
     [ "-f", toFilePath f
-    , "-r", BSLC.unpack $ BSB.toLazyByteString $ routeURL (Just req) remoteTranscode (transcodeId t) <> BSB.string7 "?auth=" <> BSB.byteString auth
+    , "-r", BSLC.unpack $ BSB.toLazyByteString $ routeURL (Just req) remoteTranscode (transcodeId t) <> BSB.string8 "?auth=" <> BSB.byteString auth
     , "--" ]
     ++ maybe [] (\l -> ["-ss", show l]) lb
     ++ maybe [] (\u -> ["-t", show $ u - fromMaybe 0 lb]) (upperBound rng)
