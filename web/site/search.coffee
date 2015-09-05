@@ -28,23 +28,23 @@ app.controller 'site/search', [
     if type
       $scope.page = 1 + (offset / type.limit)
       $scope.pages = Math.ceil($scope.count / type.limit)
-    $scope.terms = terms = {}
-    for t, v of params
-      if t.startsWith('t.')
-        terms[t.substr(2)] = v
+    $scope.fields = fields = {}
+    for f, v of params
+      if f.startsWith('f.')
+        fields[f.substr(2)] = v
 
     $scope.search = () ->
       $location.replace()
         .search('q', $scope.query)
         .search('volume', type?.volume)
         .search('offset', offset || undefined)
-      for t, v of terms
-        $location.search('t.'+t, v)
+      for f, v of fields
+        $location.search('f.'+f, v)
       return
 
     $scope.searchParties = (auth, inst) ->
-      terms.party_authorization = auth
-      terms.party_is_institution = inst
+      fields.party_authorization = auth
+      fields.party_is_institution = inst
       type = Search.Party
       $scope.search()
     $scope.searchVolumes = () ->

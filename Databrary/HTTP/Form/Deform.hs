@@ -17,10 +17,11 @@ module Databrary.HTTP.Form.Deform
   , deformParse
   , deformRead
   , deformRequired
+  , textInteger
   ) where
 
 import Control.Applicative (Applicative(..), Alternative(..), liftA2)
-import Control.Arrow (first, second, (***), (+++), left)
+import Control.Arrow (first, second, (***), left)
 import Control.Monad (MonadPlus(..), liftM, mapAndUnzipM, guard)
 import Control.Monad.Reader (MonadReader(..), ReaderT, asks)
 import Control.Monad.IO.Class (MonadIO(..))
@@ -260,7 +261,7 @@ instance Deform f Int where
       (i, r) <- BSC.readInt b
       guard $ BS.null r
       return i
-    fv (FormDatumJSON (JSON.String t)) = T.pack +++ fst $ TR.signed TR.decimal t
+    fv (FormDatumJSON (JSON.String t)) = textInteger t
     fv (FormDatumJSON (JSON.Number n)) = return $ round n
     fv (FormDatumJSON (JSON.Bool True)) = return 1
     fv (FormDatumJSON (JSON.Bool False)) = return 0
@@ -270,7 +271,7 @@ instance Deform f Int where
 instance Deform f Int64 where
   deform = deformParse 0 fv where
     fv (FormDatumBS b) = readParser $ BSC.unpack b
-    fv (FormDatumJSON (JSON.String t)) = T.pack +++ fst $ TR.signed TR.decimal t
+    fv (FormDatumJSON (JSON.String t)) = textInteger t
     fv (FormDatumJSON (JSON.Number n)) = return $ round n
     fv (FormDatumJSON (JSON.Bool True)) = return 1
     fv (FormDatumJSON (JSON.Bool False)) = return 0
@@ -280,7 +281,7 @@ instance Deform f Int64 where
 instance Deform f Int32 where
   deform = deformParse 0 fv where
     fv (FormDatumBS b) = readParser $ BSC.unpack b
-    fv (FormDatumJSON (JSON.String t)) = T.pack +++ fst $ TR.signed TR.decimal t
+    fv (FormDatumJSON (JSON.String t)) = textInteger t
     fv (FormDatumJSON (JSON.Number n)) = return $ round n
     fv (FormDatumJSON (JSON.Bool True)) = return 1
     fv (FormDatumJSON (JSON.Bool False)) = return 0
@@ -290,7 +291,7 @@ instance Deform f Int32 where
 instance Deform f Int16 where
   deform = deformParse 0 fv where
     fv (FormDatumBS b) = readParser $ BSC.unpack b
-    fv (FormDatumJSON (JSON.String t)) = T.pack +++ fst $ TR.signed TR.decimal t
+    fv (FormDatumJSON (JSON.String t)) = textInteger t
     fv (FormDatumJSON (JSON.Number n)) = return $ round n
     fv (FormDatumJSON (JSON.Bool True)) = return 1
     fv (FormDatumJSON (JSON.Bool False)) = return 0
@@ -315,6 +316,13 @@ instance Deform f URI where
 
 readParser :: Read a => String -> Either FormErrorMessage a
 readParser = left T.pack . readEither
+
+textInteger :: Integral a => T.Text -> Either FormErrorMessage a
+textInteger t = case TR.signed TR.decimal t of
+  Left s -> Left (T.pack s)
+  Right (i,r)
+    | T.null r -> Right i
+    | otherwise -> Left ("Trailing \"" <> r `T.snoc` '"')
 
 deformRead :: (Functor m, Monad m) => Read a => a -> DeformT f m a
 deformRead def = deformEither def . readParser =<< deform

@@ -3,6 +3,7 @@ module Databrary.Solr.Document
   ( SolrDocument(..)
   , SolrRecordMeasures(..)
   , SolrSegment(..)
+  , metricField
   ) where
 
 import qualified Data.Aeson as JSON

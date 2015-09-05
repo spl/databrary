@@ -11,10 +11,13 @@ import Data.Maybe (fromMaybe)
 
 import Databrary.Has
 import qualified Databrary.JSON as JSON
+import Databrary.Model.Id.Types
+import Databrary.Model.Metric
 import Databrary.Solr.Search
 import Databrary.Solr.Index
 import Databrary.Action
 import Databrary.HTTP.Path.Parser
+import Databrary.HTTP.Form (FormKey(..))
 import Databrary.HTTP.Form.Deform
 import Databrary.Controller.Form
 import Databrary.Controller.Angular
@@ -24,7 +27,12 @@ import Databrary.View.Search
 searchForm :: (Applicative m, Monad m) => DeformT f m SearchQuery
 searchForm = SearchQuery
   <$> ("q" .:> deformNonEmpty deform)
-  <*> ("t" .:> withSubDeforms (\k -> (view k, ) <$> deform))
+  <*> ("f" .:> withSubDeforms (\k -> (view k, ) <$> deform))
+  <*> ("m" .:> withSubDeforms (\k -> (,)
+    <$> (either deformError' return $ maybe (Left "Metric ID not found") Right . getMetric . Id =<< case k of
+      FormField t -> textInteger t
+      FormIndex i -> Right (fromIntegral i))
+    <*> deform))
   <*> ("volume" .:> fromMaybe SearchVolumes <$> deformOptional ((SearchVolume <$> deform) <|> (sv <$> deform)))
   <*> paginateForm
   where

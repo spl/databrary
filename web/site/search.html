@@ -13,9 +13,9 @@
     <div class="search-filters col-desktop-3 col-tablet-2 col-mobile-6">
      
       <ul ng-if="::!!parties">
-        <li ng-click="searchParties(constants.permission.EDIT, 'false')" ng-class="::{b:terms.party_authorization == constants.permission.EDIT && terms.party_is_institution == 'false'}">Authorized investigators</li>
-        <li ng-click="searchParties(constants.permission.ADMIN, 'true')" ng-class="::{b:terms.party_authorization == constants.permission.ADMIN && terms.party_is_institution == 'true'}">Authorized institutions</li>
-        <li ng-click="searchParties()" ng-class="::{b:terms.party_authorization == null && terms.party_is_institution == null}">All users and groups</li>
+        <li ng-click="searchParties(constants.permission.EDIT, 'false')" ng-class="::{b:fields.party_authorization == constants.permission.EDIT && fields.party_is_institution == 'false'}">Authorized investigators</li>
+        <li ng-click="searchParties(constants.permission.ADMIN, 'true')" ng-class="::{b:fields.party_authorization == constants.permission.ADMIN && fields.party_is_institution == 'true'}">Authorized institutions</li>
+        <li ng-click="searchParties()" ng-class="::{b:fields.party_authorization == null && fields.party_is_institution == null}">All users and groups</li>
       </ul>
 
 
