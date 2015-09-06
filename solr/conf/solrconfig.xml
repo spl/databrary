@@ -71,6 +71,7 @@
     <lst name="defaults">
       <str name="rows">10</str>
       <str name="wt">json</str>
+      <str name="df">text_gen</str>
       <str name="fl">
 	id:party_id sortname:party_sort_name prename:party_pre_name affiliation:party_affiliation institution:party_is_institution
 	id:volume_id name body owner_names:volume_owner_names owner_ids:volume_owner_ids
@@ -79,17 +80,10 @@
       </str>
       <str name="omitHeader">true</str>
 
-      <str name="spellcheck">true</str>
       <str name="spellcheck.dictionary">default</str>
-      <str name="spellcheck.count">3</str>
-      <str name="spellcheck.alternativeTermCount">3</str>
-      <str name="spellcheck.maxResultsForSuggest">3</str>
-      <str name="spellcheck.collate">true</str>
-      <str name="spellcheck.maxCollationTries">10</str>
-      <str name="spellcheck.maxCollations">5</str>
-      <!-- debugging? -->
-      <str name="spellcheck.extendedResults">true</str>
-      <str name="spellcheck.collateExtendedResults">true</str>
+      <str name="spellcheck.count">5</str>
+      <str name="spellcheck.alternativeTermCount">2</str>
+      <str name="spellcheck.maxResultsForSuggest">2</str>
     </lst>
     <arr name="last-components">
       <str>spellcheck</str>
@@ -114,10 +108,10 @@
                   startup="lazy" />
 
   <searchComponent name="spellcheck" class="solr.SpellCheckComponent">
-    <str name="queryAnalyzerFieldType">text_exact</str>
+    <str name="queryAnalyzerFieldType">text_gen</str>
     <lst name="spellchecker">
       <str name="name">default</str>
-      <str name="field">text_exact</str>
+      <str name="field">text_gen</str>
       <str name="classname">solr.DirectSolrSpellChecker</str>
       <str name="distanceMeasure">internal</str>
       <float name="accuracy">0.5</float>

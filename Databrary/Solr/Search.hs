@@ -61,7 +61,10 @@ search SearchQuery{..} = do
     , ("start", BSC.pack $ show $ paginateOffset searchPaginate)
     , ("rows", BSC.pack $ show $ paginateLimit searchPaginate)
     , ("fq", "content_type:" <> ct)
-    ]
+    ] ++ maybe [] (\q ->
+      [ ("spellcheck", "true")
+      , ("spellcheck.q", TE.encodeUtf8 q)
+      ]) searchString
   (ct, qp, qe, qop) = case searchType of
     SearchVolumes -> ("volume", mempty, B.string8 "{!join from=volume_id to=volume_id}", "AND")
     SearchParties -> ("party", mempty, mempty, "AND")
