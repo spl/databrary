@@ -52,7 +52,7 @@ metricLabel Metric{ metricType = MeasureTypeDate } = "date"
 metricLabel Metric{ metricType = MeasureTypeVoid } = "void"
 
 metricField :: Metric -> T.Text
-metricField m = metricLabel m <> ('_' `T.cons` safeField (metricName m))
+metricField m = "record_" <> metricLabel m <> ('_' `T.cons` safeField (metricName m))
 
 -- slight hack because we actually index dates as datetimes
 metricDatum :: Metric -> MeasureDatum -> JSON.Value
@@ -62,7 +62,7 @@ metricDatum _ d = JSON.toJSON d
 
 instance JSON.ToJSON SolrRecordMeasures where
   toJSON (SolrRecordMeasures ms) =
-    JSON.object $ map (\(m, d) -> ("record_" <> metricField m) JSON..= metricDatum m d) ms
+    JSON.object $ map (\(m, d) -> metricField m JSON..= metricDatum m d) ms
 
 newtype SolrSegment = SolrSegment Segment deriving (JSON.FromJSON)
 

@@ -29,6 +29,21 @@
         </div>
       </div>
 
+      <div class="search-filter" ng-repeat="(mi, v) in metrics" ng-if="metrics[mi] != null" ng-init="m=constants.metric[mi]">
+        <span class="icon trash" ng-click="removeMetric(mi)"></span>
+        <span ng-bind="::m.name"></span>
+        <input-completer ng-if="::m.options" input-name="metric" ng-model="metrics[mi]" completer="optionsCompleter($input, m.options)" min="0"></input-completer>
+        <input type="text" ng-if="::m.type=='text' && !m.options" ng-model="metrics[mi]"/>
+        <input type="number" ng-if="::m.type=='numeric'" ng-model="metrics[mi]"/>
+      </div>
+      <div class="additional-filters">
+        <select ng-model="addMetric.id" ng-options="m.id as m.name for m in availableMetrics()" ng-change="addMetric()">
+          <option value="">Filter by metric</option>
+        </select>
+      </div>
+
+      <button ng-click="searchVolumes()">Apply Filters</button>
+
 <!--
       <div class="search-filter">
         <div ng-repeat="t in typeDisplay" ng-click="partyVolBoxClick_temp(t)" ng-bind="::t"></div>
@@ -49,20 +64,6 @@
         <div id="age-slider"></div>
       </div>
 
-      <div class="search-filter" ng-repeat="m in selectedMetrics track by m.metric.id">
-        <span class="icon trash" ng-click="returnMetric(m)"></span><span ng-bind="::m.metric.name"></span>
-        <input type="text" ng-if="::!m.metric.options && m.metric.type=='text'" ng-model="m.value" />
-        <input type="number" ng-if="::!m.metric.options && m.metric.type=='numeric'" ng-model="m.value" />
-        <input-completer ng-if="::m.metric.options" input-name="{{::m.metric.name}}" ng-model="m.value" completer="optionsCompleter($input, m.metric.options)" min="0" ng-change="search()"></input-completer>
-      </div>
-
-      <div class="additional-filters">
-        <select ng-model="selectedMetric" ng-options="m.name for m in allMetrics" ng-change="updateSelectedMetrics()">
-          <option value="">--additional filters--</option>
-        </select>
-      </div>
-
-      <button ng-click="search()">Apply Filters</button>
       <button ng-click="resetFilters()">Clear Filters</button>
 -->
 

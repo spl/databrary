@@ -54,9 +54,8 @@ app.directive 'inputCompleter', [
             $scope.search(resend) if resend
           return
 
-        $scope.search = () ->
+        $scope.search = (value = input.value) ->
           $scope.selected = undefined
-          value = input.value
           if sent
             resend = value != sent && value
           else if value?.length >= min
@@ -102,7 +101,7 @@ app.directive 'inputCompleter', [
           ul.scrollTop(ul.children('li')[$scope.selected].offsetTop)
           return
 
-        $scope.search(input.value)
+        $scope.search(input.value || $scope.value)
 
         return
 ]

@@ -39,7 +39,8 @@ app.controller 'site/search', [
       if f.startsWith('f.')
         fields[f.substr(2)] = v
       else if f.startsWith('m.')
-        metrics[f.substr(2)] = v
+        mi = f.substr(2)
+        metrics[mi] = if constants.metric[mi].type == 'numeric' then parseInt(v, 10) else v
 
     $scope.search = () ->
       if !$scope.query && !offset && $.isEmptyObject(fields) && $.isEmptyObject(metrics)
@@ -69,6 +70,28 @@ app.controller 'site/search', [
     $scope.searchPage = (n) ->
       offset = type.limit*(n-1)
       $scope.search()
+
+    $scope.availableMetrics = () ->
+      m for m in constants.metrics when !metrics[m.id]? && m.release >= constants.permission.PUBLIC
+    $scope.addMetric = () ->
+      if mi = $scope.addMetric.id
+        $scope.addMetric.id = ''
+        metrics[mi] = '' if mi
+      return
+    $scope.removeMetric = (mi) ->
+      metrics[mi] = null
+      return
+
+    $scope.optionsCompleter = (input, options) ->
+      i = input.toLowerCase()
+      match = (o for o in options when o.toLowerCase().startsWith(i))
+      switch match.length
+        when 0
+          input
+        when 1
+          match[0]
+        else
+          ({text:o, select:o, default:input && i==0} for o, i in match)
 
     return
 
@@ -633,37 +656,6 @@ app.controller 'site/search', [
       $scope.searchBoxQuery = $scope.query
       $scope.search()
     )
-
-
-# other metrics filters
-    optionCompletions = (input,options) ->
-      i = input.toLowerCase()
-      (o for o in options when o.toLowerCase().startsWith(i))
-
-    $scope.optionsCompleter = (input,options) ->
-      match = optionCompletions(input,options)
-      switch match.length
-        when 0
-          input
-        when 1
-          match[0]
-        else
-          ({text:o, select:o, default: input && i==0} for o, i in match)
-
-
-    $scope.updateSelectedMetrics = ->
-      $scope.selectedMetrics.push({metric:$scope.selectedMetric})
-      rmindex = $scope.allMetrics.remove($scope.selectedMetric)
-      console.log($scope.selectedMetrics)
-      $scope.selectedMetric = undefined
-      return
-
-    $scope.returnMetric = (metric) ->
-      rmindex = $scope.selectedMetrics.remove(metric)
-      $scope.allMetrics.push(metric.metric)
-      $scope.allMetrics.sort((a,b) -> a.id - b.id)
-      $scope.search()
-      return
 
     # Code for the initial load
     params = $location.search()
