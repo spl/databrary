@@ -69,9 +69,13 @@
     </div>
 
     <div class="search-results col-desktop-12 col-tablet-7 col-mobile-6">
-      <small class="status" ng-if="suggestedQuery.length > 0">
-        Did you mean <a class="search-suggestion" ng-click="search(suggestedQuery)">{{suggestedQuery}}</a>?
+      <small class="status" ng-if="::!!spellcheck">
+        Did you mean:
+        <span ng-repeat="(w, ss) in ::spellcheck" ng-if="query.includes(w)">
+          <a ng-repeat="s in ::ss" class="search-suggestion" ng-click="searchSpellcheck(w, s)"> {{::s}}</a>
+        </span>?
       </small>
+
       <div ng-if="::!!parties">
         <h3>Users</h3>
         <button ng-if="::!!volumes" ng-click="searchParties()">show all {{::parties.count}}</button>

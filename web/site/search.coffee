@@ -6,9 +6,14 @@ app.controller 'site/search', [
     display.title = 'Search'
     $scope.constants = constants
 
+    spellcheck = {}
     process = (r) ->
       list = r.response.docs
       list.count = r.response.numFound
+      if (sug = r.spellcheck) && (sug = sug.suggestions)
+        for i in [1..sug.length] by 2
+          spellcheck[sug[i-1]] = sug[i].suggestion
+          $scope.spellcheck = spellcheck
       list
 
     if parties
@@ -57,6 +62,9 @@ app.controller 'site/search', [
       $scope.search()
     $scope.searchVolumes = () ->
       type = Search.Volume
+      $scope.search()
+    $scope.searchSpellcheck = (w, s) ->
+      $scope.query = $scope.query.replace(w, s)
       $scope.search()
     $scope.searchPage = (n) ->
       offset = type.limit*(n-1)
