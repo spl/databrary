@@ -8,9 +8,9 @@ module Databrary.Controller.Search
 import Control.Applicative (Applicative, (<$>), (<*>), (<|>))
 import Control.Monad (when)
 import Data.Maybe (fromMaybe)
+import Network.HTTP.Types.Status (badRequest400)
 
 import Databrary.Has
-import qualified Databrary.JSON as JSON
 import Databrary.Model.Id.Types
 import Databrary.Model.Metric
 import Databrary.Solr.Search
@@ -43,8 +43,7 @@ postSearch :: ActionRoute API
 postSearch = action GET (pathAPI </< "search") $ \api -> withAuth $ do
   when (api == HTML) angular
   q <- runForm Nothing searchForm
-  jsonResp <- search q
-  return $ okResponse [] $ fromMaybe JSON.Null jsonResp
+  maybe (emptyResponse badRequest400 []) (okResponse []) <$> search q
 
 viewUpdateIndex :: ActionRoute ()
 viewUpdateIndex = action GET ("search" >/> "index") $ \() -> withAuth $ do

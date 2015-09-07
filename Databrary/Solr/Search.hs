@@ -16,7 +16,7 @@ import qualified Data.Text.Encoding as TE
 import qualified Network.HTTP.Client as HC
 import Network.HTTP.Types.URI (renderSimpleQuery)
 
-import Data.ByteString.Builder.Escape (escapeLazyByteStringCharsWith)
+import Data.ByteString.Builder.Escape (escapeLazyByteStringCharsWith, escapeTextWith)
 import Databrary.Has
 import qualified Databrary.JSON as J
 import Databrary.HTTP.Client
@@ -40,6 +40,20 @@ data SearchQuery = SearchQuery
   , searchType :: SearchType
   , searchPaginate :: !Paginate
   }
+
+checkTerm :: String -> Bool
+checkTerm = cq False [] where
+  cq False [] "" = True
+  cq q g ('"':s) = cq (not q) g s
+  cq q g ('\\':_:s) = cq q g s
+  cq _ _ ['\\'] = False
+  cq False g ('(':s) = cq False (')':g) s
+  cq False g ('[':s) = cq False (']':g) s
+  cq False g ('{':s) = cq False ('}':g) s
+  cq False (gc:gs) (c:s) | c == gc = cq False gs s
+  cq False _ (c:_) | c `elem` ")]}" = False
+  cq q g (_:s) = cq q g s
+  cq _ _ _ = False
 
 quoteQuery :: (Char -> String -> a -> B.Builder) -> a -> B.Builder
 quoteQuery e s = B.char8 '"' <> e '\\' "\"\\" s <> B.char8 '"'
@@ -71,7 +85,9 @@ search SearchQuery{..} = do
     SearchVolume v -> ("(-volume)", B.string8 "volume_id:" <> B.int32Dec (unId v) <> B.char8 ' ', mempty, "OR")
   ql = maybe id ((:) . bp . (defaultParams <>) . TE.encodeUtf8Builder) searchString $
     map bt (searchFields ++ map (first metricField) searchMetrics)
-  bt (f, v) = bp (TE.encodeUtf8Builder f <> B.string8 ":(" <> TE.encodeUtf8Builder v {- XXX insecure -} <> B.char8 ')')
+  bt (f, v)
+    | not $ checkTerm $ T.unpack v = bp (B.string8 "{!dismax qf=" <> quoteQuery escapeTextWith f <> B.char8 '}' <> TE.encodeUtf8Builder v)
+    | otherwise = bp (TE.encodeUtf8Builder f <> B.string8 ":(" <> (if T.null v then B.char8 '*' else TE.encodeUtf8Builder v) <> B.char8 ')') -- XXX f insecure
   bp v = B.string8 "_query_:" <> quoteQuery escapeLazyByteStringCharsWith (B.toLazyByteString $ qe <> v)
   uw [] = B.string8 "*:*"
   uw (t:l) = t <> foldMap (B.char8 ' ' <>) l

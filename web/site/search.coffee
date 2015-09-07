@@ -33,14 +33,21 @@ app.controller 'site/search', [
     if type
       $scope.page = 1 + (offset / type.limit)
       $scope.pages = Math.ceil($scope.count / type.limit)
+
     $scope.fields = fields = {}
     $scope.metrics = metrics = {}
+    parseNumber = (x) ->
+      if x != '*' then parseFloat(x)
+    parseNumeric = (x) ->
+      r = /^\[([-+0-9.e]+|\*) TO ([-+0-9.e]+|\*)\]$/i.exec(x)
+      [parseNumber(r[1]), parseNumber(r[2])] if r
     for f, v of params
       if f.startsWith('f.')
         fields[f.substr(2)] = v
       else if f.startsWith('m.')
         mi = f.substr(2)
-        metrics[mi] = if constants.metric[mi].type == 'numeric' then parseInt(v, 10) else v
+        metrics[mi] =
+          if constants.metric[mi].type == 'numeric' then parseNumeric(v) else v
 
     $scope.search = () ->
       if !$scope.query && !offset && $.isEmptyObject(fields) && $.isEmptyObject(metrics)
@@ -53,7 +60,8 @@ app.controller 'site/search', [
       for f, v of fields
         $location.search('f.'+f, v)
       for f, v of metrics
-        $location.search('m.'+f, v)
+        $location.search('m.'+f,
+          if v && constants.metric[f].type == 'numeric' then '['+(v[0] ? '*')+' TO '+(v[1] ? '*')+']' else v)
       return
 
     $scope.searchParties = (auth, inst) ->
@@ -76,7 +84,7 @@ app.controller 'site/search', [
     $scope.addMetric = () ->
       if mi = $scope.addMetric.id
         $scope.addMetric.id = ''
-        metrics[mi] = '' if mi
+        metrics[mi] = if constants.metric[mi].type == 'numeric' then [] else undefined
       return
     $scope.removeMetric = (mi) ->
       metrics[mi] = null

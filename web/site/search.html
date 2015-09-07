@@ -29,12 +29,14 @@
         </div>
       </div>
 
-      <div class="search-filter" ng-repeat="(mi, v) in metrics" ng-if="metrics[mi] != null" ng-init="m=constants.metric[mi]">
+      <div class="search-filter" ng-repeat="(mi, v) in metrics" ng-if="metrics[mi] !== null" ng-init="m=constants.metric[mi]">
         <span class="icon trash" ng-click="removeMetric(mi)"></span>
         <span ng-bind="::m.name"></span>
         <input-completer ng-if="::m.options" input-name="metric" ng-model="metrics[mi]" completer="optionsCompleter($input, m.options)" min="0"></input-completer>
-        <input type="text" ng-if="::m.type=='text' && !m.options" ng-model="metrics[mi]"/>
-        <input type="number" ng-if="::m.type=='numeric'" ng-model="metrics[mi]"/>
+        <input type="text" ng-if="::m.type==='text' && !m.options" ng-model="metrics[mi]"/>
+        <span ng-if="::m.type==='numeric'">
+          <input type="number" ng-model="metrics[mi][0]"/> &ndash; <input type="number" ng-model="metrics[mi][1]"/>
+        </span>
       </div>
       <div class="additional-filters">
         <select ng-model="addMetric.id" ng-options="m.id as m.name for m in availableMetrics()" ng-change="addMetric()">
