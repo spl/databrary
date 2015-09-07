@@ -53,17 +53,17 @@ app.factory('displayService', [
       }, 1);
     };
 
-    var ageKeys = ['science', 'days', 'months', 'years'],
-      ageKey = storage.get('displayAge') || 'science';
+    var ageKeys = ['auto', 'day', 'month', 'year'];
+    display.age = storage.get('displayAge') || 'auto';
 
     display.toggleAge = function () {
-      ageKey = ageKeys[(ageKeys.indexOf(ageKey) + 1) % ageKeys.length];
-      $rootScope.$broadcast('displayService-toggleAge', ageKey);
-      storage.set('displayAge', ageKey);
+      display.age = ageKeys[(ageKeys.indexOf(display.age) + 1) % ageKeys.length];
+      $rootScope.$broadcast('displayService-toggleAge', display.age);
+      storage.set('displayAge', display.age);
     };
 
     display.formatAge = function (value) {
-      return $filter('age')(value, ageKey);
+      return $filter('age')(value);
     };
 
     /*$routeChangeStart is always fires before $locationChangeStart*/

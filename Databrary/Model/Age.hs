@@ -4,6 +4,7 @@ module Databrary.Model.Age
   , age
   , yearsAge
   , ageTime
+  , ageLimit
   ) where
 
 import Data.Time (diffDays, DiffTime, secondsToDiffTime)
@@ -24,3 +25,6 @@ yearsAge y = Age $ ceiling $ (365.24219 :: Double) * realToFrac y
 
 ageTime :: Age -> DiffTime
 ageTime (Age n) = secondsToDiffTime $ 86400 * fromIntegral n
+
+ageLimit :: Age
+ageLimit = yearsAge (90 :: Double)

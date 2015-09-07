@@ -87,7 +87,6 @@ recordSlotAge rs@RecordSlot{..} =
   clip a
     | dataPermission rs == PermissionNONE = a `min` ageLimit
     | otherwise = a
-  ageLimit = yearsAge (90 :: Int)
 
 recordSlotJSON :: RecordSlot -> JSON.Object
 recordSlotJSON rs@RecordSlot{..} = JSON.record (recordId slotRecord) $ catMaybes

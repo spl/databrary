@@ -1,18 +1,8 @@
 'use strict';
 
 app.directive('displayAge', [
-  'pageService', function (page) {
-    var link = function ($scope) {
-      $scope.change = page.display.toggleAge;
-
-      var formatAge = function () {
-        $scope.age = page.display.formatAge($scope.value);
-      };
-
-      formatAge();
-      $scope.$on('displayService-toggleAge', formatAge);
-    };
-
+  'displayService',
+  function (display) {
     return {
       restrict: 'E',
       templateUrl: 'site/displayAge.html',
@@ -20,7 +10,15 @@ app.directive('displayAge', [
       scope: {
         value: '='
       },
-      link: link
+      link: function ($scope) {
+        function init() {
+          $scope.age = display.formatAge($scope.value);
+        }
+        init();
+        $scope.$on('displayService-toggleAge', init);
+        $scope.$watch('value', init);
+        $scope.change = display.toggleAge;
+      }
     };
   }
 ]);

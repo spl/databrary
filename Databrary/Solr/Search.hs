@@ -47,11 +47,14 @@ checkTerm = cq False [] where
   cq q g ('"':s) = cq (not q) g s
   cq q g ('\\':_:s) = cq q g s
   cq _ _ ['\\'] = False
-  cq False g ('(':s) = cq False (')':g) s
-  cq False g ('[':s) = cq False (']':g) s
-  cq False g ('{':s) = cq False ('}':g) s
-  cq False (gc:gs) (c:s) | c == gc = cq False gs s
-  cq False _ (c:_) | c `elem` ")]}" = False
+  cq False ('(':gs) (')':s) = cq False gs s
+  cq False ('[':gs) (']':s) = cq False gs s
+  cq False ('[':gs) ('}':s) = cq False gs s
+  cq False ('{':gs) (']':s) = cq False gs s
+  cq False ('{':gs) ('}':s) = cq False gs s
+  cq False g (c:s)
+    | c `elem` "([{" = cq False (c:g) s
+    | c `elem` ")]}" = False
   cq q g (_:s) = cq q g s
   cq _ _ _ = False
 
