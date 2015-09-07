@@ -44,7 +44,7 @@ main = defaultMainWithHooks simpleUserHooks
 
   , postConf = \args flag desc lbi -> do
     postConf simpleUserHooks args flag desc lbi
-    nodeInstall (fromFlag $ configVerbosity flag) lbi
+    nodeUpdate (fromFlag $ configVerbosity flag) lbi
 
   , buildHook = \desc lbi hooks flag -> do
     let verb = fromFlag $ buildVerbosity flag
