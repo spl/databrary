@@ -20,7 +20,7 @@ import Databrary.Model.Identity
 import Databrary.Action.Types
 import Databrary.Action
 import Databrary.Web (WebFilePath, webFileRelRaw)
-import Databrary.Web.Libs (allWebLibs)
+import Databrary.Web.Libs (webLibs)
 import Databrary.View.Html
 import Databrary.View.Template
 
@@ -61,7 +61,7 @@ htmlAngular debug nojs auth = H.docTypeHtml H.! ngAttribute "app" "databraryModu
       H.preEscapedString "window.$play={user:"
       H.unsafeLazyByteString $ JSON.encode $ identityJSON (view auth)
       H.preEscapedString "};"
-    forM_ (allWebLibs (isJust debug) ++ maybe ["app.min.js"] ("debug.js" :) debug) $ \js ->
+    forM_ (webLibs (isJust debug) ++ maybe ["app.min.js"] ("debug.js" :) debug) $ \js ->
       H.script
         H.! HA.src (webURL $ webFileRelRaw js)
         $ return ()

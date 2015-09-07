@@ -1,34 +1,49 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Databrary.Web.Libs
   ( generateLib
-  , allWebLibs
+  , webLibs
+  , webIncludes
   ) where
 
-import Control.Monad (mzero)
+import Control.Applicative ((<$), (<|>))
+import Control.Monad (guard, mzero)
 import Data.String (fromString)
-import System.FilePath ((</>), splitFileName, (<.>), splitExtensions)
+import System.FilePath ((</>), splitFileName, (<.>), splitExtensions, splitExtension)
 
 import Databrary.Web
 import Databrary.Web.Types
 import Databrary.Web.Generate
 
-jsLibs :: [(FilePath, FilePath)]
+prefix :: FilePath
+prefix = "bower_components"
+
+jsLibs, jsIncludes, jsAll :: [(FilePath, FilePath)]
+jsAll = jsLibs ++ jsIncludes
 jsLibs =
-  [ ("jquery",              "bower_components/jquery/dist")
-  , ("jquery-ui",           "bower_components/jquery-ui")
-  , ("angular",             "bower_components/angular")
-  , ("angular-route",       "bower_components/angular-route")
-  , ("ng-flow-standalone",  "bower_components/ng-flow/dist")
-  , ("lodash",              "bower_components/lodash")
+  [ ("jquery",              "jquery/dist")
+  , ("angular",             "angular")
+  , ("angular-route",       "angular-route")
+  , ("ng-flow-standalone",  "ng-flow/dist")
+  , ("lodash",              "lodash")
   ]
+jsIncludes =
+  map (\n -> ("jquery.ui." ++ n, "jquery-ui/ui")) ["core", "widget", "mouse", "slider"]
+  ++ [("slider", "angular-ui-slider/src")]
 
 generateLib :: WebGenerator
 generateLib fo@(f, _)
   | ("lib/", l) <- splitFileName (webFileRel f)
-  , (b, e) <- splitExtensions l
-  , e `elem` [".js", ".min.js", ".min.map", ".min.js.map"]
-  , Just p <- lookup b jsLibs = webLinkDataFile (p </> l) fo
+  , Just b <- fgs (`elem` [".js", ".min.js", ".min.map", ".min.js.map"]) (splitExtensions l)
+      <|> fgs (== ".js") (splitExtension l)
+  , Just p <- lookup b jsAll = webLinkDataFile (prefix </> p </> l) fo
   | otherwise = mzero
+  where fgs p (a, b) = a <$ guard (p b)
 
-allWebLibs :: Bool -> [WebFilePath]
-allWebLibs debug = map (fromString . ("lib" </>) . (<.> if debug then ".js" else ".min.js") . fst) jsLibs
+webJS :: Bool -> [(FilePath, FilePath)] -> [WebFilePath]
+webJS mn = map (fromString . ("lib" </>) . (<.> if mn then ".min.js" else ".js") . fst)
+
+webLibs :: Bool -> [WebFilePath]
+webLibs debug = webJS (not debug) jsLibs
+
+webIncludes :: [WebFilePath]
+webIncludes = webJS False jsIncludes

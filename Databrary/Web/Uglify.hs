@@ -17,10 +17,11 @@ import Databrary.Web
 import Databrary.Web.Types
 import Databrary.Web.Files
 import Databrary.Web.Generate
+import Databrary.Web.Libs
 
 allWebJS :: IO [WebFilePath]
 allWebJS = liftM2 union
-  (("app.js" :) . filter (not . (liftM2 (||) (isPrefixOf "lib/") (`elem` ["app.js", "debug.js"])) . webFileRel) <$> findWebFiles ".js")
+  ((webIncludes ++) . ("app.js" :) . filter (not . (liftM2 (||) (isPrefixOf "lib/") (`elem` ["app.js", "debug.js"])) . webFileRel) <$> findWebFiles ".js")
   (map (replaceWebExtension ".js") <$> findWebFiles ".coffee")
 
 generateUglifyJS :: WebGenerator
