@@ -28,6 +28,11 @@
           Volumes with highlights
         </div>
 
+        <div>
+          Tag
+          <input-completer input-name="tag" ng-model="fields.tag_name" completer="tagSearch($input)" ng-pattern="/^[a-zA-Z][a-zA-Z -]{1,30}[a-zA-Z]$/"></input-completer>
+        </div>
+
         <div class="search-filter age-filter">
           <span>Age</span><br/>
           <div ui-slider="{range:true}" min="0" max="{{ageMax()}}" step="1" ng-model="fields.record_age"></div>

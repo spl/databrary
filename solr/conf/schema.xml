@@ -8,8 +8,8 @@
   <uniqueKey>id</uniqueKey>
 
   <field name="text_en" type="text_en" indexed="true" stored="false" multiValued="true"/>
-  <field name="text_gen" type="text_general" indexed="true" stored="false" multiValued="true"/>
-  <field name="text_rev" type="text_general_rev" indexed="true" stored="false" multiValued="true"/>
+  <field name="text_gen" type="text_gen" indexed="true" stored="false" multiValued="true"/>
+  <field name="text_rev" type="text_gen_rev" indexed="true" stored="false" multiValued="true"/>
 
   <field name="name" type="text" indexed="false" stored="true"/>
   <copyField source="name" dest="text_en"/>
@@ -76,7 +76,7 @@
   <copyField source="record_long_*" dest="text_en"/>
   <copyField source="record_long_*" dest="text_gen"/>
   <copyField source="record_long_*" dest="text_rev"/>
-  <dynamicField name="record_enum_*" type="string" indexed="true" stored="false" omitNorms="false"/>
+  <dynamicField name="record_enum_*" type="text" indexed="true" stored="false" omitNorms="false"/>
   <copyField source="record_enum_*" dest="text_en"/>
   <copyField source="record_enum_*" dest="text_gen"/>
   <copyField source="record_enum_*" dest="text_rev"/>
@@ -85,11 +85,11 @@
   <dynamicField name="record_void_*" type="boolean" indexed="true" stored="false"/>
 
   <field name="tag_id" type="id" indexed="false" stored="false"/>
-  <field name="tag_name" type="string" indexed="true" stored="true" omitNorms="false"/>
+  <field name="tag_name" type="text" indexed="true" stored="true"/>
   <copyField source="tag_name" dest="text_en"/>
   <copyField source="tag_name" dest="text_gen"/>
   <copyField source="tag_name" dest="text_rev"/>
-  <field name="keyword" type="string" indexed="true" stored="false" omitNorms="false"/> <!-- same as tag, but for boosting -->
+  <field name="keyword" type="text" indexed="true" stored="false"/> <!-- same as tag, but for boosting -->
 
   <field name="comment_id" type="id" stored="true" indexed="false"/>
 
@@ -122,7 +122,7 @@
     </analyzer>
   </fieldType>
 
-  <fieldType name="text_general" class="solr.TextField" positionIncrementGap="100">
+  <fieldType name="text_gen" class="solr.TextField" positionIncrementGap="100">
     <analyzer>
       <tokenizer class="solr.StandardTokenizerFactory"/>
       <filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt" />
@@ -186,7 +186,7 @@
     </analyzer>
   </fieldType>
 
-  <fieldType name="text_general_rev" class="solr.TextField" positionIncrementGap="100">
+  <fieldType name="text_gen_rev" class="solr.TextField" positionIncrementGap="100">
     <analyzer type="index">
       <tokenizer class="solr.StandardTokenizerFactory"/>
       <filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt" />

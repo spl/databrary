@@ -212,7 +212,7 @@ app.provider('routerService', [
     });
 
     // Solr search
-    routes.postSearch = makeRoute(controllers.viewSearch, [], {
+    routes.search = makeRoute(controllers.viewSearch, [], {
       controller: 'site/search',
       templateUrl: "site/search.html",
       resolve: {

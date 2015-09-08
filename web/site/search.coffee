@@ -1,8 +1,8 @@
 'use strict'
 
 app.controller 'site/search', [
-  '$scope', '$location', 'constantService', 'displayService', 'searchService', 'parties', 'volumes',
-  ($scope, $location, constants, display, Search, parties, volumes) ->
+  '$scope', '$location', 'constantService', 'displayService', 'modelService', 'searchService', 'parties', 'volumes',
+  ($scope, $location, constants, display, models, Search, parties, volumes) ->
     display.title = 'Search'
     $scope.constants = constants
 
@@ -37,18 +37,14 @@ app.controller 'site/search', [
     parseNumber = (x) ->
       if x != '*' then parseFloat(x)
     parseRange = (x) ->
-      if x = /^\[([-+0-9.e]+|\*) TO ([-+0-9.e]+|\*)\]$/i.exec(x)
-        [parseNumber(x[1]), parseNumber(x[2])]
-      else
-        []
+      x = /^\[([-+0-9.e]+|\*) TO ([-+0-9.e]+|\*)\]$/i.exec(x) || []
+      [parseNumber(x[1]) || -Infinity, parseNumber(x[2]) || Infinity]
     printRange = (x) ->
       x && if x[0]? || x[1]? then '['+(x[0] ? '*')+' TO '+(x[1] ? '*')+']'
     printAge = (x) ->
-      x[0] = undefined if x[0] <= 0
-      x[1] = undefined if x[1] >= constants.age.limit
-      printRange(x)
+      printRange([(if x[0] > 0 then x[0]), (if x[1] < constants.age.limit then x[1])])
 
-    $scope.fields = fields = {record_age:[]}
+    $scope.fields = fields = {record_age:[-Infinity, Infinity]}
     $scope.metrics = metrics = {}
     for f, v of params
       if f.startsWith('f.')
@@ -57,40 +53,46 @@ app.controller 'site/search', [
       else if f.startsWith('m.')
         mi = f.substr(2)
         metrics[mi] = if constants.metric[mi].type == 'numeric' then parseRange(v) else v
-    unless fields.record_age[0] > 0
-      fields.record_age[0] = 0
-    unless fields.record_age[1] < constants.age.limit
-      fields.record_age[1] = constants.age.limit
+
+    any = (o) ->
+      for f, v of o
+        return true if v?
+      return false
 
     $scope.search = (offset) ->
-      if !$scope.query && !offset && $.isEmptyObject(fields) && $.isEmptyObject(metrics)
-        $location.search({})
-        return
-      $location
-        .search('q', $scope.query)
-        .search('volume', type?.volume)
-        .search('offset', offset || undefined)
+      q =
+        q: $scope.query || undefined
+        offset: offset
       for f, v of fields
-        $location.search('f.'+f,
-          if f == 'record_age' then printAge(v) else v)
+        q['f.'+f] = if f == 'record_age' then printAge(v) else v || undefined
       for f, v of metrics
-        $location.search('m.'+f,
-          if constants.metric[f].type == 'numeric' then printRange(v) else v)
+        q['m.'+f] = if constants.metric[f].type == 'numeric' then printRange(v) else v || undefined
+      if any(q)
+        q.volume = type?.volume
+      $location.search(q)
       return
 
     $scope.searchParties = (auth, inst) ->
       fields.party_authorization = auth
       fields.party_is_institution = inst
       type = Search.Party
-      $scope.search()
+      $scope.search(0)
     $scope.searchVolumes = () ->
       type = Search.Volume
-      $scope.search()
+      $scope.search(0)
     $scope.searchSpellcheck = (w, s) ->
       $scope.query = $scope.query.replace(w, s)
       $scope.search()
     $scope.searchPage = (n) ->
       $scope.search(type.limit*(n-1))
+
+    startTag = fields.tag_name
+    $scope.tagSearch = (input) ->
+      return input if input == startTag
+      models.Tag.search(input).then (data) ->
+        for tag in data
+          text: tag
+          select: tag
 
     limits =
       year: Math.ceil(constants.age.limit)
