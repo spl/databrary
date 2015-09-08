@@ -29,8 +29,8 @@ app.controller 'site/search', [
 
     params = $location.search()
     $scope.query = params.q || ''
-    offset = parseInt(params.offset, 10) || 0
     if type
+      offset = parseInt(params.offset, 10) || 0
       $scope.page = 1 + (offset / type.limit)
       $scope.pages = Math.ceil($scope.count / type.limit)
 
@@ -62,7 +62,7 @@ app.controller 'site/search', [
     unless fields.record_age[1] < constants.age.limit
       fields.record_age[1] = constants.age.limit
 
-    $scope.search = () ->
+    $scope.search = (offset) ->
       if !$scope.query && !offset && $.isEmptyObject(fields) && $.isEmptyObject(metrics)
         $location.replace().search({})
         return
@@ -90,8 +90,7 @@ app.controller 'site/search', [
       $scope.query = $scope.query.replace(w, s)
       $scope.search()
     $scope.searchPage = (n) ->
-      offset = type.limit*(n-1)
-      $scope.search()
+      $scope.search(type.limit*(n-1))
 
     limits =
       year: Math.ceil(constants.age.limit)

@@ -27,29 +27,29 @@
           <input type="checkbox" ng-model="fields.content_type" ng-true-value="'excerpt'" ng-false-value="undefined" ng-change="searchVolumes()"/>
           Volumes with highlights
         </div>
-      </div>
 
-      <div class="search-filter age-filter">
-        <span>Age</span><br/>
-        <div ui-slider="{range:true}" min="0" max="{{ageMax()}}" step="1" ng-model="fields.record_age"></div>
-        <display-age value="fields.record_age[0]"></display-age> &ndash; <display-age value="fields.record_age[1]"></display-age>
-      </div>
-      <div class="search-filter" ng-repeat="(mi, v) in metrics" ng-if="metrics[mi] !== null" ng-init="m=constants.metric[mi]">
-        <span class="icon trash" ng-click="removeMetric(mi)"></span>
-        <span ng-bind="::m.name"></span>
-        <input-completer ng-if="::m.options" input-name="metric" ng-model="metrics[mi]" completer="optionsCompleter($input, m.options)" min="0"></input-completer>
-        <input type="text" ng-if="::m.type==='text' && !m.options" ng-model="metrics[mi]"/>
-        <span ng-if="::m.type==='numeric'">
-          <input type="number" ng-model="metrics[mi][0]"/> &ndash; <input type="number" ng-model="metrics[mi][1]"/>
-        </span>
-      </div>
-      <div class="additional-filters">
-        <select ng-model="addMetric.id" ng-options="m.id as m.name for m in availableMetrics()" ng-change="addMetric()">
-          <option value="">Filter by metric</option>
-        </select>
-      </div>
+        <div class="search-filter age-filter">
+          <span>Age</span><br/>
+          <div ui-slider="{range:true}" min="0" max="{{ageMax()}}" step="1" ng-model="fields.record_age"></div>
+          <display-age value="fields.record_age[0]"></display-age> &ndash; <display-age value="fields.record_age[1]"></display-age>
+        </div>
+        <div class="search-filter" ng-repeat="(mi, v) in metrics" ng-if="metrics[mi] !== null" ng-init="m=constants.metric[mi]">
+          <span class="icon trash" ng-click="removeMetric(mi)"></span>
+          <span ng-bind="::m.name"></span>
+          <input-completer ng-if="::m.options" input-name="metric" ng-model="metrics[mi]" completer="optionsCompleter($input, m.options)" min="0"></input-completer>
+          <input type="text" ng-if="::m.type==='text' && !m.options" ng-model="metrics[mi]"/>
+          <span ng-if="::m.type==='numeric'">
+            <input type="number" ng-model="metrics[mi][0]"/> &ndash; <input type="number" ng-model="metrics[mi][1]"/>
+          </span>
+        </div>
+        <div class="additional-filters">
+          <select ng-model="addMetric.id" ng-options="m.id as m.name for m in availableMetrics()" ng-change="addMetric()">
+            <option value="">Filter by metric</option>
+          </select>
+        </div>
 
-      <button ng-click="searchVolumes()">Apply Filters</button>
+        <button ng-click="searchVolumes()">Apply Filters</button>
+      </div>
     </div>
 
     <div class="search-results col-desktop-12 col-tablet-7 col-mobile-6">
