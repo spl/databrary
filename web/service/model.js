@@ -164,12 +164,12 @@ app.factory('modelService', [
         this.comments = commentMakeArray(null, init.comments);
     };
 
-    function partyPeek(id) {
+    Party.peek = function (id) {
       return id === Login.user.id && Login.user || Party.cache.get(id);
-    }
+    };
 
     function partyMake(init) {
-      var p = partyPeek(init.id);
+      var p = Party.peek(init.id);
       return p ? p.update(init) : Party.poke(new Party(init));
     }
 
@@ -198,10 +198,8 @@ app.factory('modelService', [
         return $q.successful(p);
     }
 
-    Party.peek = partyPeek;
-
     Party.get = function (id, options) {
-      return partyGet(id, partyPeek(id), options);
+      return partyGet(id, Party.peek(id), options);
     };
 
     Party.prototype.get = function (options) {
@@ -508,7 +506,7 @@ app.factory('modelService', [
         data.owner = owner;
       return router.http(router.controllers.createVolume, data)
         .then(function (res) {
-          if ((owner = (owner === undefined ? Login.user : partyPeek(owner))))
+          if ((owner = (owner === undefined ? Login.user : Party.peek(owner))))
             owner.clear('access', 'volumes');
           return volumeMake(res.data);
         });
@@ -784,14 +782,18 @@ app.factory('modelService', [
         return new Container(volume, init);
     }
 
+    Volume.prototype.getContainer = function(id) {
+      return containerMake(this, {id:id,_PLACEHOLDER:true});
+    };
+
     function containerPrepare(volume, init) {
       if (typeof init == 'number')
-        init = {id:init,_PLACEHOLDER:true};
+        return volume.getContainer(init);
       return containerMake(volume || volumeMake(init.volume), init);
     }
 
     Volume.prototype.getSlot = function (container, segment, options) {
-      return containerPrepare(this, parseInt(container, 10)).getSlot(segment, options);
+      return this.getContainer(parseInt(container, 10)).getSlot(segment, options);
     };
 
     Container.prototype.getSlot = function (segment, options) {
@@ -906,6 +908,10 @@ app.factory('modelService', [
 
     Slot.prototype.zipRoute = function () {
       return router.slotZip([this.volume.id, this.container.id]);
+    };
+
+    Slot.prototype.thumbRoute = function (size) {
+      return router.slotThumb([this.volume.id, this.container.id, this.segment.format(), size]);
     };
 
     ///////////////////////////////// Record

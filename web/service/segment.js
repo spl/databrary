@@ -31,7 +31,7 @@ app.factory('Segment', [
         if (i === -1) {
           i = a.indexOf('-', 1);
           if (i === -1) {
-            l = u = Offset.parse(a);
+            this.l = this.u = Math.round(Offset.parse(a));
             return;
           }
         }

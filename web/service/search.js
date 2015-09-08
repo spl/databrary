@@ -57,6 +57,35 @@ app.factory('searchService', [
       return l;
     }
 
+    ///////////////////////////////// Segment
+
+    function Segment(container, init) {
+      models.Slot.call(this, container, init);
+      console.log(this.segment.format());
+    }
+
+    Segment.prototype = Object.create(models.Slot.prototype);
+    Segment.prototype.constructor = Segment;
+    Segment.prototype.fields = {
+      asset_id: false,
+      record_id: false,
+      tag_name: false,
+      comment_id: false,
+    };
+
+    Segment.prototype.route = function () {
+      var x = this.container.route({select:this.segment.format(), record:this.record_id, asset:this.asset_id, tag:this.tag_name, comment:this.comment_id});
+      console.log(x);
+      return x;
+    };
+
+    Segment.prototype.thumbRoute = function (size) {
+      if (this.asset_id)
+        return router.assetThumb([this.container.id, this.segment.format(), this.asset_id, size]);
+      else
+        return models.Slot.prototype.thumbRoute.call(this, size);
+    };
+
     ///////////////////////////////// search
 
     Party.limit = 24;
@@ -90,6 +119,32 @@ app.factory('searchService', [
         .then(function (res) {
           volumeMakeArray(res.data.response.docs);
           return res.data;
+        });
+    };
+
+    models.Volume.prototype.search = function (params) {
+      var v = this;
+      params.volume = this.id;
+      delete params.offset;
+      params.limit = 4;
+      return router.http(router.controllers.postSearch, params)
+        .then(function (res) {
+          return res.data.grouped.container_id.groups.map(function (g) {
+            var c = v.getContainer(g.groupValue);
+            /* merge identical segments. should probably do something smarter. */
+            var s = [];
+            g.doclist.docs.forEach(function (d) {
+              var t = s.find(function(x) { return (x.segment || ',') === (d.segment || ','); });
+              if (t)
+                angular.extend(t, d);
+              else
+                s.push(d);
+            });
+            return {
+              container: c,
+              segments: s.map(function (d) { return new Segment(c, d); })
+            };
+          });
         });
     };
 

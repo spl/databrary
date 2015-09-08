@@ -1055,7 +1055,7 @@ app.controller('volume/slot', [
     class Tag extends TagName
       constructor: (t) ->
         super(t.id)
-        @active = t.id in tagToggle
+        @active = t.id in tagToggle || t.id == target.tag
         @fillData(t)
         return
 

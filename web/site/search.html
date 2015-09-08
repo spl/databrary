@@ -75,8 +75,8 @@
         <ul class="row search-volume-results">
           <li ng-repeat="volume in ::volumes">
             <h1 class="search-volume-result-title">
-              <span ng-if="retrievedContainers[result.id] === undefined" ng-click="searchContainers(result)" class="icon radio"></span>
-              <span ng-if="retrievedContainers[result.id] !== undefined" ng-click="clearContainers(result)" class="icon radio-selected"></span>
+              <span ng-if="expanded.volume !== volume" ng-click="expandVolume(volume)" class="icon radio"></span>
+              <span ng-if="expanded.volume === volume" ng-click="expandVolume()" class="icon radio-selected"></span>
               <a ng-href="{{::volume.route()}}" ng-bind="::volume.name"></a>
             </h1>
 
@@ -84,22 +84,23 @@
               <volume-owners></volume-owners>
             </div>
 
-            <div class="volume-list-body" ng-bind="::volume.body.replace('\n', ' ') | truncate:200"></div>
+            <div ng-if="expanded.volume !== volume" class="volume-list-body" ng-bind="::volume.body | truncate:200"></div>
+            <div ng-if="expanded.volume === volume">
+              <div class="volume-list-body" ng-bind-html="::volume.body | format"></div>
 
-            <div class="search-volume-containers" ng-if="retrievedContainers[result.id] !== undefined">
-              <small class="status" ng-if="retrievedContainers[result.id].length <= 0">No matching records or assets found</small>
-              <ul ng-if="retrievedContainers[result.id].length > 0">
-                <li class="search-volume-container" ng-repeat="container in retrievedContainers[result.id]">
-                  <a ng-href="{{::page.router.slot([container.id, container.containerId, container.segment])}}?record={{container.recordId}}">
-                    <span class="search-volume-container-info">
-                      <span ng-if="container.age">Age: </span>
-                      <display-age value="container.age"></display-age>
-                      {{container.text}}
-                    </span>
-                    <img ng-src="{{container.thumbRoute(240)}}">
-                  </a>
-                </li>
-              </ul>
+              <div class="search-volume-containers">
+                <ul ng-if="expanded.volume === volume">
+                  <li class="search-volume-container" ng-repeat="res in ::expanded.results">
+                    <ul>
+                      <li ng-repeat="seg in ::res.segments">
+                        <a ng-href="{{::seg.route()}}">
+                          <img ng-src="{{::seg.thumbRoute(240)}}"/>
+                        </a>
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+              </div>
             </div>
 
           </li>

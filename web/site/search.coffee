@@ -122,5 +122,13 @@ app.controller 'site/search', [
         when 1 then match[0]
         else ({text:o, select:o, default:input && i==0} for o, i in match)
 
+    $scope.expandVolume = (v) ->
+      $scope.expanded = {volume:v}
+      return unless v
+      v.search($location.search()).then (r) ->
+        $scope.expanded.results = r
+        return
+      return
+
     return
 ]

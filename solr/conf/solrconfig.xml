@@ -75,8 +75,6 @@
       <str name="fl">
 	id:party_id sortname:party_sort_name prename:party_pre_name affiliation:party_affiliation institution:party_is_institution
 	id:volume_id name body owner_names:volume_owner_names owner_ids:volume_owner_ids
-	id:container_id top:container_top date:container_date segment
-	tag:tag_name
       </str>
       <str name="omitHeader">true</str>
 

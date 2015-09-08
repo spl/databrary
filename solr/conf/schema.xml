@@ -11,61 +11,61 @@
   <field name="text_gen" type="text_general" indexed="true" stored="false" multiValued="true"/>
   <field name="text_rev" type="text_general_rev" indexed="true" stored="false" multiValued="true"/>
 
-  <field name="name" type="text" indexed="true" stored="true"/>
+  <field name="name" type="text" indexed="false" stored="true"/>
   <copyField source="name" dest="text_en"/>
   <copyField source="name" dest="text_gen"/>
   <copyField source="name" dest="text_rev"/>
 
-  <field name="party_id" type="id"/>
+  <field name="party_id" type="id" indexed="false" stored="true"/>
   <field name="party_name" type="text" indexed="true" stored="false" multiValued="true"/>
-  <field name="party_pre_name" type="text" indexed="true" stored="true"/>
+  <field name="party_pre_name" type="text" indexed="false" stored="true"/>
   <copyField source="party_pre_name" dest="party_name"/>
   <copyField source="party_pre_name" dest="text_en"/>
   <copyField source="party_pre_name" dest="text_gen"/>
   <copyField source="party_pre_name" dest="text_rev"/>
-  <field name="party_sort_name" type="text" indexed="true" stored="true"/>
+  <field name="party_sort_name" type="text" indexed="false" stored="true"/>
   <copyField source="party_sort_name" dest="party_name"/>
   <copyField source="party_sort_name" dest="text_en"/>
   <copyField source="party_sort_name" dest="text_gen"/>
   <copyField source="party_sort_name" dest="text_rev"/>
-  <field name="party_affiliation" type="text" indexed="true" stored="true"/>
+  <field name="party_affiliation" type="text" indexed="false" stored="true"/>
   <copyField source="party_affiliation" dest="text_en"/>
   <copyField source="party_affiliation" dest="text_gen"/>
   <copyField source="party_affiliation" dest="text_rev"/>
   <field name="party_is_institution" type="boolean" indexed="true" stored="true"/>
   <field name="party_authorization" type="permission" indexed="true" stored="false"/>
 
-  <field name="volume_id" type="id"/>
-  <field name="body" type="text_en" indexed="true" stored="true"/>
+  <field name="volume_id" type="id" indexed="true" stored="true"/>
+  <field name="body" type="text_en" indexed="false" stored="true"/>
   <copyField source="body" dest="text_en"/>
   <copyField source="body" dest="text_gen"/>
   <copyField source="body" dest="text_rev"/>
-  <field name="volume_owner_ids" type="id" indexed="true" stored="true" multiValued="true"/>
-  <field name="volume_owner_names" type="text" indexed="true" stored="true" multiValued="true"/>
+  <field name="volume_owner_ids" type="id" indexed="false" stored="true" multiValued="true"/>
+  <field name="volume_owner_names" type="text" indexed="false" stored="true" multiValued="true"/>
   <copyField source="volume_owner_names" dest="party_name"/>
   <copyField source="volume_owner_names" dest="text_en"/>
   <copyField source="volume_owner_names" dest="text_gen"/>
   <copyField source="volume_owner_names" dest="text_rev"/>
-  <field name="citation" type="text" indexed="true" stored="false"/>
+  <field name="citation" type="text" indexed="false" stored="false"/>
   <copyField source="citation" dest="text_en"/>
   <copyField source="citation" dest="text_gen"/>
   <copyField source="citation" dest="text_rev"/>
-  <field name="citation_year" type="int" indexed="true" stored="false"/>
+  <field name="citation_year" type="int" indexed="false" stored="false"/>
   <copyField source="citation_year" dest="text_en"/>
   <copyField source="citation_year" dest="text_gen"/>
 
-  <field name="container_id" type="id"/>
-  <field name="container_top" type="boolean" indexed="true" stored="true"/>
-  <field name="container_date" type="daterange" indexed="true" stored="true"/>
-  <field name="release" type="release" indexed="true" stored="false"/>
+  <field name="container_id" type="id" indexed="true" stored="true"/>
+  <field name="container_top" type="boolean" indexed="true" stored="false"/>
+  <field name="container_date" type="daterange" indexed="false" stored="false"/>
+  <field name="release" type="release" indexed="false" stored="false"/>
   <field name="segment" type="string" indexed="false" stored="true"/>
-  <field name="segment_duration" type="tdouble" indexed="true" stored="false"/>
+  <field name="segment_duration" type="tdouble" indexed="false" stored="false"/>
 
-  <field name="asset_id" type="id" indexed="false" stored="false"/>
-  <field name="format_id" type="id" indexed="true" stored="false"/>
+  <field name="asset_id" type="id" indexed="false" stored="true"/>
+  <field name="format_id" type="id" indexed="false" stored="false"/>
 
-  <field name="record_id" type="id" indexed="false" stored="false"/>
-  <field name="record_category_id" type="id" indexed="true" stored="false"/>
+  <field name="record_id" type="id" indexed="false" stored="true"/>
+  <field name="record_category_id" type="id" indexed="false" stored="false"/>
   <field name="record_age" type="tint" indexed="true" stored="false"/>
 
   <dynamicField name="record_text_*" type="text" indexed="true" stored="false"/>
@@ -84,17 +84,17 @@
   <dynamicField name="record_date_*" type="tdate" indexed="true" stored="false"/>
   <dynamicField name="record_void_*" type="boolean" indexed="true" stored="false"/>
 
-  <field name="tag_id" type="id" stored="false"/>
+  <field name="tag_id" type="id" indexed="false" stored="false"/>
   <field name="tag_name" type="string" indexed="true" stored="true" omitNorms="false"/>
   <copyField source="tag_name" dest="text_en"/>
   <copyField source="tag_name" dest="text_gen"/>
   <copyField source="tag_name" dest="text_rev"/>
   <field name="keyword" type="string" indexed="true" stored="false" omitNorms="false"/> <!-- same as tag, but for boosting -->
 
-  <field name="comment_id" type="id" stored="false" indexed="false"/>
+  <field name="comment_id" type="id" stored="true" indexed="false"/>
 
 
-  <fieldType name="id" class="solr.TrieIntField" precisionStep="0" indexed="true" stored="true"/>
+  <fieldType name="id" class="solr.TrieIntField" precisionStep="0"/>
   <fieldType name="permission" class="solr.EnumField" enumsConfig="enum.xml" enumName="permission"/>
   <fieldType name="release" class="solr.EnumField" enumsConfig="enum.xml" enumName="release"/>
 
@@ -113,7 +113,7 @@
   <fieldType name="daterange" class="solr.DateRangeField"/>
 
   <fieldType name="binary" class="solr.BinaryField"/>
-  <fieldType name="random" class="solr.RandomSortField" indexed="true" />
+  <fieldType name="random" class="solr.RandomSortField"/>
 
   <fieldType name="text" class="solr.TextField" positionIncrementGap="1">
     <analyzer>
