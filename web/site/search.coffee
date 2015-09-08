@@ -64,9 +64,9 @@ app.controller 'site/search', [
 
     $scope.search = (offset) ->
       if !$scope.query && !offset && $.isEmptyObject(fields) && $.isEmptyObject(metrics)
-        $location.replace().search({})
+        $location.search({})
         return
-      $location.replace()
+      $location
         .search('q', $scope.query)
         .search('volume', type?.volume)
         .search('offset', offset || undefined)
