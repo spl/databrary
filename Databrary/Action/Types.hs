@@ -1,7 +1,9 @@
-{-# LANGUAGE TemplateHaskell, OverloadedStrings #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving, TemplateHaskell, OverloadedStrings #-}
 module Databrary.Action.Types
   ( Context(..)
+  , MonadHasContext
   , ActionM
+  , runActionM
   , Action
   , runAction
   , withAuth
@@ -9,7 +11,11 @@ module Databrary.Action.Types
   , withReAuth
   ) where
 
-import Control.Monad.Reader (ReaderT(..), runReaderT, withReaderT)
+import Control.Applicative (Applicative, Alternative)
+import Control.Monad (MonadPlus)
+import Control.Monad.Base (MonadBase)
+import Control.Monad.Reader (MonadReader, ReaderT(..), withReaderT)
+import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.Trans.Resource (InternalState, runResourceT, withInternalState)
 import Data.Time (getCurrentTime)
 import Network.HTTP.Types (hDate)
@@ -19,6 +25,7 @@ import Databrary.Has (view, makeHasRec)
 import Databrary.HTTP
 import Databrary.Service.Types
 import Databrary.Service.Log
+import Databrary.Service.DB
 import Databrary.Model.Time
 import Databrary.Model.Identity
 import Databrary.Model.Id.Types
@@ -37,7 +44,12 @@ data Context = Context
 
 makeHasRec ''Context ['contextService, 'contextResourceState, 'contextTimestamp, 'contextRequest, 'contextIdentity]
 
-type ActionM a = ReaderT Context IO a
+newtype ActionM a = ActionM { unActionM :: ReaderT Context IO a }
+  deriving (Functor, Applicative, Alternative, Monad, MonadPlus, MonadIO, MonadBase IO, MonadReader Context, MonadDB)
+
+{-# INLINE runActionM #-}
+runActionM :: ActionM a -> Context -> IO a
+runActionM (ActionM (ReaderT f)) = f
 
 data Action = Action
   { _actionAuth :: !Bool
@@ -49,8 +61,8 @@ runAction rc (Action auth act) req send = do
   ts <- getCurrentTime
   runResourceT $ withInternalState $ \is -> do
     let ctx = Context rc is ts req PreIdentified
-    i <- if auth then runReaderT determineIdentity ctx else return PreIdentified
-    r <- runResult $ runReaderT (angularAnalytics >> act) ctx{ contextIdentity = i }
+    i <- if auth then runActionM determineIdentity ctx else return PreIdentified
+    r <- runResult $ runActionM (angularAnalytics >> act) ctx{ contextIdentity = i }
     logAccess ts req (foldIdentity Nothing (Just . (show :: Id Party -> String) . view) i) r (serviceLogs rc)
     send $ Wai.mapResponseHeaders ((hDate, formatHTTPTimestamp ts) :) r
 
@@ -61,4 +73,4 @@ withoutAuth :: ActionM Response -> Action
 withoutAuth = Action False
 
 withReAuth :: SiteAuth -> ActionM a -> ActionM a
-withReAuth u = withReaderT (\a -> a{ contextIdentity = ReIdentified u })
+withReAuth u = ActionM . withReaderT (\a -> a{ contextIdentity = ReIdentified u }) . unActionM

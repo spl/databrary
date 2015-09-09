@@ -8,7 +8,6 @@ module Databrary.HTTP.Parse
 import Control.Applicative ((<$>))
 import Control.Monad (when, unless)
 import Control.Monad.IO.Class (liftIO)
-import Control.Monad.Reader (runReaderT)
 import qualified Data.Aeson as JSON
 import qualified Data.Attoparsec.ByteString as AP
 import qualified Data.ByteString as BS
@@ -121,7 +120,7 @@ parseFormFileContent ff rt = do
   (p, f) <- liftIO $ do
     let be fn fi fb = case ff fi{ fileContent = fn } of
           0 -> result requestTooLarge
-          m -> limitChunks m (\b -> runReaderT (parseFileContent b) app) fb
+          m -> limitChunks m (\b -> runActionM (parseFileContent b) app) fb
     sinkRequestBody be rt (requestBody $ contextRequest app)
   return $ ContentForm p f
 

@@ -10,7 +10,6 @@ module Databrary.Store.Transcode
 import Control.Concurrent (ThreadId, forkFinally)
 import Control.Monad (guard, unless, void)
 import Control.Monad.IO.Class (liftIO)
-import Control.Monad.Trans.Reader (ReaderT(..))
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Char8 as BSC
@@ -88,7 +87,7 @@ startTranscode tc = do
 forkTranscode :: Transcode -> ActionM ThreadId
 forkTranscode tc = focusIO $ \app ->
   forkFinally -- violates InternalState, could use forkResourceT, but we don't need it
-    (runReaderT (startTranscode tc) app)
+    (runActionM (startTranscode tc) app)
     (either
       (\e -> logMsg (view app) ("forkTranscode: " ++ show e) (view app))
       (const $ return ()))

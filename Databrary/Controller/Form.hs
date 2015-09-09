@@ -15,7 +15,7 @@ module Databrary.Controller.Form
 import Control.Applicative (Applicative, (<$>), (<*>), (<|>))
 import Control.Monad (unless)
 import Control.Monad.IO.Class (liftIO)
-import Control.Monad.Reader (ask, ReaderT)
+import Control.Monad.Reader (ask)
 import Control.Monad.Trans.Class (lift)
 import qualified Crypto.BCrypt as BCrypt
 import qualified Data.Aeson as JSON
@@ -46,7 +46,7 @@ import Databrary.Action.Form (getFormData)
 import Databrary.Controller.Permission (checkVerfHeader)
 import Databrary.View.Form (FormHtml)
 
-type DeformActionM f a = DeformT f (ReaderT Context IO) a
+type DeformActionM f a = DeformT f ActionM a
 
 jsonFormErrors :: FormErrors -> Response
 jsonFormErrors = response badRequest400 [] . JSON.toJSON

@@ -17,7 +17,7 @@ import Databrary.Model.Id
 import Databrary.Model.Permission
 import Databrary.Model.Volume
 import Databrary.Model.Container
-import Databrary.Ingest.Service
+import Databrary.Ingest.Action
 import Databrary.Ingest.JSON
 import Databrary.HTTP.Path.Parser
 import Databrary.HTTP.Form.Deform
