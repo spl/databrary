@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Databrary.Controller.Form
   ( FormData
+  , DeformActionM
   , runFormFiles
   , runForm
   , blankForm
@@ -13,8 +14,8 @@ module Databrary.Controller.Form
 
 import Control.Applicative (Applicative, (<$>), (<*>), (<|>))
 import Control.Monad (unless)
-import Control.Monad.IO.Class (MonadIO, liftIO)
-import Control.Monad.Reader (ask)
+import Control.Monad.IO.Class (liftIO)
+import Control.Monad.Reader (ask, ReaderT)
 import Control.Monad.Trans.Class (lift)
 import qualified Crypto.BCrypt as BCrypt
 import qualified Data.Aeson as JSON
@@ -45,30 +46,32 @@ import Databrary.Action.Form (getFormData)
 import Databrary.Controller.Permission (checkVerfHeader)
 import Databrary.View.Form (FormHtml)
 
+type DeformActionM f a = DeformT f (ReaderT Context IO) a
+
 jsonFormErrors :: FormErrors -> Response
 jsonFormErrors = response badRequest400 [] . JSON.toJSON
 
 htmlFormErrors :: (FormErrors -> Html.Html) -> FormErrors -> Response
 htmlFormErrors f = response badRequest400 [] . f
 
-handleForm :: MonadIO m => (FormErrors -> Response) -> Either FormErrors a -> m a
+handleForm :: (FormErrors -> Response) -> Either FormErrors a -> ActionM a
 handleForm re = either (result . re) return
 
-handleFormErrors :: MonadIO m => Maybe (FormErrors -> Html.Html) -> Either FormErrors a -> m a
+handleFormErrors :: Maybe (FormErrors -> Html.Html) -> Either FormErrors a -> ActionM a
 handleFormErrors = handleForm . maybe jsonFormErrors htmlFormErrors
 
-runFormWith :: (MonadAction q m, MonadIO m) => FormData f -> Maybe (q -> FormHtml f) -> DeformT f m a -> m a
+runFormWith :: FormData f -> Maybe (Context -> FormHtml f) -> DeformActionM f a -> ActionM a
 runFormWith fd mf fa = do
   req <- ask
   let fv hv = runFormView (hv req) fd
   handleFormErrors (fv <$> mf) =<< runDeform fa fd
 
-runFormFiles :: (MonadAction q m, MonadIO m, FileContent f) => [(BS.ByteString, Word64)] -> Maybe (q -> FormHtml f) -> DeformT f m a -> m a
+runFormFiles :: FileContent f => [(BS.ByteString, Word64)] -> Maybe (Context -> FormHtml f) -> DeformActionM f a -> ActionM a
 runFormFiles fl mf fa = do
   fd <- getFormData fl
   runFormWith fd mf fa
 
-runForm :: (MonadAction q m, MonadIO m) => Maybe (q -> FormHtml ()) -> DeformT () m a -> m a
+runForm :: Maybe (Context -> FormHtml ()) -> DeformActionM () a -> ActionM a
 runForm = runFormFiles []
 
 blankForm :: FormHtml f -> Response
@@ -83,7 +86,7 @@ emailTextForm = do
   e <- deformCheck "Invalid email address" (Regex.matchTest emailRegex) =<< deform
   return $ maybe e (uncurry ((. BSC.map toLower) . (<>)) . flip BS.splitAt e) $ BSC.elemIndex '@' e
 
-passwordForm :: (MonadIO m, MonadHasPasswd c m) => Account -> DeformT f m BS.ByteString
+passwordForm :: Account -> DeformActionM f BS.ByteString
 passwordForm acct = do
   p <- "once" .:> do
     p <- deform
@@ -103,7 +106,7 @@ paginateForm = Paginate
   <*> get "limit" paginateLimit
   where get t f = t .:> (deformCheck ("invalid " <> t) (\i -> i >= f minBound && i <= f maxBound) =<< deform) <|> return (f def)
 
-csrfForm :: (MonadAction q m) => DeformT f m ()
+csrfForm :: DeformActionM f ()
 csrfForm = do
   r <- lift checkVerfHeader
   unless r $ do

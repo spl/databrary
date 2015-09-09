@@ -4,7 +4,6 @@ module Databrary.Action
   , Context
   , ActionM
   , Action
-  , MonadAction
 
   , Response
   , response
@@ -24,7 +23,6 @@ module Databrary.Action
   , runActionRoute
   ) where
 
-import Control.Monad.IO.Class (MonadIO)
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Lazy as BSL
 import Data.Maybe (fromMaybe)
@@ -53,7 +51,7 @@ forbiddenResponse = response forbidden403 [] . htmlForbidden
 notFoundResponse :: Context -> Response
 notFoundResponse = response notFound404 [] . htmlNotFound
 
-maybeAction :: (MonadAction q m, MonadIO m) => Maybe a -> m a
+maybeAction :: Maybe a -> ActionM a
 maybeAction (Just a) = return a
 maybeAction Nothing = result =<< peeks notFoundResponse
 

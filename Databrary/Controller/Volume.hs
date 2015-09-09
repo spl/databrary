@@ -199,7 +199,7 @@ volumeForm v = do
     , volumeBody = body
     }
 
-volumeCitationForm :: Volume -> DeformActionM f Context (Volume, Maybe Citation)
+volumeCitationForm :: Volume -> DeformActionM f (Volume, Maybe Citation)
 volumeCitationForm v = do
   csrfForm
   vol <- volumeForm v

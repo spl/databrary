@@ -56,7 +56,7 @@ containerDownloadName top c
 viewContainer :: ActionRoute (API, (Maybe (Id Volume), Id Container))
 viewContainer = I.second (I.second $ slotContainerId . unId I.:<->: containerSlotId) I.<$> viewSlot
 
-containerForm :: Container -> DeformActionM () Context Container
+containerForm :: Container -> DeformActionM () Container
 containerForm c = do
   csrfForm
   name <- "name" .:> deformOptional (deformNonEmpty deform)

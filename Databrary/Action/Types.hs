@@ -1,7 +1,6 @@
 {-# LANGUAGE TemplateHaskell, OverloadedStrings #-}
 module Databrary.Action.Types
   ( Context(..)
-  , MonadAction 
   , ActionM
   , Action
   , runAction
@@ -39,7 +38,6 @@ data Context = Context
 makeHasRec ''Context ['contextService, 'contextResourceState, 'contextTimestamp, 'contextRequest, 'contextIdentity]
 
 type ActionM a = ReaderT Context IO a
-type MonadAction q m = MonadHasContext q m
 
 data Action = Action
   { _actionAuth :: !Bool

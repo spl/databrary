@@ -6,7 +6,7 @@ module Databrary.Controller.Angular
   ) where
 
 import Control.Arrow (second)
-import Control.Monad.IO.Class (MonadIO, liftIO)
+import Control.Monad.IO.Class (liftIO)
 import qualified Data.ByteString.Builder as BSB
 import Data.Default.Class (Default(..))
 import qualified Data.Foldable as Fold
@@ -79,5 +79,5 @@ angularResult nojs auth = do
 #endif
   result $ okResponse [] (htmlAngular debug nojs auth)
 
-angular :: (MonadIO m, MonadAction q m) => m ()
+angular :: ActionM ()
 angular = Fold.mapM_ (focusIO . angularResult) =<< peeks angularRequest

@@ -5,7 +5,7 @@ module Databrary.HTTP.File
   ) where
 
 import Control.Monad (when, mfilter)
-import Control.Monad.IO.Class (MonadIO, liftIO)
+import Control.Monad.IO.Class (liftIO)
 import qualified Data.ByteString as BS
 import qualified Data.Foldable as Fold
 import Data.Monoid ((<>))
@@ -20,7 +20,7 @@ import Databrary.HTTP
 import Databrary.Action
 import Databrary.Model.Format
 
-fileResponse :: (MonadAction c m, MonadIO m) => RawFilePath -> Format -> Maybe BS.ByteString -> BS.ByteString -> m (ResponseHeaders, Maybe Wai.FilePart)
+fileResponse :: RawFilePath -> Format -> Maybe BS.ByteString -> BS.ByteString -> ActionM (ResponseHeaders, Maybe Wai.FilePart)
 fileResponse file fmt save etag = do
   (sz, mt) <- maybeAction =<< liftIO (fileInfo file)
   let szi = toInteger sz
@@ -43,7 +43,7 @@ fileResponse file fmt save etag = do
         Wai.FilePart 0 szi szi -- force full file
   return (fh, part)
 
-serveFile :: (MonadAction c m, MonadIO m) => RawFilePath -> Format -> Maybe BS.ByteString -> BS.ByteString -> m Response
+serveFile :: RawFilePath -> Format -> Maybe BS.ByteString -> BS.ByteString -> ActionM Response
 serveFile file fmt save etag = do
   (fh, part) <- fileResponse file fmt save etag
   return $ okResponse fh (file, part)

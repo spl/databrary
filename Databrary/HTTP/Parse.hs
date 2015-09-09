@@ -7,7 +7,7 @@ module Databrary.HTTP.Parse
 
 import Control.Applicative ((<$>))
 import Control.Monad (when, unless)
-import Control.Monad.IO.Class (MonadIO, liftIO)
+import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Reader (runReaderT)
 import qualified Data.Aeson as JSON
 import qualified Data.Attoparsec.ByteString as AP
@@ -78,10 +78,10 @@ rejectBackEnd :: BackEnd a
 rejectBackEnd _ _ _ = result requestTooLarge
 
 
-_parseRequestChunks :: (MonadIO m, MonadAction c m) => ChunkParser a -> m a
+_parseRequestChunks :: ChunkParser a -> ActionM a
 _parseRequestChunks p = liftIO . p =<< peeks requestBody
 
-limitRequestChunks :: (MonadIO m, MonadAction c m) => Word64 -> ChunkParser a -> m a
+limitRequestChunks :: Word64 -> ChunkParser a -> ActionM a
 limitRequestChunks lim p = do
   rq <- peek
   case requestBodyLength rq of
@@ -111,11 +111,11 @@ instance FileContent TempFile where
 instance FileContent JSON.Value where
   parseFileContent b = liftIO $ either (result . response unsupportedMediaType415 []) return . AP.eitherResult =<< parserChunks JSON.json b
 
-parseFormContent :: (MonadIO m, MonadAction c m) => RequestBodyType -> m (Content a)
+parseFormContent :: RequestBodyType -> ActionM (Content a)
 parseFormContent t = uncurry ContentForm
   <$> limitRequestChunks maxTextSize (liftIO . sinkRequestBody rejectBackEnd t)
 
-parseFormFileContent :: (MonadIO m, MonadAction c m, FileContent a) => (FileInfo BS.ByteString -> Word64) -> RequestBodyType -> m (Content a)
+parseFormFileContent :: FileContent a => (FileInfo BS.ByteString -> Word64) -> RequestBodyType -> ActionM (Content a)
 parseFormFileContent ff rt = do
   app <- peek
   (p, f) <- liftIO $ do
@@ -125,11 +125,11 @@ parseFormFileContent ff rt = do
     sinkRequestBody be rt (requestBody $ contextRequest app)
   return $ ContentForm p f
 
-parseJSONContent :: (MonadIO m, MonadAction c m) => m (Content a)
+parseJSONContent :: ActionM (Content a)
 parseJSONContent = maybe ContentUnknown ContentJSON . AP.maybeResult
   <$> limitRequestChunks maxTextSize (liftIO . parserChunks JSON.json)
 
-parseRequestContent :: (MonadIO m, MonadAction c m, FileContent a) => (BS.ByteString -> Word64) -> m (Content a)
+parseRequestContent :: FileContent a => (BS.ByteString -> Word64) -> ActionM (Content a)
 parseRequestContent ff = do
   ct <- peeks $ lookupRequestHeader hContentType
   case fmap parseContentType ct of
