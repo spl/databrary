@@ -27,11 +27,11 @@
       </div>
       <div class="bigbutton">
         <img src="/web/icons/home-searchstudy.svg"/>
-        <span class="button-title"><a ng-href="{{::page.router.volumeSearch()}}">Browse Data</a></span>
+        <span class="button-title"><a ng-href="{{::page.router.search()}}?volume">Browse Data</a></span>
       </div>
       <div class="bigbutton">
         <img src="/web/icons/home-userstudy.svg"/>
-        <span class="button-title"><a ng-href="{{::page.router.partySearch()}}?institution=false&authorization=4">Browse People</a></span>
+        <span class="button-title"><a ng-href="{{::page.router.search()}}?volume=false&f.party_authorization={{::page.constants.permission.EDIT}}&f.party_is_institution=false">Browse People</a></span>
       </div>
     </div>
   </div>
@@ -84,7 +84,7 @@
         <div class="home-tags">
           <span class="home-sections-title"><span class="icon tag"></span>Top Tags</span>
           <ol>
-            <a ng-href="{{::page.router.search()}}?f.tag_name={{::tag.id}}" ng-repeat="tag in ::tags">
+            <a ng-href="{{::page.router.search()}}?volume&f.tag_name={{::tag.id}}" ng-repeat="tag in ::tags">
               <li class="home-tags-item tags-item" ng-bind="::tag.id"></li>
             </a>
           </ol>

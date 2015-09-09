@@ -19,7 +19,7 @@
               </a>
             </li>
             <li ng-class="{'hide-mobile':!hoverNav}">
-              <a ng-href="{{::page.router.volumeSearch()}}"><span><b>Volumes</b></span></a>
+              <a ng-href="{{::page.router.search()}}?volume"><span><b>Volumes</b></span></a>
             </li>
             <li ng-class="{'hide-mobile':!hoverNav}">
               <a href="//databrary.org/news.html">News</a>
@@ -46,8 +46,8 @@
             <li ng-class="{'hide-mobile':!hoverNav}">
               <a href="//databrary.org/community.html"><span>Community</span></a>
               <ul>
-                <li><a ng-href="{{::page.router.partySearch()}}?institution=false&authorization=4">Authorized Investigators</a></li>
-                <li><a ng-href="{{::page.router.partySearch()}}?institution=true&authorization=5">Institutions</a></li>
+                <li><a ng-href="{{::page.router.search()}}?volume=false&f.party_authorization={{::page.constants.permission.EDIT}}&f.party_is_institution=false">Authorized Investigators</a></li>
+                <li><a ng-href="{{::page.router.search()}}?volume=false&f.party_authorization={{::page.constants.permission.ADMIN}}&f.party_is_institution=true">Institutions</a></li>
                 <li><a href="//databrary.org/community/board.html">Board</a></li>
               </ul>
             </li>
