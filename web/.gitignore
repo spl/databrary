@@ -34,6 +34,7 @@
 /site/errors.js
 /site/inputCompleter.js
 /site/search.js
+/site/searchForm.js
 /site/tagAdd.js
 /site/tags.js
 /site/tooltip.js
