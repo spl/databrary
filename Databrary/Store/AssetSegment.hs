@@ -21,9 +21,8 @@ import System.Posix.FilePath (takeDirectory)
 import System.Posix.Files.ByteString (setFileMode)
 
 import Databrary.Ops
-import Databrary.Has (MonadHas, peek)
+import Databrary.Has
 import Databrary.Files
-import Databrary.Service.ResourceT
 import Databrary.Model.Offset
 import Databrary.Model.Format
 import Databrary.Model.Asset
@@ -33,6 +32,7 @@ import Databrary.Store.Types
 import Databrary.Store.Asset
 import Databrary.Store.Temp
 import Databrary.Store.AV
+import Databrary.Action.Types
 
 assetSegmentTag :: AssetSegment -> Maybe Word16 -> String
 assetSegmentTag as sz = m ':' (assetSegmentFull as ?!> s) ++ m '@' (show <$> sz) where
@@ -79,7 +79,7 @@ genVideoClip av src frame sz dst =
     >>= Fold.mapM_ (\b -> send b >> send BS.empty) 
   where send = either id (const $ const $ return ()) dst
 
-getAssetSegmentStore :: (MonadStorage c m, MonadHas AV c m, MonadResourceT c m) => AssetSegment -> Maybe Word16 -> m (Either (Stream -> IO ()) RawFilePath)
+getAssetSegmentStore :: AssetSegment -> Maybe Word16 -> ActionM (Either (Stream -> IO ()) RawFilePath)
 getAssetSegmentStore as sz 
   | aimg && isJust sz || not (assetSegmentFull as) && isJust (assetDuration a) && isJust (formatSample afmt) = do
   Just af <- getAssetFile a

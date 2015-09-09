@@ -32,7 +32,6 @@ import Network.Wai.Parse (FileInfo(..))
 import Databrary.Ops
 import Databrary.Has (Has, view, peeks, focusIO)
 import Databrary.Service.Types
-import Databrary.Service.ResourceT
 import qualified Databrary.JSON as JSON
 import Databrary.Service.DB
 import Databrary.Model.Segment
@@ -119,7 +118,7 @@ fileUploadPath :: FileUploadFile -> Storage -> RawFilePath
 fileUploadPath (FileUploadForm f) _ = tempFilePath $ fileContent f
 fileUploadPath (FileUploadToken u) s = uploadFile u s
 
-fileUploadRemove :: (MonadResourceT c m, MonadDB m, MonadStorage c m) => FileUploadFile -> m ()
+fileUploadRemove :: FileUploadFile -> ActionM ()
 fileUploadRemove (FileUploadForm f) = focusIO $ releaseTempFile $ fileContent f
 fileUploadRemove (FileUploadToken u) = void $ removeUpload u
 

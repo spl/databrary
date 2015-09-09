@@ -16,12 +16,12 @@ import Control.Monad (MonadPlus)
 import Control.Monad.Base (MonadBase)
 import Control.Monad.Reader (MonadReader, ReaderT(..), withReaderT)
 import Control.Monad.IO.Class (MonadIO)
-import Control.Monad.Trans.Resource (InternalState, runResourceT, withInternalState)
+import Control.Monad.Trans.Resource (InternalState, MonadThrow, MonadResource(..), runInternalState, runResourceT, withInternalState)
 import Data.Time (getCurrentTime)
 import Network.HTTP.Types (hDate)
 import qualified Network.Wai as Wai
 
-import Databrary.Has (view, makeHasRec)
+import Databrary.Has
 import Databrary.HTTP
 import Databrary.Service.Types
 import Databrary.Service.Log
@@ -45,11 +45,14 @@ data Context = Context
 makeHasRec ''Context ['contextService, 'contextResourceState, 'contextTimestamp, 'contextRequest, 'contextIdentity]
 
 newtype ActionM a = ActionM { unActionM :: ReaderT Context IO a }
-  deriving (Functor, Applicative, Alternative, Monad, MonadPlus, MonadIO, MonadBase IO, MonadReader Context, MonadDB)
+  deriving (Functor, Applicative, Alternative, Monad, MonadPlus, MonadIO, MonadBase IO, MonadThrow, MonadReader Context, MonadDB)
 
 {-# INLINE runActionM #-}
 runActionM :: ActionM a -> Context -> IO a
 runActionM (ActionM (ReaderT f)) = f
+
+instance MonadResource ActionM where
+  liftResourceT = focusIO . runInternalState
 
 data Action = Action
   { _actionAuth :: !Bool

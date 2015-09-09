@@ -17,8 +17,8 @@ import System.Posix.Files.ByteString (removeLink, rename)
 import System.Posix.Temp.ByteString (mkstemp)
 
 import Databrary.Has (peeks, focusIO)
-import Databrary.Service.ResourceT
 import Databrary.Store.Types
+import Databrary.Action.Types
 
 data TempFile = TempFile
   { tempFileRelease :: ReleaseKey
@@ -31,7 +31,7 @@ makeTempFileAs d g rs = bracket
   (hClose . snd . snd)
   (\(k, (f, h)) -> TempFile k f <$ g h)
 
-makeTempFile :: (MonadResourceT c m, MonadStorage c m) => (Handle -> IO ()) -> m TempFile
+makeTempFile :: (Handle -> IO ()) -> ActionM TempFile
 makeTempFile f = do
   tmp <- peeks storageTemp
   focusIO $ makeTempFileAs tmp f
