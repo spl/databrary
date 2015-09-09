@@ -8,7 +8,7 @@ module Databrary.Controller.Search
 import Control.Applicative ((<$>), (<*>), (<|>))
 import Control.Monad (when)
 import Data.Maybe (fromMaybe)
-import Network.HTTP.Types.Status (badRequest400)
+import Network.HTTP.Types (hContentType, internalServerError500)
 
 import Databrary.Has
 import Databrary.Model.Id.Types
@@ -43,7 +43,7 @@ postSearch :: ActionRoute API
 postSearch = action GET (pathAPI </< "search") $ \api -> withAuth $ do
   when (api == HTML) angular
   q <- runForm Nothing searchForm
-  maybe (emptyResponse badRequest400 []) (okResponse []) <$> search q
+  maybe (emptyResponse internalServerError500 []) (okResponse [(hContentType, "application/json")]) <$> search q
 
 viewUpdateIndex :: ActionRoute ()
 viewUpdateIndex = action GET ("search" >/> "index") $ \() -> withAuth $ do

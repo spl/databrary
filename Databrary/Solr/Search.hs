@@ -9,6 +9,7 @@ import Control.Arrow (first)
 import qualified Data.ByteString.Builder as B
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy as BSL
+import Data.Char (isAlphaNum)
 import Data.Foldable (foldMap)
 import Data.Monoid ((<>), mempty)
 import qualified Data.Text as T
@@ -18,7 +19,6 @@ import Network.HTTP.Types.URI (renderSimpleQuery)
 
 import Data.ByteString.Builder.Escape (escapeLazyByteStringCharsWith, escapeTextWith)
 import Databrary.Has
-import qualified Databrary.JSON as J
 import Databrary.HTTP.Client
 import Databrary.Model.Paginate
 import Databrary.Model.Id.Types
@@ -41,8 +41,8 @@ data SearchQuery = SearchQuery
   , searchPaginate :: !Paginate
   }
 
-checkTerm :: String -> Bool
-checkTerm = cq False [] where
+checkTerm :: T.Text -> Bool
+checkTerm = cq False [] . T.unpack where
   cq False [] "" = True
   cq q g ('"':s) = cq (not q) g s
   cq q g ('\\':_:s) = cq q g s
@@ -58,19 +58,24 @@ checkTerm = cq False [] where
   cq q g (_:s) = cq q g s
   cq _ _ _ = False
 
+checkField :: T.Text -> Bool
+checkField = T.all cc where
+  cc '_' = True
+  cc c = isAlphaNum c
+
 quoteQuery :: (Char -> String -> a -> B.Builder) -> a -> B.Builder
 quoteQuery e s = B.char8 '"' <> e '\\' "\"\\" s <> B.char8 '"'
 
 defaultParams :: B.Builder
 defaultParams = B.string8 "{!dismax qf=\"text_en^0.6 text_gen^1.5 keyword^10 tag_name^5 party_name^4\" pf=\"tag_name^5 keyword^10 party_name^4\" ps=3}"
 
-search :: MonadSolr c m => SearchQuery -> m (Maybe J.Value)
+search :: MonadSolr c m => SearchQuery -> m (Maybe BSL.ByteString)
 search SearchQuery{..} = do
   req <- peeks solrRequest
-  focusIO $ httpRequestJSON req
+  focusIO $ httpRequest req
     { HC.path = HC.path req <> "search"
     , HC.queryString = renderSimpleQuery True query
-    }
+    } "application/json" (fmap (Just . BSL.fromChunks) . HC.brConsume)
   where
   query = 
     [ ("q", BSL.toStrict $ B.toLazyByteString $ qp <> uw ql)
@@ -98,8 +103,8 @@ search SearchQuery{..} = do
   ql = maybe id ((:) . bp . (defaultParams <>) . TE.encodeUtf8Builder) searchString $
     map bt (searchFields ++ map (first metricField) searchMetrics)
   bt (f, v)
-    | not $ checkTerm $ T.unpack v = bp (B.string8 "{!dismax qf=" <> quoteQuery escapeTextWith f <> B.char8 '}' <> TE.encodeUtf8Builder v)
-    | otherwise = bp (TE.encodeUtf8Builder f <> B.string8 ":(" <> (if T.null v then B.char8 '*' else TE.encodeUtf8Builder v) <> B.char8 ')') -- XXX f insecure
+    | checkField f && checkTerm v = bp (TE.encodeUtf8Builder f <> B.string8 ":(" <> (if T.null v then B.char8 '*' else TE.encodeUtf8Builder v) <> B.char8 ')')
+    | otherwise = bp (B.string8 "{!dismax qf=" <> quoteQuery escapeTextWith f <> B.char8 '}' <> TE.encodeUtf8Builder v)
   bp v = B.string8 "_query_:" <> quoteQuery escapeLazyByteStringCharsWith (B.toLazyByteString $ qe <> v)
   uw [] = B.string8 "*:*"
   uw (t:l) = t <> foldMap (B.char8 ' ' <>) l
