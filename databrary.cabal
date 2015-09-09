@@ -10,7 +10,7 @@ Stability:           Experimental
 Category:            Web
 Tested-with:         GHC == 7.8.4
 Build-type:          Custom
-Cabal-version:       >=1.20
+Cabal-version:       >=1.22
 
 data-files:
   databrary.conf,

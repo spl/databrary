@@ -91,17 +91,16 @@
 
         <div id="slot-tags" class="slot-tags panel-tags-list" ng-form="form.tag">
           <div class="panel-tags-legend" tooltip="'keywords.display.description' | message">
-            <span class="panel-tags-item legend keyword"></span>
+            <span class="panel-tags-item tags-item legend keyword"></span>
             <span message="keywords.title"></span>
           </div>
           <div ng-if="::!editing" class="panel-tags-legend" tooltip="'tags.display.description' | message">
-            <span class="panel-tags-item legend"></span>
+            <span class="panel-tags-item tags-item legend"></span>
             <span message="tags.title"></span>
           </div> | 
           <ul class="panel-tags-items">
-            <li ng-repeat="tag in tags" class="panel-tags-item" ng-class="{'active': tag.active,'keyword': tag.keyword.length}">
-              <div class="panel-tag-name" ng-click="tag.toggle()">
-                <span ng-bind="::tag.id"></span>
+            <li ng-repeat="tag in tags" class="panel-tags-item tags-item" ng-class="{'active': tag.active,'keyword': tag.keyword.length}">
+              <div class="tag-name" ng-click="tag.toggle()" ng-bind="::tag.id">
               </div>
               <div class="panel-tag-controls" ng-if="::authorized">
                 <button class="panel-tag-vote available null" name="vote" ng-click="tag.save(false)" ng-if="tag.state === true" hint="tags-vote-null">
@@ -112,7 +111,7 @@
                 </button>
               </div>
             </li>
-            <li class="panel-tags-item tag-add" ng-if="::editing || authorized">
+            <li class="panel-tags-item tags-item tag-add" ng-if="::editing || authorized">
               <tag-add ng-if="::!editing"></tag-add>
               <tag-add ng-if="::editing" keyword></tag-add>
             </li>

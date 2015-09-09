@@ -654,7 +654,7 @@ ALTER TABLE "record_category"
 	ALTER "name" SET STORAGE EXTERNAL;
 COMMENT ON TABLE "record_category" IS 'Types of records that are relevant for data organization.';
 INSERT INTO "record_category" ("id", "name", "description") VALUES (-500, 'participant', 'An individual subject depicted, represented, or otherwise contributing data');
-INSERT INTO "record_category" ("id", "name", "description") VALUES (-200, 'group', 'A grouping determined by an aspect of the data (participant ability, age, experience, measurements used/available)');
+INSERT INTO "record_category" ("id", "name", "description") VALUES (-200, 'group', 'A grouping determined by an aspect of the data (participant ability, age, experience, longitudinal visit, measurements used/available)');
 INSERT INTO "record_category" ("id", "name", "description") VALUES (-800, 'pilot', 'Indicates that the methods used were not finalized or were non-standard');
 INSERT INTO "record_category" ("id", "name", "description") VALUES (-700, 'exclusion', 'Indicates that data were not usable for a study');
 INSERT INTO "record_category" ("id", "name", "description") VALUES (-400, 'condition', 'An experimenter-determined manipulation (within or between sessions)');

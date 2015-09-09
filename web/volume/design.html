@@ -3,7 +3,7 @@
     <div class="volume-design-section col-desktop-7 col-tablet-5 col-mobile-6">
       <div class="volume-design-header">
         <strong>Categories</strong>
-        <small>Choose the categories or groupings by which you wish to label and organize your data</small>
+        <small>Choose the categories by which you wish to label and organize your data</small>
       </div>
       <ul class="volume-design-categories">
         <li ng-repeat="c in ::page.constants.categories track by c.id" ng-class="{selected: c === selected, beforeSelected: selected === page.constants.categories[$index+1]}" ng-click="select(c.id)">

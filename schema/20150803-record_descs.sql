@@ -2,7 +2,7 @@ ALTER TABLE "record_category" ADD "description" text;
 ALTER TABLE "metric" ADD "description" text;
 
 UPDATE record_category SET description = 'An individual subject depicted, represented, or otherwise contributing data' WHERE name = 'participant';
-UPDATE record_category SET description = 'A grouping determined by an aspect of the data (participant ability, age, experience, measurements used/available)' WHERE name = 'group';
+UPDATE record_category SET description = 'A grouping determined by an aspect of the data (participant ability, age, experience, longitudinal visit, measurements used/available)' WHERE name = 'group';
 UPDATE record_category SET description = 'Indicates that the methods used were not finalized or were non-standard' WHERE name = 'pilot';
 UPDATE record_category SET description = 'Indicates that data were not usable for a study' WHERE name = 'exclusion';
 UPDATE record_category SET description = 'An experimenter-determined manipulation (within or between sessions)' WHERE name = 'condition';

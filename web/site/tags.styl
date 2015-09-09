@@ -1,5 +1,22 @@
 // styles
 
+.tags-item
+  font-line 1 1.25
+  height b1+b4
+  border-radius b1
+  border 1px solid pale
+  padding-width f3
+  .tag-name
+    position relative
+    float left
+    height b1
+    top -b12
+    overflow hidden
+    text-overflow ellipsis
+    white-space nowrap
+  &:before
+    display none  
+
 .panel-tags-list
   form
     display inline
@@ -9,35 +26,17 @@
   display inline
 
 .panel-tags-item
-  font-line 1 1.25
-  height b1 + b4
   display inline-flex
   margin-right f2
   margin-bottom b3
-  border-radius b1
-  border 1px solid pale
-  padding-width f3
 
   &.active
     background-color blue51
-
-  &:before
-    display none
 
   .panel-tag-controls
     position relative
     float left
     margin-left f4
-
-  .panel-tag-name
-    position relative
-    float left
-    height b1
-    top -b12
-    .icon.info
-      size b2
-      margin-left b8
-
 
   .panel-tag-vote
     arrow = b4

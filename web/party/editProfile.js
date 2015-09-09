@@ -43,7 +43,7 @@ app.directive('partyEditProfileForm', [
             form.validator.server({});
             page.messages.add({
               type: 'green',
-              body: page.constants.message('party.edit.profile.success'),
+              body: page.constants.message('party.edit.profile.success') + ('avatar' in form.data ? ' Your avatar will take some time to update.' : ''),
               owner: form
             });
 
