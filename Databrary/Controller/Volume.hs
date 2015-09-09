@@ -14,7 +14,7 @@ module Databrary.Controller.Volume
   , volumeJSONQuery
   ) where
 
-import Control.Applicative (Applicative, (<*>), (<|>), optional)
+import Control.Applicative ((<*>), (<|>), optional)
 import Control.Arrow ((&&&), (***))
 import Control.Monad (mfilter, guard, void, when)
 import Control.Monad.Trans.Class (lift)
@@ -31,11 +31,9 @@ import qualified Network.Wai as Wai
 import Databrary.Ops
 import Databrary.Has
 import qualified Databrary.JSON as JSON
-import Databrary.Service.DB
 import Databrary.Model.Enum
 import Databrary.Model.Id
 import Databrary.Model.Permission
-import Databrary.Model.Identity
 import Databrary.Model.Authorize
 import Databrary.Model.Volume
 import Databrary.Model.VolumeAccess
@@ -75,14 +73,16 @@ data VolumeCache = VolumeCache
   , volumeCacheRecords :: Maybe (HML.HashMap (Id Record) Record)
   }
 
+type VolumeCacheActionM a = StateT VolumeCache ActionM a
+
 instance Monoid VolumeCache where
   mempty = VolumeCache Nothing Nothing Nothing
   mappend (VolumeCache a1 t1 r1) (VolumeCache a2 t2 r2) = VolumeCache (a1 <|> a2) (t1 <|> t2) (r1 <> r2)
 
-runVolumeCache :: Monad m => StateT VolumeCache m a -> m a
+runVolumeCache :: VolumeCacheActionM a -> ActionM a
 runVolumeCache f = evalStateT f mempty
 
-cacheVolumeAccess :: (MonadDB m, MonadHasIdentity c m) => Volume -> Permission -> StateT VolumeCache m [VolumeAccess]
+cacheVolumeAccess :: Volume -> Permission -> VolumeCacheActionM [VolumeAccess]
 cacheVolumeAccess vol perm = do
   vc <- get
   takeWhile ((perm <=) . volumeAccessIndividual) <$>
@@ -92,7 +92,7 @@ cacheVolumeAccess vol perm = do
       return a)
       (volumeCacheAccess vc)
 
-cacheVolumeRecords :: MonadDB m => Volume -> StateT VolumeCache m ([Record], HML.HashMap (Id Record) Record)
+cacheVolumeRecords :: Volume -> VolumeCacheActionM ([Record], HML.HashMap (Id Record) Record)
 cacheVolumeRecords vol = do
   vc <- get
   maybe (do
@@ -103,7 +103,7 @@ cacheVolumeRecords vol = do
     (return . (HML.elems &&& id))
     (volumeCacheRecords vc)
 
-cacheVolumeTopContainer :: MonadDB m => Volume -> StateT VolumeCache m Container
+cacheVolumeTopContainer :: Volume -> VolumeCacheActionM Container
 cacheVolumeTopContainer vol = do
   vc <- get
   fromMaybeM (do
@@ -117,7 +117,7 @@ leftJoin _ [] [] = []
 leftJoin _ [] _ = error "leftJoin: leftovers"
 leftJoin p (a:al) b = uncurry (:) $ ((a, ) *** leftJoin p al) $ span (p a) b
 
-volumeJSONField :: (MonadDB m, MonadHasIdentity c m) => Volume -> BS.ByteString -> Maybe BS.ByteString -> StateT VolumeCache m (Maybe JSON.Value)
+volumeJSONField :: Volume -> BS.ByteString -> Maybe BS.ByteString -> VolumeCacheActionM (Maybe JSON.Value)
 volumeJSONField vol "access" ma = do
   Just . JSON.toJSON . map volumeAccessPartyJSON
     <$> cacheVolumeAccess vol (fromMaybe PermissionNONE $ readDBEnum . BSC.unpack =<< ma)
@@ -188,7 +188,7 @@ viewVolume = action GET (pathAPI </> pathId) $ \(api, vi) -> withAuth $ do
     JSON -> okResponse [] <$> (volumeJSONQuery v =<< peeks Wai.queryString)
     HTML -> peeks $ okResponse [] . htmlVolumeView v
 
-volumeForm :: (Functor m, Monad m) => Volume -> DeformT f m Volume
+volumeForm :: Volume -> DeformActionM f Volume
 volumeForm v = do
   name <- "name" .:> deform
   alias <- "alias" .:> deformNonEmpty deform
@@ -288,7 +288,7 @@ postVolumeLinks = action POST (pathAPI </> pathId </< "link") $ \arg@(api, vi) -
     JSON -> return $ okResponse [] $ volumeJSON v JSON..+ ("links" JSON..= links')
     HTML -> peeks $ otherRouteResponse [] viewVolume arg
 
-volumeSearchForm :: (Applicative m, Monad m) => DeformT f m VolumeFilter
+volumeSearchForm :: DeformActionM f VolumeFilter
 volumeSearchForm = VolumeFilter
   <$> ("query" .:> deformNonEmpty deform)
   <*> ("party" .:> optional deform)

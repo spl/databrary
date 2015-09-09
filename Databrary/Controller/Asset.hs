@@ -17,7 +17,6 @@ module Databrary.Controller.Asset
 
 import Control.Applicative ((<|>))
 import Control.Monad ((<=<), void, guard, when)
-import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.Trans.Class (lift)
 import qualified Data.ByteString as BS
 import Data.Maybe (fromMaybe, isNothing, isJust, catMaybes, maybeToList)
@@ -30,14 +29,11 @@ import qualified Network.Wai as Wai
 import Network.Wai.Parse (FileInfo(..))
 
 import Databrary.Ops
-import Databrary.Has (Has, view, peeks, focusIO)
-import Databrary.Service.Types
+import Databrary.Has
 import qualified Databrary.JSON as JSON
-import Databrary.Service.DB
 import Databrary.Model.Segment
 import Databrary.Model.Permission
 import Databrary.Model.Id
-import Databrary.Model.Identity
 import Databrary.Model.Volume
 import Databrary.Model.Container
 import Databrary.Model.Token
@@ -53,7 +49,6 @@ import Databrary.Store.Types
 import Databrary.Store.Asset
 import Databrary.Store.Upload
 import Databrary.Store.Temp
-import Databrary.Store.AV
 import Databrary.Store.Transcode
 import Databrary.Store.Probe
 import Databrary.HTTP.Request
@@ -73,7 +68,7 @@ getAsset :: Permission -> Id Asset -> ActionM AssetSlot
 getAsset p i =
   checkPermission p =<< maybeAction =<< lookupAssetSlot i
 
-assetJSONField :: (MonadDB m, MonadHasIdentity c m) => AssetSlot -> BS.ByteString -> Maybe BS.ByteString -> m (Maybe JSON.Value)
+assetJSONField :: AssetSlot -> BS.ByteString -> Maybe BS.ByteString -> ActionM (Maybe JSON.Value)
 assetJSONField a "container" _ =
   return $ JSON.toJSON . containerJSON . slotContainer <$> assetSlot a
 assetJSONField a "creation" _ | view a >= PermissionEDIT = do
@@ -86,7 +81,7 @@ assetJSONField a "excerpts" _ =
   Just . JSON.toJSON . map excerptJSON <$> lookupAssetExcerpts a
 assetJSONField _ _ _ = return Nothing
 
-assetJSONQuery :: (MonadDB m, MonadHasIdentity c m) => AssetSlot -> JSON.Query -> m JSON.Object
+assetJSONQuery :: AssetSlot -> JSON.Query -> ActionM JSON.Object
 assetJSONQuery vol = JSON.jsonQuery (assetSlotJSON vol) (assetJSONField vol)
 
 assetDownloadName :: Asset -> [T.Text]
@@ -130,7 +125,7 @@ data FileUpload = FileUpload
 deformLookup :: (Monad m, Functor m, Deform f a) => FormErrorMessage -> (a -> m (Maybe b)) -> DeformT f m (Maybe b)
 deformLookup e l = Trav.mapM (deformMaybe' e <=< lift . l) =<< deformNonEmpty deform
 
-detectUpload :: (MonadHasService c m, Has AV c, Has Storage c, MonadIO m) => FileUploadFile -> DeformT TempFile m FileUpload
+detectUpload :: FileUploadFile -> DeformActionM TempFile FileUpload
 detectUpload u =
   either deformError' (return . FileUpload u)
     =<< lift (probeFile (fileUploadName u) =<< peeks (fileUploadPath u))

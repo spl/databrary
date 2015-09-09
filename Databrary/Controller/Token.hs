@@ -15,7 +15,6 @@ import Data.Maybe (isJust)
 import Databrary.Ops
 import Databrary.Has
 import qualified Databrary.JSON as JSON
-import Databrary.Service.DB
 import Databrary.Model.Id
 import Databrary.Model.Token
 import Databrary.Model.Party
@@ -31,7 +30,7 @@ import Databrary.Controller.Login
 import Databrary.Controller.Angular
 import Databrary.View.Token
 
-lookupPasswordResetAccount :: MonadDB m => BS.ByteString -> m (Maybe SiteAuth)
+lookupPasswordResetAccount :: BS.ByteString -> ActionM (Maybe SiteAuth)
 lookupPasswordResetAccount email =
 #if !defined(DEVEL) && !defined(SANDBOX)
   mfilter ((PermissionADMIN >) . accessMember) <$> 

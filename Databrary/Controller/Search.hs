@@ -5,7 +5,7 @@ module Databrary.Controller.Search
   , postUpdateIndex
   ) where
 
-import Control.Applicative (Applicative, (<$>), (<*>), (<|>))
+import Control.Applicative ((<$>), (<*>), (<|>))
 import Control.Monad (when)
 import Data.Maybe (fromMaybe)
 import Network.HTTP.Types.Status (badRequest400)
@@ -24,7 +24,7 @@ import Databrary.Controller.Angular
 import Databrary.Controller.Permission
 import Databrary.View.Search
 
-searchForm :: (Applicative m, Monad m) => DeformT f m SearchQuery
+searchForm :: DeformActionM f SearchQuery
 searchForm = SearchQuery
   <$> ("q" .:> deformNonEmpty deform)
   <*> ("f" .:> withSubDeforms (\k -> (view k, ) <$> deform))

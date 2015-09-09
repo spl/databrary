@@ -13,7 +13,7 @@ module Databrary.Controller.Party
   , adminParties
   ) where
 
-import Control.Applicative (Applicative, (<*>), pure, optional)
+import Control.Applicative ((<*>), pure, optional)
 import Control.Monad (unless, when)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
@@ -27,15 +27,12 @@ import qualified Network.Wai as Wai
 import Network.Wai.Parse (FileInfo(..))
 
 import Databrary.Ops
-import Databrary.Has (view, MonadHas, peek, peeks, focusIO)
+import Databrary.Has
 import qualified Databrary.JSON as JSON
-import Databrary.Service.DB
-import Databrary.Model.Time
 import Databrary.Model.Enum
 import Databrary.Model.Id
 import Databrary.Model.Permission
 import Databrary.Model.Release
-import Databrary.Model.Identity
 import Databrary.Model.Party
 import Databrary.Model.ORCID
 import Databrary.Model.Authorize
@@ -69,7 +66,7 @@ getParty _ mi = do
   unless (isme mi) $ result =<< peeks forbiddenResponse
   return u
 
-partyJSONField :: (MonadDB m, MonadHasIdentity c m, MonadHas Timestamp c m) => Party -> BS.ByteString -> Maybe BS.ByteString -> m (Maybe JSON.Value)
+partyJSONField :: Party -> BS.ByteString -> Maybe BS.ByteString -> ActionM (Maybe JSON.Value)
 partyJSONField p "parents" o = do
   now <- peek
   fmap (Just . JSON.toJSON) . mapM (\a -> do
@@ -101,7 +98,7 @@ partyJSONField p "authorization" _ = do
   Just . JSON.toJSON . accessSite <$> lookupAuthorization p rootParty
 partyJSONField _ _ _ = return Nothing
 
-partyJSONQuery :: (MonadDB m, MonadHasIdentity c m, MonadHas Timestamp c m) => Party -> JSON.Query -> m JSON.Object
+partyJSONQuery :: Party -> JSON.Query -> ActionM JSON.Object
 partyJSONQuery p = JSON.jsonQuery (partyJSON p) (partyJSONField p)
 
 viewParty :: ActionRoute (API, PartyTarget)
@@ -198,7 +195,7 @@ viewAvatar = action GET (pathId </< "avatar") $ \i -> withoutAuth $
     (serveAssetSegment False . assetSlotSegment . assetNoSlot)
     =<< lookupAvatar i
 
-partySearchForm :: (Applicative m, Monad m) => DeformT f m PartyFilter
+partySearchForm :: DeformActionM f PartyFilter
 partySearchForm = PartyFilter
   <$> ("query" .:> deformNonEmpty deform)
   <*> ("authorization" .:> optional deform)

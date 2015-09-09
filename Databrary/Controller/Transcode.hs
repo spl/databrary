@@ -40,7 +40,7 @@ unHex (h:l:r) = do
   ((shiftL hb 4 .|. lb) :) <$> unHex r
   where unhex x = isHexDigit x ?> fromIntegral (digitToInt x)
 
-sha1Form :: (Functor m, Monad m) => DeformT f m BS.ByteString
+sha1Form :: DeformActionM f BS.ByteString
 sha1Form = do
   b <- deform
   deformGuard "Invalid SHA1 hex string" (length b == 40)

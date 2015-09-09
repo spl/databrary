@@ -23,7 +23,6 @@ import Network.HTTP.Types (noContent204, StdMethod(DELETE))
 import Databrary.Ops
 import Databrary.Has (peek, peeks)
 import qualified Databrary.JSON as JSON
-import Databrary.Service.DB
 import Databrary.Service.Mail
 import Databrary.Static.Service
 import Databrary.Model.Id.Types
@@ -52,7 +51,7 @@ viewAuthorize = action GET (pathAPI </>> pathPartyTarget </> pathAuthorizeTarget
       | app -> return $ okResponse [] ("" :: T.Text) -- TODO
       | otherwise -> peeks $ blankForm . htmlAuthorizeForm c'
 
-partyDelegates :: (MonadDB m, MonadHasIdentity c m) => Party -> m [Account]
+partyDelegates :: Party -> ActionM [Account]
 partyDelegates p =
   mapMaybe partyAccount
     . (p :)

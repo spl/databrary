@@ -15,7 +15,6 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Network.HTTP.Types (hContentType)
 
-import Databrary.Service.DB
 import Databrary.Model.Id
 import Databrary.Model.Permission
 import Databrary.Model.Volume
@@ -91,7 +90,7 @@ dataRow hl@((c,m):hl') rll@(~rl@(r:_):rll') = case compare c rc of
   where rc = recordCategory r
 dataRow _ _ = []
 
-volumeCSV :: MonadDB m => Volume -> [(Container, [RecordSlot])] -> m BSB.Builder
+volumeCSV :: Volume -> [(Container, [RecordSlot])] -> ActionM BSB.Builder
 volumeCSV vol crsl = do
   cols <- lookupVolumeMetrics vol
   -- FIXME if volume metrics can be reordered

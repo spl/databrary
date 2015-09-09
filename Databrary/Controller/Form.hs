@@ -12,7 +12,7 @@ module Databrary.Controller.Form
   , csrfForm
   ) where
 
-import Control.Applicative (Applicative, (<$>), (<*>), (<|>))
+import Control.Applicative ((<$>), (<*>), (<|>))
 import Control.Monad (unless)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Reader (ask)
@@ -81,7 +81,7 @@ emailRegex :: Regex.Regex
 emailRegex = Regex.makeRegexOpts Regex.compIgnoreCase Regex.blankExecOpt
   ("^[-a-z0-9!#$%&'*+/=?^_`{|}~.]*@[a-z0-9][a-z0-9\\.-]*[a-z0-9]\\.[a-z][a-z\\.]*[a-z]$" :: String)
 
-emailTextForm :: (Functor m, Monad m) => DeformT f m BS.ByteString
+emailTextForm :: DeformActionM f BS.ByteString
 emailTextForm = do
   e <- deformCheck "Invalid email address" (Regex.matchTest emailRegex) =<< deform
   return $ maybe e (uncurry ((. BSC.map toLower) . (<>)) . flip BS.splitAt e) $ BSC.elemIndex '@' e
@@ -100,7 +100,7 @@ passwordForm acct = do
   pw <- liftIO $ BCrypt.hashPasswordUsingPolicy passwordPolicy p
   deformMaybe' "Error processing password." pw
 
-paginateForm :: (Applicative m, Monad m) => DeformT f m Paginate
+paginateForm :: DeformActionM f Paginate
 paginateForm = Paginate
   <$> get "offset" paginateOffset
   <*> get "limit" paginateLimit

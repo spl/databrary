@@ -17,9 +17,7 @@ import qualified Network.Wai as Wai
 import Databrary.Ops
 import Databrary.Has (view, peeks)
 import qualified Databrary.JSON as JSON
-import Databrary.Service.DB
 import Databrary.Model.Id
-import Databrary.Model.Identity
 import Databrary.Model.Permission
 import Databrary.Model.Volume
 import Databrary.Model.Container
@@ -45,7 +43,7 @@ getSlot :: Permission -> Maybe (Id Volume) -> Id Slot -> ActionM Slot
 getSlot p mv i =
   checkPermission p =<< maybeAction . maybe id (\v -> mfilter $ (v ==) . view) mv =<< lookupSlot i
 
-slotJSONField :: (MonadDB m, MonadHasIdentity c m) => Slot -> BS.ByteString -> Maybe BS.ByteString -> m (Maybe JSON.Value)
+slotJSONField :: Slot -> BS.ByteString -> Maybe BS.ByteString -> ActionM (Maybe JSON.Value)
 slotJSONField o "assets" _ =
   Just . JSON.toJSON . map assetSlotJSON <$> lookupSlotAssets o
 slotJSONField o "records" _ =
@@ -62,7 +60,7 @@ slotJSONField o "filename" _ =
   return $ Just $ JSON.toJSON $ makeFilename $ slotDownloadName o
 slotJSONField _ _ _ = return Nothing
 
-slotJSONQuery :: (MonadDB m, MonadHasIdentity c m) => Slot -> JSON.Query -> m JSON.Object
+slotJSONQuery :: Slot -> JSON.Query -> ActionM JSON.Object
 slotJSONQuery o = JSON.jsonQuery (slotJSON o) (slotJSONField o)
 
 slotDownloadName :: Slot -> [T.Text]

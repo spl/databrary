@@ -22,10 +22,11 @@ import Databrary.HTTP.Path.Parser
 import Databrary.Action.Types
 import Databrary.Action
 import Databrary.Controller.Paths
+import Databrary.Controller.Form
 import Databrary.Controller.Permission
 import Databrary.Controller.Slot
 
-_tagNameForm :: (Functor m, Monad m) => DeformT f m TagName
+_tagNameForm :: DeformActionM f TagName
 _tagNameForm = deformMaybe' "Invalid tag name." . validateTag =<< deform
 
 queryTags :: ActionRoute TagName

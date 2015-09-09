@@ -22,10 +22,8 @@ import Text.Read (readMaybe)
 import Databrary.Ops
 import Databrary.Has (view, peeks)
 import qualified Databrary.JSON as JSON
-import Databrary.Service.DB
 import Databrary.Model.Id
 import Databrary.Model.Permission
-import Databrary.Model.Identity
 import Databrary.Model.Volume
 import Databrary.Model.Slot
 import Databrary.Model.Format
@@ -51,10 +49,10 @@ getAssetSegment :: Permission -> Maybe (Id Volume) -> Id Slot -> Id Asset -> Act
 getAssetSegment p mv s a =
   checkPermission p =<< maybeAction . maybe id (\v -> mfilter $ (v ==) . view) mv =<< lookupSlotAssetSegment s a
 
-assetSegmentJSONField :: (MonadDB m, MonadHasIdentity c m) => AssetSegment -> BS.ByteString -> Maybe BS.ByteString -> m (Maybe JSON.Value)
+assetSegmentJSONField :: AssetSegment -> BS.ByteString -> Maybe BS.ByteString -> ActionM (Maybe JSON.Value)
 assetSegmentJSONField a v o = assetJSONField (segmentAsset a) v o
 
-assetSegmentJSONQuery :: (MonadDB m, MonadHasIdentity c m) => AssetSegment -> JSON.Query -> m JSON.Object
+assetSegmentJSONQuery :: AssetSegment -> JSON.Query -> ActionM JSON.Object
 assetSegmentJSONQuery vol = JSON.jsonQuery (assetSegmentJSON vol) (assetSegmentJSONField vol)
 
 assetSegmentDownloadName :: AssetSegment -> [T.Text]

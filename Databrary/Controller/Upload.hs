@@ -44,7 +44,7 @@ import Databrary.Controller.Paths
 import Databrary.Controller.Form
 import Databrary.Controller.Volume
 
-fileSizeForm :: (Functor m, Monad m) => DeformT f m Int64
+fileSizeForm :: DeformActionM f Int64
 fileSizeForm = deformCheck "Invalid file size." (0 <) =<< deform
 
 uploadStart :: ActionRoute (Id Volume)
