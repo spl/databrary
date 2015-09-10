@@ -3,8 +3,18 @@
   
 .search-filters
   float left
-  border-right 12px solid #e5e5e5
+  width 100%
+  border red 1px solid
+  border-radius b3
   font-size b2
+  padding b8
+  margin-bottom b2
+  ul
+    padding 0
+    margin 0
+  li:before
+    content none
+
   select
     min-width 150px
     width auto
@@ -80,6 +90,15 @@
   color neutral13
   ul > li:first-of-type:before
     content none
+
+.search-pages
+  input[type=number]
+    max-width 2
+    width auto
+  input[type=number]::-webkit-inner-spin-button, 
+  input[type=number]::-webkit-outer-spin-button 
+    -webkit-appearance none
+    margin 0 
     
 // needs to be cleaned up    
 .ui-slider
