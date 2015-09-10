@@ -10,22 +10,23 @@ if [[ $PBS != /* ]] ; then
 	PBS=$PWD/$PBS
 fi
 
-while getopts 'i:h:d:v:k:f:r:' opt ; do case "$opt" in
+while getopts 'i:h:d:v:k:s:r:f:' opt ; do case "$opt" in
 	i) id=$OPTARG ;;
 	h) hpc=$OPTARG ;;
 	d) dir=$OPTARG ;;
 	v) version=$OPTARG ;;
 
 	k) kill=$OPTARG ;;
-	f) ;;
+	s) ;;
 	r) url=$OPTARG ;;
+	f) fmt=$OPTARG ;;
 
 	?) exit 1 ;;
 esac ; done
 shift $[OPTIND-1]
 args=("$@")
 
-if [[ -z $id || -z $dir || -z $kill && -z $url ]] ; then
+if [[ -z $id || -z $dir || -z $kill && ( -z $url || -z $fmt ) ]] ; then
 	echo "$0: usage error: $*" >&2
 	exit 1
 fi
@@ -33,7 +34,7 @@ fi
 cd $dir || exit 1
 
 IN=$id
-OUT=$id.mp4
+OUT=$id.$fmt
 LOG=$id.log
 
 if [[ -n $kill ]] ; then
@@ -69,10 +70,18 @@ else
 fi
 exec >$LOG 2>&1
 
+case $fmt in
+	mp4) outargs=(-f mp4 -g 60 -c:v libx264 -pix_fmt yuvj420p -c:a libfdk_aac) ;;
+	mp3) outargs=(-f mp3 -c:a libmp3lame -q:a 1) ;;
+	*)
+		echo "Unknown format $fmt" >&2
+		exit 1
+esac
+
 sleep 5 # hope server knows job has started by now
 
 ls -s "$IN"
-ffmpeg -loglevel warning -benchmark -threads ${PBS_NP:-1} -i "$IN" -metadata comment="encoded_by:databrary.org ${dir##*/}/$version" -metadata description="part_of:http://databrary.org/asset/$id" "${args[@]}" -threads ${PBS_NP:-1} -f mp4 -g 60 -c:v libx264 -pix_fmt yuvj420p -c:a libfdk_aac -y "$OUT"
+ffmpeg -loglevel warning -benchmark -threads ${PBS_NP:-1} -i "$IN" -metadata comment="databrary.org ${dir##*/}/$version" -metadata description="http://databrary.org/asset/$id" "${args[@]}" -threads ${PBS_NP:-1} "${outargs[@]}" -y "$OUT"
 r=$?
 [[ -f "$OUT" ]] && ls -s "$OUT"
 if [[ $r -ne 0 ]] ; then

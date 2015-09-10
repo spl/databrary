@@ -4,10 +4,11 @@ module Databrary.Store.AV
   , avErrorString
   , AV
   , initAV
+  , AVMediaType(..)
   , AVProbe(..)
   , avProbe
   , avProbeLength
-  , avProbeIsVideo
+  , avProbeHas
   , avFrame
   ) where
 
@@ -33,7 +34,7 @@ import Foreign.C.String (CString, CStringLen, peekCAString, withCAString)
 import Foreign.C.Types (CInt(..), CUInt(..), CSize(..))
 import Foreign.Marshal.Alloc (allocaBytes)
 import Foreign.Marshal.Utils (with, maybePeek)
-import Foreign.Ptr (Ptr, FunPtr, nullPtr, plusPtr)
+import Foreign.Ptr (Ptr, FunPtr, nullPtr, plusPtr, castPtr)
 import Foreign.StablePtr
 import Foreign.Storable
 import System.IO.Unsafe (unsafeDupablePerformIO)
@@ -366,18 +367,44 @@ initAV = do
   -- leak mgr
   return AV
 
+data AVMediaType
+  = AVMediaTypeUnknown
+  | AVMediaTypeVideo
+  | AVMediaTypeAudio
+  | AVMediaTypeData
+  | AVMediaTypeSubtitle
+  | AVMediaTypeAttachment
+  deriving (Eq, Enum, Bounded)
+
+instance Storable AVMediaType where
+  sizeOf _ = sizeOf (undefined :: #type enum AVMediaType)
+  alignment _ = alignment (undefined :: #type enum AVMediaType)
+  peek p = do
+    v <- peek (castPtr p :: Ptr #{type enum AVMediaType})
+    return $ case v of 
+      #{const AVMEDIA_TYPE_VIDEO}      -> AVMediaTypeVideo
+      #{const AVMEDIA_TYPE_AUDIO}      -> AVMediaTypeAudio
+      #{const AVMEDIA_TYPE_DATA}       -> AVMediaTypeData
+      #{const AVMEDIA_TYPE_SUBTITLE}   -> AVMediaTypeSubtitle
+      #{const AVMEDIA_TYPE_ATTACHMENT} -> AVMediaTypeAttachment
+      _ -> AVMediaTypeUnknown
+  poke p v = poke (castPtr p :: Ptr #{type enum AVMediaType}) $ case v of
+    AVMediaTypeUnknown    -> #{const AVMEDIA_TYPE_UNKNOWN}
+    AVMediaTypeVideo      -> #{const AVMEDIA_TYPE_VIDEO}
+    AVMediaTypeAudio      -> #{const AVMEDIA_TYPE_AUDIO}
+    AVMediaTypeData       -> #{const AVMEDIA_TYPE_DATA}
+    AVMediaTypeSubtitle   -> #{const AVMEDIA_TYPE_SUBTITLE}
+    AVMediaTypeAttachment -> #{const AVMEDIA_TYPE_ATTACHMENT}
 
 data AVProbe = AVProbe
   { avProbeFormat :: BS.ByteString
   , avProbeDuration :: DiffTime
-  , avProbeStreams :: [BS.ByteString]
+  , avProbeStreams :: [(AVMediaType, BS.ByteString)]
   , avProbeDate :: Maybe ZonedTime
   }
 
--- |Test if this represents a video in standard format.
-avProbeIsVideo :: AVProbe -> Bool
-avProbeIsVideo AVProbe{ avProbeFormat = "mov,mp4,m4a,3gp,3g2,mj2", avProbeStreams = ("h264":s) } = s `isPrefixOf` ["aac"]
-avProbeIsVideo _ = False
+avProbeHas :: AVMediaType -> AVProbe -> Bool
+avProbeHas t = any ((t ==) . fst) . avProbeStreams
 
 avProbeLength :: AVProbe -> Maybe Offset
 avProbeLength AVProbe{ avProbeDuration = o } = o > 0 ?> diffTimeOffset o
@@ -395,8 +422,11 @@ avProbe f AV = withAVInput f Nothing $ \ic -> do
     <*> do
       nb :: CUInt <- #{peek AVFormatContext, nb_streams} ic
       ss <- #{peek AVFormatContext, streams} ic
-      forM [0..pred (fromIntegral nb)] $ \i ->
-        BS.packCString =<< avcodecGetName =<< #{peek AVCodecContext, codec_id} =<< #{peek AVStream, codec} =<< peekElemOff ss i
+      forM [0..pred (fromIntegral nb)] $ \i -> do
+        c <- #{peek AVStream, codec} =<< peekElemOff ss i
+        t <- #{peek AVCodecContext, codec_type} c
+        n <- BS.packCString =<< avcodecGetName =<< #{peek AVCodecContext, codec_id} c
+        return (t, n)
     <*> ((=<<) (\t -> parseTime defaultTimeLocale "%F %T%Z" t <|> parseTime defaultTimeLocale "%F %T %Z" t) <$>
       ((`orElseM` getAVDictionary meta "creation_time") =<< getAVDictionary meta "date"))
 

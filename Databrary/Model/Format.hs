@@ -14,6 +14,7 @@ module Databrary.Model.Format
   , dropFormatExtension
   , videoFormat
   , imageFormat
+  , audioFormat
   , formatIsImage
   , formatTranscodable
   , formatSample
@@ -101,15 +102,22 @@ videoFormat = getFormat' (Id (-800))
 imageFormat :: Format
 imageFormat = getFormat' (Id (-700))
 
+audioFormat :: Format
+audioFormat = getFormat' (Id (-600))
+
 formatIsVideo :: Format -> Bool
 formatIsVideo Format{ formatMimeType = t } = "video/" `BS.isPrefixOf` t
 
 formatIsImage :: Format -> Bool
 formatIsImage Format{ formatMimeType = t } = "image/" `BS.isPrefixOf` t
 
+formatIsAudio :: Format -> Bool
+formatIsAudio Format{ formatMimeType = t } = "audio/" `BS.isPrefixOf` t
+
 formatTranscodable :: Format -> Maybe Format
 formatTranscodable f
   | formatIsVideo f = Just videoFormat
+  | formatIsAudio f = Just audioFormat
   | otherwise = Nothing
 
 formatSample :: Format -> Maybe Format

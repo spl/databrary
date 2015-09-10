@@ -1,6 +1,6 @@
 'use strict';
 
-app.directive('video', [
+var videoDirective = [
   'Segment',
   function (Segment) { return {
     restrict: 'E',
@@ -41,4 +41,6 @@ app.directive('video', [
       });
     }
   }; }
-]);
+];
+app.directive('video', videoDirective);
+app.directive('audio', videoDirective);

@@ -25,13 +25,13 @@ import Databrary.Service.Types
 import Databrary.Service.Crypto
 import Databrary.Store.Types
 import Databrary.Store.AV
+import Databrary.Store.Probe
 import Databrary.Model.SQL
 import Databrary.Model.Audit
 import Databrary.Model.Id
 import Databrary.Model.Party
 import Databrary.Model.Segment
 import Databrary.Model.Volume.Types
-import Databrary.Model.Format
 import Databrary.Model.Asset
 import Databrary.Model.Transcode.Types
 import Databrary.Model.Transcode.SQL
@@ -57,12 +57,9 @@ minAppend (Just x) (Just y) = Just $ min x y
 minAppend Nothing x = x
 minAppend x Nothing = x
 
-addTranscode :: (MonadHasSiteAuth c m, MonadAudit c m, MonadStorage c m) => Asset -> Segment -> TranscodeArgs -> AVProbe -> m Transcode
-addTranscode orig seg@(Segment rng) opts probe = do
+addTranscode :: (MonadHasSiteAuth c m, MonadAudit c m, MonadStorage c m) => Asset -> Segment -> TranscodeArgs -> Probe -> m Transcode
+addTranscode orig seg@(Segment rng) opts (ProbeAV _ fmt av) = do
   own <- peek
-  let Just fmt = formatTranscodable (assetFormat orig)
-      dur = maybe id (flip (-) . max 0) (lowerBound rng) <$>
-        minAppend (avProbeLength probe) (upperBound rng)
   a <- addAsset orig
     { assetFormat = fmt
     , assetDuration = dur
@@ -81,6 +78,10 @@ addTranscode orig seg@(Segment rng) opts probe = do
     , transcodeProcess = Nothing
     , transcodeLog = Nothing
     }
+  where
+  dur = maybe id (flip (-) . max 0) (lowerBound rng) <$>
+    minAppend (avProbeLength av) (upperBound rng)
+addTranscode _ _ _ _ = fail "addTranscode: invalid probe type"
 
 updateTranscode :: MonadDB m => Transcode -> Maybe TranscodePID -> Maybe String -> m Transcode
 updateTranscode tc pid logs = do

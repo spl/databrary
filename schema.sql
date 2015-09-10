@@ -454,12 +454,14 @@ INSERT INTO "format" ("mimetype", "extension", "name") VALUES ('video/mp2t',				
 INSERT INTO "format" ("mimetype", "extension", "name") VALUES ('video/avi',									ARRAY['avi'], 'Audio Video Interleave');
 INSERT INTO "format" ("mimetype", "extension", "name") VALUES ('application/x-spss-sav',							ARRAY['sav'], 'SPSS System File');
 INSERT INTO "format" ("mimetype", "extension", "name") VALUES ('audio/wav',									ARRAY['wav'], 'Waveform audio');
-INSERT INTO "format" ("mimetype", "extension", "name") VALUES ('video/x-ms-wmv',								ARRAY['wmv'], 'Windows Media Video');
+INSERT INTO "format" ("mimetype", "extension", "name") VALUES ('video/x-ms-wmv',								ARRAY['wmv'], 'Windows Media video');
 INSERT INTO "format" ("mimetype", "extension", "name") VALUES ('text/x-chat',									ARRAY['cha','chat'], 'Codes for the Human Analysis of Transcripts');
+INSERT INTO "format" ("mimetype", "extension", "name") VALUES ('video/x-ms-wma',								ARRAY['wma'], 'Windows Media audio');
 
 -- The privledged formats with special handling (image and video for now) have hard-coded IDs:
 INSERT INTO "format" ("id", "mimetype", "extension", "name") VALUES (-800, 'video/mp4',								ARRAY['mp4'], 'MPEG-4 video');
 INSERT INTO "format" ("id", "mimetype", "extension", "name") VALUES (-700, 'image/jpeg',							ARRAY['jpg','jpeg'], 'JPEG image');
+INSERT INTO "format" ("id", "mimetype", "extension", "name") VALUES (-600, 'audio/mpeg',							ARRAY['mp3'], 'MPEG-1 or MPEG-2 audio layer III');
 
 CREATE TABLE "asset" (
 	"id" serial NOT NULL Primary Key,

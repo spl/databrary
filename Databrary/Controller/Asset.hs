@@ -184,8 +184,8 @@ processAsset api target = do
       _ -> return ()
     te <- peeks transcodeEnabled
     t <- case fileUploadProbe up of
-      ProbeVideo _ av | te -> do
-        t <- addTranscode a' fullSegment defaultTranscodeOptions av
+      probe@ProbeAV{} | te -> do
+        t <- addTranscode a' fullSegment defaultTranscodeOptions probe
         _ <- forkTranscode t
         return $ transcodeAsset t
       _ -> return a'
