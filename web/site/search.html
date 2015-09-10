@@ -12,6 +12,7 @@
     <div class="col-desktop-3 col-tablet-2 col-mobile-6">
      
       <div class="search-filters" ng-if="::!!parties">
+        <legend>Filter users</legend>
         <ul class="search-party-filter">
           <li ng-click="searchParties(constants.permission.EDIT, 'false')" ng-class="::{b:fields.party_authorization == constants.permission.EDIT && fields.party_is_institution == 'false'}">Authorized investigators</li>
           <li ng-click="searchParties(constants.permission.ADMIN, 'true')" ng-class="::{b:fields.party_authorization == constants.permission.ADMIN && fields.party_is_institution == 'true'}">Authorized institutions</li>
@@ -20,17 +21,15 @@
       </div>
 
       <div class="search-filters" ng-if="::!!volumes">
-        <div>
+        <legend>Filter volumes</legend>
+        <div class="search-filter">
           <input type="checkbox" ng-model="fields.container_top" ng-true-value="'false'" ng-false-value="undefined" ng-change="searchVolumes()"/>
-          Volumes with sessions
-        </div>
-        <div>
+          Volumes with sessions<br>
           <input type="checkbox" ng-model="fields.content_type" ng-true-value="'excerpt'" ng-false-value="undefined" ng-change="searchVolumes()"/>
           Volumes with highlights
         </div>
-
-        <div>
-          Tag
+        <div class="search-filter">
+          Contains tag(s):
           <input-completer input-name="tag" ng-model="fields.tag_name" completer="tagSearch($input)" ng-pattern="/^[a-zA-Z][a-zA-Z -]{1,30}[a-zA-Z]$/"></input-completer>
         </div>
 
