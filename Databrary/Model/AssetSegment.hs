@@ -4,6 +4,7 @@ module Databrary.Model.AssetSegment
   , lookupAssetSegment
   , lookupSlotAssetSegment
   , lookupAssetSlotSegment
+  , lookupSlotSegmentThumb
   , auditAssetSegmentDownload
   , assetSegmentJSON
   , assetSegmentInterp
@@ -49,6 +50,15 @@ lookupAssetSlotSegment a s =
   where
   as = makeExcerpt a s
   seg = assetSegment $ as Nothing
+
+lookupSlotSegmentThumb :: MonadDB m => Slot -> m (Maybe AssetSegment)
+lookupSlotSegmentThumb (Slot c s) = do
+  dbQuery1 $ assetSegmentInterp 0.25 . ($ c) <$> $(selectQuery (selectContainerAssetSegment 's) "$\
+    \JOIN format ON asset.format = format.id \
+    \WHERE slot_asset.container = ${containerId c} AND slot_asset.segment && ${s} \
+      \AND COALESCE(asset.release, ${containerRelease c}) >= ${readRelease (view c)}::release \
+      \AND (asset.duration IS NOT NULL AND format.mimetype LIKE 'video/%' OR format.mimetype LIKE 'image/%') \
+    \LIMIT 1")
 
 auditAssetSegmentDownload :: MonadAudit c m => Bool -> AssetSegment -> m ()
 auditAssetSegmentDownload success AssetSegment{ segmentAsset = AssetSlot{ slotAsset = a, assetSlot = as }, assetSegment = seg } = do

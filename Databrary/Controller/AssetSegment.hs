@@ -94,6 +94,6 @@ thumbAssetSegment :: ActionRoute (Id Slot, Id Asset)
 thumbAssetSegment = action GET (pathSlotId </> pathId </< "thumb") $ \(si, ai) -> withAuth $ do
   as <- getAssetSegment PermissionPUBLIC Nothing si ai
   let as' = assetSegmentInterp 0.25 as
-  if formatIsImage (view as') && assetBacked (view as)
+  if formatIsImage (view as') && assetBacked (view as) && dataPermission as' > PermissionNONE
     then peeks $ otherRouteResponse [] downloadAssetSegment (slotId $ view as', assetId $ view as')
     else peeks $ otherRouteResponse [] formatIcon (view as)

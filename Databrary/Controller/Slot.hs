@@ -24,6 +24,7 @@ import Databrary.Model.Container
 import Databrary.Model.Slot
 import Databrary.Model.Asset
 import Databrary.Model.AssetSlot
+import Databrary.Model.AssetSegment
 import Databrary.Model.Excerpt
 import Databrary.Model.Record
 import Databrary.Model.RecordSlot
@@ -80,7 +81,7 @@ viewSlot = action GET (pathAPI </> pathMaybe pathId </> pathSlotId) $ \(api, (vi
 thumbSlot :: ActionRoute (Maybe (Id Volume), Id Slot)
 thumbSlot = action GET (pathMaybe pathId </> pathSlotId </< "thumb") $ \(vi, i) -> withAuth $ do
   s <- getSlot PermissionPUBLIC vi i
-  e <- lookupSlotThumb s
+  e <- lookupSlotSegmentThumb s
   maybe
     (peeks $ otherRouteResponse [] webFile (Just $ staticPath ["images", "draft.png"]))
     (\as -> peeks $ otherRouteResponse [] downloadAssetSegment (slotId $ view as, assetId $ view as))

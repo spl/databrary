@@ -20,7 +20,6 @@ import Control.Monad ((<=<), void, when, forM, forM_)
 import qualified Data.ByteString as BS
 import qualified Data.Foldable as Fold
 import Data.Int (Int32, Int64)
-import Data.List (isPrefixOf)
 import Data.Maybe (isNothing)
 import Data.Ratio (Ratio, (%), numerator, denominator)
 import Data.Time.Clock (DiffTime)
