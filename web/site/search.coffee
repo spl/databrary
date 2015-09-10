@@ -1,10 +1,9 @@
 'use strict'
 
 app.controller 'site/search', [
-  '$scope', '$location', 'pageService', 'constantService', 'displayService', 'modelService', 'searchService', 'parties', 'volumes',
-  ($scope, $location, page, constants, display, models, Search, parties, volumes) ->
+  '$scope', '$location', 'constantService', 'displayService', 'modelService', 'searchService', 'parties', 'volumes',
+  ($scope, $location, constants, display, models, Search, parties, volumes) ->
     display.title = 'Search'
-    $scope.page = page
 
     spellcheck = {}
     process = (r) ->
@@ -31,8 +30,8 @@ app.controller 'site/search', [
     $scope.query = params.q || ''
     if type
       offset = parseInt(params.offset, 10) || 0
-      $scope.page = 1 + (offset / type.limit)
-      $scope.pages = Math.ceil($scope.count / type.limit)
+      $scope.pageCurrent = 1 + (offset / type.limit)
+      $scope.pageCount = Math.ceil($scope.count / type.limit)
 
     parseNumber = (x) ->
       if x != '*' then parseFloat(x)

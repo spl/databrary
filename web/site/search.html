@@ -115,12 +115,12 @@
         </ul>
       </div>
       <div class="search-pages" ng-if="::count">
-        <span ng-if="::page != 1">
-          <a ng-click="searchPage(1)">1</a> <a ng-click="searchPage(page-1)">&lt;</a> 
+        <span ng-if="::pageCurrent != 1">
+          <a ng-click="searchPage(1)">1</a> <a ng-click="searchPage(pageCurrent-1)">&lt;</a> 
         </span>
-        <input type="number" ng-model="page" key-enter="searchPage(page)"/>
-        <span ng-if="::page != pages">
-          <a ng-click="searchPage(page+1)">&gt;</a> <a ng-click="searchPage(pages)" ng-bind="::pages"></a>
+        <input type="number" ng-model="pageCurrent" key-enter="searchPage(pageCurrent)"/>
+        <span ng-if="::pageCurrent != pageCount">
+          <a ng-click="searchPage(pageCurrent+1)">&gt;</a> <a ng-click="searchPage(pageCount)" ng-bind="::pageCount"></a>
         </span>
       </div>
     </div>
