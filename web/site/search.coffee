@@ -1,10 +1,10 @@
 'use strict'
 
 app.controller 'site/search', [
-  '$scope', '$location', 'constantService', 'displayService', 'modelService', 'searchService', 'parties', 'volumes',
-  ($scope, $location, constants, display, models, Search, parties, volumes) ->
+  '$scope', '$location', 'pageService', 'constantService', 'displayService', 'modelService', 'searchService', 'parties', 'volumes',
+  ($scope, $location, page, constants, display, models, Search, parties, volumes) ->
     display.title = 'Search'
-    $scope.constants = constants
+    $scope.page = page
 
     spellcheck = {}
     process = (r) ->

@@ -14,8 +14,8 @@
       <div class="search-filters" ng-if="::!!parties">
         <legend>Filter users</legend>
         <ul class="search-party-filter">
-          <li ng-click="searchParties(constants.permission.EDIT, 'false')" ng-class="::{b:fields.party_authorization == constants.permission.EDIT && fields.party_is_institution == 'false'}">Authorized investigators</li>
-          <li ng-click="searchParties(constants.permission.ADMIN, 'true')" ng-class="::{b:fields.party_authorization == constants.permission.ADMIN && fields.party_is_institution == 'true'}">Authorized institutions</li>
+          <li ng-click="searchParties(page.constants.permission.EDIT, 'false')" ng-class="::{b:fields.party_authorization == page.constants.permission.EDIT && fields.party_is_institution == 'false'}">Authorized investigators</li>
+          <li ng-click="searchParties(page.constants.permission.ADMIN, 'true')" ng-class="::{b:fields.party_authorization == page.constants.permission.ADMIN && fields.party_is_institution == 'true'}">Authorized institutions</li>
           <li ng-click="searchParties()" ng-class="::{b:fields.party_authorization == null && fields.party_is_institution == null}">All users and groups</li>
         </ul>
       </div>
@@ -38,7 +38,7 @@
           <div ui-slider="{range:true}" min="0" max="{{ageMax()}}" step="1" ng-model="fields.record_age"></div>
           <display-age value="fields.record_age[0]"></display-age> &ndash; <display-age value="fields.record_age[1]"></display-age>
         </div>
-        <div class="search-filter" ng-repeat="(mi, v) in metrics" ng-if="metrics[mi] !== null" ng-init="m=constants.metric[mi]">
+        <div class="search-filter" ng-repeat="(mi, v) in metrics" ng-if="metrics[mi] !== null" ng-init="m=page.constants.metric[mi]">
           <span class="icon trash" ng-click="removeMetric(mi)"></span>
           <span ng-bind="::m.name"></span>
           <input-completer ng-if="::m.options" input-name="metric" ng-model="metrics[mi]" completer="optionsCompleter($input, m.options)" min="0"></input-completer>
