@@ -11,8 +11,8 @@
     </div>
     <div class="col-desktop-3 col-tablet-2 col-mobile-6">
      
-      <div class="search-filters">
-        <ul ng-if="::!!parties">
+      <div class="search-filters" ng-if="::!!parties">
+        <ul class="search-party-filter">
           <li ng-click="searchParties(constants.permission.EDIT, 'false')" ng-class="::{b:fields.party_authorization == constants.permission.EDIT && fields.party_is_institution == 'false'}">Authorized investigators</li>
           <li ng-click="searchParties(constants.permission.ADMIN, 'true')" ng-class="::{b:fields.party_authorization == constants.permission.ADMIN && fields.party_is_institution == 'true'}">Authorized institutions</li>
           <li ng-click="searchParties()" ng-class="::{b:fields.party_authorization == null && fields.party_is_institution == null}">All users and groups</li>
@@ -67,16 +67,20 @@
       </small>
 
       <div ng-if="::!!parties">
-        <h3>Users</h3>
-        <button ng-if="::!!volumes" ng-click="searchParties()">show all {{::parties.count}}</button>
+        <h3>
+          Users
+          <button class="mini" ng-if="::!!volumes" ng-click="searchParties()">show all {{::parties.count}}</button>
+        </h3>
         <small ng-if="::!volumes">{{::parties.count}} total</small>
         <div class="row search-party-results">
           <portrait class="col-desktop-5 col-tablet-4 col-mobile-6" ng-repeat="party in ::parties"></portrait>
         </div>
       </div>
       <div ng-if="::!!volumes">
-        <h3>Volumes</h3>
-        <button ng-if="::!!parties" ng-click="searchVolumes()">show all {{::volumes.count}}</button>
+        <h3>
+          Volumes
+          <button class="mini" ng-if="::!!parties" ng-click="searchVolumes()">show all {{::volumes.count}}</button>
+        </h3>
         <small ng-if="::!parties">{{::volumes.count}} total</small>
         <ul class="row search-volume-results">
           <li ng-repeat="volume in ::volumes">
