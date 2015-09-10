@@ -19,6 +19,13 @@
     </video>
   </div>
 
+  <div ng-switch-when="audio" ng-class="{'no-preview':!asset.duration}">
+    <span ng-if="::!asset.duration" message="asset.untranscoded"></span>
+    <audio controls preload="metadata" seek="clip">
+      <source ng-src="{{::asset.downloadRoute(true)}}" type="{{::asset.format.mimetype}}">
+    </audio>
+  </div>
+
   <div ng-switch-when="application">
     <pdf-viewer asset="::asset">
       <div class="no-preview">
