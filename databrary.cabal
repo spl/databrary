@@ -34,6 +34,7 @@ data-files:
   web/images/logo/*.svg,
   web/images/social/16px/*.png,
   web/lib/*.min.js,
+  solr/solr.xml,
   solr/log4j.properties,
   solr/conf/*.xml,
   solr/conf/*.txt
