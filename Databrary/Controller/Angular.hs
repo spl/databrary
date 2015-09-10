@@ -16,7 +16,7 @@ import qualified Network.Wai as Wai
 import qualified Text.Regex.Posix as Regex
 
 import Databrary.Ops
-import Databrary.Has (peeks, view, focusIO)
+import Databrary.Has
 #ifdef DEVEL
 import Databrary.Web.Uglify
 #endif
