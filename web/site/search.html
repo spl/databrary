@@ -34,7 +34,7 @@
         </div>
 
         <div class="search-filter age-filter">
-          <span>Age</span><br/>
+          <span>Age</span><span class="icon trash" ng-click="fields.record_age = [0,ageMax()]"></span><br/>
           <div ui-slider="{range:true}" min="0" max="{{ageMax()}}" step="1" ng-model="fields.record_age"></div>
           <display-age value="fields.record_age[0]"></display-age> &ndash; <display-age value="fields.record_age[1]"></display-age>
         </div>
