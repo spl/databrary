@@ -97,14 +97,13 @@
             <div ng-if="expanded.volume !== volume" class="volume-list-body" ng-bind="::volume.body | truncate:200"></div>
             <div ng-if="expanded.volume === volume">
               <div class="volume-list-body" ng-bind-html="::volume.body | format"></div>
-
               <div class="search-volume-containers">
                 <ul ng-if="expanded.volume === volume">
                   <li class="search-volume-container" ng-repeat="res in ::expanded.results">
                     <ul>
                       <li ng-repeat="seg in ::res.segments">
                         <a ng-href="{{::seg.route()}}">
-                          <img ng-src="{{::seg.thumbRoute(240)}}"/>
+                          <img ng-src="{{::seg.thumbRoute(150)}}"/>
                         </a>
                       </li>
                     </ul>
