@@ -103,6 +103,8 @@ app.controller 'site/search', [
         if m < limits.day then limits.day
         else if m < limits.month then limits.month
         else limits.year
+    $scope.clearAge = () ->
+      fields.record_age = [-Infinity,Infinity]
 
     $scope.availableMetrics = () ->
       m for m in constants.metrics when !metrics[m.id]? && m.release >= constants.permission.PUBLIC

@@ -61,7 +61,6 @@ app.factory('searchService', [
 
     function Segment(container, init) {
       models.Slot.call(this, container, init);
-      console.log(this.segment.format());
     }
 
     Segment.prototype = Object.create(models.Slot.prototype);
@@ -74,9 +73,7 @@ app.factory('searchService', [
     };
 
     Segment.prototype.route = function () {
-      var x = this.container.route({select:this.segment.format(), record:this.record_id, asset:this.asset_id, tag:this.tag_name, comment:this.comment_id});
-      console.log(x);
-      return x;
+      return this.container.route({select:this.segment.format(), record:this.record_id, asset:this.asset_id, tag:this.tag_name, comment:this.comment_id});
     };
 
     Segment.prototype.thumbRoute = function (size) {
