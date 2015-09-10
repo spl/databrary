@@ -266,12 +266,12 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
         noKey "clip"
         noKey "options"
         return (a, probe)
-      ProbeVideo _ av -> do
+      ProbeAV{} -> do
         clip <- JE.keyOrDefault "clip" fullSegment asSegment
         opts <- JE.keyOrDefault "options" defaultTranscodeOptions $ JE.eachInArray JE.asString
         t <- lift $ fromMaybeM
           (do
-            t <- addTranscode a clip opts av
+            t <- addTranscode a clip opts probe
             _ <- startTranscode t
             return t)
           =<< flatMapM (\_ -> findTranscode a clip opts) ae

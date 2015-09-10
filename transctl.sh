@@ -16,7 +16,7 @@ if [[ ! -f $cmd ]] ; then
 	exit 2
 fi
 
-while getopts 'i:h:d:v:c:k:f:r:t' opt ; do case "$opt" in
+while getopts 'i:h:d:v:c:k:s:r:f:t' opt ; do case "$opt" in
 	i) id=$OPTARG ;;
 	h) host=$OPTARG ;;
 	d) dir=$OPTARG ;;
@@ -24,8 +24,9 @@ while getopts 'i:h:d:v:c:k:f:r:t' opt ; do case "$opt" in
 
 	c) collect=$OPTARG ;;
 	k) kill=$OPTARG ;;
-	f) src=$OPTARG ;;
+	s) src=$OPTARG ;;
 	r) url=$OPTARG ;;
+	f) fmt=$OPTARG ;;
 	t) test=1 ;;
 
 	?) exit 1 ;;
@@ -45,17 +46,17 @@ if [[ -n $test ]] ; then
 	exit $?
 fi
 
-if [[ -z $id || -z $dir || -z $collect$kill && ( -z $src || -z $url ) ]] ; then
+if [[ -z $id || -z $dir || -z $collect$kill && ( -z $src || -z $url || -z $fmt ) ]] ; then
 	echo "$0: usage error: $*" >&2
 	exit 1
 fi
 
 if [[ -n $collect ]] ; then
 	if [[ -n $host ]] ; then
-		rsync "$host:$dir/$id.mp4" "$collect"
-		ssh "$host" rm -f "$dir/$id" "$dir/$id.mp4"
+		rsync "$host:$dir/$id.$fmt" "$collect"
+		ssh "$host" rm -f "$dir/$id" "$dir/$id.$fmt"
 	else
-		mv "$dir/$id.mp4" "$collect"
+		mv "$dir/$id.$fmt" "$collect"
 		rm -f "$dir/$id"
 	fi
 elif [[ -n $host ]] ; then
