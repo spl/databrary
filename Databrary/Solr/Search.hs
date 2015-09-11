@@ -67,7 +67,7 @@ quoteQuery :: (Char -> String -> a -> B.Builder) -> a -> B.Builder
 quoteQuery e s = B.char8 '"' <> e '\\' "\"\\" s <> B.char8 '"'
 
 defaultParams :: B.Builder
-defaultParams = B.string8 "{!dismax qf=\"text_en^0.6 text_gen^1.5 keyword^10 tag_name^5 party_name^4\" pf=\"tag_name^5 keyword^10 party_name^4\" ps=3}"
+defaultParams = B.string8 "{!dismax qf=\"text_en^0.5 text_gen^0.5 keyword^2 tag_name party_name\" pf=\"keyword^2 tag_name party_name\" ps=3}"
 
 search :: MonadSolr c m => SearchQuery -> m (Maybe BSL.ByteString)
 search SearchQuery{..} = do
