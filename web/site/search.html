@@ -30,7 +30,7 @@
         </div>
         <div class="search-filter">
           Contains tag:
-          <input-completer input-name="tag" ng-model="fields.tag_name" completer="tagSearch($input)" ng-pattern="/^[a-zA-Z][a-zA-Z -]{1,30}[a-zA-Z]$/"></input-completer>
+          <input-completer input-name="tag" ng-model="fields.tag_name" completer="tagSearch($input)" ng-pattern="/^[a-zA-Z][a-zA-Z -]{1,30}[a-zA-Z]$/" submit="search()"></input-completer>
         </div>
 
         <div class="search-filter age-filter">
@@ -41,8 +41,8 @@
         <div class="search-filter" ng-repeat="(mi, v) in metrics" ng-if="metrics[mi] !== null" ng-init="m=page.constants.metric[mi]">
           <span class="icon trash" ng-click="removeMetric(mi)"></span>
           <span ng-bind="::m.name"></span>
-          <input-completer ng-if="::m.options" input-name="metric" ng-model="metrics[mi]" completer="optionsCompleter($input, m.options)" min="0"></input-completer>
-          <input type="text" ng-if="::m.type==='text' && !m.options" ng-model="metrics[mi]"/>
+          <input-completer ng-if="::m.options" input-name="metric" ng-model="metrics[mi]" completer="optionsCompleter($input, m.options)" min="0" submit="search()"></input-completer>
+          <input type="text" ng-if="::m.type==='text' && !m.options" ng-model="metrics[mi]" key-enter="search()"/>
           <span ng-if="::m.type==='numeric'">
             <input type="number" ng-model="metrics[mi][0]"/> &ndash; <input type="number" ng-model="metrics[mi][1]"/>
           </span>
