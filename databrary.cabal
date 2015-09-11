@@ -74,7 +74,7 @@ Executable schemabrary
     configurator,
     resource-pool,
     network,
-    postgresql-typed == 0.4.0
+    postgresql-typed == 0.4.1
 
 Executable databrary
   main-is: Databrary/Main.hs
@@ -120,7 +120,7 @@ Executable databrary
     configurator,
     resource-pool,
     scientific,
-    postgresql-typed == 0.4.0,
+    postgresql-typed == 0.4.1,
     memory >= 0.8,
     cryptonite,
     resourcet,
