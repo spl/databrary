@@ -1,10 +1,13 @@
 .search-view
   margin-top 72px
   
+.search-filter-clear
+  margin-bottom b2
+  
 .search-filters
   float left
   width 100%
-  border red 1px solid
+  border gray 1px solid
   border-radius b3
   font-size b2
   padding b3
@@ -20,7 +23,7 @@
     min-width 150px
     width auto
     background-color white
-    border red 1px solid    
+    border green 1px solid    
 
 .search-filter
   border-bottom 1px dotted neutral53
@@ -28,6 +31,20 @@
   padding-bottom b1
   input
     margin-bottom 0
+  label
+    display inline
+    text-transform initial
+    font-weight normal
+
+.search-party-filter
+  li
+    border-radius b8
+    padding 0 b8
+    border 1px solid white
+  li:hover:not(.selected)
+    border 1px solid neutral52
+  .selected
+    background-color green51
 
 .search-select,
 .search-input
@@ -40,9 +57,6 @@
 .search-suggestion
   font-weight bold
   color green
-
-
-
 
 .search-results
   padding-left b1*1.5
@@ -65,12 +79,10 @@
        
 .search-party-results
   padding-bottom b1
-  border-top neutral dotted 1px
   .portrait
     padding b2
     
 .search-volume-results
-  border-top neutral dotted 1px
   padding b2 b2 0 b2
   margin-bottom b2
   h1
@@ -147,7 +159,7 @@
   font-size 0.7em
   display inline-block
   border 0
-  background-color red
+  background-color green
 .ui-slider-handle
   position absolute
   border 1px neutral13 solid

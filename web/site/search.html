@@ -10,23 +10,27 @@
       </div>
     </div>
     <div class="col-desktop-3 col-tablet-2 col-mobile-6">
-     
+      
+      <button class="search-filter-clear mini small" ng-click="page.$location.search({})">Clear current search
+      </button>
+
       <div class="search-filters" ng-if="::!!parties">
         <legend>Filter users</legend>
         <ul class="search-party-filter">
-          <li ng-click="searchParties(page.constants.permission.EDIT, 'false')" ng-class="::{b:fields.party_authorization == page.constants.permission.EDIT && fields.party_is_institution == 'false'}">Authorized investigators</li>
-          <li ng-click="searchParties(page.constants.permission.ADMIN, 'true')" ng-class="::{b:fields.party_authorization == page.constants.permission.ADMIN && fields.party_is_institution == 'true'}">Authorized institutions</li>
-          <li ng-click="searchParties()" ng-class="::{b:fields.party_authorization == null && fields.party_is_institution == null}">All users and groups</li>
+          <li ng-click="searchParties(page.constants.permission.EDIT, 'false')" ng-class="::{selected:fields.party_authorization == page.constants.permission.EDIT && fields.party_is_institution == 'false'}">Authorized investigators</li>
+          <li ng-click="searchParties(page.constants.permission.ADMIN, 'true')" ng-class="::{selected:fields.party_authorization == page.constants.permission.ADMIN && fields.party_is_institution == 'true'}">Authorized institutions</li>
+          <li ng-click="searchParties()" ng-class="::{selected:fields.party_authorization == null && fields.party_is_institution == null}">All users and groups</li>
         </ul>
       </div>
 
       <div class="search-filters" ng-if="::!!volumes">
         <legend>Filter volumes</legend>
         <div class="search-filter">
-          <input type="checkbox" ng-model="fields.container_top" ng-true-value="'false'" ng-false-value="undefined" ng-change="searchVolumes()"/>
-          Volumes with sessions<br>
-          <input type="checkbox" ng-model="fields.content_type" ng-true-value="'excerpt'" ng-false-value="undefined" ng-change="searchVolumes()"/>
-          Volumes with highlights
+          <input id="volWSess" type="checkbox" ng-model="fields.container_top" ng-true-value="'false'" ng-false-value="undefined" ng-change="searchVolumes()"/>
+          <label for="volWSess">Volumes with sessions</label>
+          <br>
+          <input id="volWHighlights" type="checkbox" ng-model="fields.content_type" ng-true-value="'excerpt'" ng-false-value="undefined" ng-change="searchVolumes()"/>
+          <label for="volWHighlights">Volumes with highlights</label>
         </div>
         <div class="search-filter">
           Contains tag:
@@ -55,7 +59,6 @@
 
         <button ng-click="searchVolumes()">Apply Filters</button>
       </div>
-      <button ng-click="page.$location.search({})">Clear</button>
     </div>
 
     <div class="search-results col-desktop-12 col-tablet-7 col-mobile-6">
@@ -69,7 +72,7 @@
       <div class="search-results-section" ng-if="::!!parties">
         <h3>
           Users
-          <button class="mini" ng-if="::!!volumes" ng-click="searchParties()">show all {{::parties.count}}</button>
+          <button class="mini small" ng-if="::!!volumes" ng-click="searchParties()">show all {{::parties.count}}</button>
         </h3>
         <small ng-if="::!volumes">{{::parties.count}} total</small>
         <div class="row search-party-results">
@@ -81,7 +84,7 @@
       <div class="search-result-section" ng-if="::!!volumes">
         <h3>
           Volumes
-          <button class="mini" ng-if="::!!parties" ng-click="searchVolumes()">show all {{::volumes.count}}</button>
+          <button class="mini small" ng-if="::!!parties" ng-click="searchVolumes()">show all {{::volumes.count}}</button>
         </h3>
         <small ng-if="::!parties">{{::volumes.count}} total</small>
         <ul class="row search-volume-results">
