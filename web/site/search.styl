@@ -41,14 +41,28 @@
   font-weight bold
   color green
 
+
+
+
 .search-results
   padding-left b1*1.5
   button
     vertical-align middle
     margin b2
-    
-    
-   
+
+.search-results-section
+  margin-bottom b1
+
+.search-results-showall
+  text-align center
+  font-size b2
+  color green
+  link-color green
+  border-top 1px dotted neutral
+  transition transition
+  &:hover
+    border-color green53
+       
 .search-party-results
   padding-bottom b1
   border-top neutral dotted 1px
@@ -57,7 +71,8 @@
     
 .search-volume-results
   border-top neutral dotted 1px
-  padding b2
+  padding b2 b2 0 b2
+  margin-bottom b2
   h1
     font-size b1
     line-height b1 * 1.5
@@ -73,6 +88,8 @@
   padding-bottom b3
   border-bottom green51 solid 3px
   margin-bottom b3
+  &:last-of-type
+    border-bottom 0
   
 .search-volume-containers
   margin-top b3
