@@ -456,7 +456,8 @@ INSERT INTO "format" ("mimetype", "extension", "name") VALUES ('application/x-sp
 INSERT INTO "format" ("mimetype", "extension", "name") VALUES ('audio/wav',									ARRAY['wav'], 'Waveform audio');
 INSERT INTO "format" ("mimetype", "extension", "name") VALUES ('video/x-ms-wmv',								ARRAY['wmv'], 'Windows Media video');
 INSERT INTO "format" ("mimetype", "extension", "name") VALUES ('text/x-chat',									ARRAY['cha','chat'], 'Codes for the Human Analysis of Transcripts');
-INSERT INTO "format" ("mimetype", "extension", "name") VALUES ('video/x-ms-wma',								ARRAY['wma'], 'Windows Media audio');
+INSERT INTO "format" ("mimetype", "extension", "name") VALUES ('audio/aac',								        ARRAY['aac'], 'Advanced Audio Coding');
+INSERT INTO "format" ("mimetype", "extension", "name") VALUES ('audio/x-ms-wma',								ARRAY['wma'], 'Windows Media audio');
 
 -- The privledged formats with special handling (image and video for now) have hard-coded IDs:
 INSERT INTO "format" ("id", "mimetype", "extension", "name") VALUES (-800, 'video/mp4',								ARRAY['mp4'], 'MPEG-4 video');
