@@ -56,8 +56,8 @@
 
   <field name="container_id" type="id" indexed="true" stored="true"/>
   <field name="container_top" type="boolean" indexed="true" stored="false"/>
-  <field name="container_date" type="daterange" indexed="false" stored="false"/>
-  <field name="release" type="release" indexed="false" stored="false"/>
+  <field name="container_date" type="daterange" indexed="true" stored="false"/>
+  <field name="release" type="release" indexed="true" stored="false"/>
   <field name="segment" type="string" indexed="false" stored="true"/>
   <field name="segment_duration" type="tdouble" indexed="false" stored="false"/>
 

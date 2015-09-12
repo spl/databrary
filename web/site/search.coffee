@@ -33,13 +33,17 @@ app.controller 'site/search', [
       $scope.pageCurrent = 1 + (offset / type.limit)
       $scope.pageCount = Math.ceil($scope.count / type.limit)
 
+    finite = (x) ->
+      x? && isFinite(x)
     parseNumber = (x) ->
       if x != '*' then parseFloat(x)
+    printNumber = (x) ->
+      if finite(x) then x else '*'
     parseRange = (x) ->
       x = /^\[([-+0-9.e]+|\*) TO ([-+0-9.e]+|\*)\]$/i.exec(x) || []
-      [parseNumber(x[1]) || -Infinity, parseNumber(x[2]) || Infinity]
+      [parseNumber(x[1]) ? -Infinity, parseNumber(x[2]) ? Infinity]
     printRange = (x) ->
-      x && if x[0]? || x[1]? then '['+(x[0] ? '*')+' TO '+(x[1] ? '*')+']'
+      x && if finite(x[0]) || finite(x[1]) then '['+printNumber(x[0])+' TO '+printNumber(x[1])+']'
     printAge = (x) ->
       printRange([(if x[0] > 0 then x[0]), (if x[1] < constants.age.limit then x[1])])
 
@@ -48,10 +52,12 @@ app.controller 'site/search', [
     for f, v of params
       if f.startsWith('f.')
         n = f.substr(2)
-        fields[n] = if n == 'record_age' then parseRange(v) else v
+        fields[n] = if n == 'record_age' || n == 'container_date' then parseRange(v) else v
       else if f.startsWith('m.')
         mi = f.substr(2)
         metrics[mi] = if constants.metric[mi].type == 'numeric' then parseRange(v) else v
+    if fields.container_date && (finite(fields.container_date[0]) || finite(fields.container_date[1]))
+      fields.container_top = 'false'
 
     any = (o) ->
       for f, v of o
@@ -62,8 +68,10 @@ app.controller 'site/search', [
       q =
         q: $scope.query || undefined
         offset: offset
+      delete fields.container_date unless fields.container_top
       for f, v of fields
-        q['f.'+f] = if f == 'record_age' then printAge(v) else v || undefined
+        q['f.'+f] = if f == 'record_age' then printAge(v) else if f == 'container_date' then printRange(v) else v || undefined
+      delete q['f.container_top'] if q['f.container_date']
       for f, v of metrics
         q['m.'+f] = if constants.metric[f].type == 'numeric' then printRange(v) else v || undefined
       if any(q)
