@@ -8,7 +8,7 @@ module Databrary.Service.Types
 import qualified Data.ByteString as BS
 
 import Databrary.Has (makeHasRec)
-import Databrary.Service.DB (DBConn)
+import Databrary.Service.DB (DBPool)
 import Databrary.Service.Entropy (Entropy)
 import Databrary.HTTP.Client (HTTPClient)
 import Databrary.Store.Types (Storage)
@@ -31,7 +31,7 @@ data Service = Service
   , servicePasswd :: !Passwd
   , serviceLogs :: !Logs
   , serviceMessages :: !Messages
-  , serviceDB :: !DBConn
+  , serviceDB :: !DBPool
   , serviceStorage :: !Storage
   , serviceAV :: !AV
   , serviceWeb :: !Web

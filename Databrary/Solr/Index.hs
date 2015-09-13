@@ -24,11 +24,10 @@ import Network.HTTP.Types.Header (hContentType)
 
 import Control.Invert
 import Databrary.Ops
-import Databrary.Has (Has(..), makeHasRec)
+import Databrary.Has
 import Databrary.Service.Types
 import Databrary.Service.DB
 import Databrary.Service.Log
-import Databrary.Model.Time
 import Databrary.Model.Segment
 import Databrary.Model.Kind
 import Databrary.Model.Id.Types
@@ -158,7 +157,10 @@ solrComment vi CommentRow{ commentRowSlotId = SlotId{..}, ..} = SolrComment
   , solrBody = Just commentRowText
   }
 
-newtype SolrContext = SolrContext { solrService :: Service }
+data SolrContext = SolrContext
+  { solrService :: !Service
+  , solrDB :: !DBConn
+  }
 
 instance Has Identity SolrContext where
   view _ = NotIdentified
@@ -171,10 +173,10 @@ instance Has (Id Party) SolrContext where
 instance Has Access SolrContext where
   view _ = view NotIdentified
 
-makeHasRec ''SolrContext ['solrService]
+makeHasRec ''SolrContext ['solrService, 'solrDB]
 
 newtype SolrM a = SolrM { runSolrM :: ReaderT SolrContext (InvertM BS.ByteString) a }
-  deriving (Functor, Applicative, Monad, MonadIO, MonadReader SolrContext, MonadDB)
+  deriving (Functor, Applicative, Monad, MonadIO, MonadReader SolrContext)
 
 writeBlock :: BS.ByteString -> SolrM ()
 writeBlock = SolrM . lift . give
@@ -214,18 +216,22 @@ writeAllDocuments = do
   mapM_ writeVolume =<< lookupVolumesCitations
   writeDocuments . map (uncurry solrParty) =<< lookupPartyAuthorizations
 
-updateIndex :: Timestamp -> Service -> IO ()
-updateIndex t rc = handle
-  (\(e :: HC.HttpException) -> logMsg t ("solr update failed: " ++ show e) (serviceLogs rc))
-  $ do
-    _ <- HC.httpNoBody req
-      { HC.path = HC.path req <> "update/json"
-      , HC.method = methodPost
-      , HC.requestBody = HC.RequestBodyStreamChunked $ \wf -> do
-        w <- runInvert $ runReaderT (runSolrM (writeUpdate writeAllDocuments)) (SolrContext rc)
-        wf $ Fold.fold <$> w
-      , HC.requestHeaders = (hContentType, "application/json") : HC.requestHeaders req
-      } (serviceHTTPClient rc)
-    t' <- getCurrentTime
-    logMsg t' ("solr update complete " ++ show (diffUTCTime t' t)) (serviceLogs rc)
-  where req = solrRequest (serviceSolr rc)
+updateIndex :: (MonadHasService c m, MonadDB c m) => m ()
+updateIndex = do
+  db <- peek
+  focusIO $ \rc -> do
+    t <- getCurrentTime
+    handle
+      (\(e :: HC.HttpException) -> logMsg t ("solr update failed: " ++ show e) (serviceLogs rc))
+      $ do
+        let req = solrRequest (serviceSolr rc)
+        _ <- HC.httpNoBody req
+          { HC.path = HC.path req <> "update/json"
+          , HC.method = methodPost
+          , HC.requestBody = HC.RequestBodyStreamChunked $ \wf -> do
+            w <- runInvert $ runReaderT (runSolrM (writeUpdate writeAllDocuments)) (SolrContext rc db)
+            wf $ Fold.fold <$> w
+          , HC.requestHeaders = (hContentType, "application/json") : HC.requestHeaders req
+          } (serviceHTTPClient rc)
+        t' <- getCurrentTime
+        logMsg t' ("solr update complete " ++ show (diffUTCTime t' t)) (serviceLogs rc)

@@ -60,7 +60,7 @@ main = do
   withService conf $ \rc -> do
 #ifndef DEVEL
     schema <- getDataFileName "schema"
-    runReaderT (liftDBM $ updateDBSchema schema) (serviceDB rc)
+    runReaderT (updateDBSchema schema) (serviceDB rc)
 #endif
     void $ forkPeriodic rc
     runWarp conf rc (runActionRoute routes rc)

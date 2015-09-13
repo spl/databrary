@@ -20,26 +20,24 @@ import Databrary.Model.RecordCategory
 import Databrary.Model.Metric
 import Databrary.Model.VolumeMetric.SQL
 
-useTPG
-
-lookupVolumeMetrics :: (MonadDB m) => Volume -> m [(Id RecordCategory, [Id Metric])]
+lookupVolumeMetrics :: (MonadDB c m) => Volume -> m [(Id RecordCategory, [Id Metric])]
 lookupVolumeMetrics v =
   {- map (getRecordCategory' *** map getMetric') . -} groupTuplesBy (==) <$>
   dbQuery $(selectQuery selectVolumeMetric "$WHERE volume = ${volumeId v} ORDER BY category, metric")
 
-addVolumeCategory :: (MonadDB m) => Volume -> Id RecordCategory -> m [Id Metric]
+addVolumeCategory :: (MonadDB c m) => Volume -> Id RecordCategory -> m [Id Metric]
 addVolumeCategory v c =
   dbQuery [pgSQL|INSERT INTO volume_metric SELECT ${volumeId v}, category, metric FROM record_template WHERE category = ${c} RETURNING metric|]
   
-addVolumeMetric :: (MonadDB m) => Volume -> Id RecordCategory -> Id Metric -> m Bool
+addVolumeMetric :: (MonadDB c m) => Volume -> Id RecordCategory -> Id Metric -> m Bool
 addVolumeMetric v c m = liftDBM $
   handleJust (guard . isUniqueViolation) (const $ return False) $
     dbExecute1 [pgSQL|INSERT INTO volume_metric VALUES (${volumeId v}, ${c}, ${m})|]
 
-removeVolumeMetric :: (MonadDB m) => Volume -> Id RecordCategory -> Id Metric -> m Bool
+removeVolumeMetric :: (MonadDB c m) => Volume -> Id RecordCategory -> Id Metric -> m Bool
 removeVolumeMetric v c m =
   dbExecute1 [pgSQL|DELETE FROM volume_metric WHERE volume = ${volumeId v} AND category = ${c} AND metric = ${m}|]
 
-removeVolumeCategory :: (MonadDB m) => Volume -> Id RecordCategory -> m Int
+removeVolumeCategory :: (MonadDB c m) => Volume -> Id RecordCategory -> m Int
 removeVolumeCategory v c =
   dbExecute [pgSQL|DELETE FROM volume_metric WHERE volume = ${volumeId v} AND category = ${c}|]

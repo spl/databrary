@@ -33,51 +33,49 @@ import Databrary.Model.Slot.Types
 import Databrary.Model.Tag.Types
 import Databrary.Model.Tag.SQL
 
-useTPG
-
-lookupTag :: MonadDB m => TagName -> m (Maybe Tag)
+lookupTag :: MonadDB c m => TagName -> m (Maybe Tag)
 lookupTag n =
   dbQuery1 $(selectQuery selectTag "$WHERE tag.name = ${n}::varchar")
 
-findTags :: MonadDB m => TagName -> m [Tag]
+findTags :: MonadDB c m => TagName -> m [Tag]
 findTags (TagName n) = -- TagName restrictions obviate pattern escaping
   dbQuery $(selectQuery selectTag "$WHERE tag.name LIKE ${n `BSC.snoc` '%'}::varchar")
 
-addTag :: MonadDB m => TagName -> m Tag
+addTag :: MonadDB c m => TagName -> m Tag
 addTag n =
   dbQuery1' $ (`Tag` n) <$> [pgSQL|!SELECT get_tag(${n})|]
 
-lookupVolumeTagUseRows :: MonadDB m => Volume -> m [TagUseRow]
+lookupVolumeTagUseRows :: MonadDB c m => Volume -> m [TagUseRow]
 lookupVolumeTagUseRows v =
   dbQuery $(selectQuery selectTagUseRow "JOIN container ON tag_use.container = container.id WHERE container.volume = ${volumeId v} ORDER BY container.id")
 
-addTagUse :: MonadDB m => TagUse -> m Bool
+addTagUse :: MonadDB c m => TagUse -> m Bool
 addTagUse t = either (const False) id <$> do
   dbTryJust (guard . isExclusionViolation)
     $ dbExecute1 (if tagKeyword t
       then $(insertTagUse True 't)
       else $(insertTagUse False 't))
 
-removeTagUse :: MonadDB m => TagUse -> m Int
+removeTagUse :: MonadDB c m => TagUse -> m Int
 removeTagUse t =
   dbExecute
     (if tagKeyword t 
       then $(deleteTagUse True 't)
       else $(deleteTagUse False 't))
 
-lookupTopTagWeight :: MonadDB m => Int -> m [TagWeight]
+lookupTopTagWeight :: MonadDB c m => Int -> m [TagWeight]
 lookupTopTagWeight lim =
   dbQuery $(selectQuery (selectTagWeight "") "$!ORDER BY weight DESC LIMIT ${fromIntegral lim :: Int64}")
 
 emptyTagCoverage :: Tag -> Container -> TagCoverage
 emptyTagCoverage t c = TagCoverage (TagWeight t 0) c [] [] []
 
-lookupTagCoverage :: (MonadDB m, MonadHasIdentity c m) => Tag -> Slot -> m TagCoverage
+lookupTagCoverage :: (MonadDB c m, MonadHasIdentity c m) => Tag -> Slot -> m TagCoverage
 lookupTagCoverage t (Slot c s) = do
   ident <- peek
   fromMaybe (emptyTagCoverage t c) <$> dbQuery1 (($ c) . ($ t) <$> $(selectQuery (selectTagCoverage 'ident "WHERE container = ${containerId c} AND segment && ${s} AND tag = ${tagId t}") "$!"))
 
-lookupSlotTagCoverage :: (MonadDB m, MonadHasIdentity c m) => Slot -> Int -> m [TagCoverage]
+lookupSlotTagCoverage :: (MonadDB c m, MonadHasIdentity c m) => Slot -> Int -> m [TagCoverage]
 lookupSlotTagCoverage slot lim = do
   ident <- peek
   dbQuery $(selectQuery (selectSlotTagCoverage 'ident 'slot) "$!ORDER BY weight DESC LIMIT ${fromIntegral lim :: Int64}")

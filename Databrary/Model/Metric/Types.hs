@@ -15,13 +15,10 @@ import Instances.TH.Lift ()
 import Language.Haskell.TH.Lift (deriveLiftMany)
 
 import Databrary.Has (makeHasRec)
-import Databrary.Service.DB
 import Databrary.Model.Enum
 import Databrary.Model.Kind
 import Databrary.Model.Release.Types
 import Databrary.Model.Id.Types
-
-useTPG
 
 makeDBEnum "data_type" "MeasureType"
 

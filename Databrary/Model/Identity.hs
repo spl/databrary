@@ -20,7 +20,7 @@ import Databrary.Model.Party
 import Databrary.Model.Permission
 import Databrary.Model.Identity.Types
 
-determineIdentity :: (MonadHasService c m, MonadHasRequest c m, MonadDB m) => m Identity
+determineIdentity :: (MonadHasService c m, MonadHasRequest c m, MonadDB c m) => m Identity
 determineIdentity =
   maybe NotIdentified Identified <$> (flatMapM lookupSession =<< getSignedCookie "session")
 

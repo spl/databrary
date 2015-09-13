@@ -13,9 +13,7 @@ import Databrary.Model.Permission.Types
 import Databrary.Model.Party.Types
 import Databrary.Model.Party.SQL
 
-useTPG
-
 loadParty :: Id Party -> Permission -> TH.ExpQ -- ^ @'Party'@
 loadParty i perm = do
-  p <- dbQuery1' $(selectQuery partyRow "WHERE party.id = ${i}")
+  p <- runTDB $ dbQuery1' $(selectQuery partyRow "WHERE party.id = ${i}")
   TH.lift $ p Nothing perm Nothing

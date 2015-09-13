@@ -8,7 +8,7 @@ module Databrary.Ingest.Action
 
 import Control.Applicative ((<$>))
 import Control.Arrow (left)
-import Control.Concurrent (forkFinally, killThread)
+import Control.Concurrent (killThread)
 import Control.Concurrent.MVar (readMVar, swapMVar, withMVar, modifyMVar, modifyMVar_)
 import Control.Monad (join, void)
 import Data.Int (Int32)
@@ -26,7 +26,7 @@ runIngest r = focusIO $ \c -> let v = ingestStatus (view c) in
   modifyMVar v $ \s ->
     case s of
       IngestActive _ -> return (s, False)
-      _ -> (, True) . IngestActive <$> forkFinally (runActionM r c)
+      _ -> (, True) . IngestActive <$> forkAction r c
         (void . swapMVar v . either IngestFailed IngestCompleted . join . left (return . T.pack . show))
 
 abortIngest :: Ingest -> IO ()

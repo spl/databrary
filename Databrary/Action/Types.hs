@@ -1,4 +1,4 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving, TemplateHaskell, OverloadedStrings #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving, TypeFamilies, TemplateHaskell, OverloadedStrings #-}
 module Databrary.Action.Types
   ( Context(..)
   , MonadHasContext
@@ -6,16 +6,20 @@ module Databrary.Action.Types
   , runActionM
   , Action
   , runAction
+  , forkAction
   , withAuth
   , withoutAuth
   , withReAuth
   ) where
 
-import Control.Applicative (Applicative, Alternative)
+import Control.Applicative (Applicative, Alternative, (<$>))
+import Control.Concurrent (ThreadId, forkFinally)
+import Control.Exception (SomeException)
 import Control.Monad (MonadPlus)
 import Control.Monad.Base (MonadBase)
-import Control.Monad.Reader (MonadReader, ReaderT(..), withReaderT)
 import Control.Monad.IO.Class (MonadIO)
+import Control.Monad.Reader (MonadReader, ReaderT(..), withReaderT)
+import Control.Monad.Trans.Control (MonadBaseControl(..))
 import Control.Monad.Trans.Resource (InternalState, MonadThrow, MonadResource(..), runInternalState, runResourceT, withInternalState)
 import Data.Time (getCurrentTime)
 import Network.HTTP.Types (hDate)
@@ -36,16 +40,17 @@ import Databrary.Controller.Analytics
 
 data Context = Context
   { contextService :: !Service
-  , contextResourceState :: !InternalState
   , contextTimestamp :: !Timestamp
   , contextRequest :: !Request
+  , contextResourceState :: !InternalState
+  , contextDB :: !DBConn
   , contextIdentity :: !Identity
   }
 
-makeHasRec ''Context ['contextService, 'contextResourceState, 'contextTimestamp, 'contextRequest, 'contextIdentity]
+makeHasRec ''Context ['contextService, 'contextDB, 'contextResourceState, 'contextTimestamp, 'contextRequest, 'contextIdentity]
 
 newtype ActionM a = ActionM { unActionM :: ReaderT Context IO a }
-  deriving (Functor, Applicative, Alternative, Monad, MonadPlus, MonadIO, MonadBase IO, MonadThrow, MonadReader Context, MonadDB)
+  deriving (Functor, Applicative, Alternative, Monad, MonadPlus, MonadIO, MonadBase IO, MonadThrow, MonadReader Context)
 
 {-# INLINE runActionM #-}
 runActionM :: ActionM a -> Context -> IO a
@@ -54,20 +59,37 @@ runActionM (ActionM (ReaderT f)) = f
 instance MonadResource ActionM where
   liftResourceT = focusIO . runInternalState
 
+instance MonadBaseControl IO ActionM where
+  type StM ActionM a = a
+  liftBaseWith f = ActionM $ liftBaseWith $ \r -> f (r . unActionM)
+  restoreM = ActionM . restoreM
+
 data Action = Action
   { _actionAuth :: !Bool
   , _actionM :: !(ActionM Response)
   }
 
+withActionState :: Service -> (InternalState -> DBConn -> IO a) -> IO a
+withActionState rc f =
+  runResourceT $ withInternalState $ \is ->
+    withDB (serviceDB rc) $ f is
+
 runAction :: Service -> Action -> Wai.Application
 runAction rc (Action auth act) req send = do
   ts <- getCurrentTime
-  runResourceT $ withInternalState $ \is -> do
-    let ctx = Context rc is ts req PreIdentified
-    i <- if auth then runActionM determineIdentity ctx else return PreIdentified
-    r <- runResult $ runActionM (angularAnalytics >> act) ctx{ contextIdentity = i }
-    logAccess ts req (foldIdentity Nothing (Just . (show :: Id Party -> String) . view) i) r (serviceLogs rc)
-    send $ Wai.mapResponseHeaders ((hDate, formatHTTPTimestamp ts) :) r
+  (i, r) <- withActionState rc $ \is db -> do
+    let cf = Context rc ts req is db
+        cp = cf PreIdentified
+    ctx <- if auth then cf <$> runActionM determineIdentity cp else return cp
+    r <- runResult $ runActionM (angularAnalytics >> act) ctx
+    return (contextIdentity ctx, r)
+  logAccess ts req (foldIdentity Nothing (Just . (show :: Id Party -> String) . view) i) r (serviceLogs rc)
+  send $ Wai.mapResponseHeaders ((hDate, formatHTTPTimestamp ts) :) r
+
+forkAction :: ActionM a -> Context -> (Either SomeException a -> IO ()) -> IO ThreadId
+forkAction f c = forkFinally
+  (withActionState (contextService c) $ \is db ->
+    runActionM f c{ contextResourceState = is, contextDB = db })
 
 withAuth :: ActionM Response -> Action
 withAuth = Action True

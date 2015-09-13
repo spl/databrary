@@ -36,8 +36,6 @@ import Databrary.Model.Format
 import Databrary.Model.Asset.Types
 import Databrary.Model.Asset.SQL
 
-useTPG
-
 blankAsset :: Volume -> Asset
 blankAsset vol = Asset
   { assetId = error "blankAsset"
@@ -53,12 +51,12 @@ blankAsset vol = Asset
 assetBacked :: Asset -> Bool
 assetBacked = isJust . assetSHA1
 
-lookupAsset :: (MonadHasIdentity c m, MonadDB m) => Id Asset -> m (Maybe Asset)
+lookupAsset :: (MonadHasIdentity c m, MonadDB c m) => Id Asset -> m (Maybe Asset)
 lookupAsset ai = do
   ident <- peek
   dbQuery1 $(selectQuery (selectAsset 'ident) "$WHERE asset.id = ${ai}")
 
-lookupVolumeAsset :: (MonadDB m) => Volume -> Id Asset -> m (Maybe Asset)
+lookupVolumeAsset :: (MonadDB c m) => Volume -> Id Asset -> m (Maybe Asset)
 lookupVolumeAsset vol ai = do
   dbQuery1 $ ($ vol) <$> $(selectQuery selectVolumeAsset "WHERE asset.id = ${ai} AND asset.volume = ${volumeId vol}")
 
@@ -75,15 +73,15 @@ changeAsset a fp = do
   dbExecute1' $(updateAsset 'ident 'a2)
   return a2
 
-supersedeAsset :: MonadDB m => Asset -> Asset -> m ()
+supersedeAsset :: MonadDB c m => Asset -> Asset -> m ()
 supersedeAsset old new =
   dbExecute1' [pgSQL|SELECT asset_supersede(${assetId old}, ${assetId new})|]
 
-assetIsSuperseded :: MonadDB m => Asset -> m Bool
+assetIsSuperseded :: MonadDB c m => Asset -> m Bool
 assetIsSuperseded a =
   dbExecute1 [pgSQL|SELECT ''::void FROM asset_revision WHERE orig = ${assetId a} LIMIT 1|]
 
-assetCreation :: MonadDB m => Asset -> m (Maybe Timestamp, Maybe T.Text)
+assetCreation :: MonadDB c m => Asset -> m (Maybe Timestamp, Maybe T.Text)
 assetCreation a = maybe (Nothing, Nothing) (first Just) <$>
   dbQuery1 [pgSQL|$SELECT audit_time, name FROM audit.asset WHERE id = ${assetId a} AND audit_action = 'add' ORDER BY audit_time DESC LIMIT 1|]
 

@@ -38,32 +38,32 @@ import Databrary.Model.SQL
 import Databrary.Model.RecordSlot.Types
 import Databrary.Model.RecordSlot.SQL
 
-lookupRecordSlots :: (MonadDB m) => Record -> m [RecordSlot]
+lookupRecordSlots :: (MonadDB c m) => Record -> m [RecordSlot]
 lookupRecordSlots r =
   dbQuery $ ($ r) <$> $(selectQuery selectRecordSlotRecord "$WHERE slot_record.record = ${recordId r}")
 
-lookupSlotRecords :: (MonadDB m) => Slot -> m [RecordSlot]
+lookupSlotRecords :: (MonadDB c m) => Slot -> m [RecordSlot]
 lookupSlotRecords (Slot c s) =
   dbQuery $ ($ c) <$> $(selectQuery selectContainerSlotRecord "$WHERE slot_record.container = ${containerId c} AND slot_record.segment && ${s}")
 
-lookupContainerRecords :: (MonadDB m) => Container -> m [RecordSlot]
+lookupContainerRecords :: (MonadDB c m) => Container -> m [RecordSlot]
 lookupContainerRecords = lookupSlotRecords . containerSlot
 
-lookupRecordSlotRecords :: (MonadDB m) => Record -> Slot -> m [RecordSlot]
+lookupRecordSlotRecords :: (MonadDB c m) => Record -> Slot -> m [RecordSlot]
 lookupRecordSlotRecords r (Slot c s) =
   dbQuery $ ($ c) . ($ r) <$> $(selectQuery selectRecordContainerSlotRecord "WHERE slot_record.record = ${recordId r} AND slot_record.container = ${containerId c} AND slot_record.segment && ${s}")
 
-lookupVolumeContainersRecords :: (MonadDB m) => Volume -> m [(Container, [RecordSlot])]
+lookupVolumeContainersRecords :: (MonadDB c m) => Volume -> m [(Container, [RecordSlot])]
 lookupVolumeContainersRecords v =
   map (second catMaybes) . groupTuplesBy ((==) `on` containerId) <$>
     dbQuery (($ v) <$> $(selectQuery selectVolumeSlotMaybeRecord "WHERE container.volume = ${volumeId v} ORDER BY container.id, record.category NULLS FIRST, slot_record.segment, slot_record.record"))
 
-lookupVolumeContainersRecordIds :: (MonadDB m) => Volume -> m [(Container, [(Segment, Id Record)])]
+lookupVolumeContainersRecordIds :: (MonadDB c m) => Volume -> m [(Container, [(Segment, Id Record)])]
 lookupVolumeContainersRecordIds v =
   map (second catMaybes) . groupTuplesBy ((==) `on` containerId) <$>
     dbQuery (($ v) <$> $(selectQuery selectVolumeSlotMaybeRecordId "$WHERE container.volume = ${volumeId v} ORDER BY container.id, slot_record.segment, slot_record.record"))
 
-lookupVolumeRecordSlotIds :: (MonadDB m) => Volume -> m [(Record, SlotId)]
+lookupVolumeRecordSlotIds :: (MonadDB c m) => Volume -> m [(Record, SlotId)]
 lookupVolumeRecordSlotIds v =
   dbQuery (($ v) <$> $(selectQuery selectVolumeSlotIdRecord "WHERE record.volume = ${volumeId v} ORDER BY container"))
 

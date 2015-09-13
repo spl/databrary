@@ -11,8 +11,7 @@ import Databrary.Service.DB
 import Databrary.Model.SQL (selectQuery)
 import Databrary.Model.Format.SQL
 
-useTPG
-
 loadFormats :: TH.ExpQ
-loadFormats =
-  TH.lift =<< dbQuery $(selectQuery formatRow "ORDER BY id")
+loadFormats = do
+  l <- runTDB $ dbQuery $(selectQuery formatRow "ORDER BY id")
+  TH.lift l

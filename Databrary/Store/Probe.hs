@@ -60,7 +60,7 @@ probeFile n f = runExceptT $ maybe
       | otherwise -> fail "unhandled format conversion")
   $ getFormatByFilename n
 
-probeAutoPosition :: MonadDB m => Container -> Probe -> m Offset
+probeAutoPosition :: MonadDB c m => Container -> Probe -> m Offset
 probeAutoPosition Container{ containerDate = Just d } ProbeAV{ probeAV = AVProbe{ avProbeDate = Just (ZonedTime (LocalTime d' t) _) } }
   | dd >= -1 && dd <= 1 && dt >= negate day2 && dt <= 3*day2 = return $ diffTimeOffset dt where
   dd = diffDays d' d

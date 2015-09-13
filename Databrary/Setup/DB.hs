@@ -1,7 +1,7 @@
 module Main (main) where
 
-import Databrary.Service.DB (withPGConnection)
+import Databrary.Service.DB (runDBConnection)
 import Databrary.Service.DB.Schema
 
 main :: IO ()
-main = withPGConnection $ updateDBSchema "schema"
+main = runDBConnection $ updateDBSchema "schema"

@@ -15,9 +15,7 @@ import Databrary.Model.Identity.Types
 import Databrary.Model.Volume.Types
 import Databrary.Model.Volume.SQL
 
-useTPG
-
 loadVolume :: Id Volume -> TH.ExpQ -- ^ @'Volume'@
 loadVolume i = do
-  v <- dbQuery1' $(selectQuery (selectVolume 'PreIdentified) "WHERE volume.id = ${i}")
+  v <- runTDB $ dbQuery1' $(selectQuery (selectVolume 'PreIdentified) "WHERE volume.id = ${i}")
   TH.lift v

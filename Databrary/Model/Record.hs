@@ -29,8 +29,6 @@ import Databrary.Model.Measure
 import Databrary.Model.Record.Types
 import Databrary.Model.Record.SQL
 
-useTPG
-
 blankRecord :: Volume -> Record
 blankRecord vol = Record
   { recordId = error "blankRecord"
@@ -40,16 +38,16 @@ blankRecord vol = Record
   , recordMeasures = []
   }
 
-lookupRecord :: (MonadHasIdentity c m, MonadDB m) => Id Record -> m (Maybe Record)
+lookupRecord :: (MonadHasIdentity c m, MonadDB c m) => Id Record -> m (Maybe Record)
 lookupRecord ri = do
   ident <- peek
   dbQuery1 $(selectQuery (selectRecord 'ident) "$WHERE record.id = ${ri}")
 
-lookupVolumeRecord :: MonadDB m => Volume -> Id Record -> m (Maybe Record)
+lookupVolumeRecord :: MonadDB c m => Volume -> Id Record -> m (Maybe Record)
 lookupVolumeRecord vol ri =
   dbQuery1 $ fmap ($ vol) $(selectQuery selectVolumeRecord "$WHERE record.id = ${ri} AND record.volume = ${volumeId vol}")
 
-lookupVolumeRecords :: MonadDB m => Volume -> m [Record]
+lookupVolumeRecords :: MonadDB c m => Volume -> m [Record]
 lookupVolumeRecords vol =
   dbQuery $ fmap ($ vol) $(selectQuery selectVolumeRecord "$WHERE record.volume = ${volumeId vol}")
 

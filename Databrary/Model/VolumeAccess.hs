@@ -33,22 +33,22 @@ import Databrary.Model.Volume.SQL
 import Databrary.Model.VolumeAccess.Types
 import Databrary.Model.VolumeAccess.SQL
 
-lookupVolumeAccess :: (MonadDB m, MonadHasIdentity c m) => Volume -> Permission -> m [VolumeAccess]
+lookupVolumeAccess :: (MonadDB c m, MonadHasIdentity c m) => Volume -> Permission -> m [VolumeAccess]
 lookupVolumeAccess vol perm = do
   ident <- peek
   dbQuery $(selectQuery (selectVolumeAccess 'vol 'ident) "$WHERE volume_access.individual >= ${perm} ORDER BY individual DESC, children DESC")
 
-lookupVolumeAccessParty :: (MonadDB m, MonadHasIdentity c m) => Volume -> Id Party -> m (Maybe VolumeAccess)
+lookupVolumeAccessParty :: (MonadDB c m, MonadHasIdentity c m) => Volume -> Id Party -> m (Maybe VolumeAccess)
 lookupVolumeAccessParty vol p = do
   ident <- peek
   dbQuery1 $(selectQuery (selectVolumeAccessParty 'vol 'ident) "WHERE party.id = ${p}")
 
-lookupPartyVolumeAccess :: (MonadDB m, MonadHasIdentity c m) => Party -> Permission -> m [VolumeAccess]
+lookupPartyVolumeAccess :: (MonadDB c m, MonadHasIdentity c m) => Party -> Permission -> m [VolumeAccess]
 lookupPartyVolumeAccess p perm = do
   ident <- peek
   dbQuery $(selectQuery (selectPartyVolumeAccess 'p 'ident) "$WHERE volume_access.individual >= ${perm} ORDER BY individual DESC, children DESC")
 
-lookupPartyVolumes :: (MonadDB m, MonadHasIdentity c m) => Party -> Permission -> m [Volume]
+lookupPartyVolumes :: (MonadDB c m, MonadHasIdentity c m) => Party -> Permission -> m [Volume]
 lookupPartyVolumes p perm = do
   ident <- peek
   dbQuery $(selectDistinctQuery (Just ["volume.id"]) (selectVolume 'ident) "$JOIN volume_access_view ON volume.id = volume_access_view.volume WHERE party = ${partyId p} AND access >= ${perm}")
@@ -79,7 +79,7 @@ volumeAccessPartyJSON va@VolumeAccess{..} = volumeAccessJSON va JSON..+ ("party"
 volumeAccessVolumeJSON :: VolumeAccess -> JSON.Object
 volumeAccessVolumeJSON va@VolumeAccess{..} = volumeAccessJSON va JSON..+ ("volume" JSON..= volumeJSON volumeAccessVolume)
 
-lookupVolumeActivity :: (MonadDB m, MonadHasIdentity c m) => Int -> m [(Timestamp, Volume)]
+lookupVolumeActivity :: (MonadDB c m, MonadHasIdentity c m) => Int -> m [(Timestamp, Volume)]
 lookupVolumeActivity limit = do
   ident :: Identity <- peek
   dbQuery $(selectQuery (selectVolumeActivity 'ident) "$WHERE audit.audit_action = 'add' AND audit.party = 0 AND audit.children > 'NONE' ORDER BY audit.audit_time DESC LIMIT ${fromIntegral limit :: Int64}")

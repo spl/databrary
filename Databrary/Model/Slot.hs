@@ -18,9 +18,9 @@ import Databrary.Model.Segment
 import Databrary.Model.Container
 import Databrary.Model.Slot.Types
 
-useTPG
+useTDB
 
-lookupSlot :: (MonadDB m, MonadHasIdentity c m) => Id Slot -> m (Maybe Slot)
+lookupSlot :: (MonadDB c m, MonadHasIdentity c m) => Id Slot -> m (Maybe Slot)
 lookupSlot (Id (SlotId c s)) =
   fmap (`Slot` s) <$> lookupContainer c
 

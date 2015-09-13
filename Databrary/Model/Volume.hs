@@ -37,12 +37,10 @@ import Databrary.Model.Volume.Types
 import Databrary.Model.Volume.SQL
 import Databrary.Model.Volume.Boot
 
-useTPG
-
 coreVolume :: Volume
 coreVolume = $(loadVolume (Id 0))
 
-lookupVolume :: (MonadDB m, MonadHasIdentity c m) => Id Volume -> m (Maybe Volume)
+lookupVolume :: (MonadDB c m, MonadHasIdentity c m) => Id Volume -> m (Maybe Volume)
 lookupVolume vi = do
   ident :: Identity <- peek
   dbQuery1 $(selectQuery (selectVolume 'ident) "$WHERE volume.id = ${vi}")
@@ -104,12 +102,12 @@ volumeFilter VolumeFilter{..} = BS.concat
   where
   withq v f = maybe "" f v
 
-findVolumes :: (MonadHasIdentity c m, MonadDB m) => VolumeFilter -> m [Volume]
+findVolumes :: (MonadHasIdentity c m, MonadDB c m) => VolumeFilter -> m [Volume]
 findVolumes pf = do
   ident <- peek
   dbQuery $ unsafeModifyQuery $(selectQuery (selectVolume 'ident) "")
     (<> volumeFilter pf)
 
-updateVolumeIndex :: MonadDB m => m ()
+updateVolumeIndex :: MonadDB c m => m ()
 updateVolumeIndex =
   dbExecute_ "SELECT volume_text_refresh()"

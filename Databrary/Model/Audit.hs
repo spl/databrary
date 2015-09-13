@@ -15,7 +15,7 @@ import Database.PostgreSQL.Typed (pgSQL)
 import Database.PostgreSQL.Typed.Inet (PGInet(..), sockAddrPGInet)
 import Network.Wai (remoteHost)
 
-import Databrary.Has (peek, peeks, MonadHas)
+import Databrary.Has
 import qualified Databrary.JSON as JSON
 import Databrary.Service.DB
 import Databrary.HTTP.Request
@@ -23,9 +23,9 @@ import Databrary.Model.Id.Types
 import Databrary.Model.Party.Types
 import Databrary.Model.Audit.Types
 
-useTPG
+useTDB
 
-type MonadAudit c m = (MonadHasRequest c m, MonadHas (Id Party) c m, MonadDB m)
+type MonadAudit c m = (MonadHasRequest c m, MonadHas (Id Party) c m, MonadDB c m)
 
 getRemoteIp :: MonadHasRequest c m => m PGInet
 getRemoteIp = peeks (fromMaybe (PGInet 0 32) . sockAddrPGInet . remoteHost)

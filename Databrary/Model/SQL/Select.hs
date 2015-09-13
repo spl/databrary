@@ -30,7 +30,7 @@ import Data.List (intercalate, unfoldr)
 import Database.PostgreSQL.Typed.Query (QueryFlags, parseQueryFlags, makePGQuery)
 import qualified Language.Haskell.TH as TH
 
-import Databrary.Service.DB (useTPG)
+import Databrary.Service.DB (useTDB)
 
 data SelectOutput
   = SelectColumn { selectTable, selectColumn :: String }
@@ -171,7 +171,7 @@ takeWhileEnd p = fst . foldr go ([], False) where
 
 makeQuery :: QueryFlags -> (String -> String) -> SelectOutput -> TH.ExpQ
 makeQuery flags sql output = do
-  _ <- useTPG
+  _ <- useTDB
   nl <- mapM (TH.newName . colVar) cols
   (parse, []) <- runStateT (outputParser output) nl
   TH.AppE (TH.VarE 'fmap `TH.AppE` TH.LamE [TH.TupP $ map TH.VarP nl] parse)

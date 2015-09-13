@@ -1,17 +1,19 @@
+{-# LANGUAGE TemplateHaskell #-}
 module Databrary.Service.Periodic
   ( forkPeriodic
   ) where
 
 import Control.Concurrent (ThreadId, forkFinally, threadDelay)
-import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Reader (ReaderT(..))
 import Data.Fixed (Fixed(..), Micro)
 import Data.Time.Clock (UTCTime(..), diffUTCTime, getCurrentTime)
 import Data.Time.LocalTime (TimeOfDay(TimeOfDay), timeOfDayToTime)
 
-import Databrary.Has (view, focusIO)
+import Databrary.Has
 import Databrary.Service.Types
+import Databrary.Service.DB
 import Databrary.Service.Log
+import Databrary.Model.Time
 import Databrary.Model.Token
 import Databrary.Model.Volume
 import Databrary.Solr.Index -- TODO
@@ -24,13 +26,28 @@ threadDelay' (MkFixed t)
   m' = toInteger m
   m = maxBound
 
+data PeriodicContext = PeriodicContext
+  { periodicService :: !Service
+  , periodicTimestamp :: !Timestamp
+  , periodicDB :: !DBConn
+  }
+
+makeHasRec ''PeriodicContext ['periodicService, 'periodicTimestamp, 'periodicDB]
+
+type PeriodicM a = ReaderT PeriodicContext IO a
+
+runPeriodicM :: PeriodicM a -> Service -> IO a
+runPeriodicM f rc = do
+  t <- getCurrentTime
+  withDB (serviceDB rc) $ runReaderT f . PeriodicContext rc t
+
 daily :: Service -> IO ()
-daily = runReaderT $ do
-  t <- liftIO getCurrentTime
+daily = runPeriodicM $ do
+  t <- peek
   focusIO $ logMsg t "running daily cleanup"
   cleanTokens
   updateVolumeIndex
-  ReaderT $ updateIndex t
+  updateIndex
 
 runPeriodic :: Service -> IO ()
 runPeriodic rc = loop (if s <= st then d s else s) where

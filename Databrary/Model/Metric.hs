@@ -14,13 +14,10 @@ import Data.List (find)
 import Data.Maybe (catMaybes, fromJust)
 
 import Databrary.Ops
-import Databrary.Service.DB
 import qualified Databrary.JSON as JSON
 import Databrary.Model.Id
 import Databrary.Model.Metric.Types
 import Databrary.Model.Metric.Boot
-
-useTPG
 
 allMetrics :: [Metric]
 allMetrics = $(loadMetrics)

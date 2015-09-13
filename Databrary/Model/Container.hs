@@ -36,8 +36,6 @@ import Databrary.Model.Volume.Types
 import Databrary.Model.Container.Types
 import Databrary.Model.Container.SQL
 
-useTPG
-
 blankContainer :: Volume -> Container
 blankContainer vol = Container
   { containerId = error "blankContainer"
@@ -48,20 +46,20 @@ blankContainer vol = Container
   , containerVolume = vol
   }
 
-lookupContainer :: (MonadDB m, MonadHasIdentity c m) => Id Container -> m (Maybe Container)
+lookupContainer :: (MonadDB c m, MonadHasIdentity c m) => Id Container -> m (Maybe Container)
 lookupContainer ci = do
   ident <- peek
   dbQuery1 $(selectQuery (selectContainer 'ident) "$WHERE container.id = ${ci}")
 
-lookupVolumeContainer :: MonadDB m => Volume -> Id Container -> m (Maybe Container)
+lookupVolumeContainer :: MonadDB c m => Volume -> Id Container -> m (Maybe Container)
 lookupVolumeContainer vol ci =
   dbQuery1 $ fmap ($ vol) $(selectQuery selectVolumeContainer "$WHERE container.id = ${ci} AND container.volume = ${volumeId vol}")
 
-lookupVolumeContainers :: MonadDB m => Volume -> m [Container]
+lookupVolumeContainers :: MonadDB c m => Volume -> m [Container]
 lookupVolumeContainers vol =
   dbQuery $ fmap ($ vol) $(selectQuery selectVolumeContainer "$WHERE container.volume = ${volumeId vol} ORDER BY container.id")
 
-lookupVolumeTopContainer :: MonadDB m => Volume -> m Container
+lookupVolumeTopContainer :: MonadDB c m => Volume -> m Container
 lookupVolumeTopContainer vol =
   dbQuery1' $ fmap ($ vol) $(selectQuery selectVolumeContainer "$WHERE container.volume = ${volumeId vol} AND container.top ORDER BY container.id LIMIT 1")
 

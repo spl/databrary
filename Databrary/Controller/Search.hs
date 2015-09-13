@@ -53,5 +53,5 @@ viewUpdateIndex = action GET ("search" >/> "index") $ \() -> withAuth $ do
 postUpdateIndex :: ActionRoute ()
 postUpdateIndex = action POST ("search" >/> "index") $ \() -> withAuth $ do
   checkMemberADMIN
-  focusIO . updateIndex =<< peek
+  updateIndex
   return $ okResponse [] ("done" :: String)

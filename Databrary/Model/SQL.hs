@@ -25,7 +25,7 @@ isUniqueViolation = ("23505" ==) . pgErrorCode
 isExclusionViolation e = pgErrorCode e `elem` ["23505","23P01"]
 isForeignKeyViolation = ("23503" ==) . pgErrorCode
 
-tryUpdateOrInsert :: (MonadDB m, PGQuery q a) => (PGError -> Maybe e) -> q -> q -> m (Either e (Int, [a]))
+tryUpdateOrInsert :: (MonadDB c m, PGQuery q a) => (PGError -> Maybe e) -> q -> q -> m (Either e (Int, [a]))
 tryUpdateOrInsert err upd ins = dbTransaction uoi where
   err' e
     | isUniqueViolation e = Just Nothing
@@ -44,7 +44,7 @@ tryUpdateOrInsert err upd ins = dbTransaction uoi where
           Right r -> return $ Right r
       _ -> return u
 
-updateOrInsert :: (MonadDB m, PGQuery q a) => q -> q -> m (Int, [a])
+updateOrInsert :: (MonadDB c m, PGQuery q a) => q -> q -> m (Int, [a])
 -- updateOrInsert upd ins = either fail return <$> tryUpdateOrInsert (const Nothing) upd ins
 updateOrInsert upd ins = dbTransaction uoi where
   uoi = do

@@ -35,8 +35,6 @@ import Databrary.Model.Identity.Types
 import Databrary.Model.Authorize.Types
 import Databrary.Model.Authorize.SQL
 
-useTPG
-
 selfAuthorize :: Party -> Authorize
 selfAuthorize p =
   Authorize (Authorization (if partyId p == partyId nobodyParty then minBound else maxBound) p p) Nothing
@@ -45,26 +43,26 @@ filterAll :: PGQuery a b => Bool -> a -> a
 filterAll True = id
 filterAll False = (`unsafeModifyQuery` (<> "WHERE (expires IS NULL OR expires > CURRENT_TIMESTAMP) AND (site > 'PUBLIC' OR member > 'NONE') ORDER BY party.name"))
 
-lookupAuthorizedParents :: (MonadDB m, MonadHasIdentity c m) => Party -> Bool -> m [Authorize]
+lookupAuthorizedParents :: (MonadDB c m, MonadHasIdentity c m) => Party -> Bool -> m [Authorize]
 lookupAuthorizedParents child al = do
   ident <- peek
   dbQuery $ filterAll al $(selectQuery (selectAuthorizeParent 'child 'ident) "$")
 
-lookupAuthorizedChildren :: (MonadDB m, MonadHasIdentity c m) => Party -> Bool -> m [Authorize]
+lookupAuthorizedChildren :: (MonadDB c m, MonadHasIdentity c m) => Party -> Bool -> m [Authorize]
 lookupAuthorizedChildren parent al = do
   ident <- peek
   dbQuery $ filterAll al $(selectQuery (selectAuthorizeChild 'parent 'ident) "$")
 
-lookupAuthorize :: (MonadDB m, MonadHasIdentity c m) => Party -> Party -> m (Maybe Authorize)
+lookupAuthorize :: (MonadDB c m, MonadHasIdentity c m) => Party -> Party -> m (Maybe Authorize)
 lookupAuthorize child parent =
   dbQuery1 $ (\a -> a child parent) <$> $(selectQuery authorizeRow "$WHERE authorize.child = ${partyId child} AND authorize.parent = ${partyId parent} AND (expires IS NULL OR expires > CURRENT_TIMESTAMP)")
 
-lookupAuthorizeParent :: (MonadDB m, MonadHasIdentity c m) => Party -> Id Party -> m (Maybe Authorize)
+lookupAuthorizeParent :: (MonadDB c m, MonadHasIdentity c m) => Party -> Id Party -> m (Maybe Authorize)
 lookupAuthorizeParent child parent = do
   ident <- peek
   dbQuery1 $ $(selectQuery (selectAuthorizeParent 'child 'ident) "$WHERE authorize.parent = ${parent} AND (expires IS NULL OR expires > CURRENT_TIMESTAMP)")
 
-lookupAuthorization :: (MonadDB m, MonadHasIdentity c m) => Party -> Party -> m Authorization
+lookupAuthorization :: (MonadDB c m, MonadHasIdentity c m) => Party -> Party -> m Authorization
 lookupAuthorization child parent 
   | partyId child == partyId parent = return $ authorization $ selfAuthorize child
   | otherwise = do
@@ -101,7 +99,7 @@ authorizeJSON :: Authorize -> JSON.Object
 authorizeJSON Authorize{..} = accessJSON (authorizeAccess authorization)
   JSON..+? (("expires" JSON..=) <$> authorizeExpires)
 
-lookupAuthorizeActivity :: (MonadDB m, MonadHasIdentity c m) => Int -> m [(Timestamp, Party)]
+lookupAuthorizeActivity :: (MonadDB c m, MonadHasIdentity c m) => Int -> m [(Timestamp, Party)]
 lookupAuthorizeActivity limit = do
   ident :: Identity <- peek
   dbQuery $(selectQuery (selectAuthorizeActivity 'ident) "$JOIN authorize_view ON audit.parent = authorize_view.child AND authorize_view.parent = 0 WHERE audit.audit_action IN ('add','change') AND audit.site >= 'EDIT' AND authorize_view.site > 'EDIT' ORDER BY audit.audit_time DESC LIMIT ${fromIntegral limit :: Int64}")

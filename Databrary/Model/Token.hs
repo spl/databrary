@@ -42,21 +42,19 @@ import Databrary.Model.Party
 import Databrary.Model.Token.Types
 import Databrary.Model.Token.SQL
 
-useTPG
-
 loginTokenId :: (MonadHasService c m, MonadIO m) => LoginToken -> m (Id LoginToken)
 loginTokenId tok = Id <$> sign (unId (view tok :: Id Token))
 
-lookupLoginToken :: (MonadDB m, MonadHasService c m) => Id LoginToken -> m (Maybe LoginToken)
+lookupLoginToken :: (MonadDB c m, MonadHasService c m) => Id LoginToken -> m (Maybe LoginToken)
 lookupLoginToken =
   flatMapM (\t -> dbQuery1 $(selectQuery selectLoginToken "$!WHERE login_token.token = ${t} AND expires > CURRENT_TIMESTAMP"))
     <=< unSign . unId
 
-lookupSession :: MonadDB m => BS.ByteString -> m (Maybe Session)
+lookupSession :: MonadDB c m => BS.ByteString -> m (Maybe Session)
 lookupSession tok =
   dbQuery1 $(selectQuery selectSession "$!WHERE session.token = ${tok} AND expires > CURRENT_TIMESTAMP")
 
-lookupUpload :: (MonadDB m, MonadHasIdentity c m) => BS.ByteString -> m (Maybe Upload)
+lookupUpload :: (MonadDB c m, MonadHasIdentity c m) => BS.ByteString -> m (Maybe Upload)
 lookupUpload tok = do
   auth <- peek
   dbQuery1 $ fmap ($ auth) $(selectQuery selectUpload "$!WHERE upload.token = ${tok} AND expires > CURRENT_TIMESTAMP AND upload.account = ${view auth :: Id Party}")
@@ -64,7 +62,7 @@ lookupUpload tok = do
 entropyBase64 :: Int -> Entropy -> IO BS.ByteString
 entropyBase64 n e = (convertToBase Base64URLUnpadded :: Bytes -> BS.ByteString) <$> entropyBytes n e
 
-createToken :: (MonadHasService c m, MonadDB m) => (Id Token -> DBM a) -> m a
+createToken :: (MonadHasService c m, MonadDB c m) => (Id Token -> DBM a) -> m a
 createToken insert = do
   e <- peek
   let loop = do
@@ -77,7 +75,7 @@ createToken insert = do
     _ <- dbExecuteSimple "LOCK TABLE token IN SHARE ROW EXCLUSIVE MODE"
     loop
 
-createLoginToken :: (MonadHasService c m, MonadDB m) => SiteAuth -> Bool -> m LoginToken
+createLoginToken :: (MonadHasService c m, MonadDB c m) => SiteAuth -> Bool -> m LoginToken
 createLoginToken auth passwd = do
   when passwd $ void $ dbExecute [pgSQL|DELETE FROM login_token WHERE account = ${view auth :: Id Party} AND password|]
   (tok, ex) <- createToken $ \tok ->
@@ -94,7 +92,7 @@ sessionDuration :: Bool -> Offset
 sessionDuration False = 7*24*60*60
 sessionDuration True = 30*60
 
-createSession :: (MonadHasService c m, MonadDB m) => SiteAuth -> Bool -> m Session
+createSession :: (MonadHasService c m, MonadDB c m) => SiteAuth -> Bool -> m Session
 createSession auth su = do
   e <- peek
   (tok, ex, verf) <- createToken $ \tok -> do
@@ -109,7 +107,7 @@ createSession auth su = do
     , sessionVerf = verf
     }
 
-createUpload :: (MonadHasService c m, MonadDB m, MonadHasIdentity c m) => Volume -> BS.ByteString -> Int64 -> m Upload
+createUpload :: (MonadHasService c m, MonadDB c m, MonadHasIdentity c m) => Volume -> BS.ByteString -> Int64 -> m Upload
 createUpload vol name size = do
   auth <- peek
   (tok, ex) <- createToken $ \tok ->
@@ -123,24 +121,24 @@ createUpload vol name size = do
     , uploadSize = size
     }
 
-removeLoginToken :: MonadDB m => LoginToken -> m Bool
+removeLoginToken :: MonadDB c m => LoginToken -> m Bool
 removeLoginToken tok =
   dbExecute1 [pgSQL|DELETE FROM login_token WHERE token = ${view tok :: Id Token}|]
 
-removeSession :: (MonadDB m) => Session -> m Bool
+removeSession :: (MonadDB c m) => Session -> m Bool
 removeSession tok =
   dbExecute1 [pgSQL|DELETE FROM session WHERE token = ${view tok :: Id Token}|]
 
 removeUploadFile :: (MonadStorage c m) => Upload -> m Bool
 removeUploadFile tok = liftIO . removeFile =<< peeks (uploadFile tok)
 
-removeUpload :: (MonadDB m, MonadStorage c m) => Upload -> m Bool
+removeUpload :: (MonadDB c m, MonadStorage c m) => Upload -> m Bool
 removeUpload tok = do
   r <- dbExecute1 [pgSQL|DELETE FROM upload WHERE token = ${view tok :: Id Token}|]
   when r $ void $ removeUploadFile tok
   return r
 
-cleanTokens :: (MonadDB m, MonadStorage c m) => m ()
+cleanTokens :: (MonadDB c m, MonadStorage c m) => m ()
 cleanTokens = do
   toks <- dbQuery $ ($ nobodySiteAuth) <$> $(makeQuery simpleQueryFlags ("DELETE FROM upload WHERE expires < CURRENT_TIMESTAMP RETURNING " ++) (selectOutput selectUpload))
   mapM_ removeUploadFile toks

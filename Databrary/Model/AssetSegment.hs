@@ -33,17 +33,17 @@ import Databrary.Model.AssetSlot
 import Databrary.Model.AssetSegment.Types
 import Databrary.Model.AssetSegment.SQL
 
-lookupAssetSegment :: (MonadHasIdentity c m, MonadDB m) => Segment -> Id Asset -> m (Maybe AssetSegment)
+lookupAssetSegment :: (MonadHasIdentity c m, MonadDB c m) => Segment -> Id Asset -> m (Maybe AssetSegment)
 lookupAssetSegment seg ai = do
   ident :: Identity <- peek
   dbQuery1 $(selectQuery (selectAssetSegment 'ident 'seg) "$WHERE slot_asset.asset = ${ai} AND slot_asset.segment && ${seg}")
 
-lookupSlotAssetSegment :: (MonadHasIdentity c m, MonadDB m) => Id Slot -> Id Asset -> m (Maybe AssetSegment)
+lookupSlotAssetSegment :: (MonadHasIdentity c m, MonadDB c m) => Id Slot -> Id Asset -> m (Maybe AssetSegment)
 lookupSlotAssetSegment (Id (SlotId ci seg)) ai = do
   ident :: Identity <- peek
   dbQuery1 $(selectQuery (selectAssetSegment 'ident 'seg) "$WHERE slot_asset.container = ${ci} AND slot_asset.asset = ${ai} AND slot_asset.segment && ${seg}")
 
-lookupAssetSlotSegment :: MonadDB m => AssetSlot -> Segment -> m (Maybe AssetSegment)
+lookupAssetSlotSegment :: MonadDB c m => AssetSlot -> Segment -> m (Maybe AssetSegment)
 lookupAssetSlotSegment a s =
   segmentEmpty seg ?!$> as <$>
     dbQuery1 $(selectQuery excerptRow "$WHERE asset = ${view a :: Id Asset} AND segment @> ${seg}")
@@ -51,7 +51,7 @@ lookupAssetSlotSegment a s =
   as = makeExcerpt a s
   seg = assetSegment $ as Nothing
 
-lookupSlotSegmentThumb :: MonadDB m => Slot -> m (Maybe AssetSegment)
+lookupSlotSegmentThumb :: MonadDB c m => Slot -> m (Maybe AssetSegment)
 lookupSlotSegmentThumb (Slot c s) = do
   dbQuery1 $ assetSegmentInterp 0.25 . ($ c) <$> $(selectQuery (selectContainerAssetSegment 's) "$\
     \JOIN format ON asset.format = format.id \

@@ -15,13 +15,11 @@ import Databrary.Model.RecordCategory.SQL
 import Databrary.Model.Id.Types
 import Databrary.Model.Metric
 
-useTPG
-
 loadRecordCategories :: TH.ExpQ -- [RecordCategory]
-loadRecordCategories =
-  dbQuery (fmap ($ undefined) $(selectQuery recordCategoryRow "ORDER BY id"))
-  >>= mapM (\c -> (,) c <$>
-    dbQuery $(selectQuery recordTemplateRow "WHERE category = ${recordCategoryId c} ORDER BY ident DESC, metric"))
+loadRecordCategories = runTDB
+  (dbQuery (fmap ($ undefined) $(selectQuery recordCategoryRow "ORDER BY id"))
+    >>= mapM (\c -> (,) c <$>
+      dbQuery $(selectQuery recordTemplateRow "WHERE category = ${recordCategoryId c} ORDER BY ident DESC, metric")))
   >>= TH.listE . map (\(c, ts) ->
     TH.conE 'RecordCategory
       `TH.appE` TH.lift (recordCategoryId c)

@@ -1,9 +1,10 @@
 {-# LANGUAGE FlexibleInstances, FlexibleContexts, MultiParamTypeClasses, ConstraintKinds, DefaultSignatures, GeneralizedNewtypeDeriving, TypeFamilies, OverloadedStrings #-}
 module Databrary.Service.DB
-  ( withPGConnection
+  ( DBPool 
   , DBConn
   , initDB
   , finiDB
+  , withDB
   , MonadDB
   , DBM
   , liftDBM
@@ -18,18 +19,17 @@ module Databrary.Service.DB
   , dbQuery1
   , dbQuery1'
   , dbTransaction
-  , useTPG
+
+  , runDBConnection
+  , useTDB
+  , runTDB
   ) where
 
-import Control.Applicative (Applicative, (<$>))
+import Control.Applicative ((<$>))
 import Control.Exception (onException, tryJust, bracket)
 import Control.Monad (unless, (<=<))
-import Control.Monad.Base (MonadBase)
-import Control.Monad.IO.Class (MonadIO, liftIO)
-import Control.Monad.Trans.Class (lift)
-import Control.Monad.Trans.Control (MonadBaseControl(..))
+import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.Trans.Reader (ReaderT(..))
-import Control.Monad.Trans.State (StateT)
 import qualified Data.ByteString.Lazy as BSL
 import qualified Data.Configurator as C
 import qualified Data.Configurator.Types as C
@@ -43,7 +43,7 @@ import qualified Language.Haskell.TH as TH
 import Network (PortID(..))
 import System.IO.Unsafe (unsafePerformIO)
 
-import Databrary.Has (MonadHas, Has, peek)
+import Databrary.Has
 
 getPGDatabase :: C.Config -> IO PGDatabase
 getPGDatabase conf = do
@@ -63,9 +63,10 @@ getPGDatabase conf = do
     , pgDBDebug = debug
     }
 
-newtype DBConn = PGPool (Pool PGConnection)
+newtype DBPool = PGPool (Pool PGConnection)
+type DBConn = PGConnection
 
-initDB :: C.Config -> IO DBConn
+initDB :: C.Config -> IO DBPool
 initDB conf = do
   db <- getPGDatabase conf
   stripes <- C.lookupDefault 1 conf "stripes"
@@ -76,49 +77,38 @@ initDB conf = do
     pgDisconnect
     stripes (fromRational idle) conn
 
-finiDB :: DBConn -> IO ()
+finiDB :: DBPool -> IO ()
 finiDB (PGPool p) = do
   destroyAllResources p
 
-class (Functor m, Applicative m, Monad m) => MonadDB m where
-  liftDB :: (PGConnection -> IO a) -> m a
-  default liftDB :: (MonadIO m, MonadHas DBConn c m) => (PGConnection -> IO a) -> m a
-  liftDB f = do
-    PGPool db <- peek
-    liftIO $ withResource db f
+withDB :: DBPool -> (DBConn -> IO a) -> IO a
+withDB (PGPool p) = withResource p
 
-newtype DBM a = DBM { runDBM :: ReaderT PGConnection IO a }
-  deriving (Functor, Applicative, Monad, MonadIO, MonadBase IO)
+type MonadDB c m = (MonadIO m, MonadHas DBConn c m)
 
-instance MonadBaseControl IO DBM where
-  type StM DBM a = a
-  liftBaseWith f = DBM $ liftBaseWith $ \r -> f (r . runDBM)
-  restoreM = DBM . restoreM
+{-# INLINE liftDB #-}
+liftDB :: MonadDB c m => (PGConnection -> IO a) -> m a
+liftDB = focusIO
 
-instance MonadDB DBM where
-  liftDB = DBM . ReaderT
+type DBM a = ReaderT PGConnection IO a
 
-instance (Functor m, Applicative m, MonadIO m, Has DBConn c) => MonadDB (ReaderT c m)
-instance MonadDB m => MonadDB (StateT a m) where
-  liftDB = lift . liftDB
-
-liftDBM :: MonadDB m => DBM a -> m a
-liftDBM (DBM q) = liftDB $ runReaderT q
+liftDBM :: MonadDB c m => DBM a -> m a
+liftDBM q = liftDB $ runReaderT q
 
 -- |Combination of 'liftDBM' and lifted 'tryJust'
-dbTryJust :: MonadDB m => (PGError -> Maybe e) -> DBM a -> m (Either e a)
-dbTryJust err (DBM q) = liftDB $ tryJust err . runReaderT q
+dbTryJust :: MonadDB c m => (PGError -> Maybe e) -> DBM a -> m (Either e a)
+dbTryJust err q = liftDB $ tryJust err . runReaderT q
 
-dbRunQuery :: (MonadDB m, PGQuery q a) => q -> m (Int, [a])
+dbRunQuery :: (MonadDB c m, PGQuery q a) => q -> m (Int, [a])
 dbRunQuery q = liftDB $ \c -> pgRunQuery c q
 
-dbExecute :: (MonadDB m, PGQuery q ()) => q -> m Int
+dbExecute :: (MonadDB c m, PGQuery q ()) => q -> m Int
 dbExecute q = liftDB $ \c -> pgExecute c q
 
-dbExecuteSimple :: MonadDB m => PGSimpleQuery () -> m Int
+dbExecuteSimple :: MonadDB c m => PGSimpleQuery () -> m Int
 dbExecuteSimple = dbExecute
 
-dbExecute1 :: (MonadDB m, PGQuery q ()) => q -> m Bool
+dbExecute1 :: (MonadDB c m, PGQuery q ()) => q -> m Bool
 dbExecute1 q = do
   r <- dbExecute q
   case r of
@@ -126,18 +116,18 @@ dbExecute1 q = do
     1 -> return True
     _ -> fail $ "pgExecute1: " ++ show r ++ " rows"
 
-dbExecute1' :: (MonadDB m, PGQuery q ()) => q -> m ()
+dbExecute1' :: (MonadDB c m, PGQuery q ()) => q -> m ()
 dbExecute1' q = do
   r <- dbExecute1 q
   unless r $ fail $ "pgExecute1': failed"
 
-dbExecute_ :: (MonadDB m) => BSL.ByteString -> m ()
+dbExecute_ :: (MonadDB c m) => BSL.ByteString -> m ()
 dbExecute_ q = liftDB $ \c -> pgSimpleQueries_ c q
 
-dbQuery :: (MonadDB m, PGQuery q a) => q -> m [a]
+dbQuery :: (MonadDB c m, PGQuery q a) => q -> m [a]
 dbQuery q = liftDB $ \c -> pgQuery c q
 
-dbQuery1 :: (MonadDB m, PGQuery q a) => q -> m (Maybe a)
+dbQuery1 :: (MonadDB c m, PGQuery q a) => q -> m (Maybe a)
 dbQuery1 q = do
   r <- dbQuery q
   case r of
@@ -145,11 +135,11 @@ dbQuery1 q = do
     [x] -> return $ Just x
     _ -> fail "pgQuery1: too many results"
 
-dbQuery1' :: (MonadDB m, PGQuery q a) => q -> m a
+dbQuery1' :: (MonadDB c m, PGQuery q a) => q -> m a
 dbQuery1' = maybe (fail "pgQuery1': no results") return <=< dbQuery1
 
-dbTransaction :: MonadDB m => DBM a -> m a
-dbTransaction (DBM f) = liftDB $ \c -> do
+dbTransaction :: MonadDB c m => DBM a -> m a
+dbTransaction f = liftDB $ \c -> do
   _ <- pgSimpleQuery c "BEGIN"
   onException (do
     r <- runReaderT f c
@@ -163,26 +153,26 @@ dbTransaction (DBM f) = liftDB $ \c -> do
 loadPGDatabase :: IO PGDatabase
 loadPGDatabase = getPGDatabase . C.subconfig "db" =<< C.load [C.Required "databrary.conf"]
 
-withPGConnection :: DBM a -> IO a
-withPGConnection (DBM f) = bracket
+runDBConnection :: DBM a -> IO a
+runDBConnection f = bracket
   (pgConnect =<< loadPGDatabase)
   pgDisconnect
   (runReaderT f)
 
-loadTPG :: TH.DecsQ
-loadTPG = useTPGDatabase =<< TH.runIO loadPGDatabase
+loadTDB :: TH.DecsQ
+loadTDB = useTPGDatabase =<< TH.runIO loadPGDatabase
 
-{-# NOINLINE usedTPG #-}
-usedTPG :: IORef Bool
-usedTPG = unsafePerformIO $ newIORef False
-useTPG :: TH.DecsQ
-useTPG = do
-  d <- TH.runIO $ atomicModifyIORef' usedTPG ((,) True)
+{-# NOINLINE usedTDB #-}
+usedTDB :: IORef Bool
+usedTDB = unsafePerformIO $ newIORef False
+useTDB :: TH.DecsQ
+useTDB = do
+  d <- TH.runIO $ atomicModifyIORef' usedTDB ((,) True)
   if d
     then return []
-    else loadTPG
+    else loadTDB
 
-instance MonadDB TH.Q where
-  liftDB f = do
-    _ <- useTPG
-    TH.runIO $ withTPGConnection f
+runTDB :: DBM a -> TH.Q a
+runTDB f = do
+  _ <- useTDB
+  TH.runIO $ withTPGConnection $ runReaderT f

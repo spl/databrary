@@ -11,14 +11,11 @@ import Control.Applicative ((<$>))
 import qualified Data.IntMap.Strict as IntMap
 import Data.Maybe (catMaybes)
 
-import Databrary.Service.DB
 import qualified Databrary.JSON as JSON
 import Databrary.Model.Id
 import Databrary.Model.Metric
 import Databrary.Model.RecordCategory.Types
 import Databrary.Model.RecordCategory.Boot
-
-useTPG
 
 allRecordCategories :: [RecordCategory]
 allRecordCategories = $(loadRecordCategories)

@@ -11,8 +11,7 @@ import Databrary.Service.DB
 import Databrary.Model.SQL (selectQuery)
 import Databrary.Model.Metric.SQL
 
-useTPG
-
 loadMetrics :: TH.ExpQ
-loadMetrics =
-  TH.lift =<< dbQuery $(selectQuery metricRow "ORDER BY id")
+loadMetrics = do
+  l <- runTDB $ dbQuery $(selectQuery metricRow "ORDER BY id")
+  TH.lift l

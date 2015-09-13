@@ -7,7 +7,7 @@ module Databrary.Store.Transcode
   , transcodeEnabled
   ) where
 
-import Control.Concurrent (ThreadId, forkFinally)
+import Control.Concurrent (ThreadId)
 import Control.Monad (guard, unless, void)
 import Control.Monad.IO.Class (liftIO)
 import qualified Data.ByteString as BS
@@ -90,11 +90,11 @@ startTranscode tc = do
   where lock = Just (-1)
 
 forkTranscode :: Transcode -> ActionM ThreadId
-forkTranscode tc = focusIO $ \app ->
-  forkFinally -- violates InternalState, could use forkResourceT, but we don't need it
-    (runActionM (startTranscode tc) app)
+forkTranscode tc = focusIO $ \ctx ->
+  forkAction
+    (startTranscode tc) ctx
     (either
-      (\e -> logMsg (view app) ("forkTranscode: " ++ show e) (view app))
+      (\e -> logMsg (view ctx) ("forkTranscode: " ++ show e) (view ctx))
       (const $ return ()))
 
 stopTranscode :: Transcode -> ActionM Transcode

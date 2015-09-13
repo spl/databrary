@@ -9,12 +9,9 @@ module Databrary.Model.Audit.Types
 import Database.PostgreSQL.Typed.Inet (PGInet)
 
 import Databrary.Model.Time
-import Databrary.Service.DB (useTPG)
 import Databrary.Model.Enum
 import Databrary.Model.Id.Types
 import Databrary.Model.Party.Types
-
-useTPG
 
 makeDBEnum "audit.action" "AuditAction"
 
