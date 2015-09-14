@@ -27,19 +27,19 @@
         <div class="search-volume-types">
           <div>
             <input id="volWSess" type="checkbox" ng-model="fields.container_top" ng-true-value="'false'" ng-false-value="undefined" ng-change="searchVolumes()"/>
-            <label for="volWSess">Volumes with sessions</label>
+            <label for="volWSess">Has sessions</label>
           </div>
           <div>
             <input id="volWHighlights" type="checkbox" ng-model="fields.content_type" ng-true-value="'excerpt'" ng-false-value="undefined" ng-change="searchVolumes()"/>
-            <label for="volWHighlights">Volumes with highlights</label>
+            <label for="volWHighlights">Has highlights</label>
           </div>
         </div>
         <ng-form name="searchVolumeFilter">
           <div class="search-filter">
             <legend>Volume filters</legend>
-            <input type="radio" ng-model="fields.release" ng-value="::undefined">Any release<br/>
-            <input type="radio" ng-model="fields.release" value="EXCERPTS OR PUBLIC">Excerptable data<br/>
-            <input type="radio" ng-model="fields.release" value="PUBLIC">Public data
+            <input type="radio" ng-model="fields.release" ng-value="::undefined" id="anyRelease"><label for="anyRelease">Any release</label><br/>
+            <input type="radio" ng-model="fields.release" value="EXCERPTS OR PUBLIC" id="excerpt"><label for="excerpt">Excerptable data</label><br/>
+            <input type="radio" ng-model="fields.release" value="PUBLIC" id="public"><label for="public">Public data</label>
           </div>
           <div class="search-filter" ng-if="fields.container_top">
             Data collected betweeen <input type="number" ng-model="fields.container_date[0]" min="1925" max="2025" key-enter="search()"/> and <input type="number" ng-model="fields.container_date[1]" min="1925" max="2025" key-enter="search()"/>
