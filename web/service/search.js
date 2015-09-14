@@ -119,32 +119,6 @@ app.factory('searchService', [
         });
     };
 
-    models.Volume.prototype.search = function (params) {
-      var v = this;
-      params.volume = this.id;
-      delete params.offset;
-      params.limit = 4;
-      return router.http(router.controllers.postSearch, params)
-        .then(function (res) {
-          return res.data.grouped.container_id.groups.map(function (g) {
-            var c = v.getContainer(g.groupValue);
-            /* merge identical segments. should probably do something smarter. */
-            var s = [];
-            g.doclist.docs.forEach(function (d) {
-              var t = s.find(function(x) { return (x.segment || ',') === (d.segment || ','); });
-              if (t)
-                angular.extend(t, d);
-              else
-                s.push(d);
-            });
-            return {
-              container: c,
-              segments: s.map(function (d) { return new Segment(c, d); })
-            };
-          });
-        });
-    };
-
     return {
       Party: Party,
       Volume: Volume

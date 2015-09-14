@@ -5,7 +5,7 @@ module Databrary.Controller.Search
   , postUpdateIndex
   ) where
 
-import Control.Applicative ((<$>), (<*>), (<|>))
+import Control.Applicative ((<$>), (<*>))
 import Control.Monad (when)
 import Data.Maybe (fromMaybe)
 import Network.HTTP.Types (hContentType, internalServerError500)
@@ -33,7 +33,7 @@ searchForm = SearchQuery
       FormField t -> textInteger t
       FormIndex i -> Right (fromIntegral i))
     <*> deform))
-  <*> ("volume" .:> fromMaybe SearchVolumes <$> deformOptional ((SearchVolume <$> deform) <|> (sv <$> deform)))
+  <*> ("volume" .:> fromMaybe SearchVolumes <$> deformOptional (sv <$> deform))
   <*> paginateForm
   where
   sv False = SearchParties

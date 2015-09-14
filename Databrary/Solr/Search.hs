@@ -21,8 +21,6 @@ import Data.ByteString.Builder.Escape (escapeLazyByteStringCharsWith, escapeText
 import Databrary.Has
 import Databrary.HTTP.Client
 import Databrary.Model.Paginate
-import Databrary.Model.Id.Types
-import Databrary.Model.Volume.Types
 import Databrary.Model.Metric.Types
 import Databrary.Solr.Service
 import Databrary.Solr.Document
@@ -30,7 +28,6 @@ import Databrary.Solr.Document
 data SearchType
   = SearchVolumes
   | SearchParties
-  | SearchVolume (Id Volume)
   deriving (Eq)
 
 data SearchQuery = SearchQuery
@@ -82,24 +79,15 @@ search SearchQuery{..} = do
     , ("fq", "content_type:" <> ct)
     , ("start", BSC.pack $ show $ paginateOffset searchPaginate)
     , ("rows", BSC.pack $ show $ paginateLimit searchPaginate)
+    , ("q.op", "AND")
     ]
-    ++ case searchType of
-      SearchVolume _ ->
-        [ ("group", "true")
-        , ("group.field", "container_id")
-        -- , ("group.format", "simple")
-        , ("group.limit", "5")
-        , ("fl", "segment asset_id record_id tag_name comment_id")
-        ]
-      _ -> ("q.op", "AND")
-        : maybe [] (\q ->
-          [ ("spellcheck", "true")
-          , ("spellcheck.q", TE.encodeUtf8 q)
-          ]) searchString
+    ++ maybe [] (\q ->
+      [ ("spellcheck", "true")
+      , ("spellcheck.q", TE.encodeUtf8 q)
+      ]) searchString
   (ct, qp, qe) = case searchType of
     SearchVolumes -> ("volume", mempty, B.string8 "{!join from=volume_id to=volume_id}")
     SearchParties -> ("party", mempty, mempty)
-    SearchVolume v -> ("(-volume)", B.string8 "+volume_id:" <> B.int32Dec (unId v) <> B.char8 ' ', mempty)
   ql = maybe id ((:) . bp . (defaultParams <>) . TE.encodeUtf8Builder) searchString $
     map bt (searchFields ++ map (first metricField) searchMetrics)
   bt (f, v)

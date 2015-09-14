@@ -135,9 +135,7 @@ app.controller 'site/search', [
     $scope.expandVolume = (v) ->
       $scope.expanded = {volume:v}
       return unless v
-      v.search($location.search()).then (r) ->
-        $scope.expanded.results = r
-        return
+      v.get ['excerpts']
       return
 
     return
