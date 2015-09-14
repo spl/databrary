@@ -1,7 +1,6 @@
 ###
 #General dev-sci words
 ###
-child, infant, baby, toddler, kid 
 adult, grown up
 perception, awareness, apprehension, recognition
 cognition, comprehension, attention, cognizance, apprehension
