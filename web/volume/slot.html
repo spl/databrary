@@ -1,8 +1,8 @@
-<article class="view slot-view" flow-init="flowOptions"
-    flow-file-added="fileAdded($file, $event)"
-    flow-file-success="fileSuccess($file)"
-    flow-file-progress="fileProgress($file)"
-    flow-file-error="fileError($file, $message)"
+<article class="view slot-view" flow-init="flowOptions" 
+    flow-file-added="fileAdded($file, $event)" 
+    flow-file-success="fileSuccess($file)" 
+    flow-file-progress="fileProgress($file)" 
+    flow-file-error="fileError($file, $message)" 
     mouse-drag-region>
   <div class="wrap">
     <div class="row">
@@ -74,10 +74,13 @@
               </div>
 
               <div ng-init="updatePlayerHeight()" id="player-viewport" class="player-viewport">
-                <div ng-if="editing && current.type === 'asset' && !current.file && !current.asset" flow-drop flow-btn flow-drag-enter="dropClasses['over-zone'] = true" flow-drag-leave="dropClasses['over-zone'] = false" ng-class="dropClasses" class="player-drop">
+                <div ng-if="editing && $flow.support && current.type === 'asset' && !current.file && !current.asset" flow-drop flow-btn flow-drag-enter="dropClasses['over-zone'] = true" flow-drag-leave="dropClasses['over-zone'] = false" ng-class="dropClasses" class="player-drop">
                   <span class="icon line add"></span>
                   <span class="dropzone-message" message="asset.add-drop{{::current.asset ? '.replace' : ''}}"></span>
                   <span class="dropzone-message">See our <a ng-href="{{::page.router.helpFormats()}}" target="_blank">list of accepted file types</a>.</span>
+                </div>
+                <div ng-if="::!$flow.support" class="player-drop">
+                  <s>Unfortunately, your browser does not appear to support file uploads. Please try another browser or contact us for assistance.</s>
                 </div>
                 <upload-progress class="upload-progress-info" ng-if="!!current.file" progress-value="current.progress"></upload-progress>
                 <asset-display ng-repeat="asset in [asset]" ng-if="!!asset" asset="asset"></asset-display>
