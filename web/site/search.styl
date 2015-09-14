@@ -1,10 +1,10 @@
 .search-view
   margin-top 72px
   
-.search-filter-clear
+.search-clear
   margin-bottom b2
   
-.search-filters
+.search-left-section
   float left
   width 100%
   border gray 1px solid
@@ -21,22 +21,27 @@
     content none
   select
     min-width 150px
-    width auto
-    background-color white
-    border green 1px solid    
+    width auto   
+  input
+    margin-bottom 0
+    height initial
 
 .search-filter
   border-bottom 1px dotted neutral53
   padding-top b3
-  padding-bottom b1
+  padding-bottom b3
+  &:first-of-type
+    border-top 3px solid neutral52
+
+.search-volume-types
+  padding-bottom b3
   input
     margin-bottom 0
   label
     display inline
     text-transform initial
-    font-weight normal
-
-.search-party-filter
+    font-weight normal  
+.search-party-types
   li
     border-radius b8
     padding 0 b8
@@ -138,42 +143,41 @@
     -webkit-appearance none
     margin 0 
     
-// needs to be cleaned up    
-.ui-slider
-  width 150px
-  position relative
-.ui-slider-horizontal
-  height b2
-  border neutral53 solid 1px 
-.ui-slider-range
-  height 10px
-.ui-widget-content
-  background-color white
-  color #333 
-.ui-widget-header
-  background #ccc  
-.ui-slider-range
-  position absolute
-  top 0px
-  z-index 1
-  font-size 0.7em
-  display inline-block
-  border 0
-  background-color green
-.ui-slider-handle
-  position absolute
-  border 1px neutral13 solid
-  background-color neutral
-  width 6px
-  height 16px
-  margin-left -3px
-  margin-top -3px
-  z-index 2
-
-.age-filter
-  input
-    width 60px
-  
+.age-filter 
+  .icon.info
+    vertical-align text-top
+  .ui-slider
+    width 150px
+    position relative
+    transform none
+  .ui-slider-horizontal
+    height b2
+    border neutral53 solid 1px 
+  .ui-slider-range
+    height 10px
+  .ui-widget-content
+    background-color white
+    color #333 
+  .ui-widget-header
+    background #ccc  
+  .ui-slider-range
+    position absolute
+    top 0px
+    z-index 1
+    font-size 0.7em
+    display inline-block
+    border 0
+    background-color green53
+  .ui-slider-handle
+    position absolute
+    border 1px neutral13 solid
+    background-color neutral
+    width 6px
+    height 16px
+    margin-left -3px
+    margin-top -3px
+    z-index 2
+    
 .additional-filters
   margin-top b3
   
