@@ -6,7 +6,7 @@
           <a ng-href="{{::current.slotRoute()}}" class="icon line session tool" tooltip="'session.jump' | message:'highlight'"></a>
           <a ng-if="::!current.pending && current.checkPermission(page.constants.permission.VIEW)" ng-href="{{::current.route()}}" class="icon line download tool" tooltip="'excerpts.download' | message"></a>
           <h1 class="panel-excerpts-player-heading">
-            <div class="release icon line" ng-class="::page.constants.release[current.release]" hint="release-{{::page.constants.release[current.release]}}"></div>
+            <div ng-if="::releases" class="release icon line" ng-class="::page.constants.release[current.release]" hint="release-{{::page.constants.release[current.release]}}"></div>
             <img class="icon" ng-src="{{::current.icon}}" hint="format-{{::current.format.extension}}">
             <span ng-bind="::current.displayName"></span>
           </h1>
@@ -21,13 +21,12 @@
 
   <div class="panel-excerpts-list col-desktop-8 col-tablet-4 col-mobile-6">
     <div class="row">
-      <div ng-repeat="(revval, revname) in page.constants.release">
-        <div ng-init="val = page.constants.release.length - revval - 1; name = page.constants.release[val]">
-          <div class="panel-excerpts-type" ng-if="excerpts.length">
-            <span class="release icon" ng-class="::name" hint="release-{{::name}}"></span>
-            <span message="{{::'release.'+name+'.title'}}" hint="release-{{::name}}"></span>
+      <div ng-repeat="(ri, el) in ::excerpts">
+          <div class="panel-excerpts-type" ng-if="::el.release">
+            <span class="release icon" ng-class="::el.release" hint="release-{{::el.release}}"></span>
+            <span message="{{::'release.'+el.release+'.title'}}" hint="release-{{::el.release}}"></span>
           </div>
-          <div class="panel-excerpts-box" ng-repeat="excerpt in volume.excerpts | filter:{release: val} as excerpts">
+          <div class="panel-excerpts-box" ng-repeat="excerpt in ::el">
             <div class="panel-excerpts-binder" ng-class="{'panel-excerpts-list-current':excerpt===current}">
               <div class="panel-excerpts-actions">
                 <img class="icon" ng-src="{{::excerpt.icon}}" hint="format-{{::excerpt.format.extension}}">
@@ -47,7 +46,6 @@
               </div>
             </div>
           </div>
-        </div>
       </div>
     </div>
   </div>

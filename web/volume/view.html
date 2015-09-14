@@ -3,7 +3,7 @@
     <volume-overview></volume-overview>
   </panel>
   <panel id="panel-excerpts" panel-title="excerpts.title" fold ng-if="::volume.excerpts.length">
-    <volume-excerpts></volume-excerpts>
+    <volume-excerpts release></volume-excerpts>
   </panel>
   <panel id="panel-materials" edit-link="{{::volume.checkPermission(page.permission.EDIT) ? volume.editRoute('data') : ''}}" panel-title="materials.title" fold>
     <spreadsheet top></spreadsheet>
