@@ -62,7 +62,7 @@
   <field name="segment_duration" type="tdouble" indexed="false" stored="false"/>
 
   <field name="asset_id" type="id" indexed="false" stored="true"/>
-  <field name="format_id" type="id" indexed="false" stored="false"/>
+  <field name="format_id" type="id" indexed="true" stored="false"/>
 
   <field name="record_id" type="id" indexed="false" stored="true"/>
   <field name="record_category_id" type="id" indexed="false" stored="false"/>

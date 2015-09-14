@@ -186,7 +186,7 @@ app.controller('volume/slot', [
         style
 
       select: (event) ->
-        return false if $scope.editing == 'position'
+        return false if typeof $scope.editing == 'string'
         ruler.selection = new TimeSegment(if @full || !ruler.range.overlaps(@) then null else @)
         if isFinite(@l) && !@contains(ruler.position)
           seekOffset(@l)
@@ -249,7 +249,7 @@ app.controller('volume/slot', [
     ################################### Video/playback controls
 
     $scope.updatePosition = () ->
-      seg = (if $scope.editing == 'position' then $scope.current else $scope.asset?.segment)
+      seg = (if $scope.editing == 'asset' then $scope.current else $scope.asset?.segment)
       if seg && video && seg.contains(ruler.position.o) && seg.lBounded
         video[0].currentTime = (ruler.position.o - seg.l) / 1000
       return
@@ -286,7 +286,7 @@ app.controller('volume/slot', [
       timeupdate: ->
         if $scope.asset && isFinite($scope.asset.segment.l)
           o = Math.round(1000*video[0].currentTime)
-          if $scope.editing == 'position' && $scope.asset == $scope.current.asset
+          if $scope.editing == 'asset' && $scope.asset == $scope.current.asset
             $scope.current.setPosition(ruler.position.o - o)
           else
             ruler.position.o = $scope.asset.segment.l + o
@@ -404,7 +404,7 @@ app.controller('volume/slot', [
         true
 
       click: (event) ->
-        return false if $scope.editing == 'position'
+        return false if typeof $scope.editing == 'string'
         if !this || $scope.current == this
           new TimePoint(event.clientX, 'x').seek()
         else
@@ -469,7 +469,7 @@ app.controller('volume/slot', [
       return
 
     $scope.dragSelection = (down, up, c) ->
-      return false if $scope.editing == 'position' || c && $scope.current != c
+      return false if typeof $scope.editing == 'string' || c && $scope.current != c
 
       startPos = down.position ?= new TimePoint(down.clientX, 'x')
       endPos = new TimePoint(up.clientX, 'x')
@@ -499,7 +499,7 @@ app.controller('volume/slot', [
 
     $scope.updateSelection = updateSelection = ->
       if editing
-        return false if $scope.editing == 'position'
+        return false if typeof $scope.editing == 'string'
         $scope.editing = true
         $scope.current.updateExcerpt() if $scope.current?.excerpts
       playrange = $scope.asset?.segment.intersect(ruler.selection)
@@ -672,7 +672,7 @@ app.controller('volume/slot', [
         return
 
       rePosition: () ->
-        $scope.editing = 'position'
+        $scope.editing = 'asset'
         return
 
       updatePosition: () ->
@@ -899,7 +899,7 @@ app.controller('volume/slot', [
         (constants.metric[m] for m of @record.measures when !(+m in ident)).sort(byId)
 
       rePosition: () ->
-        $scope.editing = 'position'
+        $scope.editing = 'record'
         return
 
       updatePosition: (u) ->
@@ -982,7 +982,7 @@ app.controller('volume/slot', [
     $scope.addRecord = (r) ->
       seg = getSelection()
       if r == undefined
-        $scope.editing = 'record'
+        $scope.editing = 'addrecord'
         rs = {}
         for ri, r of slot.volume.records
           rs[ri] = r
