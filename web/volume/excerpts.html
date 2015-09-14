@@ -21,7 +21,7 @@
 
   <div class="panel-excerpts-list col-desktop-8 col-tablet-4 col-mobile-6">
     <div class="row">
-      <div ng-repeat="(revval, revname) in page.constants.release">
+      <div ng-repeat="(revval, revname) in ::page.constants.release">
         <div ng-init="val = page.constants.release.length - revval - 1; name = page.constants.release[val]">
           <div class="panel-excerpts-type" ng-if="excerpts.length">
             <span class="release icon" ng-class="::name" hint="release-{{::name}}"></span>
