@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Databrary.Action.Route
   ( StdMethod(GET, POST)
+  , ActionRoute
   , actionURL
   , action
   , multipartAction
@@ -19,6 +20,9 @@ import qualified Databrary.Iso as I
 import Databrary.HTTP.Request
 import Databrary.HTTP.Path.Parser
 import Databrary.HTTP.Route
+import Databrary.Action.Types
+
+type ActionRoute a = Route Action a
 
 actionURL :: Maybe Request -> Route r a -> a -> Query -> BSB.Builder
 actionURL req r@Route{ routeMethod = g } a q

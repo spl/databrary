@@ -21,7 +21,7 @@ import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as HA
 
 import Blaze.ByteString.Builder.Html.Word (fromHtmlEscapedByteString, fromHtmlEscapedLazyByteString)
-import Databrary.Action
+import Databrary.Action.Route
 import Databrary.HTTP.Route
 
 import {-# SOURCE #-} Databrary.Controller.Angular

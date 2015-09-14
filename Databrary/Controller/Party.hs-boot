@@ -1,6 +1,6 @@
 module Databrary.Controller.Party where
 
-import Databrary.Action
+import Databrary.Action.Route
 import Databrary.Model.Id.Types
 import Databrary.Model.Party.Types
 import Databrary.Controller.Paths
