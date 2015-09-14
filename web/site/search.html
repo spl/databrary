@@ -11,8 +11,7 @@
     </div>
     <div class="col-desktop-3 col-tablet-3 col-mobile-6">
       
-      <button class="search-clear small" ng-click="page.$location.search({})">Clear current search
-      </button>
+      <button class="search-clear small" ng-click="page.$location.search({})">Clear current search</button>
 
       <div class="search-left-section" ng-if="::!!parties">
         <legend>User types</legend>
@@ -70,7 +69,8 @@
             </select>
           </div>
           <div class="search-filter">
-            <button class="small" ng-class="{green:searchVolumeFilter.$dirty}" ng-click="searchVolumes()">Apply filters</button>
+            <button class="small green" ng-disabled="searchVolumeFilter.$pristine || searchVolumeFilter.$invalid || searchVolumeFilter.$submitted" ng-click="searchVolumes()">Apply filters</button>
+
           </div>
         </div>
 
