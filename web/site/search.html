@@ -89,20 +89,22 @@
         <h3>
           Users
           <button class="mini small" ng-if="::!!volumes" ng-click="searchParties()">show all {{::parties.count}}</button>
+          <small ng-if="::!volumes">{{::parties.count}} total</small>
         </h3>
-        <small ng-if="::!volumes">{{::parties.count}} total</small>
+        
         <div class="row search-party-results">
           <portrait class="col-desktop-5 col-tablet-4 col-mobile-6" ng-repeat="party in ::parties"></portrait>
         </div>
         <div class="search-results-showall" ng-if="::!!volumes" ng-click="searchParties()">show all {{::parties.count}} users</div>
       </div>
 
-      <div class="search-result-section" ng-if="::!!volumes">
+      <div class="search-results-section" ng-if="::!!volumes">
         <h3>
           Volumes
           <button class="mini small" ng-if="::!!parties" ng-click="searchVolumes()">show all {{::volumes.count}}</button>
+          <small ng-if="::!parties">{{::volumes.count}} total</small>
         </h3>
-        <small ng-if="::!parties">{{::volumes.count}} total</small>
+        
         <ul class="row search-volume-results">
           <li ng-repeat="volume in ::volumes">
             <h1 class="search-volume-result-title">

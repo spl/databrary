@@ -68,14 +68,13 @@ app.controller 'site/search', [
       q =
         q: $scope.query || undefined
         offset: offset
+        volume: type?.volume
       delete fields.container_date unless fields.container_top
       for f, v of fields
         q['f.'+f] = if f == 'record_age' then printAge(v) else if f == 'container_date' then printRange(v) else v || undefined
       delete q['f.container_top'] if q['f.container_date']
       for f, v of metrics
         q['m.'+f] = if constants.metric[f].type == 'numeric' then printRange(v) else v || undefined
-      if any(q)
-        q.volume = type?.volume
       $location.search(q)
       return
 
