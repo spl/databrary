@@ -16,7 +16,7 @@ import System.IO (stdout)
 #ifndef DEVEL
 import Paths_databrary (getDataFileName)
 import Databrary.Service.Types (serviceDB)
-import Databrary.Service.DB (liftDBM)
+import Databrary.Service.DB (withDB)
 import Databrary.Service.DB.Schema (updateDBSchema)
 #endif
 import Databrary.Service.Init (loadConfig, withService)
@@ -60,7 +60,7 @@ main = do
   withService conf $ \rc -> do
 #ifndef DEVEL
     schema <- getDataFileName "schema"
-    runReaderT (updateDBSchema schema) (serviceDB rc)
+    withDB (serviceDB rc) $ runReaderT $ updateDBSchema schema
 #endif
     void $ forkPeriodic rc
     runWarp conf rc (runActionRoute routes rc)
