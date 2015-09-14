@@ -37,6 +37,7 @@
         </div>
         <ng-form name="searchVolumeFilter">
           <div class="search-filter">
+            <legend>Volume filters</legend>
             <input type="radio" ng-model="fields.release" ng-value="::undefined">Any release<br/>
             <input type="radio" ng-model="fields.release" value="EXCERPTS OR PUBLIC">Excerptable data<br/>
             <input type="radio" ng-model="fields.release" value="PUBLIC">Public data
@@ -65,11 +66,12 @@
           </div>
           <div class="search-filter additional-filters">
             <select ng-model="addMetric.id" ng-options="m.id as m.name for m in availableMetrics()" ng-change="addMetric()">
-              <option value="">Filter by metric</option>
+              <option value="">Additional filters by metric</option>
             </select>
           </div>
-
-          <button class="small" ng-class="{green:searchVolumeFilter.$dirty}" ng-click="searchVolumes()">Apply filters</button>
+          <div class="search-filter">
+            <button class="small" ng-class="{green:searchVolumeFilter.$dirty}" ng-click="searchVolumes()">Apply filters</button>
+          </div>
         </div>
 
       </ng-form>
