@@ -1,3 +1,21 @@
+###
+#General dev-sci words
+###
+child, infant, baby, toddler, kid 
+adult, grown up
+perception, awareness, apprehension, recognition
+cognition, comprehension, attention, cognizance, apprehension
+climb, ascend, go up
+###
+#Race, Ethnicity Synonyms
+###
+American Indian, Amerind, Amerindian, indigenous
+Hispanic, Spanish origin
+Latino, Latin-American
+White, Caucasian
+###
+#Default Synonyms
+###
 April, Apr
 China, People's Republic of China, mainland China, Communist China, Red China, PRC, Cathay
 December, Dec
@@ -31,11 +49,9 @@ abrupt, precipitous, sharp
 accept, take, have
 account, business relationship
 achieve, accomplish, attain, reach
-acme, height, elevation, peak, pinnacle, summit, superlative, meridian, tiptop, top
 act, deed, human action, human activity
 act, move
 action, activity, activeness
-actor, histrion, player, thespian, role player
 actually, really
 acuate, acute, sharp, needlelike
 ad, advertisement, advertizement, advertising, advertizing, advert
@@ -52,22 +68,17 @@ ago, agone
 agree, hold, concur, concord
 agreement, understanding
 aid, assist, assistance, help
-airheaded, dizzy, empty-headed, featherbrained, giddy, light-headed, lightheaded, silly
 airplane, aeroplane, plane
-airport, airdrome, aerodrome, drome
 alive, live
 alone, lone, lonely, solitary
 altitude, height
 always, ever, e'er
 among, amongst, amid, amidst
-animal, animate being, beast, brute, creature, fauna
 announce, denote
 announcement, proclamation, annunciation, declaration
 another, some other
-answer, reply, respond
-answer, reply, response
+answer, reply, respond, response
 ant, emmet, pismire
-anteroom, antechamber, entrance hall, foyer, lobby, vestibule
 any, whatever, whatsoever
 apartment, flat
 apparel, wearing apparel, dress, clothes
@@ -77,7 +88,6 @@ argent, silver, silvery, silverish
 argue, contend, debate, fence
 argue, reason
 argument, statement
-army, regular army, ground forces
 arrangement, organization, organisation, system
 arrive, make it, get in, go far
 art, fine art
@@ -97,8 +107,6 @@ baby, babe, infant
 back, dorsum
 bag, handbag, pocketbook, purse
 bag, traveling bag, travelling bag, grip, suitcase
-bang-up, bully, corking, cracking, dandy, great, groovy, keen, neat, nifty, not bad, peachy, slap-up, swell, smashing
-barbarous, brutal, cruel, fell, roughshod, savage, vicious
 bargain, deal
 base, base of operations
 baseball, baseball game
@@ -123,7 +131,6 @@ between, betwixt
 beverage, drink, drinkable, potable
 bicycle, bike, wheel, cycle
 bill, account, invoice
-bill, note, government note, bank bill, banker's bill, bank note, banknote, Federal Reserve note, greenback
 biology, biological science
 birth, nativity, nascency, nascence
 bit, chip, flake, fleck, scrap
@@ -192,15 +199,12 @@ chemical, chemical substance
 chemical element, element
 chemistry, chemical science
 chief, main, primary, principal, master
-child, kid
-child, kid, youngster, minor, shaver, nipper, small fry, tiddler, tike, tyke, fry, nestling
 chin, mentum
 choice, selection, option, pick
 choose, take, select, pick out
 church, church building
 cinema, movie theater, movie theatre, movie house, picture palace
 city, metropolis, urban center
-clandestine, cloak-and-dagger, hole-and-corner, hugger-mugger, hush-hush, secret, surreptitious, undercover, underground
 class, form, grade, course
 classify, class, sort, assort, sort out, separate
 clean, make clean
@@ -393,7 +397,6 @@ feature, characteristic
 feel, experience
 feel, sense
 female, female person
-fiddling, footling, lilliputian, little, niggling, piddling, piffling, petty, picayune, trivial
 fierce, tearing, vehement, violent, trigger-happy
 fifteen, 15, xv
 fifth, 5th
@@ -412,7 +415,6 @@ five, 5, v
 fix, prepare, set up, ready, gear up, set
 flat, level, plane
 flight, flying
-flim-flam, play a joke on, play tricks, trick, fob, fox, pull a fast one on, play a trick on
 floor, flooring
 floor, level, storey, story
 flush, level, even out, even
@@ -457,7 +459,6 @@ glue, gum, mucilage
 glue, paste
 gluey, glutinous, gummy, mucilaginous, pasty, sticky, viscid, viscous
 goat, caprine animal
-gold, Au, atomic number 79
 golf, golf game
 good, goodness
 good, sound
@@ -499,7 +500,6 @@ hold, take hold
 home, place
 homo, man, human being, human
 hook, claw
-horse, Equus caballus
 hospital, infirmary
 hotness, heat, high temperature
 hour, hr, 60 minutes
@@ -536,7 +536,6 @@ internet, net, cyberspace
 introduce, innovate
 introduce, present, acquaint
 invention, innovation, excogitation, conception, design
-iron, Fe, atomic number 26
 issue, number
 jewel, gem, precious stone
 job, task, chore
@@ -561,7 +560,6 @@ large, big
 last, lastly, in conclusion, finally
 late, belatedly, tardily
 laugh, express joy, express mirth
-lead, Pb, atomic number 82
 lead, take, direct, conduct, guide
 leaf, leafage, foliage
 leap, jump, saltation
@@ -879,7 +877,6 @@ shut, unopen, closed
 significant, important
 silence, quiet
 silent, soundless, still
-silver, Ag, atomic number 47
 singer, vocalist, vocalizer, vocaliser
 sister, sis
 sit, sit down
@@ -938,7 +935,6 @@ substitution, exchange, commutation
 suddenly, all of a sudden, of a sudden
 suffer, endure
 sugar, refined sugar
-sugar, saccharify
 suggestion, proposition, proffer
 sum, amount, total
 summation, addition, plus
@@ -1135,7 +1131,6 @@ Faroese, Faeroese
 Fiji, Republic of the Fiji Islands
 Finland, Republic of Finland
 Flanders, Flemish region
-French Southern Territories, French Southern and Antarctic LandsA, French Southern and Antarctic Lands, Territory of the French Southern and Antarctic Lands
 Frisian, Western Frisian
 GDP, gross domestic product
 GDR, German Democratic Republic
@@ -1234,7 +1229,6 @@ Uganda, Republic of Uganda
 United Kingdom, United Kingdom of Great Britain and Northern Ireland, UK
 United States, United States of America, US, U.S., U.S.A., U.S. of A., States
 Vatican City, The Holy See, State of the Vatican City
-Wallis and Futuna, Territory of the Wallis and Futuna Islands
 Wednesday, quarta-feira
 Western Asia, Southwest Asia
 World Wide Web, WWW
@@ -1267,18 +1261,10 @@ agricultural production, farm production, agricultural output
 air conditioning, AC, air-conditioning
 air sac, alveolus
 alarm, alert, warning
-algicide, algaecide
-alkaline, element of group I, alkaline metal, alkali metal
-alkane, paraffin, methane series, alkane series
 allocation, allotment, resource allotment
-alluvion, flood, overflowing, inundation
 alongside, amongst, with
 and, as well as, in addition to, together with, too
-angiosperm, flowering plant
-angling, fishing, line-fishing
 ankle, talocrural joint
-apiculture, beekeeping
-apple, apple tree
 approval, approbation
 archaeology, archeology, archæology
 archeologist, archaeologist
@@ -1287,9 +1273,6 @@ arrange, adapt, adjust, conform, accommodate, suit
 assassin, assassinator
 assemble, get together, gather
 assumption, supposition
-astrology, star divination
-atmospheric precipitation, precipitation
-aye, yeah, yep, yes
 bag, pocket, steal
 baker, bakery
 basketball, basketball game
@@ -1297,22 +1280,12 @@ beak, mouth
 bean, edible bean
 beekeeper, apiculturist
 belly button, bellybutton, navel, omphalos, omphalus, umbilicus
-beryllium, glucinium
 beverage, drink
 bicycle, bike, cycle
 big, large
 biological reserve, wildlife reserve
 birth, childbirth, parturition
-black, dark
-black coal, anthracite coal
 blog, weblog, web log
-blue-green alga, cyanobacteria
-botany, phytology
-broader term, broader terms, hypernym, holonym
-bug, põrnikas
-building related illness, sick building syndrome
-bus, coach
-button, clit, clitoris
 camp, military camp, army camp, campsite
 camping, camping ground
 car, automobile
@@ -1326,46 +1299,34 @@ chemist's, chemist's shop, pharmacy
 climatic change, climate change
 clothing, apparel
 coin, money
-colina, hill, loma
 colour, color
 common agricultural policy, common agricultural policy of the EU
 community facility, public facility
-compound, chemical compound
-condom, prophylactic, rubber, safe, safety
-conductivity, electrical conductivity
 constructed language, artificial language
 consume, eat, swallow
 country, nation, state
 covering, roofing
 craft, arts and crafts
 creativity, inventiveness
-cultivation, tillage
 day, daytime
 death penalty, capital punishment, death sentence
 deciduous forest, deciduous wood
 declaration, statement
 defendant, accused
-dendrochronology, tree-ring dating
 design, project design
-dice, die, die
+dice, die
 diesel fuel, diesel
 disease, illness, affliction
-donkey, ass
 dress, clothe
 drink, gulp, quaff, sip
-drunk, drunkard, boozer
 earth, Earth, the world, Blue Planet
 earth's crust, Earth's crust
-easy, piece of cake, like shooting fish in a barrel
 economic science, economics
 effect on the environment, environmental consequence
 effort, exertion
 elder, elderberry
 electric line, power line
 electronic mail, email, e-mail
-element of group 0, noble gas
-element of group II, alkaline earth metal, element of group II
-element of group VII, halogen
 embassy, diplomatic mission
 employment, job, occupation, work, work
 energy utilisation, energy use
@@ -1378,10 +1339,6 @@ fertilisation, fecundation
 field, land, acre, patch
 firefighter, fireman, firewoman, fire fighter, fire-eater
 firm, corporation, enterprise, company, venture
-fitting, plumbing equipment, plumbing fixtures
-flint, flintstone
-flower, bloom, blossom
-fodder, provender, forage
 freedom, liberty
 gastrointestinal tract, alimentary canal
 genetic pool, gene pool
@@ -1392,15 +1349,9 @@ hairdresser, barber
 hard disk drive, hard disk, HD
 heathen, infidel, pagan
 heaven, sky
-hello, hey, hi, howdy
-herbivore, plant eater
-holiday, opor-garai
 home, house
 hospital, clinic
-huckleberry, blueberry
 husband, spouse
-hydrochloric acid, muriatic acid
-hyponym, narrower terms, narrower term
 infectious disease, communicable diseases
 influenza, flu
 info, information
@@ -1410,9 +1361,6 @@ instrument, musical instrument
 internet service provider, ISP, Internet access provider, Internet service provider
 island, isle
 joint, articulation
-journal, mag, magazine, periodical
-judgement, sentence, judgement
-kokosnoot, coconut
 laboratory technique, laboratory techniques
 lamp, light
 laser, Light Amplification by Stimulated Emission of Radiation
@@ -1427,20 +1375,8 @@ market, marketplace
 mason, bricklayer, stonemason
 material, materials
 melody, tune
-meteor, shooting star, falling star
-methane, marsh gas, methyl hydride
-microelectronics, microminiaturization, microsystem electronics
-mining site restoration, mine reclamation
-miniskirt, mini-skirt
-ministry, ministry building
-molar, tooth
-moon, Luna, Moon
-moon, satelite, satelite
 mother-in-law, mother in law
 motherhood, maternity
-motorcycle, motorbike
-motorway, pike, expressway, freeway, state highway, superhighway, throughway, thruway
-musquito, mosquito
 name, proper name, proper noun
 neighbour, vecino
 neoplasm, tumour
@@ -1452,44 +1388,22 @@ noun, substantive
 nursery, plant nursery
 obstacle, obstruction
 ocean, sea, body of water, bounding main
-ontogenesis, ontogeny
-opencast mining, open-pit mining
 opinion, stance
 part of speech, lexical category
 party, political party
-pedestrian zone, pedestrian area, car-free zone, auto-free zone, pedestrianised zone
-phanerogam, spermatophyte
 phone, telephone
 photo, photograph
 piano, pianoforte
 pigeon, dove
-pike, spear
-pino, pine
 pity, compassion
 place, location
-platitude, cliche, cliché
 pool, puddle, puddle
-posidonia, neptunegrass
-potato, patato
 prime number, prime
-prisoner of war, POW, PoW, PW
 property, asset
-protein, poly peptide
-proverb, saying, maxim
-provincialregional authority, regional authority, provincial authority
-provincialregional law, regional legislation
-putsch, coup d'état
-radiation, radiations
-radioactive waste, nuclear waste
-radioactivity, radioactive decay
-railroad vehicle, carriage, wagon
-referendum, plebiscite
 refrigerator, fridge
 resource, resources
 rhino, rhinoceros
-rhombus, rhomb
 safety, security
-seismic sea wave, tsunami
 sex, gender
 short, small
 slaughterhouse, slaughter-house, abattoir, butchery, shambles
@@ -1499,11 +1413,8 @@ storm, tempest
 strange, odd
 subject, topic
 sudden, abrupt, precipitous
-tadpole, polliwog
 telecommunications, telecommunication
 terracotta, terra cotta
-tracheophyte, vascular plant
-transition element, transition metal
 translate, interpret
 transport, transportation
 trolley bus, trolleybus
@@ -1515,7 +1426,5 @@ water, body of water
 web, spider web
 wife, spouse
 wild fauna, wildlife, wild animals
-wizard, sorcerer, magician
-y'all, you, you lot, yous
 year, solar year
 zero, null
