@@ -22,7 +22,7 @@ import Databrary.Ops
 import Databrary.Has (view)
 import Databrary.Model.Identity
 import Databrary.Action.Types
-import Databrary.Action
+import Databrary.Action.Route
 import Databrary.Controller.Paths
 import Databrary.View.Html
 
@@ -30,7 +30,7 @@ import {-# SOURCE #-} Databrary.Controller.Angular
 import {-# SOURCE #-} Databrary.Controller.Root
 import {-# SOURCE #-} Databrary.Controller.Login
 import {-# SOURCE #-} Databrary.Controller.Party
-import Databrary.Controller.Web
+import {-# SOURCE #-} Databrary.Controller.Web
 
 htmlHeader :: Maybe BSB.Builder -> JSOpt -> H.Html
 htmlHeader canon hasjs = do

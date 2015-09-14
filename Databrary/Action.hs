@@ -17,7 +17,6 @@ module Databrary.Action
   , maybeAction
 
   , module Databrary.Action.Route
-  , ActionRoute
 
   , withAuth
   , runActionRoute
@@ -36,7 +35,7 @@ import Databrary.Action.Response
 import Databrary.Action.Route
 import Databrary.Service.Types
 import Databrary.HTTP.Route
-import {-# SOURCE #-} Databrary.View.Error
+import Databrary.View.Error
 
 redirectRouteResponse :: Status -> ResponseHeaders -> Route r a -> a -> Request -> Response
 redirectRouteResponse s h r a req =
@@ -54,8 +53,6 @@ notFoundResponse = response notFound404 [] . htmlNotFound
 maybeAction :: Maybe a -> ActionM a
 maybeAction (Just a) = return a
 maybeAction Nothing = result =<< peeks notFoundResponse
-
-type ActionRoute a = Route Action a
 
 runActionRoute :: RouteMap Action -> Service -> Wai.Application
 runActionRoute rm rc req = runAction rc

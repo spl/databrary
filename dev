@@ -8,7 +8,7 @@ setup=dist/setup/setup
 mkdir -p `dirname $setup`
 ghc -Wall -fwarn-tabs --make -odir dist/setup -hidir dist/setup -i. Setup.hs -o $setup
 [[ -z ${opt[f]+set} && -f dist/setup-config ]] || $setup configure --user -f ${opt[p]+-}devel
-$setup build ${opt[p]:--j3}
+$setup build ${opt[p]--j3}
 if [[ -n ${opt[i]+set} ]] ; then
 	$setup install "$@"
 elif [[ -z ${opt[n]+set}${opt[p]+set} ]] ; then
