@@ -124,7 +124,8 @@
             </div>
 
             <div class="volume-list-body" ng-bind="::volume.body | truncate:200"></div>
-            <div ng-if="expanded.volume === volume && !!volume.excerpts">
+            <div class="search-volume-containers" ng-if="expanded.volume === volume && !!volume.excerpts">
+              <mark ng-if="expanded.volume === volume && volume.excerpts.length < 1">No highlights in this volume.</mark>
               <volume-excerpts></volume-excerpts>
             </div>
           </li>
