@@ -121,10 +121,28 @@
   input[type=number]
     max-width 2
     width auto
+    padding-top 1px
+    border-radius 0
   input[type=number]::-webkit-inner-spin-button, 
   input[type=number]::-webkit-outer-spin-button 
     -webkit-appearance none
     margin 0 
+  .icon
+    top b8
+    margin 0 b8
+  .button
+    margin -1px 0 0 0
+    padding 2px b8
+    min-width b1*1.5
+    border-radius 0
+  .search-backward,.search-forward
+    display inline-flex
+  .search-backward > .button:first-child, input:first-child
+    border-top-left-radius b8
+    border-bottom-left-radius b8
+  .search-forward > .button:last-child, input:last-child
+    border-top-right-radius b8
+    border-bottom-right-radius b8
     
 .additional-filters
   margin-top b3

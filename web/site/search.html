@@ -134,13 +134,15 @@
       </div>
 
       <div class="search-pages" ng-if="::count">
-        <span ng-if="::pageCurrent != 1">
-          <a ng-click="searchPage(1)">1</a> <a ng-click="searchPage(pageCurrent-1)">&lt;</a> 
-        </span>
-        <input type="number" ng-model="pageCurrent" key-enter="searchPage(pageCurrent)"/>
-        <span ng-if="::pageCurrent != pageCount">
-          <a ng-click="searchPage(pageCurrent+1)">&gt;</a> <a ng-click="searchPage(pageCount)" ng-bind="::pageCount"></a>
-        </span>
+        <div class="search-backward" ng-if="::pageCurrent != 1">
+          <a class="button" ng-click="searchPage(1)">1</a> 
+          <a class="button" ng-click="searchPage(pageCurrent-1)"><span class="icon backward"></span><span>Previous</span></a> 
+        </div>
+        <input type="number" ng-model="pageCurrent" min="1" key-enter="searchPage(pageCurrent)"/>
+        <div class="search-forward" ng-if="::pageCurrent != pageCount">
+          <a class="button" ng-click="searchPage(pageCurrent+1)"><span>Next</span><span class="icon forward"></span></a> 
+          <a class="button" ng-click="searchPage(pageCount)" ng-bind="::pageCount"></a>
+        </div>
       </div>
     </div>
     </ng-form>
