@@ -123,7 +123,6 @@ routeMap = fromRouteList
   , route queryTags
   , route postTag
   , route deleteTag
-  , route viewTopTags
   , route postComment
 
   , route postSearch

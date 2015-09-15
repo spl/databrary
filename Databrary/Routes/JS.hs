@@ -138,12 +138,12 @@ jsRoutes = mconcat
   , jsRoute "uploadChunk" uploadChunk ()
 
   , jsRoute "postComment" postComment (JSON, slot)
-  , jsRoute "getTags" queryTags (tag)
+  , jsRoute "getTags" queryTags (Just tag)
   , jsRoute "postTag" postTag (JSON, slot, TagId False tag)
   , jsRoute "postKeyword" postTag (JSON, slot, TagId True tag)
   , jsRoute "deleteTag" deleteTag (JSON, slot, TagId False tag)
   , jsRoute "deleteKeyword" deleteTag (JSON, slot, TagId True tag)
-  , jsRoute "getTopTags" viewTopTags ()
+  , jsRoute "getTopTags" queryTags Nothing
   , jsRoute "getActivity" viewActivity ()
   ] where
   token = Id ""

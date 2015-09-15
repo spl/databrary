@@ -129,6 +129,11 @@ data SolrDocument
     , solrRecordMeasures :: SolrRecordMeasures
     , solrRecordAge :: Maybe Age
     }
+  | SolrTagId
+    { solrId :: !BS.ByteString
+    , solrTagId :: Id Tag
+    , solrTagName :: TagName
+    }
   | SolrTag -- Use
     { solrId :: !BS.ByteString
     , solrVolumeId :: Id Volume

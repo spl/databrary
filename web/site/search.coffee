@@ -35,29 +35,51 @@ app.controller 'site/search', [
 
     finite = (x) ->
       x? && isFinite(x)
-    parseNumber = (x) ->
-      if x != '*' then parseFloat(x)
-    printNumber = (x) ->
-      if finite(x) then x else '*'
-    parseRange = (x) ->
-      x = /^\[([-+0-9.e]+|\*) TO ([-+0-9.e]+|\*)\]$/i.exec(x) || []
-      [parseNumber(x[1]) ? -Infinity, parseNumber(x[2]) ? Infinity]
-    printRange = (x) ->
-      x && if finite(x[0]) || finite(x[1]) then '['+printNumber(x[0])+' TO '+printNumber(x[1])+']'
-    printAge = (x) ->
-      printRange([(if x[0] > 0 then x[0]), (if x[1] < constants.age.limit then x[1])])
+
+    Default =
+      parse: (x) -> x
+      print: (x) -> if x then x
+    Number =
+      parse: (x) -> if x != '*' then parseFloat(x)
+      print: (x) -> if finite(x) then x else '*'
+    rangeRegex = /^\[([-+0-9.e]+|\*) TO ([-+0-9.e]+|\*)\]$/i
+    Range =
+      set: (x) -> x && (finite(x[0]) || finite(x[1]))
+      parse: (x) ->
+        x = rangeRegex.exec(x) || []
+        [Number.parse(x[1]) ? -Infinity, Number.parse(x[2]) ? Infinity]
+      print: (x) ->
+        if Range.set(x) then '['+Number.print(x[0])+' TO '+Number.print(x[1])+']'
+    Quoted =
+      parse: (x) ->
+        x.substring(x.startsWith('"'), x.length-x.endsWith('"'))
+      print: (x) -> if x then '"'+x+'"'
+
+    handlers =
+      record_age:
+        parse: Range.parse
+        print: (x) ->
+          Range.print([(if x[0] > 0 then x[0]), (if x[1] < constants.age.limit then x[1])])
+      container_date:
+        parse: (x) ->
+          x = Range.parse(x)
+          if Range.set(x)
+            fields.container_top = 'false'
+          x
+        print: (x) ->
+          if fields.container_top then Range.print(x)
+      numeric: Range
+      tag_name: Quoted
 
     $scope.fields = fields = {record_age:[-Infinity, Infinity]}
     $scope.metrics = metrics = {}
     for f, v of params
       if f.startsWith('f.')
         n = f.substr(2)
-        fields[n] = if n == 'record_age' || n == 'container_date' then parseRange(v) else v
+        fields[n] = (handlers[n] ? Default).parse(v)
       else if f.startsWith('m.')
         mi = f.substr(2)
-        metrics[mi] = if constants.metric[mi].type == 'numeric' then parseRange(v) else v
-    if fields.container_date && (finite(fields.container_date[0]) || finite(fields.container_date[1]))
-      fields.container_top = 'false'
+        metrics[mi] = (handlers[constants.metric[mi].type] ? Default).parse(v)
 
     any = (o) ->
       for f, v of o
@@ -69,12 +91,11 @@ app.controller 'site/search', [
         q: $scope.query || undefined
         offset: offset
         volume: type?.volume
-      delete fields.container_date unless fields.container_top
       for f, v of fields
-        q['f.'+f] = if f == 'record_age' then printAge(v) else if f == 'container_date' then printRange(v) else v || undefined
+        q['f.'+f] = (handlers[f] ? Default).print(v)
       delete q['f.container_top'] if q['f.container_date']
       for f, v of metrics
-        q['m.'+f] = if constants.metric[f].type == 'numeric' then printRange(v) else v || undefined
+        q['m.'+f] = (handlers[constants.metric[f].type] ? Default).print(v)
       $location.search(q)
       return
 

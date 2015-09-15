@@ -129,8 +129,15 @@ solrRecord rs@RecordSlot{ slotRecord = r@Record{..}, recordSlot = Slot{..} } = S
   , solrRecordAge = recordSlotAge rs
   }
 
-solrTag :: Id Volume -> TagUseRow -> SolrDocument
-solrTag vi TagUseRow{ useTagRow = Tag{..}, tagRowSlotId = SlotId{..}, ..} = SolrTag
+solrTag :: Tag -> SolrDocument
+solrTag Tag{..} = SolrTagId
+  { solrId = BSC.pack $ "tag_" <> show tagId
+  , solrTagId = tagId
+  , solrTagName = tagName
+  }
+
+solrTagUse :: Id Volume -> TagUseRow -> SolrDocument
+solrTagUse vi TagUseRow{ useTagRow = Tag{..}, tagRowSlotId = SlotId{..}, ..} = SolrTag
   { solrId = BSC.pack $ "tag_" <> show tagId
     <> ('_' : show slotContainerId)
     <> (if tagRowKeyword then "" else '_' : show tagRowWhoId)
@@ -208,13 +215,14 @@ writeVolume (v, vc) = do
   -- this could be more efficient, but there usually aren't many:
   writeDocuments . map solrExcerpt =<< lookupVolumeExcerpts v
   writeDocuments . map solrRecord . joinContainers RecordSlot cl =<< lookupVolumeRecordSlotIds v
-  writeDocuments . map (solrTag (volumeId v)) =<< lookupVolumeTagUseRows v
+  writeDocuments . map (solrTagUse (volumeId v)) =<< lookupVolumeTagUseRows v
   writeDocuments . map (solrComment (volumeId v)) =<< lookupVolumeCommentRows v
 
 writeAllDocuments :: SolrM ()
 writeAllDocuments = do
   mapM_ writeVolume =<< lookupVolumesCitations
   writeDocuments . map (uncurry solrParty) =<< lookupPartyAuthorizations
+  writeDocuments . map solrTag =<< lookupTags
 
 updateIndex :: (MonadHasService c m, MonadDB c m) => m ()
 updateIndex = do

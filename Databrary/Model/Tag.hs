@@ -2,6 +2,7 @@
 module Databrary.Model.Tag
   ( module Databrary.Model.Tag.Types
   , lookupTag
+  , lookupTags
   , findTags
   , addTag
   , lookupVolumeTagUseRows
@@ -37,9 +38,12 @@ lookupTag :: MonadDB c m => TagName -> m (Maybe Tag)
 lookupTag n =
   dbQuery1 $(selectQuery selectTag "$WHERE tag.name = ${n}::varchar")
 
-findTags :: MonadDB c m => TagName -> m [Tag]
-findTags (TagName n) = -- TagName restrictions obviate pattern escaping
-  dbQuery $(selectQuery selectTag "$WHERE tag.name LIKE ${n `BSC.snoc` '%'}::varchar")
+lookupTags :: MonadDB c m => m [Tag]
+lookupTags = dbQuery $(selectQuery selectTag "")
+
+findTags :: MonadDB c m => TagName -> Int -> m [Tag]
+findTags (TagName n) lim = -- TagName restrictions obviate pattern escaping
+  dbQuery $(selectQuery selectTag "$WHERE tag.name LIKE ${n `BSC.snoc` '%'}::varchar LIMIT ${fromIntegral lim :: Int64}")
 
 addTag :: MonadDB c m => TagName -> m Tag
 addTag n =

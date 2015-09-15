@@ -84,8 +84,8 @@
         <div class="home-tags">
           <span class="home-sections-title"><span class="icon tag"></span>Top Tags</span>
           <ol>
-            <a ng-href="{{::page.router.search()}}?volume&f.tag_name={{::tag.id}}" ng-repeat="tag in ::tags">
-              <li class="home-tags-item tags-item" ng-bind="::tag.id"></li>
+            <a ng-repeat="tag in ::tags" ng-href="{{::page.router.search()}}?volume&f.tag_name=&quot;{{::tag}}&quot;">
+              <li class="home-tags-item tags-item" ng-bind="::tag"></li>
             </a>
           </ol>
         </div>
