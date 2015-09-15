@@ -98,7 +98,7 @@
         <div class="row search-party-results">
           <portrait class="col-desktop-5 col-tablet-4 col-mobile-6" ng-repeat="party in ::parties"></portrait>
         </div>
-        <div class="search-results-showall" ng-if="::!!volumes && parties.count > 1">
+        <div class="search-results-showall" ng-if="::!!volumes && parties.count > 1" ng-click="searchParties()">
           Show all {{::parties.count}}
         </div>
       </div>
@@ -130,7 +130,7 @@
             </div>
           </li>
         </ul>
-        <div class="search-results-showall" ng-if="::!!parties && volumes.count > 1">
+        <div class="search-results-showall" ng-if="::!!parties && volumes.count > 1" ng-click="searchVolumes()">
           Show all {{::volumes.count}}
         </div>
       </div>
