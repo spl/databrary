@@ -19,7 +19,7 @@
           <span message="access.preset.title{{::volume.accessPreset}}"></span> 
           <span message="access.preset.extra{{::volume.accessPreset}}"></span>
         </span>
-        <a ng-if="::volume.checkPermission(page.permission.ADMIN)" ng-href="{{::volume.editRoute('access')}}"><button class="yellow icon edit"></button></a>
+        <a class="yellow icon edit button" ng-if="::volume.checkPermission(page.permission.ADMIN)" ng-href="{{::volume.editRoute('access')}}"></a>
       </div>
 
       <div ng-if="::!!volume.citation" frame id="frame-citation" frame-title="volume.citation.title" fold>
