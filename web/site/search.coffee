@@ -100,6 +100,7 @@ app.controller 'site/search', [
       return
 
     $scope.searchParties = (auth, inst) ->
+      fields = {}
       fields.party_authorization = auth
       fields.party_is_institution = inst
       type = Search.Party
@@ -126,7 +127,7 @@ app.controller 'site/search', [
       month: Math.floor(5*constants.age.year)
       day: Math.floor(3*constants.age.month)
     $scope.ageMax = () ->
-      m = fields.record_age[1]
+      m = fields.record_age?[1]
       limits[display.age] ||
         if m < limits.day then limits.day
         else if m < limits.month then limits.month

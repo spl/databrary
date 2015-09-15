@@ -11,8 +11,6 @@
     </div>
     <div class="col-desktop-3 col-tablet-3 col-mobile-6">
       
-      <button class="search-clear small" ng-click="page.$location.search({})">Clear current search</button>
-
       <div class="search-left-section" ng-if="::!!parties">
         <legend>User types</legend>
         <ul class="search-party-types">
@@ -23,64 +21,62 @@
       </div>
 
       <div class="search-left-section" ng-if="::!!volumes">
-        <legend>Volume types</legend>
+        <ng-form name="searchVolumeFilter">
+        <legend>Volume filters</legend>
         <div class="search-volume-types">
           <div>
             <input id="volWSess" type="checkbox" ng-model="fields.container_top" ng-true-value="'false'" ng-false-value="undefined" ng-change="searchVolumes()"/>
             <label for="volWSess">Has sessions</label>
+          </div>
+          <div class="search-filter" ng-if="fields.container_top">
+            Data collected betweeen <input type="number" ng-model="fields.container_date[0]" min="1925" max="2025" key-enter="search()"/> and <input type="number" ng-model="fields.container_date[1]" min="1925" max="2025" key-enter="search()"/>
           </div>
           <div>
             <input id="volWHighlights" type="checkbox" ng-model="fields.content_type" ng-true-value="'excerpt'" ng-false-value="undefined" ng-change="searchVolumes()"/>
             <label for="volWHighlights">Has highlights</label>
           </div>
         </div>
-        <ng-form name="searchVolumeFilter">
-          <div class="search-filter">
-            <legend>Volume filters</legend>
-            <input type="radio" ng-model="fields.release" ng-value="::undefined" id="anyRelease"><label for="anyRelease">Any release</label><br/>
-            <input type="radio" ng-model="fields.release" value="EXCERPTS OR PUBLIC" id="excerpt"><label for="excerpt">Excerptable data</label><br/>
-            <input type="radio" ng-model="fields.release" value="PUBLIC" id="public"><label for="public">Public data</label>
-          </div>
-          <div class="search-filter" ng-if="fields.container_top">
-            Data collected betweeen <input type="number" ng-model="fields.container_date[0]" min="1925" max="2025" key-enter="search()"/> and <input type="number" ng-model="fields.container_date[1]" min="1925" max="2025" key-enter="search()"/>
-          </div>
-          <div class="search-filter">
-            Contains tag:
-            <input-completer input-name="tag" ng-model="fields.tag_name" completer="tagSearch($input)" ng-pattern="/^[a-zA-Z][a-zA-Z -]{1,30}[a-zA-Z]$/" submit="search()"></input-completer>
-          </div>
-          <div class="search-filter">
-            Contains files of type:
-            <select ng-model="fields.format_id" ng-options="'\\'+fi as f.name+' ('+f.extension+')' for (fi, f) in ::page.constants.format">
-              <option value="">Any</option>
-            </select>
-          </div>
-
-          <div class="search-filter">
-            <span>Participants' age</span><br>
-            <div ui-slider="{range:true}" min="0" max="{{ageMax()}}" step="1" ng-model="fields.record_age"></div>
-            <display-age value="fields.record_age[0]"></display-age> &ndash; <display-age value="fields.record_age[1]"></display-age>
-          </div>
-          <div class="search-filter" ng-repeat="(mi, v) in metrics" ng-if="metrics[mi] !== null" ng-init="m=page.constants.metric[mi]">
-            <span class="icon trash" ng-click="removeMetric(mi)"></span>
-            <span ng-bind="::m.name"></span>
-            <input-completer ng-if="::m.options" input-name="metric" ng-model="metrics[mi]" completer="optionsCompleter($input, m.options)" min="0" submit="search()"></input-completer>
-            <input type="text" ng-if="::m.type==='text' && !m.options" ng-model="metrics[mi]" key-enter="search()"/>
-            <span ng-if="::m.type==='numeric'">
-              <input type="number" ng-model="metrics[mi][0]"/> &ndash; <input type="number" ng-model="metrics[mi][1]"/>
-            </span>
-          </div>
-          <div class="search-filter additional-filters">
-            <select ng-model="addMetric.id" ng-options="m.id as m.name for m in availableMetrics()" ng-change="addMetric()">
-              <option value="">Additional filters by metric</option>
-            </select>
-          </div>
-          <div class="search-filter">
-            <button class="small green" ng-disabled="searchVolumeFilter.$pristine || searchVolumeFilter.$invalid || searchVolumeFilter.$submitted" ng-click="searchVolumes()">Apply filters</button>
-
-          </div>
+        <div class="search-filter">
+          <input type="radio" ng-model="fields.release" ng-value="::undefined"     ng-change="searchVolumes()" id="anyRelease"><label for="anyRelease">Any release</label><br/>
+          <input type="radio" ng-model="fields.release" value="EXCERPTS OR PUBLIC" ng-change="searchVolumes()" id="excerpt"><label for="excerpt">Excerptable data</label><br/>
+          <input type="radio" ng-model="fields.release" value="PUBLIC"             ng-change="searchVolumes()" id="public"><label for="public">Public data</label>
+        </div>
+        <div class="search-filter">
+          Contains tag:
+          <input-completer input-name="tag" ng-model="fields.tag_name" completer="tagSearch($input)" ng-pattern="/^[a-zA-Z][a-zA-Z -]{1,30}[a-zA-Z]$/" submit="search()"></input-completer>
+        </div>
+        <div class="search-filter">
+          Contains files of type:
+          <select ng-model="fields.format_id" ng-options="'\\'+fi as f.name+' ('+f.extension+')' for (fi, f) in ::page.constants.format">
+            <option value="">Any</option>
+          </select>
         </div>
 
-      </ng-form>
+        <div class="search-filter">
+          <span>Participants' age</span><br>
+          <div ui-slider="{range:true}" min="0" max="{{ageMax()}}" step="1" ng-model="fields.record_age"></div>
+          <display-age value="fields.record_age[0]"></display-age> &ndash; <display-age value="fields.record_age[1]"></display-age>
+        </div>
+        <div class="search-filter" ng-repeat="(mi, v) in metrics" ng-if="metrics[mi] !== null" ng-init="m=page.constants.metric[mi]">
+          <span class="icon trash" ng-click="removeMetric(mi)"></span>
+          <span ng-bind="::m.name"></span>
+          <input-completer ng-if="::m.options" input-name="metric" ng-model="metrics[mi]" completer="optionsCompleter($input, m.options)" min="0" submit="search()"></input-completer>
+          <input type="text" ng-if="::m.type==='text' && !m.options" ng-model="metrics[mi]" key-enter="search()"/>
+          <span ng-if="::m.type==='numeric'">
+            <input type="number" ng-model="metrics[mi][0]"/> &ndash; <input type="number" ng-model="metrics[mi][1]"/>
+          </span>
+        </div>
+        <div class="search-filter additional-filters">
+          <select ng-model="addMetric.id" ng-options="m.id as m.name for m in availableMetrics()" ng-change="addMetric()">
+            <option value="">Additional filters by field</option>
+          </select>
+        </div>
+        <div class="search-filter">
+          <button class="small green" ng-disabled="searchVolumeFilter.$pristine || searchVolumeFilter.$invalid || searchVolumeFilter.$submitted" ng-click="searchVolumes()">Apply filters</button>
+          <button class="search-clear small" ng-click="page.$location.search({volume:true,q:query})">Clear filters</button>
+        </div>
+        </ng-form>
+      </div>
     </div>
 
     <div class="search-results col-desktop-12 col-tablet-6 col-mobile-6">
@@ -94,21 +90,25 @@
       <div class="search-results-section" ng-if="::!!parties">
         <h3>
           Users
-          <button class="mini small" ng-if="::!!volumes" ng-click="searchParties()">show all {{::parties.count}}</button>
-          <small ng-if="::!volumes">{{::parties.count}} total</small>
+          <small ng-click="searchParties()" ng-class="::{'search-results-showall':!!volumes}">
+            <ng-pluralize count="::parties.count" when="{0:'No matches',one:'One match',other:'{} matches'}"></ng-pluralize>
+          </small>
         </h3>
         
         <div class="row search-party-results">
           <portrait class="col-desktop-5 col-tablet-4 col-mobile-6" ng-repeat="party in ::parties"></portrait>
         </div>
-        <div class="search-results-showall" ng-if="::!!volumes" ng-click="searchParties()">show all {{::parties.count}} users</div>
+        <div class="search-results-showall" ng-if="::!!volumes && parties.count > 1">
+          Show all {{::parties.count}}
+        </div>
       </div>
 
       <div class="search-results-section" ng-if="::!!volumes">
         <h3>
           Volumes
-          <button class="mini small" ng-if="::!!parties" ng-click="searchVolumes()">show all {{::volumes.count}}</button>
-          <small ng-if="::!parties">{{::volumes.count}} total</small>
+          <small ng-click="searchVolumes()" ng-class="::{'search-results-showall':!!parties}">
+            <ng-pluralize count="::volumes.count" when="{0:'No matches',one:'One match',other:'{} matches'}"></ng-pluralize>
+          </small>
         </h3>
         
         <ul class="row search-volume-results">
@@ -130,7 +130,9 @@
             </div>
           </li>
         </ul>
-        <div class="search-results-showall" ng-if="::!!parties" ng-click="searchVolumes()">show all {{::volumes.count}} volumes</div>
+        <div class="search-results-showall" ng-if="::!!parties && volumes.count > 1">
+          Show all {{::volumes.count}}
+        </div>
       </div>
 
       <div class="search-pages" ng-if="::count">
