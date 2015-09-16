@@ -1072,6 +1072,12 @@ app.factory('modelService', [
       }
     });
 
+    Object.defineProperty(AssetSlot.prototype, 'displayName', {
+      get: function () {
+        return this.name || this.format.name;
+      }
+    });
+
     AssetSlot.prototype.inSegment = function (segment) {
       segment = this.segment.intersect(segment);
       if (this instanceof AssetSegment && segment.equals(this.segment))
@@ -1160,12 +1166,6 @@ app.factory('modelService', [
         var r = this.classification != null ? this.classification : (this.container.release || 0);
         var e = this.fullExcerpt;
         return e ? Math.max(e.excerpt || 0, r) : r;
-      }
-    });
-
-    Object.defineProperty(Asset.prototype, 'displayName', {
-      get: function () {
-        return this.name || this.format.name;
       }
     });
 
