@@ -118,7 +118,7 @@ removeParty p = do
 
 lookupFixedParty :: Id Party -> Identity -> Maybe Party
 lookupFixedParty (Id (-1)) _ = Just nobodyParty
-lookupFixedParty (Id 0) i = Just rootParty{ partyAccess = accessMember i > PermissionNONE ?> view i }
+lookupFixedParty (Id 0) i = Just rootParty{ partyPermission = accessPermission i `max` PermissionSHARED, partyAccess = accessMember i > PermissionNONE ?> view i }
 lookupFixedParty i a = view a <? (i == view a)
 
 lookupParty :: (MonadDB c m, MonadHasIdentity c m) => Id Party -> m (Maybe Party)
