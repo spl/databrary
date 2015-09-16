@@ -74,8 +74,7 @@ auditAssetSegmentDownload success AssetSegment{ segmentAsset = AssetSlot{ slotAs
 
 assetSegmentJSON :: AssetSegment -> JSON.Object
 assetSegmentJSON as@AssetSegment{..} = JSON.object $ catMaybes $
-  [ Just $ "asset" JSON..= assetSlotJSON segmentAsset
-  , Just $ ("segment" JSON..= assetSegment)
+  [ Just $ ("segment" JSON..= assetSegment)
   , view segmentAsset == fmt ?!> "format" JSON..= formatId fmt
   -- , ("release" JSON..=) <$> (view as :: Maybe Release)
   , Just $ "permission" JSON..= dataPermission as

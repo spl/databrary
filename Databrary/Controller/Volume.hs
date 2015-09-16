@@ -153,12 +153,10 @@ volumeJSONField vol "records" _ = do
 volumeJSONField vol "metrics" _ = do
   Just . JSON.toJSON . JSON.object . map (T.pack . show *** JSON.toJSON) <$> lookupVolumeMetrics vol
 volumeJSONField o "excerpts" _ =
-  Just . JSON.toJSON . map (\e -> sc (view e) $ excerptJSON e) <$> lookupVolumeExcerpts o
-  where
-  sc :: Id Container -> JSON.Object -> JSON.Object
-  sc c a
-    | HM.member "asset" a = HM.adjust (\(JSON.Object j) -> JSON.Object (sc c j)) "asset" a
-    | otherwise = a JSON..+ "container" JSON..= c
+  Just . JSON.toJSON . map (\e -> excerptJSON e JSON..+
+    "asset" JSON..= (assetSlotJSON (view e) JSON..+
+      "container" JSON..= (view e :: Id Container)))
+    <$> lookupVolumeExcerpts o
 volumeJSONField o "tags" n = do
   t <- cacheVolumeTopContainer o
   tc <- lookupSlotTagCoverage (containerSlot t) (maybe 64 fst $ BSC.readInt =<< n)

@@ -21,7 +21,7 @@
 
   <div class="panel-excerpts-list col-desktop-8 col-tablet-4 col-mobile-6">
     <div class="row">
-      <div ng-repeat="(ri, el) in ::excerpts">
+      <div ng-repeat="(ri, el) in ::excerpts track by ri">
           <div class="panel-excerpts-type" ng-if="::el.release">
             <span class="release icon" ng-class="::el.release" hint="release-{{::el.release}}"></span>
             <span message="{{::'release.'+el.release+'.title'}}" hint="release-{{::el.release}}"></span>

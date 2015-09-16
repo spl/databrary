@@ -519,8 +519,8 @@ app.controller('volume/slot', [
 
     class Asset extends TimeBar
       constructor: (asset) ->
+        @excerpts = if asset?.excerpts then (new Excerpt(e) for e in asset.excerpts) else []
         @setAsset(asset)
-        @excerpts = []
         return
 
       type: 'asset'
@@ -727,11 +727,6 @@ app.controller('volume/slot', [
           $scope.updatePosition()
         return
 
-      Object.defineProperty @prototype, 'fullExcerpt',
-        get: ->
-          if @excerpts && @excerpts.length == 1 && @excerpts[0].contains(@)
-            @excerpts[0]
-
       updateExcerpt: () ->
         @excerpt = undefined
         return unless @asset && @excerpts
@@ -821,14 +816,6 @@ app.controller('volume/slot', [
       constructor: (e) ->
         super(e.segment)
         @excerpt = e
-        return
-
-      @fill = ->
-        assets = {}
-        for t in $scope.assets when t.asset
-          assets[t.asset.id] = t
-        for e in slot.excerpts
-          assets[e.id]?.excerpts.push(new Excerpt(e))
         return
 
     $scope.addBlank = ->
@@ -1140,7 +1127,6 @@ app.controller('volume/slot', [
     $scope.comments = (new Comment(comment) for comment in slot.comments)
     $scope.assets = (new Asset(asset) for assetId, asset of slot.assets)
     Asset.sort()
-    Excerpt.fill()
 
     records = slot.records.map((r) -> new Record(r))
 

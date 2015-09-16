@@ -48,7 +48,7 @@ slotJSONField :: Slot -> BS.ByteString -> Maybe BS.ByteString -> ActionM (Maybe 
 slotJSONField o "assets" _ =
   Just . JSON.toJSON . map assetSlotJSON <$> lookupSlotAssets o
 slotJSONField o "records" _ =
-  Just . JSON.toJSON . map (\r -> recordSlotJSON r JSON..+ ("record" JSON..= recordJSON (slotRecord r))) <$> lookupSlotRecords o
+  Just . JSON.toJSON . map (\r -> recordSlotJSON r JSON..+ "record" JSON..= recordJSON (slotRecord r)) <$> lookupSlotRecords o
 slotJSONField o "tags" n = do
   tc <- lookupSlotTagCoverage o (maybe 64 fst $ BSC.readInt =<< n)
   return $ Just $ JSON.recordMap $ map tagCoverageJSON tc
@@ -56,7 +56,7 @@ slotJSONField o "comments" n = do
   c <- lookupSlotComments o (maybe 64 fst $ BSC.readInt =<< n)
   return $ Just $ JSON.toJSON $ map commentJSON c
 slotJSONField o "excerpts" _ =
-  Just . JSON.toJSON . map excerptJSON <$> lookupSlotExcerpts o
+  Just . JSON.toJSON . map (\e -> excerptJSON e JSON..+ "asset" JSON..= (view e :: Id Asset)) <$> lookupSlotExcerpts o
 slotJSONField o "filename" _ =
   return $ Just $ JSON.toJSON $ makeFilename $ slotDownloadName o
 slotJSONField _ _ _ = return Nothing
