@@ -81,7 +81,7 @@ esac
 sleep 5 # hope server knows job has started by now
 
 ls -s "$IN"
-ffmpeg -loglevel warning -benchmark -threads ${PBS_NP:-1} -i "$IN" -metadata comment="databrary.org ${dir##*/}/$version" -metadata description="http://databrary.org/asset/$id" "${args[@]}" -threads ${PBS_NP:-1} "${outargs[@]}" -y "$OUT"
+ffmpeg -loglevel warning -benchmark -threads ${PBS_NP:-1} -i "$IN" -map_metadata -1 -metadata comment="databrary.org ${dir##*/}/$version" -metadata description="http://databrary.org/asset/$id" "${args[@]}" -threads ${PBS_NP:-1} "${outargs[@]}" -y "$OUT"
 r=$?
 [[ -f "$OUT" ]] && ls -s "$OUT"
 if [[ $r -ne 0 ]] ; then
