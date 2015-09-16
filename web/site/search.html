@@ -26,7 +26,7 @@
         <div class="search-volume-types">
           <div>
             <input id="volWSess" type="checkbox" ng-model="fields.container_top" ng-true-value="'false'" ng-false-value="undefined" ng-change="searchVolumes()"/>
-            <label for="volWSess">Has sessions</label>
+            <label for="volWSess">Contains sessions</label>
           </div>
           <div class="search-filter" ng-if="fields.container_top">
             Data collected betweeen <input type="number" ng-model="fields.container_date[0]" min="1925" max="2025" key-enter="search()"/> and <input type="number" ng-model="fields.container_date[1]" min="1925" max="2025" key-enter="search()"/>
@@ -72,7 +72,7 @@
           </select>
         </div>
         <div class="search-filter">
-          <button class="small green" ng-disabled="searchVolumeFilter.$pristine || searchVolumeFilter.$invalid || searchVolumeFilter.$submitted" ng-click="searchVolumes()">Apply filters</button>
+          <button class="small green" ng-disabled="searchVolumeFilter.$pristine || searchVolumeFilter.$invalid" ng-click="searchVolumes()">Apply filters</button>
           <button class="search-clear small" ng-click="page.$location.search({volume:true,q:query})">Clear filters</button>
         </div>
         </ng-form>
