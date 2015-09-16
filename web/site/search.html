@@ -12,7 +12,7 @@
     <div class="col-desktop-3 col-tablet-3 col-mobile-6">
       
       <div class="search-left-section" ng-if="::!!parties">
-        <legend>User types</legend>
+        <legend>User filters</legend>
         <ul class="search-party-types">
           <li ng-click="searchParties(page.constants.permission.EDIT, 'false')" ng-class="::{selected:fields.party_authorization == page.constants.permission.EDIT && fields.party_is_institution == 'false'}">Authorized investigators</li>
           <li ng-click="searchParties(page.constants.permission.ADMIN, 'true')" ng-class="::{selected:fields.party_authorization == page.constants.permission.ADMIN && fields.party_is_institution == 'true'}">Authorized institutions</li>
@@ -37,6 +37,7 @@
           </div>
         </div>
         <div class="search-filter">
+          Filter by release level
           <input type="radio" ng-model="fields.release" ng-value="::undefined"     ng-change="searchVolumes()" id="anyRelease"><label for="anyRelease">Any release</label><br/>
           <input type="radio" ng-model="fields.release" value="EXCERPTS OR PUBLIC" ng-change="searchVolumes()" id="excerpt"><label for="excerpt">Excerptable data</label><br/>
           <input type="radio" ng-model="fields.release" value="PUBLIC"             ng-change="searchVolumes()" id="public"><label for="public">Public data</label>
@@ -46,7 +47,7 @@
           <input-completer input-name="tag" ng-model="fields.tag_name" completer="tagSearch($input)" ng-pattern="/^[a-zA-Z][a-zA-Z -]{1,30}[a-zA-Z]$/" submit="search()"></input-completer>
         </div>
         <div class="search-filter">
-          Contains files of type:
+          Contains files of type
           <select ng-model="fields.format_id" ng-options="'\\'+fi as f.name+' ('+f.extension+')' for (fi, f) in ::page.constants.format">
             <option value="">Any</option>
           </select>
