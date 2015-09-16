@@ -10,16 +10,6 @@
       </div>
     </div>
     <div class="col-desktop-3 col-tablet-3 col-mobile-6">
-      
-      <div class="search-left-section" ng-if="::!!parties">
-        <legend>User filters</legend>
-        <ul class="search-party-types">
-          <li ng-click="searchParties(page.constants.permission.EDIT, 'false')" ng-class="::{selected:fields.party_authorization == page.constants.permission.EDIT && fields.party_is_institution == 'false'}">Authorized investigators</li>
-          <li ng-click="searchParties(page.constants.permission.ADMIN, 'true')" ng-class="::{selected:fields.party_authorization == page.constants.permission.ADMIN && fields.party_is_institution == 'true'}">Authorized institutions</li>
-          <li ng-click="searchParties()" ng-class="::{selected:fields.party_authorization == null && fields.party_is_institution == null}">All users and groups</li>
-        </ul>
-      </div>
-
       <div class="search-left-section" ng-if="::!!volumes">
         <ng-form name="searchVolumeFilter">
         <legend>Volume filters</legend>
@@ -37,13 +27,13 @@
           </div>
         </div>
         <div class="search-filter">
-          Filter by release level
-          <input type="radio" ng-model="fields.release" ng-value="::undefined"     ng-change="searchVolumes()" id="anyRelease"><label for="anyRelease">Any release</label><br/>
-          <input type="radio" ng-model="fields.release" value="EXCERPTS OR PUBLIC" ng-change="searchVolumes()" id="excerpt"><label for="excerpt">Excerptable data</label><br/>
-          <input type="radio" ng-model="fields.release" value="PUBLIC"             ng-change="searchVolumes()" id="public"><label for="public">Public data</label>
+          Contains data released for<br/>
+          <input type="radio" ng-model="fields.release" ng-value="::undefined"     ng-change="searchVolumes()" id="anyRelease"><label for="anyRelease">No preference</label><br/>
+          <input type="radio" ng-model="fields.release" value="EXCERPTS OR PUBLIC" ng-change="searchVolumes()" id="excerpt"><label for="excerpt"><div class="icon release EXCERPTS" hint="release-EXCERPTS"></div> Presentation use</label><br/>
+          <input type="radio" ng-model="fields.release" value="PUBLIC"             ng-change="searchVolumes()" id="public"><label for="public"><div class="icon release PUBLIC" hint="release-PUBLIC"></div>Public use</label>
         </div>
         <div class="search-filter">
-          Contains tag:
+          Contains tag
           <input-completer input-name="tag" ng-model="fields.tag_name" completer="tagSearch($input)" ng-pattern="/^[a-zA-Z][a-zA-Z -]{1,30}[a-zA-Z]$/" submit="search()"></input-completer>
         </div>
         <div class="search-filter">
@@ -78,6 +68,15 @@
         </div>
         </ng-form>
       </div>
+
+      <div class="search-left-section" ng-if="::!!parties">
+        <legend>User filters</legend>
+        <ul class="search-party-types">
+          <li ng-click="searchParties(page.constants.permission.EDIT, 'false')" ng-class="::{selected:fields.party_authorization == page.constants.permission.EDIT && fields.party_is_institution == 'false'}">Authorized investigators</li>
+          <li ng-click="searchParties(page.constants.permission.ADMIN, 'true')" ng-class="::{selected:fields.party_authorization == page.constants.permission.ADMIN && fields.party_is_institution == 'true'}">Authorized institutions</li>
+          <li ng-click="searchParties()" ng-class="::{selected:fields.party_authorization == null && fields.party_is_institution == null}">All users and groups</li>
+        </ul>
+      </div>
     </div>
 
     <div class="search-results col-desktop-12 col-tablet-6 col-mobile-6">
@@ -88,22 +87,6 @@
         </span>?
       </small>
 
-      <div class="search-results-section" ng-if="::!!parties">
-        <h3>
-          Users
-          <small ng-click="searchParties()" ng-class="::{'search-results-showall':!!volumes}">
-            <ng-pluralize count="::parties.count" when="{0:'No matches',one:'One match',other:'{} matches'}"></ng-pluralize>
-          </small>
-        </h3>
-        
-        <div class="row search-party-results">
-          <portrait class="col-desktop-5 col-tablet-4 col-mobile-6" ng-repeat="party in ::parties"></portrait>
-        </div>
-        <div class="search-results-showall" ng-if="::!!volumes && parties.count > 1" ng-click="searchParties()">
-          Show all {{::parties.count}}
-        </div>
-      </div>
-
       <div class="search-results-section" ng-if="::!!volumes">
         <h3>
           Volumes
@@ -111,7 +94,7 @@
             <ng-pluralize count="::volumes.count" when="{0:'No matches',one:'One match',other:'{} matches'}"></ng-pluralize>
           </small>
         </h3>
-        
+
         <ul class="row search-volume-results">
           <li ng-repeat="volume in ::volumes">
             <h1 class="search-volume-result-title">
@@ -133,6 +116,22 @@
         </ul>
         <div class="search-results-showall" ng-if="::!!parties && volumes.count > 1" ng-click="searchVolumes()">
           Show all {{::volumes.count}}
+        </div>
+      </div>
+
+      <div class="search-results-section" ng-if="::!!parties">
+        <h3>
+          Users
+          <small ng-click="searchParties()" ng-class="::{'search-results-showall':!!volumes}">
+            <ng-pluralize count="::parties.count" when="{0:'No matches',one:'One match',other:'{} matches'}"></ng-pluralize>
+          </small>
+        </h3>
+
+        <div class="row search-party-results">
+          <portrait class="col-desktop-5 col-tablet-4 col-mobile-6" ng-repeat="party in ::parties"></portrait>
+        </div>
+        <div class="search-results-showall" ng-if="::!!volumes && parties.count > 1" ng-click="searchParties()">
+          Show all {{::parties.count}}
         </div>
       </div>
 
