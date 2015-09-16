@@ -4,7 +4,8 @@ module Databrary.Model.Release.Types
   ( Release(..)
   ) where
 
-import Data.Maybe (fromMaybe)
+import Data.Foldable (fold)
+import Data.Monoid (Monoid(..))
 import Language.Haskell.TH.Lift (deriveLift)
 
 import Databrary.Has (Has(..))
@@ -12,7 +13,11 @@ import Databrary.Model.Enum
 
 makeDBEnum "release" "Release"
 
+instance Monoid Release where
+  mempty = ReleasePRIVATE
+  mappend = max
+
 instance Has Release (Maybe Release) where
-  view = fromMaybe ReleasePRIVATE
+  view = fold
 
 deriveLift ''Release

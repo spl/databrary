@@ -10,8 +10,8 @@ module Databrary.Model.AssetSegment.Types
   , excerptInSegment
   ) where
 
-import Control.Applicative ((<|>))
 import Data.Maybe (fromMaybe)
+import Data.Monoid ((<>))
 import qualified Database.PostgreSQL.Typed.Range as Range
 
 import Databrary.Ops
@@ -86,7 +86,7 @@ instance Has (Id Format) AssetSegment where
   view = formatId . view
 
 instance Has (Maybe Release) AssetSegment where
-  view AssetSegment{ segmentAsset = a, assetExcerpt = Just e } = excerptRelease e <|> view a
+  view AssetSegment{ segmentAsset = a, assetExcerpt = Just e } = excerptRelease e <> view a
   view AssetSegment{ segmentAsset = a } = view a
 instance Has Release AssetSegment where
   view = view . (view :: AssetSegment -> Maybe Release)
