@@ -51,8 +51,8 @@ fromHtmlEscapedLazyByteString :: BSL.ByteString -> B.Builder
 fromHtmlEscapedLazyByteString = P.primMapLazyByteStringBounded wordHtmlEscaped
 
 fromHtmlEscapedText :: T.Text -> B.Builder
-fromHtmlEscapedText = fromHtmlEscapedByteString . TE.encodeUtf8
+fromHtmlEscapedText = TE.encodeUtf8BuilderEscaped wordHtmlEscaped
 
 fromHtmlEscapedLazyText :: TL.Text -> B.Builder
-fromHtmlEscapedLazyText = fromHtmlEscapedLazyByteString . TLE.encodeUtf8
+fromHtmlEscapedLazyText = TLE.encodeUtf8BuilderEscaped wordHtmlEscaped
 
