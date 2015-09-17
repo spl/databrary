@@ -1255,6 +1255,10 @@ app.factory('modelService', [
     AssetSegment.prototype.constructor = AssetSegment;
     AssetSegment.prototype.class = 'asset-segment';
 
+    AssetSegment.prototype.fields = angular.extend({
+      excerpt: true,
+    }, AssetSegment.prototype.fields);
+
     AssetSegment.prototype.init = function (init) {
       Model.prototype.init.call(this, init);
       this.asset.update(init.asset);
@@ -1265,6 +1269,12 @@ app.factory('modelService', [
 
     delegate(AssetSegment, 'asset',
         'id', 'container', 'format', 'duration', 'classification', 'name', 'pending');
+
+    Object.defineProperty(AssetSegment.prototype, 'release', {
+      get: function () {
+        return Math.max(this.excerpt || 0, this.asset.release);
+      }
+    });
 
     ///////////////////////////////// AssetSegment
 
@@ -1285,16 +1295,6 @@ app.factory('modelService', [
     Excerpt.prototype = Object.create(AssetSegment.prototype);
     Excerpt.prototype.constructor = Excerpt;
     Excerpt.prototype.class = 'excerpt';
-
-    Excerpt.prototype.fields = angular.extend({
-      excerpt: true,
-    }, Excerpt.prototype.fields);
-
-    Object.defineProperty(Excerpt.prototype, 'release', {
-      get: function () {
-        return Math.max(this.excerpt || 0, this.asset.release);
-      }
-    });
 
     function excerptMake(context, init) {
       if (init.asset && 'container' in init && !('container' in init.asset))
