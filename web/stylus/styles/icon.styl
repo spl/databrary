@@ -9,9 +9,22 @@
   width b23+1px
   height b23
   transition transition
+  background-size contain
+  //clickable
+  &.clickable:not(.button),
+  &.clickable:not(button)
+    cursor pointer
+    :hover
+      opacity 0.4
+  // png's
+  &.session,
+  &.jump,
+  &.trash,
+  &.trash2,
+  &.sort
+    background-size initial
   &.volume
     size b1
-  &.record,
   &.session
     height b23
     width b23+b8
@@ -23,23 +36,20 @@
 
   &.backward
     background-image url('/web/icons/backarrow.svg')
-    background-size contain
   &.forward
     background-image url('/web/icons/fwdarrow.svg')
-    background-size contain
     
   &.bullet
-    background-image url('/web/icons/bullet.png')
+    background-image url('/web/icons/bullet.svg')
 
   &.contact
-    background-image url('/web/icons/contact.png')
+    background-image url('/web/icons/contact.svg')
 
   &.close
-    background-image url('/web/icons/close.png')
+    background-image url('/web/icons/close.svg')
 
   &.list
     background-image url('/web/icons/list.svg')
-    background-size contain
 
   &.release.PRIVATE
     background-image url('/web/icons/release/private.svg')
@@ -59,10 +69,10 @@
       opacity 0.4
 
   &.volume
-    background-image url('/web/icons/study.png')
+    background-image url('/web/icons/study.svg')
 
   &.download
-    background-image url('/web/icons/download.png')
+    background-image url('/web/icons/download.svg')
     &:not(.button)
       margin-right b3
     &:hover:not(.button)
@@ -71,16 +81,13 @@
   &.edit
   &.edit:hover
     background-image url('/web/icons/edit.svg')
-    background-size contain
 
   &.view-icon
   &.view-icon:hover
     background-image url('/web/icons/view.svg')
-    background-size contain
 
   &.info
     background-image url('/web/icons/info.svg')
-    background-size contain
 
   &.jump
     background-image url('/web/icons/jump.png')
@@ -88,35 +95,20 @@
   &.network
     background-image url('/web/icons/network.svg')
 
-  &.play
-    background-image url('/web/icons/play.png')
-
-  &.pause
-    background-image url('/web/icons/pause.png')
-
-  &.add
-    background-image url('/web/icons/add.png')
-    &:hover
-      opacity 0.4
-
   &.tag
     background-image url('/web/icons/tag.svg')
 
   &.trash
     background-image url('/web/icons/close_c.png')
     cursor pointer
-  &.trash2
-    background-image url('/web/icons/trash.png')
-    cursor pointer
     &:hover:not(.button)
       opacity 0.4
+  &.trash2
+    background-image url('/web/icons/trash.png')
 
   &.paste
-    background-image url('/web/icons/paste.png')
-    cursor pointer
+    background-image url('/web/icons/paste.svg')
 
-  &.radio,&.radio:hover,&.radio-selected
-    background-size contain
   &.radio
     background-image url('/web/icons/radio-open.svg')
     transition transition
@@ -130,25 +122,17 @@
 
   &.resize
     background-image url('/web/icons/resize.svg')
-    background-size contain
     &:hover
       opacity 0.4
 
   &.settings
     background-image url('/web/icons/settings.svg')
-    background-size contain
 
   &.zoomin
     background-image url('/web/icons/zoomin.svg')
-    cursor pointer
-    background-size 16px
   &.zoomout
     background-image url('/web/icons/zoomout.svg')
-    cursor pointer
-    background-size 16px
 
-  &.user-access
-    background-size contain
   &.user-access.READ
     background-image url('/web/icons/volume-access-r.svg')
   &.user-access.EDIT
@@ -190,12 +174,5 @@
   &.sort-desc
     background-image url('/web/icons/sort-desc.png')
 
-th
-  &.add
-    background-repeat no-repeat
-    background-image url('/web/icons/add.png')
-    transition transition
-
-    &:hover
-      opacity 0.4
-
+td.icon
+  background-size initial

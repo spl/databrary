@@ -182,8 +182,8 @@
                 <button id="setOffset" ng-disabled="!ruler.position.defined()" ng-click="setSelectionEnd(true)">&rarr;</button>
                 <input input-position="Infinity" class="slot-timeline-time stop" type="text" size="10" ng-model="ruler.selection.u" position-min="ruler.selection.l" name="selection-u" ng-change="updateSelection()"></input>
                 <div class="slot-timeline-zoom">
-                  <span class="icon zoomin" ng-click="zoom(ruler.selection)" ng-if="ruler.selection.length && !ruler.selection.contains(ruler.range)"></span>
-                  <span class="icon zoomout" ng-if="ruler.zoomed" ng-click="zoom()"></span>
+                  <span class="icon zoomin clickable" ng-click="zoom(ruler.selection)" ng-if="ruler.selection.length && !ruler.selection.contains(ruler.range)"></span>
+                  <span class="icon zoomout clickable" ng-if="ruler.zoomed" ng-click="zoom()"></span>
                 </div>
               </div>
 

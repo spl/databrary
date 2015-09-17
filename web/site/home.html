@@ -42,8 +42,8 @@
             <img ng-src="{{::volume.thumbRoute()}}" class="home-feature-thumb" ng-click="page.$location.url(volume.route())">
 
             <div class="home-section-text">
-              <div class="home-sections-title"><span class="icon volume"></span><span message="welcome.featured"></span></div>
-              <h1><a ng-href="{{::volume.route()}}" ng-bind="::volume.name"></a></h1>
+              <div class="home-sections-title"><span class="icon volume"></span><span message="welcome.featured"></span></div><br>
+              <a class="small" ng-href="{{::volume.route()}}" ng-bind="::volume.name"></a>
 
               <div class="home-feature-investigators">
                 <volume-owners></volume-owners>
