@@ -21,7 +21,7 @@ import Databrary.Controller.Asset
 import Databrary.Controller.Party
 import {-# SOURCE #-} Databrary.Controller.Transcode
 
-htmlTranscodes :: [Transcode] -> Context -> H.Html
+htmlTranscodes :: [Transcode] -> RequestContext -> H.Html
 htmlTranscodes tl req = htmlTemplate req (Just "transcodes") $ \js -> do
   H.table $ do
     H.thead $ H.tr $

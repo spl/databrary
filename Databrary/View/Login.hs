@@ -14,14 +14,14 @@ import Databrary.View.Form
 
 import {-# SOURCE #-} Databrary.Controller.Login
 
-htmlLogin :: Context -> FormHtml f
+htmlLogin :: RequestContext -> FormHtml f
 htmlLogin = htmlForm "Login" postLogin HTML (do
   field "email" $ inputText (Nothing :: Maybe String)
   field "password" inputPassword
   field "superuser" $ inputCheckbox False)
   (const mempty)
 
-htmlUserForm :: Account -> Context -> FormHtml f
+htmlUserForm :: Account -> RequestContext -> FormHtml f
 htmlUserForm a = htmlForm "Edit account" postUser HTML (do
   field "auth" $ inputPassword
   field "email" $ inputText $ Just $ BSC.unpack $ accountEmail a

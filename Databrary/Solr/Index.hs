@@ -4,10 +4,11 @@ module Databrary.Solr.Index
   ) where
 
 import Control.Applicative (Applicative)
-import Control.Exception (handle)
-import Control.Monad.IO.Class (MonadIO)
+import Control.Exception.Lifted (handle)
+import Control.Monad.IO.Class (MonadIO, liftIO)
 import Control.Monad.Reader (MonadReader, ReaderT(..))
 import Control.Monad.Trans.Class (lift)
+import Control.Monad.Trans.Control (MonadBaseControl)
 import qualified Data.Aeson as JSON
 import qualified Data.Aeson.Encode as JSON
 import qualified Data.ByteString as BS
@@ -25,14 +26,11 @@ import Network.HTTP.Types.Header (hContentType)
 import Control.Invert
 import Databrary.Ops
 import Databrary.Has
-import Databrary.Service.Types
-import Databrary.Service.DB
 import Databrary.Service.Log
 import Databrary.Model.Segment
 import Databrary.Model.Kind
 import Databrary.Model.Id.Types
 import Databrary.Model.Permission.Types
-import Databrary.Model.Identity.Types
 import Databrary.Model.Party
 import Databrary.Model.Volume.Types
 import Databrary.Model.Citation
@@ -49,6 +47,7 @@ import Databrary.Model.RecordSlot
 import Databrary.Model.Measure
 import Databrary.Model.Tag
 import Databrary.Model.Comment
+import Databrary.Context
 import Databrary.Solr.Service
 import Databrary.Solr.Document
 
@@ -164,26 +163,8 @@ solrComment vi CommentRow{ commentRowSlotId = SlotId{..}, ..} = SolrComment
   , solrBody = Just commentRowText
   }
 
-data SolrContext = SolrContext
-  { solrService :: !Service
-  , solrDB :: !DBConn
-  }
-
-instance Has Identity SolrContext where
-  view _ = NotIdentified
-instance Has SiteAuth SolrContext where
-  view _ = view NotIdentified
-instance Has Party SolrContext where
-  view _ = view NotIdentified
-instance Has (Id Party) SolrContext where
-  view _ = view NotIdentified
-instance Has Access SolrContext where
-  view _ = view NotIdentified
-
-makeHasRec ''SolrContext ['solrService, 'solrDB]
-
-newtype SolrM a = SolrM { runSolrM :: ReaderT SolrContext (InvertM BS.ByteString) a }
-  deriving (Functor, Applicative, Monad, MonadIO, MonadReader SolrContext)
+newtype SolrM a = SolrM { runSolrM :: ReaderT BackgroundContext (InvertM BS.ByteString) a }
+  deriving (Functor, Applicative, Monad, MonadIO, MonadReader BackgroundContext)
 
 writeBlock :: BS.ByteString -> SolrM ()
 writeBlock = SolrM . lift . give
@@ -224,22 +205,21 @@ writeAllDocuments = do
   writeDocuments . map (uncurry solrParty) =<< lookupPartyAuthorizations
   writeDocuments . map solrTag =<< lookupTags
 
-updateIndex :: (MonadHasService c m, MonadDB c m) => m ()
+updateIndex :: (MonadIO m, MonadBaseControl IO m, MonadHasContext c m) => m ()
 updateIndex = do
-  db <- peek
-  focusIO $ \rc -> do
-    t <- getCurrentTime
-    handle
-      (\(e :: HC.HttpException) -> logMsg t ("solr update failed: " ++ show e) (serviceLogs rc))
-      $ do
-        let req = solrRequest (serviceSolr rc)
-        _ <- HC.httpNoBody req
-          { HC.path = HC.path req <> "update/json"
-          , HC.method = methodPost
-          , HC.requestBody = HC.RequestBodyStreamChunked $ \wf -> do
-            w <- runInvert $ runReaderT (runSolrM (writeUpdate writeAllDocuments)) (SolrContext rc db)
-            wf $ Fold.fold <$> w
-          , HC.requestHeaders = (hContentType, "application/json") : HC.requestHeaders req
-          } (serviceHTTPClient rc)
-        t' <- getCurrentTime
-        logMsg t' ("solr update complete " ++ show (diffUTCTime t' t)) (serviceLogs rc)
+  ctx <- peek
+  req <- peeks solrRequest
+  t <- liftIO getCurrentTime
+  handle
+    (\(e :: HC.HttpException) -> focusIO $ logMsg t ("solr update failed: " ++ show e))
+    $ do
+      _ <- focusIO $ HC.httpNoBody req
+        { HC.path = HC.path req <> "update/json"
+        , HC.method = methodPost
+        , HC.requestBody = HC.RequestBodyStreamChunked $ \wf -> do
+          w <- runInvert $ runReaderT (runSolrM (writeUpdate writeAllDocuments)) (BackgroundContext ctx)
+          wf $ Fold.fold <$> w
+        , HC.requestHeaders = (hContentType, "application/json") : HC.requestHeaders req
+        }
+      t' <- liftIO getCurrentTime
+      focusIO $ logMsg t' ("solr update complete " ++ show (diffUTCTime t' t))

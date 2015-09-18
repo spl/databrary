@@ -14,7 +14,7 @@ import Databrary.View.Form
 
 import {-# SOURCE #-} Databrary.Controller.VolumeAccess
 
-htmlVolumeAccessForm :: VolumeAccess -> Context -> FormHtml f
+htmlVolumeAccessForm :: VolumeAccess -> RequestContext -> FormHtml f
 htmlVolumeAccessForm a@VolumeAccess{ volumeAccessVolume = vol, volumeAccessParty = p } = htmlForm
   ("Access to " <> volumeName vol <> " for " <> partyName p)
   postVolumeAccess (HTML, (volumeId vol, VolumeAccessTarget (partyId p)))

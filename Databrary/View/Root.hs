@@ -16,7 +16,7 @@ import Databrary.Controller.Party
 import Databrary.View.Template
 import Databrary.View.Html
 
-htmlRoot :: Context -> H.Html
+htmlRoot :: RequestContext -> H.Html
 htmlRoot req = htmlTemplate req Nothing $ \js -> do
   H.ul $ do
     H.li $ foldIdentity

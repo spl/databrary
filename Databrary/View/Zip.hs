@@ -47,7 +47,7 @@ import Databrary.View.Html
 
 import {-# SOURCE #-} Databrary.Controller.Zip
 
-htmlVolumeDescription :: Bool -> Container -> [Citation] -> [Funding] -> [[AssetSlot]] -> [[AssetSlot]] -> Context -> H.Html
+htmlVolumeDescription :: Bool -> Container -> [Citation] -> [Funding] -> [[AssetSlot]] -> [[AssetSlot]] -> RequestContext -> H.Html
 htmlVolumeDescription inzip top@Container{ containerVolume = Volume{..} } cite fund atl abl req = H.docTypeHtml $ do
   H.head $ do
     H.title $ do

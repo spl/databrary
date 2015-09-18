@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Databrary.Action
   ( Request
-  , Context
+  , RequestContext
   , ActionM
   , Action
 
@@ -44,10 +44,10 @@ redirectRouteResponse s h r a req =
 otherRouteResponse :: ResponseHeaders -> Route r a -> a -> Request -> Response
 otherRouteResponse = redirectRouteResponse seeOther303
 
-forbiddenResponse :: Context -> Response
+forbiddenResponse :: RequestContext -> Response
 forbiddenResponse = response forbidden403 [] . htmlForbidden
 
-notFoundResponse :: Context -> Response
+notFoundResponse :: RequestContext -> Response
 notFoundResponse = response notFound404 [] . htmlNotFound
 
 maybeAction :: Maybe a -> ActionM a
