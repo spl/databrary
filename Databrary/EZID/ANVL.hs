@@ -1,4 +1,4 @@
-module Databrary.Store.ANVL
+module Databrary.EZID.ANVL
   ( encode
   , parse
   ) where

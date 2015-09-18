@@ -20,6 +20,7 @@ import Databrary.Web.Types (Web)
 import Databrary.Static.Service (Static)
 import Databrary.Solr.Service (Solr)
 import Databrary.Ingest.Service (Ingest)
+import Databrary.EZID.Service (EZID)
 import Databrary.Model.Time
 
 newtype Secret = Secret BS.ByteString
@@ -37,8 +38,9 @@ data Service = Service
   , serviceWeb :: !Web
   , serviceHTTPClient :: !HTTPClient
   , serviceStatic :: !Static
-  , serviceSolr :: !Solr
   , serviceIngest :: !Ingest
+  , serviceSolr :: !Solr
+  , serviceEZID :: !(Maybe EZID)
   }
 
-makeHasRec ''Service ['serviceSecret, 'serviceEntropy, 'servicePasswd, 'serviceLogs, 'serviceMessages, 'serviceDB, 'serviceStorage, 'serviceAV, 'serviceWeb, 'serviceHTTPClient, 'serviceStatic, 'serviceSolr, 'serviceIngest]
+makeHasRec ''Service ['serviceSecret, 'serviceEntropy, 'servicePasswd, 'serviceLogs, 'serviceMessages, 'serviceDB, 'serviceStorage, 'serviceAV, 'serviceWeb, 'serviceHTTPClient, 'serviceStatic, 'serviceIngest, 'serviceSolr, 'serviceEZID]

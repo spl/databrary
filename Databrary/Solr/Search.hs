@@ -72,7 +72,7 @@ search SearchQuery{..} = do
   focusIO $ httpRequest req
     { HC.path = HC.path req <> "search"
     , HC.queryString = renderSimpleQuery True query
-    } "application/json" (fmap (Just . BSL.fromChunks) . HC.brConsume)
+    } "application/json" (fmap (Just . BSL.fromChunks) . HC.brConsume . HC.responseBody)
   where
   query = 
     [ ("q", BSL.toStrict $ B.toLazyByteString $ qp <> uw ql)

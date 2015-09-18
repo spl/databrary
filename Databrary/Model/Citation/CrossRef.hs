@@ -22,7 +22,9 @@ import Databrary.Model.URL
 import Databrary.Model.Citation.Types
 
 crossRefUrl :: HC.Request
-crossRefUrl = fromJust $ HC.parseUrl "http://data.crossref.org/"
+crossRefUrl = (fromJust $ HC.parseUrl "http://data.crossref.org/")
+  { HC.cookieJar = Nothing
+  }
 
 crossRefReq :: String -> HC.Request
 crossRefReq h = crossRefUrl { HC.path = BSC.pack $ '/' : URI.escapeURIString URI.isUnescapedInURIComponent h }
@@ -46,11 +48,11 @@ lookupCitation :: URI.URI -> HTTPClient -> IO (Maybe Citation)
 lookupCitation uri hcm = runMaybeT $ do
   hdl <- may $ uriHDL uri
   let req = httpRequest (crossRefReq hdl)
-  j <- MaybeT $ req "application/vnd.citationstyles.csl+json" (\rb ->
-    P.maybeResult <$> P.parseWith rb JSON.json BS.empty) hcm
+  j <- MaybeT $ req "application/vnd.citationstyles.csl+json" (\r ->
+    P.maybeResult <$> P.parseWith (HC.responseBody r) JSON.json BS.empty) hcm
   cite <- may $ JSON.parseMaybe parseCitation j
   -- empirically this is UTF-8, but does not say so:
-  bib <- lift $ req "text/x-bibliography;style=apa" (fmap Just . HC.brConsume) hcm
+  bib <- lift $ req "text/x-bibliography;style=apa" (fmap Just . HC.brConsume . HC.responseBody) hcm
   return $ maybe cite (\h -> cite{ citationHead = Fold.foldMap TE.decodeUtf8 h }) bib
   where
   may = MaybeT . return

@@ -20,8 +20,9 @@ import Databrary.Service.Log (initLogs, finiLogs)
 import Databrary.Service.Messages (initMessages)
 import Databrary.Web.Service (initWeb)
 import Databrary.Static.Service (initStatic)
-import Databrary.Solr.Service (initSolr, finiSolr)
 import Databrary.Ingest.Service (initIngest)
+import Databrary.Solr.Service (initSolr, finiSolr)
+import Databrary.EZID.Service (initEZID)
 import Databrary.Service.Types
 
 loadConfig :: IO C.Config
@@ -44,6 +45,7 @@ initService conf = do
   httpc <- initHTTPClient
   static <- initStatic (C.subconfig "static" conf)
   solr <- initSolr (C.subconfig "solr" conf)
+  ezid <- initEZID (C.subconfig "ezid" conf)
   ingest <- initIngest
   return $ Service
     { serviceStartTime = time
@@ -58,8 +60,9 @@ initService conf = do
     , serviceWeb = web
     , serviceHTTPClient = httpc
     , serviceStatic = static
-    , serviceSolr = solr
     , serviceIngest = ingest
+    , serviceSolr = solr
+    , serviceEZID = ezid
     }
 
 finiService :: Service -> IO ()

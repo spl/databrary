@@ -54,11 +54,13 @@ focusLift f = lift . f =<< peek
 focusBase :: (MonadBase t m, MonadHas a c m) => (a -> t b) -> m b
 focusBase f = liftBase . f =<< peek
 
-{-# INLINE focusIO #-}
+{-# INLINE[2] focusIO #-}
 focusIO :: (MonadIO m, MonadHas a c m) => (a -> IO b) -> m b
 focusIO f = liftIO . f =<< peek
 
 {-# RULES "focusLift/ReaderT" focusLift = focusReader #-}
+{-# RULES "focusBase/ReaderT" focusBase = focusReader #-}
+{-# RULES "focusIO/ReaderT" focusIO = focusReader #-}
 
 getFieldType :: TH.Name -> TH.Name -> TH.TypeQ
 getFieldType tn fn = do

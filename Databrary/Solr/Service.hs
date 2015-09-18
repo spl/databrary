@@ -77,6 +77,7 @@ initSolr conf = do
     { solrRequest = req
       { HC.port = port
       , HC.redirectCount = 0
+      , HC.cookieJar = Nothing
       }
     , solrProcess = ph
     }
