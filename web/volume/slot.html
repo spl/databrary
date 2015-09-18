@@ -219,7 +219,7 @@
                 <div class="slot-track-asset-info">
                   <span ng-if="!(t.asset || t.file)" message="asset.empty" class="slot-message-empty"></span>
                   <img class="slot-track-asset-thumb" ng-if="!!t.asset && t.asset.checkPermission(page.constants.permission.VIEW)" ng-src="{{t.asset.thumbRoute(24)}}">
-                  <div class="slot-track-asset-info-name" ng-class="{uploading: !!t.file}">
+                  <div class="slot-track-asset-info-name" ng-class="{uploading: !!t.file}" ng-if="!!t.asset || !!t.file">
                     <span ng-bind="t.asset.name || t.data.name || t.file.file.name"></span>
                     <span ng-if="!!t.asset.fullExcerpt"> (highlight)</span>
                     <span class="track-status" ng-if="t.asset && !t.asset.duration && t.asset.format.type==='video'"> (processing)</span>
