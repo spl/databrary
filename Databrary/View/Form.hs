@@ -153,10 +153,10 @@ inputHidden val ref dat = H.input
   H.! HA.name  ref
   H.! HA.value (maybe (H.toValue val) byteStringValue dat)
 
-csrfForm :: Context -> FormHtml f
+csrfForm :: RequestContext -> FormHtml f
 csrfForm = lift . foldIdentity mempty (\s -> inputHidden (byteStringValue $ sessionVerf s) "csverf" Nothing) . view
 
-htmlForm :: T.Text -> ActionRoute a -> a -> FormHtml f -> (JSOpt -> H.Html) -> Context -> FormHtml f
+htmlForm :: T.Text -> ActionRoute a -> a -> FormHtml f -> (JSOpt -> H.Html) -> RequestContext -> FormHtml f
 htmlForm title act arg form body req = liftWith $ \run -> do
   htmlTemplate req (Just title) $ \js -> do
     actionForm act arg js $ do

@@ -24,7 +24,7 @@ htmlAssetForm asset = do
   field "file" inputFile
   -- TODO
 
-htmlAssetEdit :: AssetTarget -> Context -> FormHtml f
+htmlAssetEdit :: AssetTarget -> RequestContext -> FormHtml f
 htmlAssetEdit (AssetTargetVolume v) = htmlForm "Create asset" createAsset     (HTML, volumeId v) (htmlAssetForm Nothing) (const mempty)
 htmlAssetEdit (AssetTargetSlot s)   = htmlForm "Create asset" createSlotAsset (HTML, slotId s) (field "container" (inputHidden $ show $ containerId $ slotContainer s) >> htmlAssetForm Nothing) (const mempty)
 htmlAssetEdit (AssetTargetAsset t)  = htmlForm ("Edit asset " <> fold (assetName a)) postAsset (HTML, assetId a) (htmlAssetForm (Just a)) (const mempty)

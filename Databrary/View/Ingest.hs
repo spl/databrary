@@ -31,7 +31,7 @@ htmlIngestStatus (IngestCompleted cl) js = do
   H.ul $ forM_ cl $ \c ->
     H.li $ H.a H.! actionLink viewContainer (HTML, (Nothing, Id c)) js $ H.toMarkup c
 
-htmlIngestForm :: Volume -> IngestStatus -> Context -> FormHtml JSON.Value
+htmlIngestForm :: Volume -> IngestStatus -> RequestContext -> FormHtml JSON.Value
 htmlIngestForm v s = htmlForm
   ("Ingest " <> volumeName v)
   postIngest (volumeId v)

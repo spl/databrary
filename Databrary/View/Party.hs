@@ -35,7 +35,7 @@ import {-# SOURCE #-} Databrary.Controller.Party
 import {-# SOURCE #-} Databrary.Controller.Volume
 import {-# SOURCE #-} Databrary.Controller.Register
 
-htmlPartyView :: Party -> Context -> H.Html
+htmlPartyView :: Party -> RequestContext -> H.Html
 htmlPartyView p@Party{..} req = htmlTemplate req (Just $ partyName p) $ \js -> do
   when (view p >= PermissionEDIT) $
     H.p $
@@ -66,7 +66,7 @@ htmlPartyForm t = do
   field "affiliation" $ inputText $ partyAffiliation =<< t
   field "url" $ inputText $ show <$> (partyURL =<< t)
 
-htmlPartyEdit :: Maybe Party -> Context -> FormHtml TempFile
+htmlPartyEdit :: Maybe Party -> RequestContext -> FormHtml TempFile
 htmlPartyEdit t = maybe
   (htmlForm "Create party" createParty HTML)
   (\p -> htmlForm
@@ -89,13 +89,13 @@ htmlPartySearchForm pf = do
   field "authorization" $ inputEnum False $ partyFilterAuthorization pf
   field "institution" $ inputCheckbox $ fromMaybe False $ partyFilterInstitution pf
 
-htmlPartySearch :: PartyFilter -> [Party] -> Context -> FormHtml f
+htmlPartySearch :: PartyFilter -> [Party] -> RequestContext -> FormHtml f
 htmlPartySearch pf pl req = htmlForm "Search users" queryParties HTML
   (htmlPartySearchForm pf)
   (\js -> htmlPaginate (htmlPartyList js) (partyFilterPaginate pf) pl (view req))
   req
 
-htmlPartyAdmin :: PartyFilter -> [Party] -> Context -> FormHtml f
+htmlPartyAdmin :: PartyFilter -> [Party] -> RequestContext -> FormHtml f
 htmlPartyAdmin pf pl req = htmlForm "party admin" adminParties ()
   (htmlPartySearchForm pf)
   (\js -> htmlPaginate
@@ -123,7 +123,7 @@ htmlPartyAdmin pf pl req = htmlForm "party admin" adminParties ()
     (partyFilterPaginate pf) pl (view req))
   req
 
-htmlPartyDelete :: Party -> Context -> FormHtml f
+htmlPartyDelete :: Party -> RequestContext -> FormHtml f
 htmlPartyDelete p@Party{..} = htmlForm ("delete " <> partyName p)
   deleteParty partyId
   (return ())   

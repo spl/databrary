@@ -69,7 +69,7 @@ angularRequest :: Wai.Request -> Maybe BSB.Builder
 angularRequest req = angularEnable js req ?> nojs
   where (js, nojs) = jsURL JSDisabled req
 
-angularResult :: BSB.Builder -> Context -> IO ()
+angularResult :: BSB.Builder -> RequestContext -> IO ()
 angularResult nojs auth = do
   debug <-
 #ifdef DEVEL

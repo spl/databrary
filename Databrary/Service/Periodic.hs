@@ -4,16 +4,15 @@ module Databrary.Service.Periodic
   ) where
 
 import Control.Concurrent (ThreadId, forkFinally, threadDelay)
-import Control.Monad.Trans.Reader (ReaderT(..))
+import Control.Monad.Trans.Reader (withReaderT)
 import Data.Fixed (Fixed(..), Micro)
 import Data.Time.Clock (UTCTime(..), diffUTCTime, getCurrentTime)
 import Data.Time.LocalTime (TimeOfDay(TimeOfDay), timeOfDayToTime)
 
 import Databrary.Has
 import Databrary.Service.Types
-import Databrary.Service.DB
 import Databrary.Service.Log
-import Databrary.Model.Time
+import Databrary.Context
 import Databrary.Model.Token
 import Databrary.Model.Volume
 import Databrary.Solr.Index -- TODO
@@ -26,23 +25,8 @@ threadDelay' (MkFixed t)
   m' = toInteger m
   m = maxBound
 
-data PeriodicContext = PeriodicContext
-  { periodicService :: !Service
-  , periodicTimestamp :: !Timestamp
-  , periodicDB :: !DBConn
-  }
-
-makeHasRec ''PeriodicContext ['periodicService, 'periodicTimestamp, 'periodicDB]
-
-type PeriodicM a = ReaderT PeriodicContext IO a
-
-runPeriodicM :: PeriodicM a -> Service -> IO a
-runPeriodicM f rc = do
-  t <- getCurrentTime
-  withDB (serviceDB rc) $ runReaderT f . PeriodicContext rc t
-
 daily :: Service -> IO ()
-daily = runPeriodicM $ do
+daily = runContextM $ withReaderT BackgroundContext $ do
   t <- peek
   focusIO $ logMsg t "running daily cleanup"
   cleanTokens

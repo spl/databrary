@@ -18,7 +18,7 @@ import Databrary.Action
 import Databrary.View.Html
 import Databrary.View.Template
 
-htmlFormats :: Context -> H.Html
+htmlFormats :: RequestContext -> H.Html
 htmlFormats req = htmlTemplate req (Just $ msg "help.formats.title") $ \_ ->
   H.article H.! HA.class_ "wrap" $
     H.div H.! HA.class_ "row" $ do

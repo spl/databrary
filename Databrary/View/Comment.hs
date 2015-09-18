@@ -12,7 +12,7 @@ import Databrary.View.Form
 
 import {-# SOURCE #-} Databrary.Controller.Comment
 
-htmlCommentForm :: Slot -> Context -> FormHtml f
+htmlCommentForm :: Slot -> RequestContext -> FormHtml f
 htmlCommentForm slot = htmlForm "Comment" postComment (HTML, slotId slot)
   (field "text" $ inputText (Nothing :: Maybe T.Text))
   (const mempty)

@@ -11,7 +11,7 @@ import Databrary.View.Form
 
 import {-# SOURCE #-} Databrary.Controller.Register
 
-htmlRegister :: Context -> FormHtml f
+htmlRegister :: RequestContext -> FormHtml f
 htmlRegister = htmlForm "Register" postRegister HTML
   (do
     field "prename" $ inputText (Nothing :: Maybe String)
@@ -21,7 +21,7 @@ htmlRegister = htmlForm "Register" postRegister HTML
     field "agreement" $ inputCheckbox False)
   (const mempty)
 
-htmlPasswordReset :: Context -> FormHtml f
+htmlPasswordReset :: RequestContext -> FormHtml f
 htmlPasswordReset = htmlForm "Password Reset" postPasswordReset HTML
   (field "email" $ inputText (Nothing :: Maybe String))
   (const mempty)

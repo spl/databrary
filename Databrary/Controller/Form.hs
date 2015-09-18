@@ -60,18 +60,18 @@ handleForm re = either (result . re) return
 handleFormErrors :: Maybe (FormErrors -> Html.Html) -> Either FormErrors a -> ActionM a
 handleFormErrors = handleForm . maybe jsonFormErrors htmlFormErrors
 
-runFormWith :: FormData f -> Maybe (Context -> FormHtml f) -> DeformActionM f a -> ActionM a
+runFormWith :: FormData f -> Maybe (RequestContext -> FormHtml f) -> DeformActionM f a -> ActionM a
 runFormWith fd mf fa = do
   req <- ask
   let fv hv = runFormView (hv req) fd
   handleFormErrors (fv <$> mf) =<< runDeform fa fd
 
-runFormFiles :: FileContent f => [(BS.ByteString, Word64)] -> Maybe (Context -> FormHtml f) -> DeformActionM f a -> ActionM a
+runFormFiles :: FileContent f => [(BS.ByteString, Word64)] -> Maybe (RequestContext -> FormHtml f) -> DeformActionM f a -> ActionM a
 runFormFiles fl mf fa = do
   fd <- getFormData fl
   runFormWith fd mf fa
 
-runForm :: Maybe (Context -> FormHtml ()) -> DeformActionM () a -> ActionM a
+runForm :: Maybe (RequestContext -> FormHtml ()) -> DeformActionM () a -> ActionM a
 runForm = runFormFiles []
 
 blankForm :: FormHtml f -> Response

@@ -10,7 +10,7 @@ import Databrary.View.Form
 
 import {-# SOURCE #-} Databrary.Controller.Search
 
-htmlUpdateIndex :: Context -> FormHtml f
+htmlUpdateIndex :: RequestContext -> FormHtml f
 htmlUpdateIndex = htmlForm
   "update index"
   postUpdateIndex ()
