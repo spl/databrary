@@ -471,8 +471,9 @@ app.directive 'spreadsheet', [
                 delspace.className = 'icon'
               if Editing && Key.id == info.c && !info.row.top
                 cell.classList.add('folder-type')
+                cell.classList.add('clickable')
                 del = cell.appendChild(document.createElement('a'))
-                del.className = 'trash icon'
+                del.className = 'clickable trash icon'
                 i = new Info(info.i)
                 i.c = info.c
                 i.cell = cell
@@ -501,7 +502,7 @@ app.directive 'spreadsheet', [
               v = info.metric.options[v]
             else
               if info.metric.type == 'void' && info.d
-                cell.className = 'icon ' + if Editing && Key.id != info.c then 'trash' else 'bullet'
+                cell.className = 'icon ' + if Editing && Key.id != info.c then 'trash clickable' else 'bullet'
                 v = ''
           if info.metric.long
             cell.classList.add('long')
@@ -533,6 +534,7 @@ app.directive 'spreadsheet', [
           else
             td.setAttribute("colspan", width)
             td.classList.add('add')
+            td.classList.add('clickable')
             td.id = ID + '-add_' + info.i + '_' + info.c
             td.appendChild(document.createTextNode("add " + info.category.name))
 

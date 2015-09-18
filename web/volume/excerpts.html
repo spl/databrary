@@ -34,12 +34,12 @@
               </div>
               <div ng-click="setCurrent(excerpt)" class="panel-excerpts-icon">
                 <div ng-if="::hasThumbnail(excerpt)">
-                  <figure fill>
+                  <figure class="clickable" fill>
                     <img ng-src="{{::excerpt.thumbRoute(109)}}">
                   </figure>
                 </div>
                 <div ng-if="::!hasThumbnail(excerpt)">
-                  <figure class="no-thumbnail">
+                  <figure class="clickable no-thumbnail">
                     <span ng-bind="::excerpt.asset.name"></span>
                   </figure>
                 </div>

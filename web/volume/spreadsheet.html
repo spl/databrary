@@ -33,9 +33,9 @@
       <tr class="spreadsheet-head-groups">
         <th class="metric-col" ng-repeat="col in groups track by col.category.id" id="{{::id}}-category_{{::col.category.id}}" colspan="{{col.metrics.length}}" ng-class="::'col'+col.category.id">
           <span class="spreadsheet-tab-name" ng-bind="::col.category.name" tooltip="col.category.description"></span>
-          <span class="icon list spreadsheet-tab-options-icon" ng-click="tabOptionsToggle($event)" ng-if="key === col.category && views.length > 1" tooltip="'spreadsheet.switchview' | message"></span>
+          <span class="icon list spreadsheet-tab-options-icon clickable" ng-click="tabOptionsToggle($event)" ng-if="key === col.category && views.length > 1" tooltip="'spreadsheet.switchview' | message"></span>
           <ul class="flat spreadsheet-tab-options" click-elsewhere="tabOptionsToggle($event)" ng-if="key === col.category && tabOptionsClick">
-            <li ng-repeat="c in views track by c.id" class="spreadsheet-tab-option" ng-click="setKey(c.id)" ng-if="key !== c">
+            <li ng-repeat="c in views track by c.id" class="spreadsheet-tab-option clickable" ng-click="setKey(c.id)" ng-if="key !== c">
               <span ng-if="::key.id !== 'slot' && c.id == 'slot'" ng-bind="::'back to '+c.name+' view'" class="default"></span>
               <span ng-if="::key.id !== 'slot' && c.id !== 'slot' || key.id === 'slot'" ng-bind="::c.name+' view'"></span>
             </li>
@@ -43,7 +43,7 @@
         </th>
       </tr>
       <tr class="spreadsheet-head-metrics">
-        <th ng-repeat="col in cols" id="{{::id}}-metric_{{::$index}}" ng-click="clickMetric(col)" ng-class="colClasses(col)" ng-bind="col.metric.name" tooltip="col.metric.description"></th>
+        <th class="clickable" ng-repeat="col in cols" id="{{::id}}-metric_{{::$index}}" ng-click="clickMetric(col)" ng-class="colClasses(col)" ng-bind="col.metric.name" tooltip="col.metric.description"></th>
       </tr>
     </thead>
     <tbody class="spreadsheet-tbody" id="{{::id}}">
