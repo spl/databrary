@@ -12,7 +12,7 @@
           <span class="volume-design-description" ng-bind="::c.description"></span>
           <div ng-if="volume.metrics[c.id]">
             <span class="small" >Selected fields: </span> 
-            <ul class="comma inline flat">
+            <ul class="comma inline">
               <li class="strong" ng-repeat="m in volume.metrics[c.id]" ng-bind="::page.constants.metric[m].name"></li>
             </ul>
           </div>
@@ -26,15 +26,15 @@
           <strong ng-bind="selected ? selected.name : 'Fields'" ng-class="{b: volumeDesign.category[selected.id]}"></strong>
           <small class="reminder" ng-if="selected && !volumeDesign.category[selected.id]">Enable this category on the left to change fields</small>
           <small class="reminder" ng-if="!selected">Select a category name to edit its fields</small> 
-          <a ng-if="volumeDesign.category[selected.id]" class="button mini" ng-click="activateStep(step.data)">manage list</a>
+          <a ng-if="volumeDesign.category[selected.id]" class="button mini small" ng-click="activateStep(step.data)">manage list</a>
         </div>
         <ul class="volume-design-fields flat" ng-class="{'disabled':!!selected && !volumeDesign.category[selected.id] || !selected}">
           <li ng-repeat="m in ::page.constants.metrics track by m.id" ng-if="::m.name != 'indicator'">
             <input type="checkbox" ng-disabled="!volumeDesign.category[selected.id] || selected.ident.includes(m.id)" ng-model="volumeDesign.metric[m.id]" ng-change="change(selected.id, m.id)">
             <span class="icon release" ng-class="::page.constants.release[m.release]" tooltip="'release.'+page.constants.release[m.release]+'.metric' | message"></span>
             <span ng-bind="::m.name" class="b"></span>: 
-            <span class="volume-design-description" ng-bind="::m.description"></span> 
-            <span class="volume-design-description" ng-if="::m.assumed">(assumed "{{::m.assumed}}" by default)</span>
+            <span class="small" ng-bind="::m.description"></span> 
+            <span class="small" ng-if="::m.assumed">(assumed "{{::m.assumed}}" by default)</span>
           </li>
         </ul>
       </div>
