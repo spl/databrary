@@ -26,7 +26,7 @@
             <span class="release icon" ng-class="::el.release" hint="release-{{::el.release}}"></span>
             <span message="{{::'release.'+el.release+'.title'}}" hint="release-{{::el.release}}"></span>
           </div>
-          <div class="panel-excerpts-box" ng-repeat="excerpt in ::el">
+          <div class="panel-excerpts-box small" ng-repeat="excerpt in ::el">
             <div class="panel-excerpts-binder" ng-class="{'panel-excerpts-list-current':excerpt===current}">
               <div class="panel-excerpts-actions">
                 <img class="icon" ng-src="{{::excerpt.icon}}" hint="format-{{::excerpt.format.extension}}">

@@ -54,13 +54,13 @@
         <article class="home-panel home-activity row">
           <span class="home-section-text home-sections-title"><span class="icon activity"></span>Recent Activity</span>
           <dl class="home-section-text">
-            <dt ng-repeat-start="act in ::activity">
+            <dt class="small" ng-repeat-start="act in ::activity">
               <time datetime="{{::act.time | date:'yyyy-MM-dd HH:mm:ss Z'}}" pubdate>
                 {{::act.time | date}}
               </time>
             </dt>
             <dd class="home-activity-volume" ng-if="::act.volume" ng-init="volume=act.volume">
-              <p>New shared data</p>
+              <p class="small">New shared data</p>
               <img class="volume-thumb" ng-src="{{::volume.thumbRoute(72)}}">
               <div>
                 <a class="volume-name" ng-href="{{::volume.route()}}" ng-bind="::volume.name"></a>
@@ -70,7 +70,7 @@
               </div>
             </dd>
             <dd ng-repeat-end ng-if="::act.party" ng-init="party=act.party">
-              <p>New authorized <span ng-if="::party.institution">institution</span><span ng-if="::!party.institution">investigator</span></p>
+              <p class="small">New authorized <span ng-if="::party.institution">institution</span><span ng-if="::!party.institution">investigator</span></p>
               <portrait></portrait>
             </dd>
           </dl>

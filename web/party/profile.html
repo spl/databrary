@@ -7,7 +7,7 @@
       <div ng-repeat="vl in ::volumes" ng-if="::vl.length">
         <div class="profile-section-header">
           <strong ng-bind="::'profile.volumes.'+vl.type+'.title' | message:vl.parent.party.name"></strong> 
-          <a ng-if="::vl.type === 'individual' && party.authorization >= page.constants.permission.EDIT || vl.parent.parent.member >= page.constants.permission.ADMIN" ng-href="{{page.router.volumeCreate([vl.parent.party.id])}}" class="button mini">Create volume</a>
+          <a ng-if="::vl.type === 'individual' && party.authorization >= page.constants.permission.EDIT || vl.parent.parent.member >= page.constants.permission.ADMIN" ng-href="{{page.router.volumeCreate([vl.parent.party.id])}}" class="button mini small white">Create volume</a>
           <div class="profile-additional" ng-if="::!!vl.parent">
             <span ng-bind="('auth.member.'+page.constants.permission[vl.parent.parent.member]+'.title' | message)+': '+('auth.member.'+page.constants.permission[vl.parent.parent.member] | message:'their')"></span>
           </div>
@@ -50,11 +50,11 @@
             <div class="profile-link">
               <a ng-href="{{::p.party.route()}}" ng-bind="::p.party.name"></a><wbr>
               <span ng-if="::!(p.parent.member || p.parent.site)" class="permission-auth-pending" message="auth.pending"></span>
-              <span ng-if="::(p.parent.member || p.parent.site)" class="permission-auth-expiration" ng-bind="::p.parent.expires | date:'yyyy/MM/dd'" ng-class="::{expired:isExpired(p.parent)}"></span><wbr>
+              <span ng-if="::(p.parent.member || p.parent.site)" class="permission-auth-expiration small" ng-bind="::p.parent.expires | date:'yyyy/MM/dd'" ng-class="::{expired:isExpired(p.parent)}"></span><wbr>
               <a href="" ng-click="p.edit('apply')" class="icon edit button neutral profile-hover-link"></a>
               <br>
             </div>
-            <div ng-if="::p.parent.site" class="profile-additional">
+            <div ng-if="::p.parent.site" class="profile-additional small">
               <span ng-bind="::'auth.site.'+page.constants.permission[p.parent.site]+'.title' | message"></span>: 
               <span ng-bind="::'auth.site.'+page.constants.permission[p.parent.site] | message:'their'"></span>
             </div>
@@ -68,7 +68,7 @@
           <a ng-href="{{::party.editRoute('grant')}}" class="button icon edit neutral"></a>
         </div>
         <div ng-repeat="(member, cl) in ::parties.children track by member" ng-if="::cl.length" ng-class="{'profile-affiliate-highlight': member && selected.self.children}">
-          <div class="profile-subsection-header">
+          <div class="profile-subsection-header small">
             <span ng-if="member" class="icon network"></span> 
             <strong ng-bind="::'auth.member.'+page.constants.permission[member]+'.title' | message"></strong>: 
             <span ng-bind="::'auth.member.'+page.constants.permission[member] | possessive:party"></span> 
@@ -85,7 +85,7 @@
               <div class="profile-link">
                 <a ng-href="{{::p.party.route()}}" ng-bind="::p.party.name"></a><wbr>
                 <span ng-if="::!(p.child.member || p.child.site)" class="permission-auth-pending" message="auth.pending"></span>
-                <span ng-if="::(p.child.member || p.child.site)" class="permission-auth-expiration" ng-bind="::p.child.expires | date:'yyyy/MM/dd'" ng-class="::{expired:isExpired(p.child)}"></span><wbr>
+                <span ng-if="::(p.child.member || p.child.site)" class="permission-auth-expiration small" ng-bind="::p.child.expires | date:'yyyy/MM/dd'" ng-class="::{expired:isExpired(p.child)}"></span><wbr>
                 <a href="" ng-click="p.edit('grant')" class="icon edit button mini profile-hover-link"></a>
               </div>
             </li>
@@ -95,7 +95,7 @@
       <div class="profile-section hide-mobile" ng-if="::parties.collaborators.length">
         <div class="profile-section-header">
           <strong ng-bind="::'profile.parties.'+parties.collaborators.type+'.title' | message"></strong>
-          <div class="profile-additional" ng-bind="::'profile.parties.'+parties.collaborators.type+'.definition' | message"></div>
+          <div class="profile-additional small" ng-bind="::'profile.parties.'+parties.collaborators.type+'.definition' | message"></div>
         </div>
         <ul>
           <li ng-repeat="p in ::parties.collaborators" ng-class="{'profile-highlight': !!p.selected}">

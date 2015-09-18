@@ -30,15 +30,9 @@
   a
     overflow hidden
   .button:not(.icon)
-    font-size 12px
     line-height 12px
-    background-color white
     padding-top b8
     padding-bottom b8
-    &:hover
-      background-color neutral51
-    &:focus
-      background-color neutral52
 
 .profile-volumes
   ul
@@ -51,11 +45,10 @@
   @media screen and (min-width: grid-mobile-width+1)
     border-left b2 solid neutral52
   .permission-auth-expiration
-    font-size b2
     color neutral
     margin-left b3
-  .permission-auth-expiration.expired
-    color red
+    &.expired
+      color red
   ul
     margin 0
     padding b2 0
@@ -77,13 +70,11 @@
   
 .profile-subsection-header
   margin-top b4
-  font-size b2
   line-height b2
   .icon
     size b2
     
 .profile-additional
-  font-size b2
   line-height b2
   margin-bottom b8
 
