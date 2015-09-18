@@ -25,7 +25,7 @@
               <a href="//databrary.org/news.html">News</a>
             <li ng-class="{'hide-mobile':!hoverNav}">
               <a href="//databrary.org/about.html"><span>About</span></a>
-              <ul>
+              <ul class="flat">
                 <li><a href="//databrary.org/about/mission.html">Mission</a></li>
                 <li><a href="//databrary.org/about/use-cases.html">Use Cases</a></li>
                 <li><a href="//databrary.org/about/team.html">Our Team</a></li>
@@ -36,7 +36,7 @@
             </li>
             <li ng-class="{'hide-mobile':!hoverNav}">
               <a href="//databrary.org/access.html"><span>Access</span></a>
-              <ul>
+              <ul class="flat">
                 <li><a href="//databrary.org/access/faq.html">FAQ</a></li>
                 <li><a href="//databrary.org/access/responsibilities.html">Rights &amp; Responsibilities</a></li>
                 <li><a href="//databrary.org/access/guide.html">User Guide</a></li>
@@ -45,7 +45,7 @@
             </li>
             <li ng-class="{'hide-mobile':!hoverNav}">
               <a href="//databrary.org/community.html"><span>Community</span></a>
-              <ul>
+              <ul class="flat">
                 <li><a ng-href="{{::page.router.search()}}?volume=false&f.party_authorization={{::page.constants.permission.EDIT}}&f.party_is_institution=false">Authorized Investigators</a></li>
                 <li><a ng-href="{{::page.router.search()}}?volume=false&f.party_authorization={{::page.constants.permission.ADMIN}}&f.party_is_institution=true">Institutions</a></li>
                 <li><a href="//databrary.org/community/board.html">Board</a></li>

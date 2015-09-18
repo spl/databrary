@@ -6,7 +6,7 @@
   <a href="" ng-click="showConsents=true" ng-hide="showConsents">
     Show legend of session release levels
   </a>
-  <ul class="release-legend" ng-show="showConsents">
+  <ul class="release-legend flat" ng-show="showConsents">
     <li ng-repeat="(i,c) in page.constants.release" ng-if="i>=0">
       <span class="icon release" ng-class="c"></span>
       <span ng-bind="'release.'+c+'.title' | message"></span>: 

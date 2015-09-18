@@ -12,7 +12,7 @@
             <span ng-bind="('auth.member.'+page.constants.permission[vl.parent.parent.member]+'.title' | message)+': '+('auth.member.'+page.constants.permission[vl.parent.parent.member] | message:'their')"></span>
           </div>
         </div>
-        <ul>
+        <ul class="flat">
           <li ng-repeat="v in ::vl" ng-class="{'profile-highlight': !!v.selected}">
             <div class="profile-left-icons hide-mobile">
               <span ng-click="v.select()" class="icon" ng-class="v.class()" tooltip="'Click to highlight ' + ('profile.volumes.selected' | message:'this volume')"></span>

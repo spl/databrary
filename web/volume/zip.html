@@ -26,7 +26,7 @@
   <p ng-if="::!assetTotal" message="download.zip.prompt.empty"></p>
 
   <div class="popup-classification release-legend">
-    <ul>
+    <ul class="flat">
       <li><b>File release levels:</b></li>
       <li>
         <span class="icon release"></span>
@@ -45,13 +45,13 @@
   </a>  
 
   <div>
-    <ul class="download-sessions" ng-if="::!!assetTotal">
+    <ul class="download-sessions flat" ng-if="::!!assetTotal">
       <li><b>List of files:</b></li>
       <li ng-repeat="c in ::containers">
         <span ng-if="contCount > 1" ng-bind="::' [ID ' + c.id + '] '"></span>
         <span ng-if="contCount > 1" ng-bind="::(c.top ? 'Materials ' : 'Session ') + c.date + ' ' + c.name + ': '"></span> 
         
-        <ul class="download-files">
+        <ul class="download-files flat">
           <li ng-if="filesInSession[c.id] === 0" class="download-no-permission">No files</li>
           <li ng-repeat="a in ::c.assets" ng-class="{'download-no-permission': !a.checkPermission(page.constants.permission.VIEW)}">
             <span class="icon release" ng-class="::page.constants.release[a.classification === undefined ? c.release : a.classification]"></span>
