@@ -6,6 +6,7 @@ module Databrary.Action.Response
   , okResponse
   , result
   , runResult
+  , proxyResponse
   ) where
 
 import Control.Exception (Exception, throwIO, handle)
@@ -19,6 +20,7 @@ import qualified Data.Text.Encoding as TE
 import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.Encoding as TLE
 import Data.Typeable (Typeable)
+import qualified Network.HTTP.Client as HC
 import Network.HTTP.Types (ResponseHeaders, Status, ok200, hContentType)
 import Network.Wai (Response, responseBuilder, responseLBS, StreamingBody, responseStream, FilePart(..), responseFile, responseStatus)
 import qualified Text.Blaze.Html as Html
@@ -96,3 +98,6 @@ result = liftIO . throwIO . Result
 
 runResult :: IO Response -> IO Response
 runResult = handle (return . resultResponse)
+
+proxyResponse :: HC.Response BSL.ByteString -> Response
+proxyResponse r = responseLBS (HC.responseStatus r) (HC.responseHeaders r) (HC.responseBody r)

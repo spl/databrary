@@ -19,7 +19,6 @@ import Network.HTTP.Types.URI (renderSimpleQuery)
 
 import Data.ByteString.Builder.Escape (escapeLazyByteStringCharsWith, escapeTextWith)
 import Databrary.Has
-import Databrary.HTTP.Client
 import Databrary.Model.Paginate
 import Databrary.Model.Metric.Types
 import Databrary.Solr.Service
@@ -66,13 +65,14 @@ quoteQuery e s = B.char8 '"' <> e '\\' "\"\\" s <> B.char8 '"'
 defaultParams :: B.Builder
 defaultParams = B.string8 "{!dismax qf=\"text_en^0.5 text_gen^0.5 keyword^2 tag_name party_name\" pf=\"keyword^2 tag_name party_name\" ps=3}"
 
-search :: MonadSolr c m => SearchQuery -> m (Maybe BSL.ByteString)
+search :: MonadSolr c m => SearchQuery -> m (HC.Response BSL.ByteString)
 search SearchQuery{..} = do
   req <- peeks solrRequest
-  focusIO $ httpRequest req
+  focusIO $ HC.httpLbs req
     { HC.path = HC.path req <> "search"
     , HC.queryString = renderSimpleQuery True query
-    } "application/json" (fmap (Just . BSL.fromChunks) . HC.brConsume . HC.responseBody)
+    , HC.checkStatus = \_ _ _ -> Nothing
+    }
   where
   query = 
     [ ("q", BSL.toStrict $ B.toLazyByteString $ qp <> uw ql)

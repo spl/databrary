@@ -28,8 +28,9 @@ initStatic conf = do
     { staticAuthorizeAddr = authaddr
     , staticInvestigator = fmap (\f -> f
       { HC.method = methodPost
-      , HC.requestHeaders = [(hContentType, "application/x-www-form-urlencoded")]
+      , HC.requestHeaders = (hContentType, "application/x-www-form-urlencoded") : HC.requestHeaders f
       , HC.cookieJar = Nothing
+      , HC.redirectCount = 0
       }) fillin
     , staticKey = hmac key
     }

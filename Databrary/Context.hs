@@ -8,7 +8,7 @@ module Databrary.Context
   , MonadHasBackgroundContext
   ) where
 
-import Control.Monad.Reader (ReaderT(..))
+import Control.Monad.Trans.Reader (ReaderT(..))
 import Control.Monad.Trans.Resource (InternalState, runResourceT, withInternalState)
 import Data.Time (getCurrentTime)
 

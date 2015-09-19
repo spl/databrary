@@ -9,6 +9,7 @@ import qualified Data.Configurator as C
 import qualified Data.Configurator.Types as C
 import qualified Data.Traversable as Trav
 import qualified Network.HTTP.Client as HC
+import Network.HTTP.Types (hContentType)
 
 data EZID = EZID
   { ezidRequest :: HC.Request
@@ -21,6 +22,10 @@ initEZID conf = C.lookup conf "ns" >>= Trav.mapM (\ns -> do
   pass <- C.require conf "pass"
   req <- HC.parseUrl "https://ezid.cdlib.org/"
   return $ EZID
-    { ezidRequest = HC.applyBasicAuth user pass req 
+    { ezidRequest = HC.applyBasicAuth user pass req
+      { HC.requestHeaders = (hContentType, "text/plain") : HC.requestHeaders req
+      , HC.responseTimeout = Just 100000000
+      , HC.redirectCount = 1
+      }
     , ezidNS = ns
     })

@@ -5,27 +5,32 @@ module Databrary.HTTP.Client
   , httpRequest
   , httpRequestJSON
   , CookiesT
+  , runCookiesT
   , httpRequestCookies
   ) where
 
 import Control.Applicative ((<$>))
 import Control.Arrow (first)
 import Control.Exception (handle)
-import Control.Monad.Trans.State.Strict (StateT(..))
+import Control.Monad.IO.Class (MonadIO)
+import Control.Monad.Trans.State.Strict (StateT(..), evalStateT)
 import qualified Data.Aeson as JSON
 import qualified Data.Attoparsec.ByteString as P
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
-import Data.Monoid ((<>))
+import Data.Monoid ((<>), mempty)
 import qualified Network.HTTP.Client as HC
+import Network.HTTP.Client.TLS (tlsManagerSettings)
 import Network.HTTP.Types (hAccept, hContentType, ok200)
+
+import Databrary.Has
 
 type HTTPClient = HC.Manager
 
 initHTTPClient :: IO HTTPClient
-initHTTPClient = HC.newManager HC.defaultManagerSettings
-  { HC.managerConnCount = 2
-  , HC.managerIdleConnectionCount = 4
+initHTTPClient = HC.newManager tlsManagerSettings
+  { HC.managerConnCount = 4
+  , HC.managerIdleConnectionCount = 8
   }
 
 contentType :: BS.ByteString -> BS.ByteString
@@ -48,6 +53,9 @@ httpRequestJSON req = httpRequest req "application/json" $ \r ->
 
 type CookiesT m a = StateT HC.CookieJar m a
 
-httpRequestCookies :: HC.Request -> BS.ByteString -> (HC.Response HC.BodyReader -> IO (Maybe a)) -> HTTPClient -> CookiesT IO (Maybe a)
-httpRequestCookies req acc f hcm = StateT $ \c -> maybe (Nothing, c) (first Just) <$>
-  httpRequest req{ HC.cookieJar = HC.cookieJar req <> Just c } acc (\r -> fmap (, HC.responseCookieJar r) <$> f r) hcm
+runCookiesT :: Monad m => CookiesT m a -> m a
+runCookiesT f = evalStateT f mempty
+
+httpRequestCookies :: (MonadIO m, MonadHas HTTPClient c m) => HC.Request -> BS.ByteString -> (HC.Response HC.BodyReader -> IO (Maybe a)) -> CookiesT m (Maybe a)
+httpRequestCookies req acc f = StateT $ \c -> maybe (Nothing, c) (first Just) <$>
+  focusIO (httpRequest req{ HC.cookieJar = HC.cookieJar req <> Just c } acc (\r -> fmap (, HC.responseCookieJar r) <$> f r))

@@ -8,13 +8,13 @@ module Databrary.Controller.Search
 import Control.Applicative ((<$>), (<*>))
 import Control.Monad (when)
 import Data.Maybe (fromMaybe)
-import Network.HTTP.Types (hContentType, internalServerError500)
 
 import Databrary.Has
 import Databrary.Model.Id.Types
 import Databrary.Model.Metric
 import Databrary.Solr.Search
 import Databrary.Solr.Index
+import Databrary.Action.Response
 import Databrary.Action
 import Databrary.HTTP.Path.Parser
 import Databrary.HTTP.Form (FormKey(..))
@@ -43,7 +43,7 @@ postSearch :: ActionRoute API
 postSearch = action GET (pathAPI </< "search") $ \api -> withAuth $ do
   when (api == HTML) angular
   q <- runForm Nothing searchForm
-  maybe (emptyResponse internalServerError500 []) (okResponse [(hContentType, "application/json")]) <$> search q
+  proxyResponse <$> search q
 
 viewUpdateIndex :: ActionRoute ()
 viewUpdateIndex = action GET ("search" >/> "index") $ \() -> withAuth $ do

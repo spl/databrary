@@ -131,6 +131,7 @@ Executable databrary
     regex-posix,
     bcrypt,
     http-client,
+    http-client-tls,
     mime-mail,
     fast-logger,
     digest,

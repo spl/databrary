@@ -3,10 +3,9 @@ module Databrary.Solr.Index
   ( updateIndex
   ) where
 
-import Control.Applicative (Applicative)
 import Control.Exception.Lifted (handle)
 import Control.Monad.IO.Class (MonadIO, liftIO)
-import Control.Monad.Reader (MonadReader, ReaderT(..))
+import Control.Monad.Reader (ReaderT(..))
 import Control.Monad.Trans.Class (lift)
 import Control.Monad.Trans.Control (MonadBaseControl)
 import qualified Data.Aeson as JSON
@@ -163,11 +162,10 @@ solrComment vi CommentRow{ commentRowSlotId = SlotId{..}, ..} = SolrComment
   , solrBody = Just commentRowText
   }
 
-newtype SolrM a = SolrM { runSolrM :: ReaderT BackgroundContext (InvertM BS.ByteString) a }
-  deriving (Functor, Applicative, Monad, MonadIO, MonadReader BackgroundContext)
+type SolrM a = ReaderT BackgroundContext (InvertM BS.ByteString) a
 
 writeBlock :: BS.ByteString -> SolrM ()
-writeBlock = SolrM . lift . give
+writeBlock = lift . give
 
 writeDocuments :: [SolrDocument] -> SolrM ()
 writeDocuments [] = return ()
@@ -217,9 +215,10 @@ updateIndex = do
         { HC.path = HC.path req <> "update/json"
         , HC.method = methodPost
         , HC.requestBody = HC.RequestBodyStreamChunked $ \wf -> do
-          w <- runInvert $ runReaderT (runSolrM (writeUpdate writeAllDocuments)) (BackgroundContext ctx)
+          w <- runInvert $ runReaderT (writeUpdate writeAllDocuments) (BackgroundContext ctx)
           wf $ Fold.fold <$> w
         , HC.requestHeaders = (hContentType, "application/json") : HC.requestHeaders req
+        , HC.responseTimeout = Just 100000000
         }
       t' <- liftIO getCurrentTime
       focusIO $ logMsg t' ("solr update complete " ++ show (diffUTCTime t' t))

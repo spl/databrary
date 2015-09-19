@@ -1,5 +1,6 @@
 module Databrary.EZID.ANVL
-  ( encode
+  ( ANVL
+  , encode
   , parse
   ) where
 
@@ -15,18 +16,20 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Word (Word8)
 
+type ANVL = [(T.Text, T.Text)]
+
 charEscaped :: Bool -> BP.BoundedPrim Word8
 charEscaped colon =
   BP.condB (\c -> c == c2w '%' || (colon && c == c2w ':') || c < c2w ' ')
     (BP.liftFixedToBounded $ (,) '%' BP.>$< BP.char8 BP.>*< BP.word8HexFixed)
     (BP.liftFixedToBounded BP.word8)
 
-encode :: [(T.Text, T.Text)] -> B.Builder
+encode :: ANVL -> B.Builder
 encode [] = mempty
 encode ((n,v):l) = TE.encodeUtf8BuilderEscaped (charEscaped True) n <> B.char8 ':' <> B.char8 ' ' <> TE.encodeUtf8BuilderEscaped (charEscaped False) v
   <> B.char8 '\n' <> encode l
 
-parse :: P.Parser [(T.Text, T.Text)]
+parse :: P.Parser ANVL
 parse = P.sepBy nv P.endOfLine <* P.skipSpace
   where
   hd = digitToInt <$> P.satisfy isHexDigit
