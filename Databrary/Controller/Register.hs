@@ -77,16 +77,14 @@ postRegister = action POST (pathAPI </< "user" </< "register") $ \api -> without
       <> url <> "\n\n\
       \By clicking the above link, you also indicate that you have read and understand the Databrary Access agreement, which you can download here: http://databrary.org/policies/agreement.pdf\n\n\
       \Once you've validated your e-mail, you will be able to request authorization in order to be granted full access to Databrary.\n"
-  date <- peek
-  focusIO $ staticSendInvestigator (view auth) date
+  focusIO $ staticSendInvestigator (view auth)
   return $ okResponse [] $ "Your confirmation email has been sent to '" <> accountEmail reg <> "'."
 
 resendInvestigator :: ActionRoute (Id Party)
 resendInvestigator = action POST (pathHTML >/> pathId </< "investigator") $ \i -> withAuth $ do
   checkMemberADMIN
   p <- getParty (Just PermissionREAD) (TargetParty i)
-  date <- peek
-  focusIO $ staticSendInvestigator p date
+  focusIO $ staticSendInvestigator p
   return $ okResponse [] ("sent" :: String)
 
 viewPasswordReset :: ActionRoute ()

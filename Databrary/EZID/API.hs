@@ -37,15 +37,15 @@ runEZIDM f = ReaderT $ \ctx ->
   Trav.mapM (runReaderT (runCookiesT f) . EZIDContext (BackgroundContext ctx))
     (serviceEZID $ contextService ctx)
   
-ezidCall :: BS.ByteString -> BS.ByteString -> Maybe ANVL.ANVL -> EZIDM (Maybe ANVL.ANVL)
+ezidCall :: BS.ByteString -> BS.ByteString -> ANVL.ANVL -> EZIDM (Maybe ANVL.ANVL)
 ezidCall path method body = do
   req <- peeks ezidRequest
   httpRequestCookies req
     { HC.path = path
     , HC.method = method
-    , HC.requestBody = maybe mempty (HC.RequestBodyLBS . B.toLazyByteString . ANVL.encode) body
+    , HC.requestBody = HC.RequestBodyLBS $ B.toLazyByteString $ ANVL.encode body
     } "text/plain" $ \r -> P.maybeResult <$> P.parseWith (HC.responseBody r) ANVL.parse mempty
 
 ezidStatus :: EZIDM Bool
 ezidStatus =
-  Fold.any (any (("success" ==) . fst)) <$> ezidCall "/status" methodGet Nothing
+  Fold.any (any (("success" ==) . fst)) <$> ezidCall "/status" methodGet []

@@ -4,14 +4,15 @@ module Databrary.Model.Citation.CrossRef
   ) where
 
 import Control.Applicative ((<*>), optional)
+import Control.Exception (handle)
 import Control.Monad.Trans.Class (lift)
 import Control.Monad.Trans.Maybe (MaybeT(..), runMaybeT)
 import qualified Data.Attoparsec.ByteString as P
-import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.Foldable as Fold
 import Data.Maybe (fromJust)
-import qualified Data.Text.Encoding as TE
+import qualified Data.Text.Lazy as TL
+import qualified Data.Text.Lazy.Encoding as TLE
 import qualified Network.HTTP.Client as HC
 import qualified Network.URI as URI
 
@@ -46,13 +47,15 @@ parseCitation = JSON.withObject "citation" $ \o ->
 
 lookupCitation :: URI.URI -> HTTPClient -> IO (Maybe Citation)
 lookupCitation uri hcm = runMaybeT $ do
-  hdl <- may $ uriHDL uri
-  let req = httpRequest (crossRefReq hdl)
-  j <- MaybeT $ req "application/vnd.citationstyles.csl+json" (\r ->
-    P.maybeResult <$> P.parseWith (HC.responseBody r) JSON.json BS.empty) hcm
+  req <- may $ crossRefReq <$> uriHDL uri
+  j <- MaybeT $ httpHandle $
+    HC.withResponse (requestAcceptContent "application/vnd.citationstyles.csl+json" req) hcm
+      (fmap P.maybeResult . httpParse JSON.json)
   cite <- may $ JSON.parseMaybe parseCitation j
   -- empirically this is UTF-8, but does not say so:
-  bib <- lift $ req "text/x-bibliography;style=apa" (fmap Just . HC.brConsume . HC.responseBody) hcm
-  return $ maybe cite (\h -> cite{ citationHead = Fold.foldMap TE.decodeUtf8 h }) bib
+  lift $ handle
+    (\(_ :: HC.HttpException) -> return cite)
+    $ (\h -> cite{ citationHead = TL.toStrict $ Fold.foldMap TLE.decodeUtf8 h }) <$>
+      HC.httpLbs (requestAcceptContent "text/x-bibliography;style=apa" req) hcm
   where
   may = MaybeT . return

@@ -11,6 +11,7 @@ import qualified Data.ByteString.Builder as B
 import qualified Data.ByteString.Builder.Prim as BP
 import Data.ByteString.Internal (c2w)
 import Data.Char (isHexDigit, digitToInt)
+import Data.Foldable (foldMap)
 import Data.Monoid (mempty, (<>), mconcat)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -25,9 +26,8 @@ charEscaped colon =
     (BP.liftFixedToBounded BP.word8)
 
 encode :: ANVL -> B.Builder
-encode [] = mempty
-encode ((n,v):l) = TE.encodeUtf8BuilderEscaped (charEscaped True) n <> B.char8 ':' <> B.char8 ' ' <> TE.encodeUtf8BuilderEscaped (charEscaped False) v
-  <> B.char8 '\n' <> encode l
+encode = foldMap $ \(n,v) ->
+  TE.encodeUtf8BuilderEscaped (charEscaped True) n <> B.char8 ':' <> B.char8 ' ' <> TE.encodeUtf8BuilderEscaped (charEscaped False) v <> B.char8 '\n'
 
 parse :: P.Parser ANVL
 parse = P.sepBy nv P.endOfLine <* P.skipSpace
