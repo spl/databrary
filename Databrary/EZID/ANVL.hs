@@ -12,7 +12,7 @@ import qualified Data.ByteString.Builder.Prim as BP
 import Data.ByteString.Internal (c2w)
 import Data.Char (isHexDigit, digitToInt)
 import Data.Foldable (foldMap)
-import Data.Monoid (mempty, (<>), mconcat)
+import Data.Monoid ((<>), mconcat)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Word (Word8)

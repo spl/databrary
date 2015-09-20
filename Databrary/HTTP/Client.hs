@@ -5,6 +5,8 @@ module Databrary.HTTP.Client
   , checkContentOk
   , CookiesT
   , runCookiesT
+  , withCookies
+  , withResponseCookies
   , requestAcceptContent
   , httpParse
   , httpHandle
@@ -26,7 +28,7 @@ import qualified Data.Foldable as Fold
 import Data.Monoid ((<>), mempty)
 import qualified Network.HTTP.Client as HC
 import Network.HTTP.Client.TLS (tlsManagerSettings)
-import Network.HTTP.Types (ResponseHeaders, hAccept, hContentType, Status, ok200)
+import Network.HTTP.Types (ResponseHeaders, hAccept, hContentType, Status, statusIsSuccessful)
 
 import Databrary.Has
 import Databrary.Ops
@@ -58,7 +60,7 @@ contentTypeIs t c = t `BS.isPrefixOf` c && (BS.length c == tl || BSC.index c tl 
 
 checkContentOk :: BS.ByteString -> Status -> ResponseHeaders -> HC.CookieJar -> Maybe SomeException
 checkContentOk ct s h cj
-  | s /= ok200 = Just $ toException $ HC.StatusCodeException s h cj
+  | not $ statusIsSuccessful s = Just $ toException $ HC.StatusCodeException s h cj
   | not $ Fold.any (contentTypeIs ct) ht = Just $ toException $ HC.InvalidHeader $ CI.original hContentType <> ": " <> Fold.fold ht
   | otherwise = Nothing
   where ht = lookup hContentType h

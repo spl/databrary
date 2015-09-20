@@ -15,12 +15,12 @@ import Data.Maybe (fromMaybe)
 import qualified Data.Text as T
 import Database.PostgreSQL.Typed.Types (PGParameter(..), PGColumn(..))
 import Language.Haskell.TH.Lift (deriveLiftMany)
+import Network.URI
 import qualified Text.Blaze as H
 
 import Control.Monad (guard)
 import Data.Char (isDigit)
 import Data.Maybe (isNothing)
-import Network.URI
 
 toPG :: URI -> String
 toPG u = uriToString id u ""
