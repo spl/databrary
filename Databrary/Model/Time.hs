@@ -3,6 +3,7 @@
 module Databrary.Model.Time
   ( Date
   , Timestamp
+  , dateYear
   , MaskedDate
   , maskDateIf
   , maskedYear

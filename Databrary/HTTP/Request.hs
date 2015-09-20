@@ -8,13 +8,16 @@ module Databrary.HTTP.Request
   , boolParameterValue
   , boolQueryParameter
   , requestHost
+  , requestURI
   ) where
 
 import qualified Data.ByteString as BS
+import qualified Data.ByteString.Char8 as BSC
 import qualified Data.Foldable as Fold
 import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
 import Network.HTTP.Types (HeaderName)
+import Network.URI (URI(..), URIAuth(..))
 import qualified Network.Wai as Wai
 
 import Databrary.Has (MonadHas)
@@ -43,7 +46,23 @@ boolParameterValue = Fold.all boolValue
 boolQueryParameter :: BS.ByteString -> Wai.Request -> Bool
 boolQueryParameter q = any boolParameterValue . lookupQueryParameters q
 
+defaultHost :: BS.ByteString
+defaultHost = "databrary.org"
+
 requestHost :: Wai.Request -> BS.ByteString
 requestHost req =
   (if Wai.isSecure req then "https://" else "http://")
   <> fromMaybe "databrary.org" (Wai.requestHeaderHost req)
+
+requestURI :: Wai.Request -> URI
+requestURI req = URI
+  { uriScheme = if Wai.isSecure req then "https:" else "http:"
+  , uriAuthority = Just URIAuth
+    { uriUserInfo = ""
+    , uriRegName = BSC.unpack $ fromMaybe defaultHost $ Wai.requestHeaderHost req
+    , uriPort = ""
+    }
+  , uriPath = BSC.unpack $ Wai.rawPathInfo req
+  , uriQuery = BSC.unpack $ Wai.rawQueryString req
+  , uriFragment = ""
+  }

@@ -4,16 +4,17 @@ module Databrary.EZID.DataCite
   , dataCiteXML
   ) where
 
-import Control.Applicative ((<$>))
+import Control.Arrow (first)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import Data.Foldable (foldMap)
-import Data.Maybe (catMaybes)
+import Data.Maybe (isNothing, catMaybes)
 import Data.Monoid ((<>))
 import qualified Data.Text as T
 import Network.URI (URI(..))
 import qualified Text.XML.Light as XML
 
+import Databrary.Ops
 import Databrary.Model.Party.Types
 import Databrary.Model.Funding.Types
 import Databrary.Model.Funding.FundRef
@@ -24,9 +25,10 @@ data DataCite = DataCite
   , dataCiteAuthors :: [Party]
   , dataCiteYear :: Int
   , dataCiteDescription :: Maybe T.Text
-  , dataCiteFunders :: [Funder]
-  , dataCiteSubjects :: [T.Text]
+  , dataCiteFunders :: [Funding]
   , dataCitePublication :: Maybe URI
+  , dataCiteReferences :: [URI]
+  , dataCiteSubjects :: [BS.ByteString]
   }
 
 dataCiteXML :: DataCite -> XML.Element
@@ -43,6 +45,9 @@ dataCiteXML DataCite{..} =
     , Just $ "resourceType" <=>
       ("resourceTypeGeneral" =. "Dataset")
       $ "Volume"
+    , Just $ "rightsList" <.> ("rights" <=>
+      ("rightsURI" =. "http://databrary.org/access/policies/agreement.html")
+      ) "Databrary Access Agreement"
     , Just $ "titles" <.> "title" <.> T.unpack dataCiteTitle
     , "creators" <?> dataCiteAuthors $ \Party{..} -> "creator" <.> catMaybes
       [ Just $ "creatorName" <.> (T.unpack $ partySortName <> foldMap (T.pack ", " <>) partyPreName)
@@ -56,7 +61,7 @@ dataCiteXML DataCite{..} =
     , ("descriptions" <.>) . ("description" <=>
       ("descriptionType" =. "Abstract"))
       . T.unpack <$> dataCiteDescription
-    , "contributors" <?> dataCiteFunders $ \Funder{..} -> "contributor" <=>
+    , "contributors" <?> dataCiteFunders $ \Funding{ fundingFunder = Funder{..} } -> "contributor" <=>
       [ "contributorType" =. "Funder" ] $
       [ "contributorName" <.> T.unpack funderName
       , "nameIdentifier" <=>
@@ -64,15 +69,11 @@ dataCiteXML DataCite{..} =
         , "nameIdentifierScheme" =. "FundRef"
         ] $ fundRefDOI ++ show funderId
       ]
-    , "subjects" <?> dataCiteSubjects $ ("subject" <.>) . T.unpack
-    , (\u -> let (ut, ui) = case uriScheme u of
-                              "doi:" -> ("DOI", uriPath u)
-                              "hdl:" -> ("Handle", uriPath u)
-                              _ -> ("URL", show u) in
-      "relatedIdentifiers" <.> ("relatedIdentifier" <=>
-      [ "relationType" =. "IsSupplementTo"
-      , "relatedIdentifierType" =. ut
-      ]) ui) <$> dataCitePublication
+    , "subjects" <?> dataCiteSubjects $ ("subject" <.>) . BSC.unpack
+    , isNothing dataCitePublication || null dataCiteReferences ?!>
+      "relatedIdentifiers" <.>
+        (maybe id ((:) . ur "IsSupplementTo") dataCitePublication
+        $ map (ur "References") dataCiteReferences)
     ]
   where
   infixr 5 <.>, <=>
@@ -86,3 +87,10 @@ dataCiteXML DataCite{..} =
   (=.) :: String -> String -> XML.Attr
   (=.) = XML.Attr . q
   q = XML.unqual
+  ur t u = "relatedIdentifier" <.>
+    first (("relationType" =. t :) . return . ("relatedIdentifierType" =.))
+      (case uriScheme u of 
+        "doi:" -> ("DOI", uriPath u)
+        "hdl:" -> ("Handle", uriPath u)
+        _ -> ("URL", show u))
+

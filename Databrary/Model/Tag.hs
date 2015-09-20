@@ -11,6 +11,7 @@ module Databrary.Model.Tag
   , lookupTopTagWeight
   , lookupTagCoverage
   , lookupSlotTagCoverage
+  , lookupSlotKeywords
   , tagWeightJSON
   , tagCoverageJSON
   ) where
@@ -83,6 +84,10 @@ lookupSlotTagCoverage :: (MonadDB c m, MonadHasIdentity c m) => Slot -> Int -> m
 lookupSlotTagCoverage slot lim = do
   ident <- peek
   dbQuery $(selectQuery (selectSlotTagCoverage 'ident 'slot) "$!ORDER BY weight DESC LIMIT ${fromIntegral lim :: Int64}")
+
+lookupSlotKeywords :: (MonadDB c m) => Slot -> m [Tag]
+lookupSlotKeywords Slot{..} =
+  dbQuery $(selectQuery selectTag "JOIN keyword_use ON id = tag WHERE container = ${containerId slotContainer} AND segment = ${slotSegment}")
 
 tagWeightJSON :: TagWeight -> JSON.Object
 tagWeightJSON TagWeight{..} = JSON.record (tagName tagWeightTag) $

@@ -1,29 +1,31 @@
 {-# LANGUAGE TemplateHaskell, OverloadedStrings, RecordWildCards #-}
 module Databrary.EZID.API
-  ( runEZIDM
+  ( EZIDM
+  , runEZIDM
   , ezidStatus
   , EZIDMeta(..)
-  , ezidGet
   , ezidCreate
   , ezidModify
   ) where
 
-import Control.Applicative ((<$>))
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Reader (ReaderT(..))
 import qualified Data.Attoparsec.ByteString as P
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as B
+import qualified Data.ByteString.Char8 as BSC
 import Data.Maybe (isJust)
 import Data.Monoid ((<>))
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 import Data.Time.Clock (getCurrentTime)
 import qualified Data.Traversable as Trav
 import qualified Network.HTTP.Client as HC
 import Network.HTTP.Types (methodGet, methodPut, methodPost)
-import Network.URI (URI, parseURI)
+import Network.URI (URI)
 import qualified Text.XML.Light as XML
 
+import Databrary.Ops
 import Databrary.Has
 import Databrary.Service.Types
 import Databrary.Service.Log
@@ -31,6 +33,7 @@ import Databrary.Context
 import Databrary.HTTP.Client
 import Databrary.EZID.Service
 import qualified Databrary.EZID.ANVL as ANVL
+import Databrary.EZID.DataCite
 
 data EZIDContext = EZIDContext
   { ezidContext :: !BackgroundContext
@@ -69,39 +72,27 @@ ezidStatus :: EZIDM Bool
 ezidStatus =
   isJust . (ezidCheck =<<) <$> ezidCall "/status" methodGet []
 
-data EZIDMeta = EZIDMeta
-  { ezidTarget :: !URI
-  , ezidPublic :: !Bool
-  , ezidDataCite :: !XML.Element
-  }
+data EZIDMeta
+  = EZIDPublic
+    { ezidTarget :: !URI
+    , ezidDataCite :: !DataCite
+    }
+  | EZIDUnavailable
 
 ezidMeta :: EZIDMeta -> ANVL.ANVL
-ezidMeta EZIDMeta{..} =
+ezidMeta EZIDPublic{..} =
   [ ("_target", T.pack $ show ezidTarget)
-  , ("_status", if ezidPublic then "public" else "unavailable")
+  , ("_status", "public")
   , ("_profile", "datacite")
-  , ("datacite", T.pack $ XML.showTopElement ezidDataCite)
+  , ("datacite", T.pack $ XML.showTopElement $ dataCiteXML ezidDataCite)
   ]
+ezidMeta EZIDUnavailable = [ ("_status", "unavailable") ]
 
-ezidGet :: BS.ByteString -> EZIDM (Maybe EZIDMeta)
-ezidGet hdl = do
-  r <- ezidCall ("/id/" <> hdl) methodGet []
-  return $ do
-    a <- r
-    target <- parseURI . T.unpack =<< lookup "_target" a
-    status <- lookup "_status" a
-    datacite <- XML.parseXMLDoc =<< lookup "datacite" a
-    return $ EZIDMeta
-      { ezidTarget = target
-      , ezidPublic = status == "public"
-      , ezidDataCite = datacite
-      }
-
-ezidCreate :: BS.ByteString -> EZIDMeta -> EZIDM (Maybe T.Text)
+ezidCreate :: BS.ByteString -> EZIDMeta -> EZIDM (Maybe BS.ByteString)
 ezidCreate hdl meta = do
   ns <- peeks ezidNS
-  (ezidCheck =<<) <$> ezidCall ("/id/" <> ns <> hdl) methodPut (ezidMeta meta)
+  (fmap TE.encodeUtf8 . ezidCheck =<<) <$> ezidCall ("/id/" <> ns <> hdl) methodPut (ezidMeta meta)
 
 ezidModify :: BS.ByteString -> EZIDMeta -> EZIDM Bool
 ezidModify hdl meta =
-  isJust . (ezidCheck =<<) <$> ezidCall ("/id/" <> hdl) methodPost (ezidMeta meta)
+  isJust . (ezidCheck =<<) <$> ezidCall ("/id/doi:" <> hdl) methodPost (ezidMeta meta)

@@ -6,6 +6,7 @@ module Databrary.HTTP.Route
   , fromRouteList
   , lookupRoute
   , routeURL
+  , routeURI
   ) where
 
 import Prelude hiding (lookup)
@@ -18,6 +19,7 @@ import Data.List (foldl')
 import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
 import Network.HTTP.Types (Method)
+import Network.URI (URI(..), nullURI)
 import qualified Network.Wai as Wai
 
 import Databrary.Iso.Types (Invariant(..))
@@ -74,3 +76,9 @@ lookupRoute q (RouteMap m) = fmap (uncurry (flip ($))) $
 routeURL :: Maybe Wai.Request -> Route r a -> a -> BSB.Builder
 routeURL req Route{ routePath = p } a =
   maybe id ((<>) . BSB.byteString . requestHost) req $ encodePathSegments' $ elementsPath $ producePath p a
+
+routeURI :: Maybe Wai.Request -> Route r a -> a -> URI
+routeURI req Route{ routePath = p } a = (maybe nullURI requestURI req)
+  { uriPath = BSLC.unpack $ BSB.toLazyByteString $ encodePathSegments' $ elementsPath $ producePath p a
+  , uriQuery = ""
+  }
