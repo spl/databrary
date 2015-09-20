@@ -16,6 +16,8 @@ import Control.Monad.Trans.Reader (ReaderT(..))
 import qualified Data.Attoparsec.ByteString as P
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as B
+import qualified Data.ByteString.Char8 as BSC
+import Data.Char (isSpace)
 import Data.Maybe (isJust)
 import Data.Monoid ((<>))
 import qualified Data.Text as T
@@ -54,18 +56,16 @@ runEZIDM f = ReaderT $ \ctx ->
 ezidCall :: BS.ByteString -> BS.ByteString -> ANVL.ANVL -> EZIDM (Maybe ANVL.ANVL)
 ezidCall path method body = do
   req <- peeks ezidRequest
+  liftIO $ BSC.putStrLn $ "ezid: " <> method <> " " <> path
+  t <- liftIO getCurrentTime
   r <- try $ withResponseCookies (requestAcceptContent "text/plain" req)
     { HC.path = path
     , HC.method = method
     , HC.requestBody = HC.RequestBodyLBS $ B.toLazyByteString $ ANVL.encode body
     } (fmap P.eitherResult . httpParse ANVL.parse)
-  either
-    (\e -> do
-      t <- liftIO getCurrentTime
-      focusIO $ logMsg t (toLogStr ("ezid: " <> method <> " " <> path <> ": ") <> toLogStr e)
-      return Nothing)
-    (return . Just)
-    $ join $ left (show :: HC.HttpException -> String) r
+  let r' = join $ left (show :: HC.HttpException -> String) r
+  focusIO $ logMsg t $ toLogStr ("ezid: " <> method <> " " <> path <> ": ") <> toLogStr (either id show r')
+  return $ rightJust r'
 
 ezidCheck :: ANVL.ANVL -> Maybe T.Text
 ezidCheck = lookup "success"
@@ -93,7 +93,7 @@ ezidMeta EZIDUnavailable = [ ("_status", "unavailable") ]
 ezidCreate :: BS.ByteString -> EZIDMeta -> EZIDM (Maybe BS.ByteString)
 ezidCreate hdl meta = do
   ns <- peeks ezidNS
-  fmap TE.encodeUtf8 . (=<<) (T.stripPrefix "doi:" <=< ezidCheck) <$>
+  fmap (TE.encodeUtf8 . T.takeWhile (\c -> c /= '|' && not (isSpace c))) . (=<<) (T.stripPrefix "doi:" <=< ezidCheck) <$>
     ezidCall ("/id/" <> ns <> hdl) methodPut (ezidMeta meta)
 
 ezidModify :: BS.ByteString -> EZIDMeta -> EZIDM Bool
