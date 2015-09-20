@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Databrary.Model.Funding.FundRef
-  ( lookupFunderRef
+  ( fundRefDOI
+  , lookupFunderRef
   , searchFundRef
   ) where
 
