@@ -9,7 +9,7 @@ module Databrary.HTTP.Client
   , withResponseCookies
   , requestAcceptContent
   , httpParse
-  , httpHandle
+  , httpMaybe
   , httpRequestJSON
   ) where
 
@@ -74,9 +74,9 @@ requestAcceptContent ct req = req
 httpParse :: P.Parser a -> HC.Response HC.BodyReader -> IO (P.Result a)
 httpParse p r = P.parseWith (HC.responseBody r) p BS.empty
 
-httpHandle :: (MonadBaseControl IO m, Monad f) => m (f a) -> m (f a)
-httpHandle = handle (fail . (show :: HC.HttpException -> String))
+httpMaybe :: MonadBaseControl IO m => m (Maybe a) -> m (Maybe a)
+httpMaybe = handle (return . fail . (show :: HC.HttpException -> String))
 
 httpRequestJSON :: HC.Request -> HTTPClient -> IO (Maybe JSON.Value)
-httpRequestJSON r m = httpHandle $
+httpRequestJSON r m = httpMaybe $
   HC.withResponse (requestAcceptContent "application/json" r) m (fmap P.maybeResult . httpParse JSON.json)

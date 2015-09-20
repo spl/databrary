@@ -6,7 +6,6 @@ module Databrary.Solr.Service
   , MonadSolr
   ) where
 
-import Control.Applicative ((<$>))
 import Control.Monad (when, forM_)
 import Control.Monad.IO.Class (MonadIO)
 import qualified Data.Configurator as C
@@ -21,6 +20,7 @@ import qualified System.Process as Proc
 import System.Timeout (timeout)
 
 import Paths_databrary (getDataFileName)
+import Databrary.Ops
 import Databrary.Has
 import Databrary.HTTP.Client (HTTPClient)
 import Databrary.Model.Enum (pgEnumValues)
@@ -29,7 +29,7 @@ import Databrary.Model.Release.Types
 
 data Solr = Solr
   { solrRequest :: HC.Request
-  , solrProcess :: Proc.ProcessHandle
+  , solrProcess :: Maybe Proc.ProcessHandle
   }
 
 confSolr :: FilePath -> FilePath -> IO ()
@@ -50,6 +50,7 @@ confSolr src dst = do
 initSolr :: C.Config -> IO Solr
 initSolr conf = do
   bin <- C.lookupDefault "solr" conf "bin"
+  run <- C.lookupDefault True conf "run"
   host <- C.lookupDefault "127.0.0.1" conf "host"
   port <- C.require conf "port"
   home <- makeAbsolute =<< C.require conf "home"
@@ -65,7 +66,7 @@ initSolr conf = do
 
   env <- getEnvironment
   out <- maybe (return Proc.Inherit) (\f -> Proc.UseHandle <$> openFile f AppendMode) logf
-  (_, _, _, ph) <- Proc.createProcess (Proc.proc bin ["start", "-Djetty.host=" ++ host, "-p", show port, "-f", "-s", home])
+  p <- run ?$> Proc.createProcess (Proc.proc bin ["start", "-Djetty.host=" ++ host, "-p", show port, "-f", "-s", home])
     { Proc.std_out = out
     , Proc.std_err = out
     , Proc.close_fds = True
@@ -79,15 +80,16 @@ initSolr conf = do
       , HC.redirectCount = 0
       , HC.cookieJar = Nothing
       }
-    , solrProcess = ph
+    , solrProcess = (\(_,_,_,h) -> h) <$> p
     }
 
 finiSolr :: Solr -> IO ()
-finiSolr Solr{ solrProcess = ph } = do
+finiSolr Solr{ solrProcess = Just ph } = do
   -- this timeout doesn't actually seem to work:
   r <- timeout 10000000 $ Proc.waitForProcess ph
   when (isNothing r) $ do
     putStrLn "solr failed to stop; terminating..."
     Proc.terminateProcess ph
+finiSolr _ = return ()
 
 type MonadSolr c m = (MonadIO m, MonadHas HTTPClient c m, MonadHas Solr c m)

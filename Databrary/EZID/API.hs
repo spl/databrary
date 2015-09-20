@@ -8,12 +8,14 @@ module Databrary.EZID.API
   , ezidModify
   ) where
 
+import Control.Arrow (left)
+import Control.Exception.Lifted (try)
+import Control.Monad ((<=<), join)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Reader (ReaderT(..))
 import qualified Data.Attoparsec.ByteString as P
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as B
-import qualified Data.ByteString.Char8 as BSC
 import Data.Maybe (isJust)
 import Data.Monoid ((<>))
 import qualified Data.Text as T
@@ -52,7 +54,7 @@ runEZIDM f = ReaderT $ \ctx ->
 ezidCall :: BS.ByteString -> BS.ByteString -> ANVL.ANVL -> EZIDM (Maybe ANVL.ANVL)
 ezidCall path method body = do
   req <- peeks ezidRequest
-  r <- httpHandle $ withResponseCookies (requestAcceptContent "text/plain" req)
+  r <- try $ withResponseCookies (requestAcceptContent "text/plain" req)
     { HC.path = path
     , HC.method = method
     , HC.requestBody = HC.RequestBodyLBS $ B.toLazyByteString $ ANVL.encode body
@@ -63,7 +65,7 @@ ezidCall path method body = do
       focusIO $ logMsg t (toLogStr ("ezid: " <> method <> " " <> path <> ": ") <> toLogStr e)
       return Nothing)
     (return . Just)
-    r
+    $ join $ left (show :: HC.HttpException -> String) r
 
 ezidCheck :: ANVL.ANVL -> Maybe T.Text
 ezidCheck = lookup "success"
@@ -91,8 +93,10 @@ ezidMeta EZIDUnavailable = [ ("_status", "unavailable") ]
 ezidCreate :: BS.ByteString -> EZIDMeta -> EZIDM (Maybe BS.ByteString)
 ezidCreate hdl meta = do
   ns <- peeks ezidNS
-  (fmap TE.encodeUtf8 . ezidCheck =<<) <$> ezidCall ("/id/" <> ns <> hdl) methodPut (ezidMeta meta)
+  fmap TE.encodeUtf8 . (=<<) (T.stripPrefix "doi:" <=< ezidCheck) <$>
+    ezidCall ("/id/" <> ns <> hdl) methodPut (ezidMeta meta)
 
 ezidModify :: BS.ByteString -> EZIDMeta -> EZIDM Bool
 ezidModify hdl meta =
-  isJust . (ezidCheck =<<) <$> ezidCall ("/id/doi:" <> hdl) methodPost (ezidMeta meta)
+  isJust . (ezidCheck =<<) <$>
+    ezidCall ("/id/doi:" <> hdl) methodPost (ezidMeta meta)

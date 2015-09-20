@@ -4,17 +4,20 @@ module Databrary.EZID.Volume
   ) where
 
 import Control.Arrow ((&&&))
-import Control.Monad ((<=<), when)
+import Control.Monad ((<=<))
+import Control.Monad.IO.Class (liftIO)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import Data.Function (on)
 import Data.List (deleteFirstsBy)
 import Data.Maybe (fromMaybe, mapMaybe)
-import Data.Time (utctDay)
+import Data.Time.Clock (utctDay, getCurrentTime)
 import Database.PostgreSQL.Typed.Query (pgSQL)
 import qualified Network.Wai as Wai
 
+import Databrary.Has
 import Databrary.Service.DB
+import Databrary.Service.Log
 import Databrary.Context
 import Databrary.Model.Time
 import Databrary.Model.Permission
@@ -78,10 +81,14 @@ removeVolume _ d = ezidModify d EZIDUnavailable
 updateEZID :: ContextM (Maybe Bool)
 updateEZID = runEZIDM $ do
   r <- ezidStatus
-  when r $ do
-    vl <- lookupVolumesCitations
-    mapM_ (uncurry updateVolume) vl
-    dl <- lookupVolumeDOIs
-    mapM_ (uncurry removeVolume) $
-      deleteFirstsBy (on (==) fst) dl (map ((volumeId &&& fromMaybe BS.empty . volumeDOI) . fst) vl)
+  if r
+    then do
+      vl <- lookupVolumesCitations
+      mapM_ (uncurry updateVolume) vl
+      dl <- lookupVolumeDOIs
+      mapM_ (uncurry removeVolume) $
+        deleteFirstsBy (on (==) fst) dl (map ((volumeId &&& fromMaybe BS.empty . volumeDOI) . fst) vl)
+    else do
+      t <- liftIO getCurrentTime
+      focusIO $ logMsg t "ezid is down"
   return r

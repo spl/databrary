@@ -48,7 +48,7 @@ parseCitation = JSON.withObject "citation" $ \o ->
 lookupCitation :: URI.URI -> HTTPClient -> IO (Maybe Citation)
 lookupCitation uri hcm = runMaybeT $ do
   req <- may $ crossRefReq <$> uriHDL uri
-  j <- MaybeT $ httpHandle $
+  j <- MaybeT $ httpMaybe $
     HC.withResponse (requestAcceptContent "application/vnd.citationstyles.csl+json" req) hcm
       (fmap P.maybeResult . httpParse JSON.json)
   cite <- may $ JSON.parseMaybe parseCitation j
