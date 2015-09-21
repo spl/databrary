@@ -16,7 +16,6 @@ import Control.Monad.Trans.Reader (ReaderT(..))
 import qualified Data.Attoparsec.ByteString as P
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as B
-import qualified Data.ByteString.Char8 as BSC
 import Data.Char (isSpace)
 import Data.Maybe (isJust)
 import Data.Monoid ((<>))
