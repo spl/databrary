@@ -4,10 +4,9 @@ module Databrary.Solr.Index
   ) where
 
 import Control.Exception.Lifted (handle)
-import Control.Monad.IO.Class (MonadIO, liftIO)
-import Control.Monad.Reader (ReaderT(..))
+import Control.Monad.IO.Class (liftIO)
+import Control.Monad.Reader (ReaderT(..), ask)
 import Control.Monad.Trans.Class (lift)
-import Control.Monad.Trans.Control (MonadBaseControl)
 import qualified Data.Aeson as JSON
 import qualified Data.Aeson.Encode as JSON
 import qualified Data.ByteString as BS
@@ -203,9 +202,9 @@ writeAllDocuments = do
   writeDocuments . map (uncurry solrParty) =<< lookupPartyAuthorizations
   writeDocuments . map solrTag =<< lookupTags
 
-updateIndex :: (MonadIO m, MonadBaseControl IO m, MonadHasContext c m) => m ()
+updateIndex :: BackgroundContextM ()
 updateIndex = do
-  ctx <- peek
+  ctx <- ask
   req <- peeks solrRequest
   t <- liftIO getCurrentTime
   handle
@@ -215,7 +214,7 @@ updateIndex = do
         { HC.path = HC.path req <> "update/json"
         , HC.method = methodPost
         , HC.requestBody = HC.RequestBodyStreamChunked $ \wf -> do
-          w <- runInvert $ runReaderT (writeUpdate writeAllDocuments) (BackgroundContext ctx)
+          w <- runInvert $ runReaderT (writeUpdate writeAllDocuments) ctx
           wf $ Fold.fold <$> w
         , HC.requestHeaders = (hContentType, "application/json") : HC.requestHeaders req
         , HC.responseTimeout = Just 100000000

@@ -1,8 +1,6 @@
 {-# LANGUAGE OverloadedStrings, TupleSections #-}
 module Databrary.Controller.Search
   ( postSearch
-  , viewUpdateIndex
-  , postUpdateIndex
   ) where
 
 import Control.Applicative ((<$>), (<*>))
@@ -13,7 +11,6 @@ import Databrary.Has
 import Databrary.Model.Id.Types
 import Databrary.Model.Metric
 import Databrary.Solr.Search
-import Databrary.Solr.Index
 import Databrary.Action.Response
 import Databrary.Action
 import Databrary.HTTP.Path.Parser
@@ -21,8 +18,6 @@ import Databrary.HTTP.Form (FormKey(..))
 import Databrary.HTTP.Form.Deform
 import Databrary.Controller.Form
 import Databrary.Controller.Angular
-import Databrary.Controller.Permission
-import Databrary.View.Search
 
 searchForm :: DeformActionM f SearchQuery
 searchForm = SearchQuery
@@ -44,14 +39,3 @@ postSearch = action GET (pathAPI </< "search") $ \api -> withAuth $ do
   when (api == HTML) angular
   q <- runForm Nothing searchForm
   proxyResponse <$> search q
-
-viewUpdateIndex :: ActionRoute ()
-viewUpdateIndex = action GET ("search" >/> "index") $ \() -> withAuth $ do
-  checkMemberADMIN
-  peeks $ blankForm . htmlUpdateIndex
-
-postUpdateIndex :: ActionRoute ()
-postUpdateIndex = action POST ("search" >/> "index") $ \() -> withAuth $ do
-  checkMemberADMIN
-  updateIndex
-  return $ okResponse [] ("done" :: String)
