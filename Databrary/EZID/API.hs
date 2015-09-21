@@ -56,7 +56,6 @@ runEZIDM f = ReaderT $ \ctx ->
 ezidCall :: BS.ByteString -> BS.ByteString -> ANVL.ANVL -> EZIDM (Maybe ANVL.ANVL)
 ezidCall path method body = do
   req <- peeks ezidRequest
-  liftIO $ BSC.putStrLn $ "ezid: " <> method <> " " <> path
   t <- liftIO getCurrentTime
   r <- try $ withResponseCookies (requestAcceptContent "text/plain" req)
     { HC.path = path

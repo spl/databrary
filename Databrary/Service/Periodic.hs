@@ -1,11 +1,11 @@
-{-# LANGUAGE TemplateHaskell, DeriveDataTypeable, TupleSections #-}
+{-# LANGUAGE TemplateHaskell, DeriveDataTypeable, TupleSections, Rank2Types #-}
 module Databrary.Service.Periodic
   ( forkPeriodic
   , Period(..)
   ) where
 
 import Control.Concurrent (ThreadId, forkFinally, threadDelay)
-import Control.Exception (Exception, handle)
+import Control.Exception (Exception, handle, mask)
 import Control.Monad (void, when)
 import Control.Monad.Trans.Reader (withReaderT)
 import Data.Fixed (Fixed(..), Micro)
@@ -41,29 +41,30 @@ threadDelay' (MkFixed t)
 run :: Period -> Service -> IO ()
 run p = runContextM $ withReaderT BackgroundContext $ do
   t <- peek
-  focusIO $ logMsg t "running daily cleanup"
+  focusIO $ logMsg t ("periodic running: " ++ show p)
   cleanTokens
   updateVolumeIndex
   updateIndex
   when (p >= PeriodWeekly) $
     void updateEZID
 
-runPeriodic :: Service -> IO ()
-runPeriodic rc = loop (if s <= st then d s else s) where
+runPeriodic :: Service -> (forall a . IO a -> IO a) -> IO ()
+runPeriodic rc unmask = loop (if s <= st then d s else s) where
   st = serviceStartTime rc
   s = st{ utctDayTime = timeOfDayToTime $ TimeOfDay 7 0 0 }
   d t = t{ utctDay = succ (utctDay t) }
   loop t = do
     n <- getCurrentTime
     (t', p) <- handle (return . (t ,)) $ do
-      threadDelay' $ realToFrac $ diffUTCTime t n
+      unmask $ threadDelay' $ realToFrac $ diffUTCTime t n
       return (d t, if 0 == snd (sundayStartWeek (utctDay t))
         then PeriodWeekly
         else PeriodDaily)
-    run p rc
+    handle (\(_ :: Period) -> logMsg t "periodic interrupted" (view rc)) $
+      unmask $ run p rc
     loop t'
 
 forkPeriodic :: Service -> IO ThreadId
-forkPeriodic rc = forkFinally (runPeriodic rc) $ \r -> do
+forkPeriodic rc = forkFinally (mask $ runPeriodic rc) $ \r -> do
   t <- getCurrentTime
   logMsg t ("periodic aborted: " ++ show r) (view rc)
