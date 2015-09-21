@@ -10,6 +10,7 @@ import qualified Data.Configurator.Types as C
 import Data.Time.Clock (getCurrentTime)
 
 import Paths_databrary (getDataFileName)
+import Databrary.Ops
 import Databrary.Service.DB (initDB, finiDB)
 import Databrary.Service.Entropy (initEntropy)
 import Databrary.HTTP.Client (initHTTPClient)
@@ -23,6 +24,7 @@ import Databrary.Static.Service (initStatic)
 import Databrary.Ingest.Service (initIngest)
 import Databrary.Solr.Service (initSolr, finiSolr)
 import Databrary.EZID.Service (initEZID)
+import Databrary.Service.Periodic (forkPeriodic)
 import Databrary.Service.Types
 
 loadConfig :: IO C.Config
@@ -30,8 +32,8 @@ loadConfig = do
   msg <- getDataFileName "messages.conf"
   C.loadGroups [("message.", C.Required msg), ("", C.Required "databrary.conf")]
 
-initService :: C.Config -> IO Service
-initService conf = do
+initService :: Bool -> C.Config -> IO Service
+initService fg conf = do
   time <- getCurrentTime
   logs <- initLogs (C.subconfig "log" conf)
   secret <- C.require conf "secret"
@@ -44,25 +46,30 @@ initService conf = do
   web <- initWeb
   httpc <- initHTTPClient
   static <- initStatic (C.subconfig "static" conf)
-  solr <- initSolr (C.subconfig "solr" conf)
+  solr <- initSolr fg (C.subconfig "solr" conf)
   ezid <- initEZID (C.subconfig "ezid" conf)
   ingest <- initIngest
-  return $ Service
-    { serviceStartTime = time
-    , serviceSecret = Secret secret
-    , serviceEntropy = entropy
-    , servicePasswd = passwd
-    , serviceLogs = logs
-    , serviceMessages = messages
-    , serviceDB = db
-    , serviceStorage = storage
-    , serviceAV = av
-    , serviceWeb = web
-    , serviceHTTPClient = httpc
-    , serviceStatic = static
-    , serviceIngest = ingest
-    , serviceSolr = solr
-    , serviceEZID = ezid
+  let rc = Service
+        { serviceStartTime = time
+        , serviceSecret = Secret secret
+        , serviceEntropy = entropy
+        , servicePasswd = passwd
+        , serviceLogs = logs
+        , serviceMessages = messages
+        , serviceDB = db
+        , serviceStorage = storage
+        , serviceAV = av
+        , serviceWeb = web
+        , serviceHTTPClient = httpc
+        , serviceStatic = static
+        , serviceIngest = ingest
+        , serviceSolr = solr
+        , serviceEZID = ezid
+        , servicePeriodic = Nothing
+        }
+  periodic <- fg ?$> forkPeriodic rc
+  return rc
+    { servicePeriodic = periodic
     }
 
 finiService :: Service -> IO ()
@@ -71,5 +78,5 @@ finiService Service{..} = do
   finiDB serviceDB
   finiLogs serviceLogs
 
-withService :: C.Config -> (Service -> IO a) -> IO a
-withService c = bracket (initService c) finiService
+withService :: Bool -> C.Config -> (Service -> IO a) -> IO a
+withService fg c = bracket (initService fg c) finiService

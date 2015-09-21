@@ -128,12 +128,12 @@ def _createXMLDoc(row, volume, funders, doi=None): #tuple, str, list, str -> xml
     description = e.SubElement(descelem, "description", descriptionType="Abstract")
     description.text = vol_body if vol_body is not None else "(:unav)"
     crelem = e.SubElement(xmldoc, "creators")
-    felem = e.SubElement(xmldoc, "contributors")
     if row[4]:
         for c in row[4]:
             cr = e.SubElement(crelem, "creator")
             crname = e.SubElement(cr, "creatorName")
             crname.text = c.decode('utf-8').split(':', 1)[1]
+    felem = e.SubElement(xmldoc, "contributors")
     if len(funders) > 0:
         for f in funders:   
             ftype = e.SubElement(felem, "contributor", contributorType="Funder")

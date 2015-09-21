@@ -6,9 +6,11 @@ module Databrary.Context
   , runContextM
   , BackgroundContext(..)
   , MonadHasBackgroundContext
+  , BackgroundContextM
+  , withBackgroundContextM
   ) where
 
-import Control.Monad.Trans.Reader (ReaderT(..))
+import Control.Monad.Trans.Reader (ReaderT(..), withReaderT)
 import Control.Monad.Trans.Resource (InternalState, runResourceT, withInternalState)
 import Data.Time (getCurrentTime)
 
@@ -53,3 +55,8 @@ instance Has (Id Party) BackgroundContext where
   view _ = view NotIdentified
 instance Has Access BackgroundContext where
   view _ = view NotIdentified
+
+type BackgroundContextM a = ReaderT BackgroundContext IO a
+
+withBackgroundContextM :: BackgroundContextM a -> ContextM a
+withBackgroundContextM = withReaderT BackgroundContext

@@ -20,8 +20,7 @@ import Databrary.Service.DB (withDB)
 import Databrary.Service.DB.Schema (updateDBSchema)
 #endif
 import Databrary.Service.Init (loadConfig, withService)
-import Databrary.Service.Periodic (forkPeriodic)
-import Databrary.Context (runContextM)
+import Databrary.Context
 import Databrary.Web.Rules (generateWebFiles)
 import Databrary.Action (runActionRoute)
 import Databrary.Routes (routeMap)
@@ -32,14 +31,14 @@ import Databrary.EZID.Volume (updateEZID)
 data Flag
   = FlagWeb
   | FlagAPI
-  | FlagDOI
+  | FlagEZID
   deriving (Eq)
 
 opts :: [Opt.OptDescr Flag]
 opts =
   [ Opt.Option "w" ["webgen"] (Opt.NoArg FlagWeb) "Generate web assets only"
   , Opt.Option "a" ["api"] (Opt.NoArg FlagAPI) "Output Swagger API documention"
-  , Opt.Option "d" ["doi"] (Opt.NoArg FlagDOI) "Update EZID DOIs"
+  , Opt.Option "e" ["ezid"] (Opt.NoArg FlagEZID) "Update EZID DOIs"
   ]
 
 main :: IO ()
@@ -54,8 +53,8 @@ main = do
     ([FlagAPI], [], []) -> do
       hPutBuilder stdout $ J.encodeToBuilder swagger
       exitSuccess
-    ([FlagDOI], [], []) -> do
-      r <- withService conf $ runContextM updateEZID
+    ([FlagEZID], [], []) -> do
+      r <- withService False conf $ runContextM $ withBackgroundContextM updateEZID
       if r == Just True then exitSuccess else exitFailure
     ([], [], []) -> return ()
     (_, _, err) -> do
@@ -64,10 +63,9 @@ main = do
       exitFailure
 
   routes <- evaluate routeMap
-  withService conf $ \rc -> do
+  withService True conf $ \rc -> do
 #ifndef DEVEL
     schema <- getDataFileName "schema"
     withDB (serviceDB rc) $ runReaderT $ updateDBSchema schema
 #endif
-    void $ forkPeriodic rc
     runWarp conf rc (runActionRoute routes rc)

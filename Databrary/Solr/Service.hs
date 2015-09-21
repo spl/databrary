@@ -47,10 +47,10 @@ confSolr src dst = do
     forM_ pgEnumValues $ \(x, s) -> hPutStrLn h $ "  <value>" ++ const s (x `asTypeOf` t) ++ "</value>"
     hPutStrLn h "</enum>"
 
-initSolr :: C.Config -> IO Solr
-initSolr conf = do
+initSolr :: Bool -> C.Config -> IO Solr
+initSolr fg conf = do
   bin <- C.lookupDefault "solr" conf "bin"
-  run <- C.lookupDefault True conf "run"
+  run <- C.lookupDefault fg conf "run"
   host <- C.lookupDefault "127.0.0.1" conf "host"
   port <- C.require conf "port"
   home <- makeAbsolute =<< C.require conf "home"

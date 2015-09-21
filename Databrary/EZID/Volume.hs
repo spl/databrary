@@ -78,7 +78,7 @@ updateVolume v@Volume{ volumeId = i } = maybe
 removeVolume :: Id Volume -> BS.ByteString -> EZIDM Bool
 removeVolume _ d = ezidModify d EZIDUnavailable
 
-updateEZID :: ContextM (Maybe Bool)
+updateEZID :: BackgroundContextM (Maybe Bool)
 updateEZID = runEZIDM $ do
   r <- ezidStatus
   if r

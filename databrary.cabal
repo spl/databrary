@@ -19,7 +19,6 @@ data-files:
   transctl.sh,
   transcode,
   volume.json,
-  ezid/*.py,
   web/*.min.css,
   web/*.min.js,
   web/icons/*.ico,
