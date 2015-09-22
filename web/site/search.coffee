@@ -129,7 +129,10 @@ app.controller 'site/search', [
       models.Tag.search(input).then (data) ->
         for tag in data
           text: tag
-          select: tag
+          select: () ->
+            fields.tag_name = this.text
+            $scope.searchVolumes()
+            this.text
 
     limits =
       year: Math.ceil(constants.age.limit)
@@ -153,15 +156,22 @@ app.controller 'site/search', [
       return
     $scope.removeMetric = (mi) ->
       metrics[mi] = null
+      $scope.searchVolumes()
       return
 
-    $scope.optionsCompleter = (input, options) ->
+    $scope.optionsCompleter = (m, input) ->
       i = input.toLowerCase()
-      match = (o for o in options when o.toLowerCase().startsWith(i))
+      match = (o for o in m.options when o.toLowerCase().startsWith(i))
       switch match.length
         when 0 then input
         when 1 then match[0]
-        else ({text:o, select:o, default:input && i==0} for o, i in match)
+        else for o, i in match
+          text: o
+          select: () ->
+            metrics[m.id] = this.text
+            $scope.searchVolumes()
+            this.text
+          default: input && i==0
 
     $scope.expandVolume = (v) ->
       $scope.expanded = {volume:v}
