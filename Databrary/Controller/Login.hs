@@ -70,7 +70,7 @@ postLogin = action POST (pathAPI </< "user" </< "login") $ \api -> withoutAuth $
         block = attempts > 4
     lift $ auditAccountLogin pass (fromMaybe nobodyParty p) email
     when block $ "email" .:> deformError "Too many login attempts. Try again later."
-    unless pass $ "password" .:> deformError "Incorrect login. Emails and passwords are both case-sensitive."
+    unless pass $ "password" .:> deformError "Incorrect email address or password. Both are case-sensitive, and institutional addresses are preferred."
     return (auth, su)
   loginAccount api auth su
 
