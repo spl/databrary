@@ -175,10 +175,8 @@ app.controller 'site/search', [
 
     $scope.expandVolume = (v) ->
       if v && $scope.expanded?.volume == v
-        console.log v 
         $scope.expanded = undefined
         return
-      console.log 'meep'
       $scope.expanded = {volume:v}
       return unless v
       v.get ['excerpts']
