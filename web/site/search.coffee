@@ -49,17 +49,23 @@ app.controller 'site/search', [
         x = rangeRegex.exec(x) || []
         [Number.parse(x[1]) ? -Infinity, Number.parse(x[2]) ? Infinity]
       print: (x) ->
+        if x
+          unless x[0] > this.range[0]
+            x[0] = -Infinity
+          unless x[1] < this.range[1]
+            x[1] = Infinity
         if Range.set(x) then '['+Number.print(x[0])+' TO '+Number.print(x[1])+']'
     Quoted =
       parse: (x) ->
         x.substring(x.startsWith('"'), x.length-x.endsWith('"'))
       print: (x) -> if x then '"'+x+'"'
 
+    $scope.years = [1925, (new Date()).getFullYear()]
     handlers =
       record_age:
         parse: Range.parse
-        print: (x) ->
-          Range.print([(if x[0] > 0 then x[0]), (if x[1] < constants.age.limit then x[1])])
+        print: Range.print
+        range: [0, constants.age.limit]
       container_date:
         parse: (x) ->
           x = Range.parse(x)
@@ -67,11 +73,14 @@ app.controller 'site/search', [
             fields.container_top = 'false'
           x
         print: (x) ->
-          if fields.container_top then Range.print(x)
+          if fields.container_top then Range.print.call(this, x)
+        range: $scope.years
       numeric: Range
       tag_name: Quoted
 
-    $scope.fields = fields = {record_age:[-Infinity, Infinity]}
+    $scope.fields = fields = {}
+    for f, v of handlers
+      fields[f] = [v.range[0],v.range[1]] if v.range
     $scope.metrics = metrics = {}
     for f, v of params
       if f.startsWith('f.')
