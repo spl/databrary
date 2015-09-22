@@ -20,7 +20,8 @@
           <div class="search-filter" ng-if="fields.container_top">
             <span>Data collected betweeen</span><br>
             <div ui-slider="{range:true}" min="{{::years[0]}}" max="{{::years[1]}}" step="1" ng-model="fields.container_date"></div>
-            <span ng-bind="fields.container_date[0]"></span> - <span ng-bind="fields.container_date[1]"></span>
+            <span ng-bind="fields.container_date[0]"></span>
+            <span class="slider-right-label" ng-bind="fields.container_date[1]"></span>
           </div>
           <div>
             <input id="volWHighlights" type="checkbox" ng-model="fields.content_type" ng-true-value="'excerpt'" ng-false-value="undefined" ng-change="searchVolumes()"/>
@@ -47,7 +48,8 @@
         <div class="search-filter">
           <span>Participants' age</span><br>
           <div ui-slider="{range:true}" min="0" max="{{ageMax()}}" step="1" ng-model="fields.record_age"></div>
-          <display-age value="fields.record_age[0]"></display-age> &ndash; <display-age value="fields.record_age[1]"></display-age>
+          <display-age value="fields.record_age[0]"></display-age>
+          <display-age class="slider-right-label" value="fields.record_age[1]"></display-age>
         </div>
         <div class="search-filter" ng-repeat="(mi, v) in metrics" ng-if="metrics[mi] !== null" ng-init="m=page.constants.metric[mi]">
           <span class="icon trash clickable" ng-click="removeMetric(mi)"></span>
