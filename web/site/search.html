@@ -18,7 +18,7 @@
             <label for="volWSess">Contains sessions</label>
           </div>
           <div class="search-filter" ng-if="fields.container_top">
-            <span>Data collected betweeen</span><br>
+            <span>Data collected betweeen</span><br/>
             <div ui-slider="{range:true}" min="{{::years[0]}}" max="{{::years[1]}}" step="1" ng-model="fields.container_date"></div>
             <span ng-bind="fields.container_date[0]"></span>
             <span class="slider-right-label" ng-bind="fields.container_date[1]"></span>
@@ -36,11 +36,11 @@
         </div>
         <div class="search-filter">
           Contains tag
-          <input-completer input-name="tag" ng-model="fields.tag_name" completer="tagSearch($input)" ng-pattern="/^[a-zA-Z][a-zA-Z -]{1,30}[a-zA-Z]$/" submit="search()"></input-completer>
+          <input-completer input-name="tag" ng-model="fields.tag_name" completer="tagSearch($input)" ng-pattern="/^[a-zA-Z][a-zA-Z -]{1,30}[a-zA-Z]$/" submit="searchVolumes()"></input-completer>
         </div>
         <div class="search-filter">
           Contains files of type
-          <select ng-model="fields.format_id" ng-options="'\\'+fi as f.name+' ('+f.extension+')' for (fi, f) in ::page.constants.format">
+          <select ng-model="fields.format_id" ng-options="'\\'+fi as f.name+' ('+f.extension+')' for (fi, f) in ::page.constants.format" ng-change="searchVolumes()">
             <option value="">Any</option>
           </select>
         </div>
@@ -54,7 +54,7 @@
         <div class="search-filter" ng-repeat="(mi, v) in metrics" ng-if="metrics[mi] !== null" ng-init="m=page.constants.metric[mi]">
           <span class="icon trash clickable" ng-click="removeMetric(mi)"></span>
           <span ng-bind="::m.name"></span>
-          <input-completer ng-if="::m.options" input-name="metric" ng-model="metrics[mi]" completer="optionsCompleter($input, m.options)" min="0" submit="search()"></input-completer>
+          <input-completer ng-if="::m.options" input-name="metric" ng-model="metrics[mi]" completer="optionsCompleter(m, $input)" min="0" submit="searchVolumes()"></input-completer>
           <input type="text" ng-if="::m.type==='text' && !m.options" ng-model="metrics[mi]" key-enter="search()"/>
           <span ng-if="::m.type==='numeric'">
             <input type="number" ng-model="metrics[mi][0]"/> &ndash; <input type="number" ng-model="metrics[mi][1]"/>
@@ -67,7 +67,7 @@
         </div>
         <div class="search-filter">
           <button class="small green" ng-disabled="searchForm.$invalid" ng-click="searchVolumes()">Apply filters</button>
-          <button class="search-clear small" ng-click="page.$location.search({volume:true,q:query})">Clear filters</button>
+          <button class="search-clear small" ng-click="page.$location.search({volume:true,q:query}) && page.$route.reload()">Clear filters</button>
         </div>
       </div>
 
