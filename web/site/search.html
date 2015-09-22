@@ -18,8 +18,9 @@
             <label for="volWSess">Contains sessions</label>
           </div>
           <div class="search-filter" ng-if="fields.container_top">
-            Data collected betweeen <input type="number" ng-model="fields.container_date[0]" key-enter="searchVolumes()"/> and <input type="number" ng-model="fields.container_date[1]" key-enter="searchVolumes()"/>
+            <span>Data collected betweeen</span><br/>
             <div ui-slider="{range:true}" min="{{::years[0]}}" max="{{::years[1]}}" step="1" ng-model="fields.container_date"></div>
+            <span ng-bind="fields.container_date[0]"></span> - <span ng-bind="fields.container_date[1]"></span>
           </div>
           <div>
             <input id="volWHighlights" type="checkbox" ng-model="fields.content_type" ng-true-value="'excerpt'" ng-false-value="undefined" ng-change="searchVolumes()"/>
@@ -97,8 +98,8 @@
         <ul class="row search-volume-results flat">
           <li ng-repeat="volume in ::volumes" ng-click="expandVolume(volume)">
             <h1 class="search-volume-result-title">
-              <span ng-if="expanded.volume !== volume" ng-click="expandVolume(volume)" class="icon radio"></span>
-              <span ng-if="expanded.volume === volume" ng-click="expandVolume()" class="icon radio-selected"></span>
+              <span ng-if="expanded.volume !== volume" class="icon expand clickable"></span>
+              <span ng-if="expanded.volume === volume" class="icon expanded clickable"></span>
               <a ng-href="{{::volume.route()}}" ng-bind="::volume.name"></a>
             </h1>
 
