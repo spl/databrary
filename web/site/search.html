@@ -66,7 +66,7 @@
           </select>
         </div>
         <div class="search-filter">
-          <button class="small green" ng-disabled="searchForm.$invalid" ng-click="searchVolumes()">Apply filters</button>
+          <button class="small green" ng-disabled="searchForm.$pristine || searchForm.$invalid" ng-click="searchVolumes()">Apply filters</button>
           <button class="search-clear small" ng-click="page.$location.search({volume:true,q:query}) && page.$route.reload()">Clear filters</button>
         </div>
       </div>
