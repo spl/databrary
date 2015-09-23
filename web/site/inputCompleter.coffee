@@ -35,7 +35,7 @@ app.directive 'inputCompleter', [
 
         handle = (r) ->
           if r && typeof r.then == 'function'
-            r.then(handle)
+            r.then(handle, () -> sent = undefined)
           else
             sent = undefined
             if Array.isArray(r)
