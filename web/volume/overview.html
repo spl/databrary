@@ -33,17 +33,17 @@
 
         <div class="metadata">
           <dl class="flat">
-            <dt message="volume.creation.title"></dt>
+            <dt>added on</dt>
             <dd>
               <time datetime="{{::volume.creation | date:'yyyy-MM-dd HH:mm:ss Z'}}" pubdate>
                 {{::volume.creation | date:'MMMM yyyy'}}
               </time>
             </dd>
 
-            <dt ng-if="::volume.summary.sessions" message="volume.sessions.title"></dt>
-            <dd ng-if="::volume.summary.sessions" ng-bind="::'volume.sessions' | message:volume.summary.sessions:volume.summary.shared"></dd>
+            <dt ng-if="::volume.summary.sessions">sessions</dt>
+            <dd ng-if="::volume.summary.sessions">{{::volume.summary.sessions}} ({{::volume.summary.shared}} shared)</dd>
 
-            <dt ng-if="::volume.summary.agemean" message="volume.ages.title"></dt>
+            <dt ng-if="::volume.summary.agemean">ages</dt>
             <dd ng-if="::volume.summary.agemean">
               <display-age value="::volume.summary.agemin"></display-age>
               <span ng-if="::volume.summary.agemin < volume.summary.agemax">
@@ -52,6 +52,17 @@
                 (<em>M</em> = <display-age value="::volume.summary.agemean"></display-age>)
               </span>
             </dd>
+
+            <dt ng-if="::volume.summary.participants">participants</dt>
+            <dd ng-if="::volume.summary.participants">{{::volume.summary.participants}} 
+              <span ng-if="::volume.summary.genders">
+                (<ul class="comma inline"><li ng-repeat="(g, n) in ::volume.summary.genders">{{::n}} {{::g}}</li></ul>)
+              </span>
+            </dt>
+
+            <dt ng-if="::l.length" ng-repeat-start="(c, l) in ::volume.summary.categories">{{::c}}s</dt>
+            <dd ng-if="::l.length" ng-repeat-end><ul class="comma inline"><li ng-repeat="i in ::l" ng-bind="::i"></li></ul></dd>
+
           </dl>
         </div>
       </div>
@@ -88,38 +99,6 @@
           <dt ng-bind="::funding.funder.name"></dt>
           <dd ng-repeat="award in ::funding.awards track by $index" ng-bind="::award"></dd>
         </dl>
-      </div>
-    </div>
-
-    <div frame id="frame-reuse" frame-title="volume.reuse.title" fold ng-if="::(volume.consumers.length || volume.providers.length) > 0">
-      <div class="row">
-        <div class="col-desktop-6 col-tablet-3 col-mobile-6">
-          <div ng-if="::volume.consumers.length">
-            <div message="volume.reuse.provides"></div>
-
-            <ul class="panel-overview-volume-reuses">
-              <li ng-repeat="ext in ::volume.consumers">
-                <a ng-href="{{::ext.route()}}">
-                  <span class="icon volume"></span>
-                  <span ng-bind="::ext.name"></span>
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          <div ng-if="::volume.providers.length">
-            <div message="volume.reuse.consumes"></div>
-
-            <ul class="panel-overview-volume-reuses">
-              <li ng-repeat="ext in ::volume.providers">
-                <a ng-href="{{::ext.route()}}">
-                  <span class="icon volume"></span>
-                  <span ng-bind="::ext.name"></span>
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
       </div>
     </div>
   </div>
