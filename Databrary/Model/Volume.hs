@@ -71,7 +71,7 @@ volumeJSON v@Volume{..} = JSON.record volumeId $ catMaybes
   , Just $ "body" JSON..= volumeBody
   , ("doi" JSON..=) <$> volumeDOI
   , Just $ "creation" JSON..= volumeCreation
-  , Just $ "owners" JSON..= JSON.object (map (\(i, n) -> T.pack (show i) JSON..= n) volumeOwners)
+  , Just $ "owners" JSON..= map (\(i, n) -> JSON.object ["id" JSON..= i, "name" JSON..= n]) volumeOwners
   , Just $ "permission" JSON..= volumePermission
   ]
 

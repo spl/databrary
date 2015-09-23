@@ -32,9 +32,9 @@ app.factory('searchService', [
 
     function Volume(init) {
       if (!init.owners) {
-        init.owners = {};
+        init.owners = [];
         for (var i = 0; i < init.owner_ids.length; i++)
-          init.owners[init.owner_ids[i]] = init.owner_names[i];
+          init.owners[i] = {id: init.owner_ids[i], name: init.owner_names[i]};
       }
       models.Volume.call(this, init);
     }

@@ -7,19 +7,20 @@ app.directive('citeVolume', [
       var volume = $scope.volume;
 
       var authors = _.map(volume.owners, function (owner) {
+        var name = owner.name;
         var author;
 
-        var i = owner.lastIndexOf(', '); // could equally incorrectly be indexOf
+        var i = name.lastIndexOf(', '); // could equally incorrectly be indexOf
         if (i < 0)
-          author = owner;
+          author = name;
         else {
           i += 2;
-          author = owner.substr(0, i);
+          author = name.substr(0, i);
           do {
-            while (owner.charAt(i) == ' ')
+            while (name.charAt(i) == ' ')
               i++;
-            author += owner.charAt(i) + '.';
-          } while ((i = owner.indexOf(' ', i)+1) > 0);
+            author += name.charAt(i) + '.';
+          } while ((i = name.indexOf(' ', i)+1) > 0);
         }
         return author;
       });

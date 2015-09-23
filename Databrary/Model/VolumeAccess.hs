@@ -36,7 +36,7 @@ import Databrary.Model.VolumeAccess.SQL
 lookupVolumeAccess :: (MonadDB c m, MonadHasIdentity c m) => Volume -> Permission -> m [VolumeAccess]
 lookupVolumeAccess vol perm = do
   ident <- peek
-  dbQuery $(selectQuery (selectVolumeAccess 'vol 'ident) "$WHERE volume_access.individual >= ${perm} ORDER BY individual DESC, children DESC")
+  dbQuery $(selectQuery (selectVolumeAccess 'vol 'ident) "$WHERE volume_access.individual >= ${perm} ORDER BY individual DESC, children DESC, party.name, party.prename")
 
 lookupVolumeAccessParty :: (MonadDB c m, MonadHasIdentity c m) => Volume -> Id Party -> m (Maybe VolumeAccess)
 lookupVolumeAccessParty vol p = do

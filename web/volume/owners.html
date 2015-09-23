@@ -1,5 +1,5 @@
 <ul class="inline-block comma">
-  <li ng-repeat="(party, owner) in ::volume.owners">
-    <a ng-href="{{::page.router.party([party])}}" ng-bind="::owner"></a>
+  <li ng-repeat="owner in ::volume.owners">
+    <a ng-href="{{::page.router.party([owner.id])}}" ng-bind="::owner.name"></a>
   </li>
 </ul>

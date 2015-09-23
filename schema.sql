@@ -234,7 +234,7 @@ $$;
 COMMENT ON FUNCTION "volume_access_check" (integer, integer) IS 'Permission level the party has on the given volume, either directly, delegated, or inherited.';
 
 CREATE VIEW "volume_owners_view" ("volume", "owners") AS
-	SELECT volume, array_agg(party || ':' || name || COALESCE(', ' || prename, '')) FROM volume_access JOIN party ON party = party.id WHERE individual = 'ADMIN' GROUP BY volume;
+	SELECT volume, array_agg(party || ':' || name || COALESCE(', ' || prename, '') ORDER BY children DESC, name, prename) FROM volume_access JOIN party ON party = party.id WHERE individual = 'ADMIN' GROUP BY volume;
 
 CREATE TABLE "volume_owners" (
 	"volume" integer NOT NULL Primary Key References "volume" ON UPDATE CASCADE ON DELETE CASCADE,
