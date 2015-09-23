@@ -7,6 +7,7 @@ module Databrary.Model.Offset
   ) where
 
 import Control.Applicative ((<$>))
+import Data.Char (isDigit, digitToInt)
 import Data.Fixed (Fixed(..), HasResolution(..), Milli, Pico)
 import qualified Data.Scientific as Sci
 import qualified Data.Text as T
@@ -70,12 +71,16 @@ instance Read Offset where
       r <- RP.look
       case r of
         (':':_) -> RP.pfail
+        ('.':_) -> RP.pfail
         _ -> return $ Offset (MkFixed m)
     -- parse seconds with colons:
     rc = do
       pm <- RP.option '+' $ RP.satisfy (`elem` "-+")
       c <- RP.sepBy1 (RP.readS_to_P readDec) (RP.char ':')
-      Offset . MkFixed . (if pm == '-' then negate else id) <$> case c of
+      ms <- RP.option 0 (do
+        _ <- RP.char '.'
+        foldr (\d m -> 100*digitToInt d + m `div` 10) 0 <$> RP.many (RP.satisfy isDigit))
+      Offset . MkFixed . (if pm == '-' then negate else id) . (toInteger ms +) . (1000 *) <$> case c of
         [s] -> return s
         [m, s] -> return (60*m + s)
         [h, m, s] -> return (60*(60*h + m) + s)
