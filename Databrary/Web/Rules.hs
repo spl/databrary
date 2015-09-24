@@ -77,7 +77,7 @@ generateWebFile a f = withExceptT (label (webFileRel f)) $ do
 generateAll :: WebGeneratorM ()
 generateAll = do
   mapM_ (generateWebFile True) $
-    webLibs False ++
+    webLibs ++
     map (fromFilePath . fst) (staticGenerators ++ fixedGenerators)
 
 generateWebFiles :: IO WebFileMap

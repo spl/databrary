@@ -6,7 +6,9 @@ module Databrary.View.Html
   , lazyByteStringValue
   , byteStringValue
   , builderValue
+  , actionValue
   , actionLink
+  , Query
   , actionForm
   , (!?)
   ) where
@@ -15,7 +17,7 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Lazy as BSL
 import Data.Monoid ((<>))
-import Network.HTTP.Types (QueryLike(..), renderQueryBuilder)
+import Network.HTTP.Types (Query, QueryLike(..), renderQueryBuilder)
 import qualified Text.Blaze.Internal as Markup
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as HA
@@ -44,8 +46,11 @@ byteStringValue = H.unsafeLazyByteStringValue . BSB.toLazyByteString . fromHtmlE
 builderValue :: BSB.Builder -> H.AttributeValue
 builderValue = lazyByteStringValue . BSB.toLazyByteString
 
+actionValue :: QueryLike q => Route r a -> a -> q -> H.AttributeValue
+actionValue r a q = builderValue $ actionURL Nothing r a $ toQuery q
+
 actionLink :: QueryLike q => Route r a -> a -> q -> H.Attribute
-actionLink r a q = HA.href $ builderValue $ actionURL Nothing r a $ toQuery q
+actionLink r a = HA.href . actionValue r a
 
 actionForm :: Route r a -> a -> JSOpt -> H.Html -> H.Html
 actionForm r@Route{ routeMethod = g, routeMultipart = p } a j = H.form

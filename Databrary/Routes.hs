@@ -28,6 +28,7 @@ import Databrary.Controller.Zip
 import Databrary.Controller.Tag
 import Databrary.Controller.Comment
 import Databrary.Controller.CSV
+import Databrary.Controller.Pivot
 import Databrary.Controller.Audit
 import Databrary.Controller.Transcode
 import Databrary.Controller.Ingest
@@ -84,6 +85,7 @@ routeMap = fromRouteList
   , route viewVolumeDescription
   , route thumbVolume
   , route csvVolume
+  , route pivotVolume
 
   , route createContainer
   , route viewSlot

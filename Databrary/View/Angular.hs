@@ -18,19 +18,17 @@ import Databrary.Ops
 import Databrary.Has (view)
 import Databrary.Model.Identity
 import Databrary.Action.Types
-import Databrary.Action
 import Databrary.Web (WebFilePath, webFileRelRaw)
-import Databrary.Web.Libs (webLibs)
+import Databrary.Web.Libs (webDeps)
+import Databrary.Controller.Web
 import Databrary.View.Html
 import Databrary.View.Template
-
-import Databrary.Controller.Web
 
 ngAttribute :: String -> H.AttributeValue -> H.Attribute
 ngAttribute = H.customAttribute . H.stringTag . ("ng-" <>)
 
 webURL :: BS.ByteString -> H.AttributeValue
-webURL p = builderValue $ actionURL Nothing webFile (Just $ StaticPath p) []
+webURL p = actionValue webFile (Just $ StaticPath p) ([] :: Query)
 
 htmlAngular :: Maybe [WebFilePath] -> BSB.Builder -> RequestContext -> H.Html
 htmlAngular debug nojs auth = H.docTypeHtml H.! ngAttribute "app" "databraryModule" $ do
@@ -61,7 +59,7 @@ htmlAngular debug nojs auth = H.docTypeHtml H.! ngAttribute "app" "databraryModu
       H.preEscapedString "window.$play={user:"
       H.unsafeLazyByteString $ JSON.encode $ identityJSON (view auth)
       H.preEscapedString "};"
-    forM_ (webLibs (isJust debug) ++ maybe ["app.min.js"] ("debug.js" :) debug) $ \js ->
+    forM_ (webDeps (isJust debug) ++ maybe ["app.min.js"] ("debug.js" :) debug) $ \js ->
       H.script
         H.! HA.src (webURL $ webFileRelRaw js)
         $ return ()

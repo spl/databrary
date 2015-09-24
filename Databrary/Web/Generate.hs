@@ -28,7 +28,7 @@ anyM (a:l) = do
   if r then return True else anyM l
 
 fileNotFound :: IsFilePath f => f -> WebGeneratorM a
-fileNotFound f = throwError $ toFilePath f ++ " not found"
+fileNotFound f = throwError $ toFilePath f ++ " not found\n"
 
 fileNewerThan :: IsFilePath f => Timestamp -> f -> WebGeneratorM Bool
 fileNewerThan t f =

@@ -1,14 +1,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Databrary.Web.Libs
   ( generateLib
+  , webDeps
   , webLibs
   , webIncludes
   ) where
 
-import Control.Applicative ((<$), (<|>))
-import Control.Monad (guard, mzero)
+import Control.Monad (mzero)
+import Data.Maybe (maybeToList)
+import Data.List (stripPrefix)
 import Data.String (fromString)
-import System.FilePath ((</>), splitFileName, (<.>), splitExtensions, splitExtension)
+import System.FilePath ((</>), splitFileName, (<.>))
 
 import Databrary.Web
 import Databrary.Web.Types
@@ -17,33 +19,42 @@ import Databrary.Web.Generate
 prefix :: FilePath
 prefix = "bower_components"
 
-jsLibs, jsIncludes, jsAll :: [(FilePath, FilePath)]
-jsAll = jsLibs ++ jsIncludes
-jsLibs =
+jsDeps, jsIncludes, jsLibs, jsAll :: [(FilePath, FilePath)]
+jsDeps = -- sourced on js pages
   [ ("jquery",              "jquery/dist")
   , ("angular",             "angular")
   , ("angular-route",       "angular-route")
   , ("ng-flow-standalone",  "ng-flow/dist")
   , ("lodash",              "lodash")
   ]
-jsIncludes =
+jsIncludes = -- included in app
   map (\n -> ("jquery.ui." ++ n, "jquery-ui/ui")) ["core", "widget", "mouse", "slider"]
   ++ [("slider", "angular-ui-slider/src")]
+jsLibs = -- only linked
+  [ ("jquery-ui",           "jquery-ui/ui/minified")
+  , ("jquery.csv",          "jquery-csv/src")
+  , ("pivot",               "pivottable/dist")
+  ] 
+jsAll = jsDeps ++ jsIncludes ++ jsLibs
+
+extensions :: [FilePath]
+extensions = ["js", "min.js", "min.map", "min.js.map", "css"]
 
 generateLib :: WebGenerator
 generateLib fo@(f, _)
   | ("lib/", l) <- splitFileName (webFileRel f)
-  , Just b <- fgs (`elem` [".js", ".min.js", ".min.map", ".min.js.map"]) (splitExtensions l)
-      <|> fgs (== ".js") (splitExtension l)
-  , Just p <- lookup b jsAll = webLinkDataFile (prefix </> p </> l) fo
+  , [p] <- [ p | (b, p) <- jsAll, ('.':e) <- maybeToList (stripPrefix b l), e `elem` extensions ] =
+    webLinkDataFile (prefix </> p </> l) fo
   | otherwise = mzero
-  where fgs p (a, b) = a <$ guard (p b)
 
 webJS :: Bool -> [(FilePath, FilePath)] -> [WebFilePath]
 webJS mn = map (fromString . ("lib" </>) . (<.> if mn then ".min.js" else ".js") . fst)
 
-webLibs :: Bool -> [WebFilePath]
-webLibs debug = webJS (not debug) jsLibs
+webDeps :: Bool -> [WebFilePath]
+webDeps debug = webJS (not debug) jsDeps
+
+webLibs :: [WebFilePath]
+webLibs = webJS True (jsDeps ++ jsLibs) ++ ["lib/pivot.css"]
 
 webIncludes :: [WebFilePath]
 webIncludes = webJS False jsIncludes
