@@ -62,7 +62,7 @@ remoteTranscode = action POST (pathJSON >/> pathId) $ \ti -> withoutAuth $ do
     return $ okResponse [] BS.empty
 
 viewTranscodes :: ActionRoute ()
-viewTranscodes = action GET (pathHTML >/> "transcode") $ \() -> withAuth $ do
+viewTranscodes = action GET (pathHTML >/> "admin" >/> "transcode") $ \() -> withAuth $ do
   checkMemberADMIN
   t <- lookupActiveTranscodes
   peeks $ okResponse [] . htmlTranscodes t
@@ -85,7 +85,7 @@ instance Deform f TranscodeAction where
   deform = deformRead TranscodeStart
 
 postTranscode :: ActionRoute (Id Transcode)
-postTranscode = action POST (pathHTML >/> pathId) $ \ti -> withAuth $ do
+postTranscode = action POST (pathHTML >/> "admin" >/> pathId) $ \ti -> withAuth $ do
   t <- maybeAction =<< lookupTranscode ti
   act <- runForm Nothing $
     "action" .:> deform
