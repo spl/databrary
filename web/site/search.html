@@ -51,7 +51,7 @@
           <display-age value="fields.record_age[0]"></display-age>
           <display-age class="slider-right-label" value="fields.record_age[1]"></display-age>
         </div>
-        <div class="search-filter" ng-repeat="(mi, v) in metrics" ng-if="metrics[mi] !== null" ng-init="m=page.constants.metric[mi]">
+        <div class="search-filter" ng-repeat="(mi, v) in metrics" ng-if="metrics[mi] !== undefined" ng-init="m=page.constants.metric[mi]">
           <span class="icon trash clickable" ng-click="removeMetric(mi)"></span>
           <span ng-bind="::m.name"></span>
           <input-completer ng-if="::m.options" input-name="metric" ng-model="metrics[mi]" completer="optionsCompleter(m, $input)" min="0" submit="searchVolumes()"></input-completer>

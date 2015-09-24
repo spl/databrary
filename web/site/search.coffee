@@ -148,14 +148,14 @@ app.controller 'site/search', [
       fields.record_age = [-Infinity,Infinity]
 
     $scope.availableMetrics = () ->
-      m for m in constants.metrics when !metrics[m.id]? && m.release >= constants.permission.PUBLIC
+      m for m in constants.metrics when metrics[m.id] == undefined && m.release >= constants.permission.PUBLIC
     $scope.addMetric = () ->
       if mi = $scope.addMetric.id
         $scope.addMetric.id = ''
-        metrics[mi] = if constants.metric[mi].type == 'numeric' then [] else undefined
+        metrics[mi] = if constants.metric[mi].type == 'numeric' then [] else ''
       return
     $scope.removeMetric = (mi) ->
-      metrics[mi] = null
+      metrics[mi] = undefined
       $scope.searchVolumes()
       return
 
