@@ -1199,7 +1199,7 @@ app.directive 'spreadsheet', [
         $scope.setKey = (key) ->
           unedit()
           Key = $scope.key = key? && getCategory(key) || pseudoCategory.slot
-          $location.replace().search('key', Key.id) unless Top
+          $location.replace().search('key', if Key != pseudoCategory.slot then Key.id) unless Top
           populate()
           $scope.tabOptionsClick = undefined
 
