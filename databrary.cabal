@@ -33,6 +33,8 @@ data-files:
   web/images/logo/*.svg,
   web/images/social/16px/*.png,
   web/lib/*.min.js,
+  web/lib/jquery.csv.min.js,
+  web/lib/pivot.css,
   solr/solr.xml,
   solr/log4j.properties,
   solr/conf/*.xml,
