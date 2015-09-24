@@ -12,12 +12,12 @@
     <div class="col-desktop-3 col-tablet-3 col-mobile-6">
       <div class="search-left-section" ng-if="::!!volumes">
         <legend>Volume filters</legend>
-        <div class="search-volume-types">
+        <div class="search-volume-types search-filter">
           <div>
             <input id="volWSess" type="checkbox" ng-model="fields.container_top" ng-true-value="'false'" ng-false-value="undefined" ng-change="searchVolumes()"/>
             <label for="volWSess">Contains sessions</label>
           </div>
-          <div class="search-filter" ng-if="fields.container_top">
+          <div class="search-filter-sub" ng-if="fields.container_top">
             <span>Data collected betweeen</span><br/>
             <div ui-slider="{range:true}" min="{{::years[0]}}" max="{{::years[1]}}" step="1" ng-model="fields.container_date"></div>
             <span ng-bind="fields.container_date[0]"></span>

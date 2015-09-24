@@ -11,11 +11,12 @@
 .search-left-section
   float left
   width 100%
-  border gray 1px solid
+  border 0
   border-radius b3
   font-size b2
   padding b3
   margin-bottom b2
+  background-color neutral51
   ul
     padding 0
     margin 0
@@ -28,12 +29,15 @@
   border-bottom 1px dotted neutral53
   padding-top b3
   padding-bottom b3
-  &:first-of-type
-    border-top 3px solid neutral52
   &:last-of-type
     border-bottom 0
   .icon
     vertical-align text-top
+.search-filter-sub
+  border-top 1px solid neutral53
+  border-bottom 1px solid neutral53
+  margin-left b2+b4
+  padding-bottom b3
 
 .search-volume-types
   padding-bottom b3
@@ -43,7 +47,7 @@
   li
     border-radius b8
     padding 0 b8
-    border 1px solid white
+    border 0
   li:hover:not(.selected)
     link-color black
   .selected
