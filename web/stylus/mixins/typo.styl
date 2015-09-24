@@ -23,9 +23,11 @@ link-color(color)
   cursor pointer
   color color
 
-  &:link, &.link,
-  &:visited, &.visited
+  &:link, &.link
     color color
+    
+  &:visited, &.visited
+    color mix(color, dark, 50%)
 
   &:hover, &.hover
     color mix(color, pale, 25%)

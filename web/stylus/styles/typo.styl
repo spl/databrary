@@ -222,7 +222,8 @@ ul
 
 ol
 ul
-  &.comma
+  &.comma, 
+  &.semicolon
     margin-bottom f1
     padding-left 0
 
@@ -232,7 +233,6 @@ ul
       padding 0
 
       &:before
-        content ", "
         background-color inherit
         position inherit
         float none
@@ -243,6 +243,12 @@ ul
       &:first-child
         &:before
           content ""
+          
+  &.semicolon > li:before
+    content "; "
+    
+  &.comma >li:before
+    content ", "
 
   &.inline-block
     display inline-block
