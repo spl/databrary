@@ -298,7 +298,7 @@ app.controller('volume/slot', [
         $scope.playing = 0
         return unless $scope.asset && isFinite(p = $scope.asset.segment.u)
         # look for something else to play:
-        for i in $scope.assets when i.asset && !i.asset.pending && i.asset.format.type == 'video' && i.asset.checkPermission(constants.permission.VIEW) && i.lBounded && i.ut.o > p
+        for i in $scope.assets when i.asset && i.asset.duration && !i.asset.pending && i.asset.checkPermission(constants.permission.VIEW) && i.lBounded && i.ut.o > p
           a = i
           break
         return unless a
