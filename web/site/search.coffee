@@ -134,6 +134,8 @@ app.controller 'site/search', [
             $scope.searchVolumes()
             this.text
 
+    $scope.formats = _.filter(constants.format, (f) -> !f.transcodable || f.id < 0)
+
     limits =
       year: Math.ceil(constants.age.limit)
       month: Math.floor(5*constants.age.year)
