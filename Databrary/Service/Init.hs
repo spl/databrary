@@ -35,7 +35,7 @@ loadConfig = do
 initService :: Bool -> C.Config -> IO Service
 initService fg conf = do
   time <- getCurrentTime
-  logs <- initLogs (C.subconfig "log" conf)
+  logs <- initLogs fg (C.subconfig (if fg then "log.fg" else "log") conf)
   secret <- C.require conf "secret"
   entropy <- initEntropy
   passwd <- initPasswd
