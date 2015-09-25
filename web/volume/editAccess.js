@@ -62,20 +62,20 @@ app.directive('volumeEditAccessForm', [
         };
       });
 
-      $scope.selectFn = function (found) {
-        form.data.push({
-          new: true,
-          party: found,
-        });
-        display.scrollTo('fieldset .access-grant:last');
+      $scope.selectFn = function (p) {
+        if (form.data.some(function (a) { return a.party.id === p.id; })) {
+          display.scrollTo("#access-"+p.id);
+        } else {
+          form.data.push({
+            new: true,
+            party: p,
+            individual: 0
+          });
+          display.scrollTo('fieldset .access-grant:last');
+        }
       };
 
-      form.preSelect = function (p) {
-        if (form.data.some(function (a) { return a.party.id === p.id; }))
-          display.scrollTo("#access-"+p.id);
-        else
-          $scope.selectFn(p);
-      };
+      form.preSelect = $scope.selectFn;
 
       $scope.$emit('volumeEditAccessForm-init', form);
     };

@@ -11,7 +11,7 @@
         <a ng-href="{{::access.party.route()}}" class="permission-auth-username" ng-bind="::access.party.name"></a><wbr>
         <span class="permission-auth-email" ng-if="::access.party.email" ng-bind="::access.party.email"></span>
         <div class="access-grant-owner-order">
-          <input ng-if="accessGrantForm.data.individual == page.permission.ADMIN" type="number" name="sort" ng-model="accessGrantForm.data.sort" min="1" max="32767" placeholder="Order"></input>          
+          <input ng-if="accessGrantForm.data.individual == page.permission.ADMIN" type="number" name="sort" ng-model="accessGrantForm.data.sort" min="1" max="32767" placeholder="Order"></input>     
         </div>
         <button class="mini icon trash access-grant-remove" ng-click="accessGrantForm.remove(this)" class="col-desktop-1 col-tablet-1 col-mobile-1"></button>
       </div>
