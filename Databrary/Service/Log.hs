@@ -22,7 +22,6 @@ import Data.Monoid ((<>))
 import Data.Time.Clock (getCurrentTime, diffUTCTime)
 import Data.Time.Format (formatTime)
 import Data.Time.LocalTime (ZonedTime, utcToLocalZonedTime)
-import qualified Data.Traversable as Trav
 import qualified Network.HTTP.Types as HTTP
 import qualified Network.Socket as Net
 import qualified Network.Wai as Wai
@@ -38,26 +37,26 @@ data Logs = Logs
 
 type MonadLog c m = (MonadHas Logs c m, MonadIO m)
 
-initLog :: C.Config -> IO (Maybe LoggerSet)
-initLog conf = do
-  file <- C.lookup conf "file"
+initLog :: FilePath -> C.Config -> IO (Maybe LoggerSet)
+initLog def conf = do
+  file <- C.lookupDefault def conf "file"
   buf <- C.lookupDefault defaultBufSize conf "buf"
-  Trav.mapM (open buf) file
-  where
-  open buf "stdout" = newStdoutLoggerSet buf
-  open buf "stderr" = newStderrLoggerSet buf
-  open buf file = do
-    num <- C.lookup conf "rotate"
-    size <- C.lookupDefault (1024*1024) conf "size"
-    let spec = FileLogSpec file size
-    check $ spec $ fromMaybe 0 num
-    Fold.mapM_ (rotate . spec) num
-    newFileLoggerSet buf file
+  case file of
+    "" -> return Nothing
+    "stdout" -> Just <$> newStdoutLoggerSet buf
+    "stderr" -> Just <$> newStderrLoggerSet buf
+    _ -> do
+      num <- C.lookup conf "rotate"
+      size <- C.lookupDefault (1024*1024) conf "size"
+      let spec = FileLogSpec file size
+      check $ spec $ fromMaybe 0 num
+      Fold.mapM_ (rotate . spec) num
+      Just <$> newFileLoggerSet buf file
 
 initLogs :: C.Config -> IO Logs
 initLogs conf = Logs
-  <$> initLog (C.subconfig "messages" conf)
-  <*> initLog (C.subconfig "access" conf)
+  <$> initLog "stderr" (C.subconfig "messages" conf)
+  <*> initLog "stdout" (C.subconfig "access" conf)
 
 finiLogs :: Logs -> IO ()
 finiLogs (Logs lm la) =
