@@ -56,7 +56,7 @@ initLog def conf = do
 initLogs :: Bool -> C.Config -> IO Logs
 initLogs fg conf = Logs
   <$> initLog "stderr" (C.subconfig "messages" conf)
-  <*> initLog (if fg then "stdout" else "") (C.subconfig "access" conf)
+  <*> initLog "stdout" (C.subconfig "access" conf)
 
 finiLogs :: Logs -> IO ()
 finiLogs (Logs lm la) =
