@@ -8,10 +8,8 @@ app.directive('accessGrantForm', [
       var access = $scope.access;
       var form = $scope.accessGrantForm;
 
-      form.data = {
-        individual: access.individual,
-        extend: access.children == access.individual
-      };
+      form.data = access;
+      form.data.extend = (access.children == access.individual);
       if (!access.individual) {
         form.$setDirty();
         $timeout(function () {
@@ -27,14 +25,13 @@ app.directive('accessGrantForm', [
           models.Login.checkAuthorization(constants.permission.ADMIN);
       };
 
-      //
-
       form.save = function () {
         messages.clear(form);
         form.data.children = form.data.extend ? form.data.individual : 0;
 
         form.$setSubmitted();
         volume.accessSave(access.party.id, form.data).then(function () {
+          form.$setUnsubmitted();
           messages.add({
             body: constants.message('access.grant.save.success'),
             type: 'green',

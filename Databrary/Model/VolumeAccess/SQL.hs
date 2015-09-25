@@ -21,7 +21,7 @@ import Databrary.Model.Volume.SQL
 import Databrary.Model.VolumeAccess.Types
 
 volumeAccessRow :: Selector -- ^ @'Party' -> 'Volume' -> 'VolumeAccess'@
-volumeAccessRow = selectColumns 'VolumeAccess "volume_access" ["individual", "children"]
+volumeAccessRow = selectColumns 'VolumeAccess "volume_access" ["individual", "children", "sort"]
 
 selectVolumeAccess :: TH.Name -- ^ 'Volume'
   -> TH.Name -- ^ 'Identity'
@@ -33,7 +33,7 @@ selectVolumeAccess vol ident = selectMap (`TH.AppE` TH.VarE vol) $ selectJoin '(
   ]
 
 makeVolumeAccessParty :: Party -> Maybe (Party -> Volume -> VolumeAccess) -> Volume -> VolumeAccess
-makeVolumeAccessParty p Nothing v = VolumeAccess PermissionNONE PermissionNONE p v
+makeVolumeAccessParty p Nothing v = VolumeAccess PermissionNONE PermissionNONE Nothing p v
 makeVolumeAccessParty p (Just af) v = af p v
 
 selectVolumeAccessParty :: TH.Name -- ^ 'Volume'
@@ -66,6 +66,7 @@ volumeAccessSets :: String -- ^ @'VolumeAccess'@
 volumeAccessSets a =
   [ ("individual", "${volumeAccessIndividual " ++ a ++ "}")
   , ("children", "${volumeAccessChildren " ++ a ++ "}")
+  , ("sort", "${volumeAccessSort " ++ a ++ "}")
   ]
 
 updateVolumeAccess :: TH.Name -- ^ @'AuditIdentity'@

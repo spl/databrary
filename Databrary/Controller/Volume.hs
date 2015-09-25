@@ -259,7 +259,7 @@ createVolume = action POST (pathAPI </< "volume") $ \api -> withAuth $ do
     return (bv, cite, own)
   v <- addVolume bv
   _ <- changeVolumeCitation v cite
-  _ <- changeVolumeAccess $ VolumeAccess PermissionADMIN PermissionADMIN owner v
+  _ <- changeVolumeAccess $ VolumeAccess PermissionADMIN PermissionADMIN Nothing owner v
   case api of
     JSON -> return $ okResponse [] $ volumeJSON v
     HTML -> peeks $ otherRouteResponse [] viewVolume (api, volumeId v)

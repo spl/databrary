@@ -45,9 +45,11 @@ postVolumeAccess = action POST (pathAPI </> pathId </> pathVolumeAccessTarget) $
     children <- "children" .:> (del
       >>= deformCheck "Inherited access must not exceed individual." (individual >=)
       >>= deformCheck "You are not authorized to share data." ((||) (ru || accessSite u >= PermissionEDIT) . (PermissionNONE ==)))
+    sort <- "sort" .:> deformNonEmpty deform
     return a
       { volumeAccessIndividual = individual
       , volumeAccessChildren = children
+      , volumeAccessSort = sort
       }
   r <- changeVolumeAccess a'
   case api of

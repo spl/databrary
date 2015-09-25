@@ -4,6 +4,7 @@ module Databrary.Model.VolumeAccess.Types
   , MonadHasVolumeAccess
   ) where
 
+import Data.Int (Int16)
 import qualified Language.Haskell.TH as TH
 
 import Databrary.Has (makeHasFor)
@@ -14,6 +15,7 @@ import Databrary.Model.Party.Types
 
 data VolumeAccess = VolumeAccess
   { volumeAccessIndividual, volumeAccessChildren :: Permission
+  , volumeAccessSort :: Maybe Int16
   , volumeAccessParty :: Party
   , volumeAccessVolume :: Volume
   }

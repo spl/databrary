@@ -23,7 +23,7 @@
 
   <fieldset>
     <legend message="access.grant.legend"></legend>
-    <article ng-repeat="access in volumeEditAccessForm.data track by access.party.id" id="access-{{::access.party.id}}" class="access-grant cf anchor">
+    <article ng-repeat="access in volumeEditAccessForm.data | orderBy:['-individual','sort'] track by access.party.id" id="access-{{::access.party.id}}" class="access-grant cf anchor">
       <div class="row">
         <access-grant-form></access-grant-form>
       </div>
