@@ -13,4 +13,4 @@ viewSwagger :: ActionRoute API
 viewSwagger = action GET (pathAPI </< "swagger") $ \api -> withoutAuth $
   case api of
     HTML -> peeks notFoundResponse
-    JSON -> return $ okResponse [] swagger
+    JSON -> return $ okResponse [("Access-Control-Allow-Origin","*")] swagger
