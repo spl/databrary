@@ -53,8 +53,8 @@ initLog def conf = do
       Fold.mapM_ (rotate . spec) num
       Just <$> newFileLoggerSet buf file
 
-initLogs :: Bool -> C.Config -> IO Logs
-initLogs fg conf = Logs
+initLogs :: C.Config -> IO Logs
+initLogs conf = Logs
   <$> initLog "stderr" (C.subconfig "messages" conf)
   <*> initLog "stdout" (C.subconfig "access" conf)
 
