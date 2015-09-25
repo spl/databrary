@@ -8,8 +8,11 @@ app.directive('accessGrantForm', [
       var access = $scope.access;
       var form = $scope.accessGrantForm;
 
-      form.data = access;
-      form.data.extend = (access.children == access.individual);
+      form.data = {
+        individual: access.individual,
+        extend: access.children == access.individual,
+        sort: access.sort
+      };
       if (!access.individual) {
         form.$setDirty();
         $timeout(function () {
@@ -39,6 +42,8 @@ app.directive('accessGrantForm', [
           });
 
           delete access.new;
+          access.individual = form.data.individual;
+          access.sort = form.data.sort;
           form.$setPristine();
         }, function (res) {
           form.$setUnsubmitted();
@@ -60,6 +65,7 @@ app.directive('accessGrantForm', [
         }
         form.$setSubmitted();
         volume.accessRemove(access.party.id).then(function () {
+          form.$setUnsubmitted();
           messages.add({
             body: constants.message('access.grant.remove.success'),
             type: 'green',
