@@ -1,11 +1,26 @@
 // we want this to be on the same line with the party name, and not eat space below it. WIP (jc)
 
 .access-grant-remove
-  position relative
-  left 10px
-  top -4px
+  margin-left b2
   z-index 1
 
 .access-grant-radioset
   position relative
   z-index 0
+  
+.access-grant-owner-order
+  display inline-block
+  margin-left b2
+  height b1
+  position relative
+  background url('/web/icons/volume-access-rws.svg')
+  background-position b8 center
+  background-repeat no-repeat  
+  & > input
+    background transparent
+    width 4
+    padding-left b1
+    height b1
+    line-height 24px
+    text-align right
+    
