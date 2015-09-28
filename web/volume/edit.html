@@ -3,13 +3,13 @@
   <div class="wrap">
     <div class="row">
       <hgroup class="col" ng-if="::!volume">
-        <h1 class="view-context smaller" message="create"></h1>
-        <h2 class="view-title smaller" message="volume.edit.title.sub"></h2>
+        <h1 class="view-context" message="create"></h1>
+        <h2 class="view-title" message="volume.edit.title.sub"></h2>
       </hgroup>
 
       <hgroup class="col" ng-if="::volume">
-        <h1 class="view-context smaller">Manage volume</h1>
-        <h2 class="view-title smaller">
+        <h1 class="view-context">Manage volume</h1>
+        <h2 class="view-title">
           <span ng-bind="volume.alias || volume.name"></span>
           <a ng-href="{{::volume.route()}}"><span class="button green icon view-icon"></span></a>
         </h2>

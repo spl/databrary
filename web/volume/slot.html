@@ -9,7 +9,7 @@
       <div class="col">
         <hgroup class="session-header">
           <a class="view-link" ng-href="{{::editing ? volume.editRoute(slot.top ? 'materials' : 'data') : volume.route() + '#panel-' + (slot.top ? 'materials' : 'sessions')}}" ng-bind="::volume.alias || volume.name"></a>
-          <h3 class="view-title smaller">
+          <h3 class="view-title">
             <span ng-bind="::slot.displayName"></span>
             <span ng-if="::slot.date" ng-bind="::' (' + slot.date + ')'"></span>
             <span ng-if="::slot.release != null" class="release icon" ng-class="::[page.constants.release[slot.release], 'hint-release-'+page.constants.release[slot.release]]"></span>

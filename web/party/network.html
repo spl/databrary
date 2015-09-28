@@ -1,6 +1,6 @@
 <div id="sponsors" class="network-parents-region">
-  <legend class="view-title smaller" message="auth.parents.title"></legend>
-  <p class="view-subtitle" message="auth.parents.subtitle" ng-if="partyParentsCount > 0"></p>
+  <legend class="view-title" message="auth.parents.title"></legend>
+  <p message="auth.parents.subtitle" ng-if="partyParentsCount > 0"></p>
 
   <article id="network-parent-{{::parent.id}}" class="cf" ng-repeat="parent in party.parents" ng-if="::!isAdmin || isAdmin && (parent.member || parent.site)">
     <div class="col">
@@ -30,8 +30,8 @@
 </div>
 
 <div id="affiliates" class="network-children-region">
-  <legend class="view-title smaller" message="auth.children.title"></legend>
-  <p class="view-subtitle" message="auth.children.subtitle" ng-if="partyChildrenCount > 0"></p>
+  <legend class="view-title" message="auth.children.title"></legend>
+  <p message="auth.children.subtitle" ng-if="partyChildrenCount > 0"></p>
 
   <article id="network-child-{{::child.id}}" class="cf" ng-repeat="child in party.children">
     <div class="col">
