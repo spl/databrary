@@ -217,25 +217,20 @@ swagger = object
       [ "description" .= String "A party associated with a session"
       , "properties" .= object
         [ -- party properties,
-          "csverf" .= val typeString "Authorization token, which must be included verbatim in all POST requests"
+          "csverf" .= val typeString "Authorization token, which must be included verbatim in a \"X-CSVerf\" header in most modifying requests"
         ]
       ]
     , "Party" .= object
       [ "description" .= String "An individual user, group, organization, or other entity"
       , "properties" .= object
-        [ "id" .= val typeInt32 "Party ID"
-        , "sortname" .= val typeString "Last name or primary sortable name"
-        , "prename" .= val typeString "First name or any part of name that comes before 'sortname'"
-        , "name" .= readOnly (val typeString "Full display name, calculated from concatenating 'prename' and 'sortname'")
-        , "orcid" .= (val typeString "[ORCID iD](http://en.wikipedia.org/wiki/ORCID)"
-          .+ "pattern" .= String "^[0-9]{4}-?[0-9]{4}-?[0-9]{4}-?[0-9]{3}[0-9X]$")
-        , "affiliation" .= val typeString "User-supplied university or organizational affiliation for display purposes"
-        , "url" .= val typeURL "User-supplied external web site"
+        ("id" .= val typeInt32 "Party ID" :
+        map (\(n, t, d, p) -> n .= (val t d .++ p)) partyFields ++
+        [ "name" .= readOnly (val typeString "Full display name, calculated from concatenating 'prename' and 'sortname'")
         , "email" .= val typeEmail "Email address"
         , "permission" .= readOnly (def "Permission" .+ "description" .= String "Level of access permission the current user has over this party") -- doesn't work
 
         , "authorization" .= readOnly (def "Permission" .+ "description" .= String "Site authorization level this party has been granted") -- doesn't work
-        ]
+        ])
       , "required" .= map String ["id", "sortname"]
       ]
     ]
@@ -250,7 +245,7 @@ swagger = object
         "Return the identity of the currently logged-in user from the session cookie."
         []
         [ okResp "The current user" (Object $ def "Identity") ]
-    , op "postUser" postUser (JSON)
+    , op "postUser" postUser (JSON) -- csrf
         "Change Account"
         "Change the account information of the current user."
         [ formParameter "auth" typePassword True "Current (old) password"
@@ -274,22 +269,50 @@ swagger = object
         []
         [ okResp "The now anonymous identity" (Object $ def "Identity") ]
 
+    , op "getProfile" viewParty (JSON, TargetProfile)
+        "Lookup Profile"
+        "Lookup information about the current user."
+        getPartyParams
+        [ okResp "The current party" (Object $ def "Party") ]
     , op "getParty" viewParty (JSON, TargetParty aparty)
         "Lookup Party"
         "Lookup information about a specific party."
-        [ pparty
-        , queryParameter "parents" typeString True "Include 'parents' in the response, optionally including 'authorization' in each parent"
-          .+ "enum" .= [String "authorization"]
-        , queryParameter "children" typeString True "Include 'children' in the response"
-        , queryParameter "volumes" typeString True "Include 'volumes' in the response, optionally including 'access' in each volume"
-          .+ "enum" .= [String "access"]
-        , queryParameter "access" typeString True  "Include 'access' in the response for all volumes with at least the given permission level"
-          .++ [enum PermissionNONE, "default" .= String "EDIT"]
-        , queryParameter "authorization" typeString True  "Include 'authorization' in the response"
-        ]
+        (pparty : getPartyParams)
         [ okResp "The requested party" (Object $ def "Party") ]
+    , op "postProfile" postParty (JSON, TargetProfile)
+        "Change Profile"
+        "Change the profile information of the current user."
+        postPartyParams
+        [ okResp "The updated party" (Object $ def "Party") ]
+    , op "postParty" postParty (JSON, TargetParty aparty)
+        "Change Party"
+        "Change the profile information of the given party."
+        (pparty : postPartyParams)
+        [ okResp "The updated party" (Object $ def "Party") ]
     ]
   ] where
+
+  getPartyParams =
+    [ queryParameter "parents" typeString True "Include 'parents' in the response, optionally including 'authorization' in each parent"
+      .+ "enum" .= [String "authorization"]
+    , queryParameter "children" typeString True "Include 'children' in the response"
+    , queryParameter "volumes" typeString True "Include 'volumes' in the response, optionally including 'access' in each volume"
+      .+ "enum" .= [String "access"]
+    , queryParameter "access" typeString True  "Include 'access' in the response for all volumes with at least the given permission level"
+      .++ [enum PermissionNONE, "default" .= String "EDIT"]
+    , queryParameter "authorization" typeString True  "Include 'authorization' in the response"
+    ]
+  postPartyParams = -- csrf
+    map (\(n, t, d, p) -> formParameter n t True d .++ p) partyFields
+    ++ [ formParameter "avatar" (DataType TypeFile Nothing) False "Avatar profile image" ]
+  partyFields =
+    [ ("sortname", typeString, "Last name or primary sortable name", [])
+    , ("prename",  typeString, "First name or any part of name that comes before 'sortname'", [])
+    , ("orcid",    typeString, "[ORCID iD](http://en.wikipedia.org/wiki/ORCID)",
+        ["pattern" .= String "^[0-9]{4}-?[0-9]{4}-?[0-9]{4}-?[0-9]{3}[0-9X]$"])
+    , ("affiliation", typeString, "User-supplied university or organizational affiliation for display purposes", [])
+    , ("url", typeURL, "User-supplied external web site", [])
+    ]
   -- token = Id ""
   aparty = Id 0
   pparty = pathParameter "party" typeInt32 "Party ID"
