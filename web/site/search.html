@@ -98,10 +98,12 @@
         </h3>
 
         <ul class="row search-volume-results flat">
-          <li ng-repeat="volume in ::volumes" ng-click="expandVolume(volume)">
+          <li ng-repeat="volume in ::volumes">
             <h1 class="search-volume-result-title">
-              <span ng-if="expanded.volume !== volume" class="icon expand clickable"></span>
-              <span ng-if="expanded.volume === volume" class="icon expanded clickable"></span>
+              <span ng-click="expandVolume(volume)">
+                <span ng-if="expanded.volume !== volume" class="icon expand clickable"></span>
+                <span ng-if="expanded.volume === volume" class="icon expanded clickable"></span>
+              </span>
               <a ng-href="{{::volume.route()}}" ng-bind="::volume.name"></a>
             </h1>
 
@@ -109,7 +111,7 @@
               <volume-owners></volume-owners>
             </div>
 
-            <div class="volume-list-body" ng-bind="::volume.body | truncate:200"></div>
+            <div ng-click="expandVolume(volume)" class="volume-list-body" ng-bind="::volume.body | truncate:200"></div>
             <div class="search-volume-containers" ng-if="expanded.volume === volume && !!volume.excerpts">
               <mark ng-if="volume.excerpts.length < 1">No highlights in this volume.</mark>
               <volume-excerpts></volume-excerpts>
