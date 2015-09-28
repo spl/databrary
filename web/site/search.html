@@ -98,7 +98,7 @@
         </h3>
 
         <ul class="row search-volume-results flat">
-          <li ng-repeat="volume in ::volumes" ng-click="expandVolume(volume)">
+          <li ng-repeat="volume in ::volumes">
             <h1 class="search-volume-result-title">
               <span ng-if="expanded.volume !== volume" class="icon expand clickable"></span>
               <span ng-if="expanded.volume === volume" class="icon expanded clickable"></span>
