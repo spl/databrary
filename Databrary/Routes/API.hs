@@ -106,18 +106,22 @@ data ParameterLoc
   = InPath
   | InQuery
   | InData
+  | InHeader
 
 instance ToJSON ParameterLoc where
   toJSON InPath = String "path"
   toJSON InQuery = String "query"
   toJSON InData = String "formData" -- also "body", sort of
+  toJSON InHeader = String "header"
 
-data Parameter = Parameter
-  { parameterLoc :: ParameterLoc
-  , parameterName :: T.Text
-  , parameterType :: DataType
-  , parameterFields :: [Pair]
-  }
+data Parameter
+  = Parameter
+    { parameterLoc :: ParameterLoc
+    , parameterName :: T.Text
+    , parameterType :: DataType
+    , parameterFields :: [Pair]
+    }
+  | ParameterRef T.Text
 
 instance HasFields Parameter where
   p .++ l = p{ parameterFields = parameterFields p .++ l }
@@ -128,6 +132,7 @@ instance ToJSON Parameter where
     , "in" .= parameterLoc
     ] ++ dataTypeJSON parameterType
     ++ parameterFields
+  toJSON (ParameterRef r) = Object $ ref ("parameters/" <> r)
 
 pathParameter :: T.Text -> DataType -> T.Text -> Parameter
 pathParameter name dt desc = Parameter InPath name dt
@@ -234,6 +239,10 @@ swagger = object
       , "required" .= map String ["id", "sortname"]
       ]
     ]
+  , "parameters" .= object
+    [ "csverfHeader" .= Parameter InHeader "X-CSVerf" typeString [ "description" .= String "\"csverf\" value from Identity object (required unless \"csverf\" is included in form data)" ]
+    , "csverfForm" .= formParameter "csverf" typeString False "\"csverf\" value from Identity object (required if \"X-CSVerf\" header is not provided)"
+    ]
   , "paths" .= HM.fromListWith HM.union
     [ op "get" viewRoot (JSON)
         "No-op"
@@ -245,14 +254,14 @@ swagger = object
         "Return the identity of the currently logged-in user from the session cookie."
         []
         [ okResp "The current user" (Object $ def "Identity") ]
-    , op "postUser" postUser (JSON) -- csrf
+    , op "postUser" postUser (JSON)
         "Change Account"
         "Change the account information of the current user."
-        [ formParameter "auth" typePassword True "Current (old) password"
+        ([formParameter "auth" typePassword True "Current (old) password"
         , formParameter "email" typeEmail False "New email address for user"
         , formParameter "password.once" typePassword False "New password for user"
         , formParameter "password.again" typePassword False "New password for user (must match password.once)"
-        ]
+        ] ++ csrfParams)
         [ okResp "The (updated) current party" (Object $ def "Party") ]
     , op "postLogin" postLogin (JSON)
         "Login"
@@ -302,9 +311,10 @@ swagger = object
       .++ [enum PermissionNONE, "default" .= String "EDIT"]
     , queryParameter "authorization" typeString True  "Include 'authorization' in the response"
     ]
-  postPartyParams = -- csrf
+  postPartyParams =
     map (\(n, t, d, p) -> formParameter n t True d .++ p) partyFields
     ++ [ formParameter "avatar" (DataType TypeFile Nothing) False "Avatar profile image" ]
+    ++ csrfParams
   partyFields =
     [ ("sortname", typeString, "Last name or primary sortable name", [])
     , ("prename",  typeString, "First name or any part of name that comes before 'sortname'", [])
@@ -313,6 +323,7 @@ swagger = object
     , ("affiliation", typeString, "User-supplied university or organizational affiliation for display purposes", [])
     , ("url", typeURL, "User-supplied external web site", [])
     ]
+  csrfParams = [ParameterRef "csverfHeader", ParameterRef "csverfForm"]
   -- token = Id ""
   aparty = Id 0
   pparty = pathParameter "party" typeInt32 "Party ID"
