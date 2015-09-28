@@ -62,7 +62,7 @@ htmlVolumeDescription inzip top@Container{ containerVolume = Volume{..} } cite f
         void " DOI "
         byteStringHtml doi
     H.h1 $
-      H.a H.! HA.href (maybe (link viewVolume (HTML, volumeId)) (byteStringValue . ("http://dx.doi.org/" <>)) volumeDOI) $
+      H.a H.! HA.href (maybe (link viewVolume (HTML, volumeId)) (byteStringValue . ("http://doi.org/" <>)) volumeDOI) $
         H.text volumeName
     H.ul $ forM_ volumeOwners $ \(i, n) ->
       H.li $

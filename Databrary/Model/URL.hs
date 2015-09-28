@@ -64,7 +64,7 @@ parseURL d@('1':'0':'.':c:_) | isDigit c = parseURL $ "doi:" ++ d
 parseURL s = do
   u <- parseURI s
   if uriScheme u `elem` ["doi:","hdl:"] && isNothing (uriAuthority u) ||
-     uriScheme u == "http:" && uriAuthority u == Just (URIAuth "" "dx.doi.org" "")
+     uriScheme u == "http:" && (uriAuthority u == Just (URIAuth "" "dx.doi.org" "") || uriAuthority u == Just (URIAuth "" "doi.org" ""))
     then do
       guard $ validHDL $ uriPath u
       return u

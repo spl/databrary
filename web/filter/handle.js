@@ -5,12 +5,12 @@ app.filter('handle', [
     var urlTypes = {
       doi: {
         prefix: "doi:",
-        handler: "http://dx.doi.org/"
+        handler: "http://doi.org/"
       },
 
       hdl: {
         prefix: "hdl:",
-        handler: "http://hdl.handle.org/"
+        handler: "http://hdl.handle.net/"
       }
     };
 
