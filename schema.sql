@@ -718,6 +718,8 @@ INSERT INTO "record_template" VALUES (-500, -590);
 INSERT INTO "record_template" VALUES (-500, -580);
 INSERT INTO "record_template" VALUES (-500, -550);
 INSERT INTO "record_template" VALUES (-500, -540);
+INSERT INTO "record_template" VALUES (-500, -520);
+INSERT INTO "record_template" VALUES (-500, -510);
 INSERT INTO "record_template" VALUES (-300, -600);
 INSERT INTO "record_template" VALUES (-500, -900, true);
 INSERT INTO "record_template" VALUES (-200, -900, true);
