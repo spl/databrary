@@ -15,15 +15,13 @@ Requirements:
 - PostgreSQL >= 9.3
 - ffmpeg >= 2.4 (not libav) with shared libraries
 - cracklib with shared library
-- activator >= 1.2 (play 2.3)
 - Java 7 JDK
 - GHC >= ??
 - cabal >= ??
-- postgresql-typed-4.0.0 [link](https://github.com/dylex/postgresql-typed)
 
 ### New Haskell-Databrary Installation steps
+
     git clone https://github.com/databrary/databrary.git
-    git checkout haskell-solr
 
 Now we have to checkout one of the depencenies that is not in hackage
 
@@ -36,7 +34,7 @@ And finally we build databrary!
 
     cd ../databrary
     mkdir -p dist/build/databrary tmp upload cache/tmp
-    echo 'secret = "secretWordHere!"' >> local.conf
+    echo 'secret = "'`openssl rand -base64 -out /dev/stdout 48`'"' >> databrary.conf
     cabal install --only-dependencies
     ./dev
 
@@ -45,11 +43,6 @@ If schemabrary fails to build change db.host in databrary.conf to "localhost".
 Now we have to load the DB image into the database.
 
     ./runsql restore $DBFILE
-
-Once the database is populated we need to build the solr index and load that.
-
-    bash solr/scripts/setup_solr.sh
-
 
 ### Postgres
 
@@ -82,7 +75,7 @@ You also must manually install pgranges after each postgres upgrade:
 To ensure proper application security you must add a secret to local.conf,
 e.g.:
 
-    echo application.secret=\"`openssl rand -base64 -out /dev/stdout 48`\" >> local.conf
+    echo secret=\"`openssl rand -base64 -out /dev/stdout 48`\" >> databrary.conf
 
 ### Object storage
 
