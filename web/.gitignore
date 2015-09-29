@@ -17,6 +17,7 @@
 /directive/message.js
 /directive/mousedrag.js
 /directive/scrollFloat.js
+/directive/setContents.js
 /directive/tooltip.js
 /filter/message.js
 /party/authSearch.js
@@ -45,6 +46,7 @@
 /volume/editLinks.js
 /volume/excerpts.js
 /volume/fundingSearch.js
+/volume/meter.js
 /volume/overview.js
 /volume/search.js
 /volume/showInvestigators.js

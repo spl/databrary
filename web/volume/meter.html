@@ -1,0 +1,16 @@
+<div class="wizard-step" ng-if="active">
+  <header class="wizard-step-header">
+    <h2 message="wizard.volume-edit-meter.name"></h2>
+  </header>
+  <div class="wizard-step-instructions" message="wizard.volume-edit-meter.description" message-html></div>
+  <div class="row">
+    {{100*meter}}% done
+
+    <ul>
+      <li ng-repeat="m in metrics">
+        <input type="checkbox" readonly="true" ng-checked="::m.done" ng-click="goto(m.link)"/>
+        {{::m.title}}<span ng-if="::!m.done">: {{::m.help}}</span>
+      </li>
+    </ul>
+  </div>
+</div>

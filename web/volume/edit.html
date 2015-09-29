@@ -45,6 +45,9 @@
           <wizard-page name="funding" ng-if="::!!volume">
             <volume-edit-funding-form></volume-edit-funding-form>
           </wizard-page>
+
+          <volume-meter ng-if="::!!volume" volume="volume">
+          </volume-meter>
         </wizard>
       </div>
     </div>

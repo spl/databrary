@@ -44,6 +44,10 @@ app.directive('wizard', [
             window.dispatchEvent(new Event('scroll'));
           });
         };
+
+        this.activateStep = function(s) {
+          $scope.activateStep($scope.step[s]);
+        };
       }],
     };
   }

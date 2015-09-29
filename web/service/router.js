@@ -302,7 +302,7 @@ app.provider('routerService', [
 
             return checkPermission(page.$q,
               page.models.Volume.get(page.$route.current.params.id,
-                {access:true, citation:true, links:true, top:true, funding:true, records:true, containers:'all', tags:'keyword', metrics:true}),
+                {access:true, citation:true, links:true, top:true, funding:true, records:true, containers:'all', tags:'keyword', metrics:true, excerpts:true}),
               page.permission.EDIT)
               .then(function (volume) {
                 return volume.top.getSlot(volume.top.segment, ['assets'])
