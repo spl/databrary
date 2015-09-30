@@ -83,7 +83,7 @@
                   <s>Unfortunately, your browser does not appear to support file uploads. Please try another browser or contact us for assistance.</s>
                 </div>
                 <upload-progress class="upload-progress-info" ng-if="!!current.file" progress-value="current.progress"></upload-progress>
-                <asset-display ng-repeat="asset in [asset]" ng-if="!!asset" asset="asset"></asset-display>
+                <asset-display ng-repeat="asset in [asset] track by asset.id" ng-if="!!asset" asset="asset"></asset-display>
               </div>
             </div>
             <div ng-if="!folded" class="player-resize-bar" mouse-drag="resizePlayer($down, $up)">
