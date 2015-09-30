@@ -22,7 +22,7 @@ app.directive('wizard', [
           if ($scope.registerStep)
             $scope.registerStep(step);
 
-          if (!$scope.activeStep || target === step.name)
+          if (!$scope.activeStep && !step.complete || target === step.name)
             $scope.activateStep(step);
         };
 

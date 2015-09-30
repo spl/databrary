@@ -14,7 +14,6 @@ app.directive('wizardPage', [
           $scope.id = wizard.name + '-' + $scope.name;
         },
         post: function ($scope, $element, $attrs, wizard) {
-          $scope.complete = true;
           wizard.addStep($scope);
         }
       }

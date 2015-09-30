@@ -22,7 +22,10 @@
 
       <div class="col" ng-if="::!!(volume || owners.length)">
         <wizard name="volume-edit">
-          <wizard-page name="overview">
+          <volume-meter ng-if="::!!volume" volume="volume">
+          </volume-meter>
+
+          <wizard-page ng-if="::true" name="overview">
             <volume-edit-overview-form></volume-edit-overview-form>
           </wizard-page>
 
@@ -45,9 +48,6 @@
           <wizard-page name="funding" ng-if="::!!volume">
             <volume-edit-funding-form></volume-edit-funding-form>
           </wizard-page>
-
-          <volume-meter ng-if="::!!volume" volume="volume">
-          </volume-meter>
         </wizard>
       </div>
     </div>
