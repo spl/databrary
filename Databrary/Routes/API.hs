@@ -21,41 +21,12 @@ import Databrary.HTTP.Path.Swagger
 import Databrary.Model.Enum
 import Databrary.Model.Permission
 import Databrary.Model.Id.Types
-{-
-import Databrary.Model.Segment
-import Databrary.Model.Slot.Types
-import Databrary.Model.Tag.Types
--}
 import Databrary.Action.Route
 import Databrary.Controller.Paths
 import Databrary.Controller.Root
 import Databrary.Controller.Login
 import Databrary.Controller.Party
-{-
-import Databrary.Controller.Register
-import Databrary.Controller.Token
-import Databrary.Controller.Authorize
 import Databrary.Controller.Volume
-import Databrary.Controller.VolumeAccess
-import Databrary.Controller.Funding
-import Databrary.Controller.Container
-import Databrary.Controller.Slot
-import Databrary.Controller.Record
-import Databrary.Controller.Citation
-import Databrary.Controller.Upload
-import Databrary.Controller.Format
-import Databrary.Controller.Asset
-import Databrary.Controller.AssetSegment
-import Databrary.Controller.Excerpt
-import Databrary.Controller.Zip
-import Databrary.Controller.Tag
-import Databrary.Controller.Comment
-import Databrary.Controller.CSV
-import Databrary.Controller.Audit
-import Databrary.Controller.Transcode
-import Databrary.Controller.Ingest
-import Databrary.Controller.Web
--}
 
 infixl 4 .++, .+
 class HasFields o where
@@ -89,12 +60,14 @@ data DataType = DataType
   , _dataFormat :: Maybe T.Text
   }
 
-typeInt32, typeString, typePassword, typeEmail, typeURL :: DataType
+typeInt16, typeInt32, typeString, typePassword, typeEmail, typeURL, typeTimestamp :: DataType
+typeInt16 = DataType TypeInteger (Just "int16")
 typeInt32 = DataType TypeInteger (Just "int32")
 typeString = DataType TypeString Nothing
 typePassword = DataType TypeString (Just "password")
 typeEmail = DataType TypeString (Just "email")
 typeURL = DataType TypeString (Just "url")
+typeTimestamp = DataType TypeString (Just "date-time")
 
 dataTypeJSON :: DataType -> [Pair]
 dataTypeJSON (DataType t f) = ("type" .= t) : maybeToList (("format" .=) <$> f)
@@ -232,11 +205,41 @@ swagger = object
         map (\(n, t, d, p) -> n .= (val t d .++ p)) partyFields ++
         [ "name" .= readOnly (val typeString "Full display name, calculated from concatenating 'prename' and 'sortname'")
         , "email" .= val typeEmail "Email address"
-        , "permission" .= readOnly (def "Permission" .+ "description" .= String "Level of access permission the current user has over this party") -- doesn't work
+        , "permission" .= readOnly (permDesc "Level of access permission the current user has over this party")
 
-        , "authorization" .= readOnly (def "Permission" .+ "description" .= String "Site authorization level this party has been granted") -- doesn't work
+        , "authorization" .= readOnly (permDesc "Site authorization level this party has been granted")
         ])
       , "required" .= map String ["id", "sortname"]
+      ]
+    , "Volume" .= object
+      [ "description" .= String "The top-level organizational unit for data, represnting a dataset, study, or other data package"
+      , "properties" .= object
+        ("id" .= val typeInt32 "Party ID" :
+        map (\(n, t, d) -> n .= val t d) volumeFields ++
+        [ "doi" .= readOnly (val (DataType TypeString (Just "doi")) "Automatically assigned [DOI](http://www.doi.org)")
+        , "creation" .= readOnly (val typeTimestamp "When volume was originally created")
+        , "owners" .= object
+          [ "type" .= String "array"
+          , "description" .= String "Parties (volume owners) who have ADMIN permission on this volume, in abbreviated form containing only 'id' and 'name' fields"
+          , "items" .= def "Party"
+          , "readOnly" .= True
+          ]
+        , "permission" .= readOnly (permDesc "Level of access permission the current user has over this volume")
+        , "access" .= object
+          [ "type" .= String "array"
+          , "description" .= String "Parties (owners, collaborators, or sharing targets) who have been granted permission on this volume"
+          , "items" .= object
+            [ "description" .= String "A single party (or group) with access to this volume"
+            , "properties" .= object
+              [ "individual" .= permDesc "Level of access permision granted directly to this user only"
+              , "children" .= permDesc "Level of access permision granted to children of (users authorized by) this party, masked by their 'member' permission"
+              , "sort" .= val typeInt16 "Sort (display) order of this party in access lists"
+              ]
+            ]
+          , "readOnly" .= True
+          ]
+        ])
+      , "required" .= map String ["id", "name"]
       ]
     ]
   , "parameters" .= object
@@ -298,9 +301,21 @@ swagger = object
         "Change the profile information of the given party."
         (pparty : postPartyParams)
         [ okResp "The updated party" (Object $ def "Party") ]
+
+    , op "viewVolume" viewVolume (JSON, avolume)
+        "Lookup Volume"
+        "Lookup information about a specific volume."
+        (pvolume :
+        [ ])
+        [ okResp "The requested volume" (Object $ def "Volume") ]
     ]
   ] where
 
+  permDesc d = def "Permission" .+ "description" .= String d -- doesn't work
+  csrfParams = [ParameterRef "csverfHeader", ParameterRef "csverfForm"]
+
+  aparty = Id 0
+  pparty = pathParameter "party" typeInt32 "Party ID"
   getPartyParams =
     [ queryParameter "parents" typeString True "Include 'parents' in the response, optionally including 'authorization' in each parent"
       .+ "enum" .= [String "authorization"]
@@ -323,11 +338,15 @@ swagger = object
     , ("affiliation", typeString, "User-supplied university or organizational affiliation for display purposes", [])
     , ("url", typeURL, "User-supplied external web site", [])
     ]
-  csrfParams = [ParameterRef "csverfHeader", ParameterRef "csverfForm"]
-  -- token = Id ""
-  aparty = Id 0
-  pparty = pathParameter "party" typeInt32 "Party ID"
-  -- volume = Id 0
+
+  avolume = Id 0
+  pvolume = pathParameter "volume" typeInt32 "Volume ID"
+  volumeFields =
+    [ ("name",   typeString, "Title")
+    , ("alias",  typeString, "Private internal short name")
+    , ("body",   typeString, "Description or abstract")
+    ]
+
   -- slot = Id (SlotId (Id 0) emptySegment)
   -- container = containerSlotId (Id 0)
   -- asset = Id 0
