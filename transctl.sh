@@ -41,8 +41,8 @@ if [[ -n $test ]] ; then
 	elif [[ -n $host ]] ; then
 		ssh "$host" test -d "$dir"
 		if [[ -n $mount ]] ; then
-			mv "$cmd" "$mount/$hcmd"
-			ssh "$host" mv "$mount/$hcmd" "$hcmd"
+			mv -f "$cmd" "$mount/$hcmd"
+			ssh "$host" rsync -p "$mount/$hcmd" "$hcmd"
 		else
 			rsync -p "$cmd" "$host:$hcmd"
 		fi
