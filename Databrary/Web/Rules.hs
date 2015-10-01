@@ -25,6 +25,7 @@ import Databrary.Web.Uglify
 import Databrary.Web.Stylus
 import Databrary.Web.Libs
 import Databrary.Web.JSHint
+import Databrary.Web.All
 
 staticGenerators :: [(FilePath, WebGenerator)]
 staticGenerators =
@@ -38,6 +39,7 @@ fixedGenerators =
   [ ("messages.js",    generateMessagesJS)
   , ("templates.js",   generateTemplatesJS)
   , ("app.min.js",     generateUglifyJS)
+  , ("all.min.js",     generateAllJS)
   , ("app.css",        generateStylusCSS) -- not actually used in production
   , ("app.min.css",    generateStylusCSS)
   ]

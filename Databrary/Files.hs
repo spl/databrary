@@ -16,11 +16,13 @@ import Control.Arrow ((&&&))
 import Control.Exception (handleJust)
 import Control.Monad (guard, liftM2)
 import Crypto.Hash (HashAlgorithm, hashInit, hashUpdate, hashFinalize, Digest)
+import Data.ByteArray (MemView(..))
 import qualified Data.ByteString as BS
 import Data.ByteString.Lazy.Internal (defaultChunkSize)
 import Data.Maybe (isJust)
 import Data.String (IsString(..))
 import Data.Time.Clock.POSIX (POSIXTime, posixSecondsToUTCTime, utcTimeToPOSIXSeconds)
+import Foreign.Marshal.Alloc (allocaBytes)
 import qualified GHC.Foreign as GHC
 import GHC.IO.Encoding (getFileSystemEncoding)
 import System.Posix.ByteString.FilePath (RawFilePath)
@@ -29,7 +31,7 @@ import qualified System.Posix.FilePath as RF
 import qualified System.Posix as P
 import qualified System.Posix.ByteString as RP
 import System.Posix.Types (FileMode)
-import System.IO (withBinaryFile, IOMode(ReadMode))
+import System.IO (withBinaryFile, IOMode(ReadMode), hGetBufSome)
 import System.Posix.Types (FileOffset)
 import System.IO.Error (isDoesNotExistError, isAlreadyExistsError)
 import System.IO.Unsafe (unsafeDupablePerformIO)
@@ -136,9 +138,13 @@ compareFiles f1 f2 = do
         else return False
 
 hashFile :: (IsFilePath f, HashAlgorithm a) => f -> IO (Digest a)
-hashFile f = withBinaryFile (toFilePath f) ReadMode $ run hashInit where
-  run s h = do
-    b <- BS.hGetSome h defaultChunkSize
-    if BS.null b
+hashFile f =
+  withBinaryFile (toFilePath f) ReadMode $ \h ->
+    allocaBytes z $ \b -> 
+      run h b hashInit where
+  run h b s = do
+    n <- hGetBufSome h b z
+    if n == 0
       then return $! hashFinalize s
-      else (run $! hashUpdate s b) h
+      else run h b $! hashUpdate s (MemView b n)
+  z = 32786

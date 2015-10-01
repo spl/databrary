@@ -59,7 +59,7 @@ htmlAngular debug nojs auth = H.docTypeHtml H.! ngAttribute "app" "databraryModu
       H.preEscapedString "window.$play={user:"
       H.unsafeLazyByteString $ JSON.encode $ identityJSON (view auth)
       H.preEscapedString "};"
-    forM_ (webDeps (isJust debug) ++ maybe ["app.min.js"] ("debug.js" :) debug) $ \js ->
+    forM_ (maybe ["all.min.js"] ((webDeps True ++) . ("debug.js" :)) debug) $ \js ->
       H.script
         H.! HA.src (webURL $ webFileRelRaw js)
         $ return ()

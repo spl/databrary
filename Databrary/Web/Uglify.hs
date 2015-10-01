@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Databrary.Web.Uglify
-  ( allWebJS
+  ( appWebJS
   , generateUglifyJS
   ) where
 
@@ -19,17 +19,17 @@ import Databrary.Web.Files
 import Databrary.Web.Generate
 import Databrary.Web.Libs
 
-allWebJS :: IO [WebFilePath]
-allWebJS = liftM2 union
+appWebJS :: IO [WebFilePath]
+appWebJS = liftM2 union
   ((webIncludes ++) . ("app.js" :) . filter (not . (liftM2 (||) (isPrefixOf "lib/") (`elem` ["app.js", "debug.js"])) . webFileRel) <$> findWebFiles ".js")
   (map (replaceWebExtension ".js") <$> findWebFiles ".coffee")
 
 generateUglifyJS :: WebGenerator
 generateUglifyJS fo@(f, _) = do
-  jl <- liftIO allWebJS
+  jl <- liftIO appWebJS
   guard (not $ null jl)
   webRegenerate (do
     let fm = f <.> ".map"
-    callProcess (binDir FP.</> "uglifyjs") $ ["--output", webFileAbs f, "--source-map", webFileAbs fm, "--source-map-url", webFileRel fm, "--prefix", "relative", "--screw-ie8", "--mangle", "--compress", "--define", "DEBUG=false"]
+    callProcess (binDir FP.</> "uglifyjs") $ ["--output", webFileAbs f, "--source-map", webFileAbs fm, "--source-map-url", webFileRel fm, "--prefix", "relative", "--screw-ie8", "--mangle", "--compress", "--define", "DEBUG=false", "--wrap"]
       ++ map webFileAbs jl)
     [] jl fo

@@ -73,7 +73,7 @@ angularResult :: BSB.Builder -> RequestContext -> IO ()
 angularResult nojs auth = do
   debug <-
 #ifdef DEVEL
-    boolQueryParameter "debug" (view auth) ?$> liftIO allWebJS
+    boolQueryParameter "debug" (view auth) ?$> liftIO appWebJS
 #else
     return Nothing
 #endif
