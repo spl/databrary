@@ -11,8 +11,6 @@ app.directive('volumeMeterCanvas', [
         var meterContext = meterCanvas.getContext('2d');
 
         $scope.$watch('meter',function(){
-          var centerX = Math.floor(meterCanvas.width/2);
-          var centerY = Math.floor(meterCanvas.height/2);
           var radius = Math.floor(meterCanvas.width/2*0.8);
 
           meterContext.beginPath();
