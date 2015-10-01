@@ -40,9 +40,7 @@ initStorage conf = do
 
   Fold.mapM_ (\c -> createDirectoryIfMissing False (toFilePath c </> "tmp")) cache
 
-  transcodeHost <- C.lookup conf "transcode.host"
-  transcodeDir <- C.lookup conf "transcode.dir"
-  tc <- initTranscoder transcodeHost transcodeDir
+  tc <- initTranscoder (C.subconfig "transcode" conf)
 
   return $ Storage
     { storageMaster = master

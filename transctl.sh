@@ -16,11 +16,12 @@ if [[ ! -f $cmd ]] ; then
 	exit 2
 fi
 
-while getopts 'i:h:d:v:c:k:s:r:f:t' opt ; do case "$opt" in
+while getopts 'i:h:d:v:m:c:k:s:r:f:t' opt ; do case "$opt" in
 	i) id=$OPTARG ;;
 	h) host=$OPTARG ;;
 	d) dir=$OPTARG ;;
 	v) version=$OPTARG ;;
+	m) mount=$OPTARG ;;
 
 	c) collect=$OPTARG ;;
 	k) kill=$OPTARG ;;
@@ -39,7 +40,12 @@ if [[ -n $test ]] ; then
 		false
 	elif [[ -n $host ]] ; then
 		ssh "$host" test -d "$dir"
-		rsync -p "$cmd" "$host:$hcmd"
+		if [[ -n $mount ]] ; then
+			cp -pf "$cmd" "$mount/$hcmd"
+			ssh "$host" rsync -p "$mount/$hcmd" "$hcmd"
+		else
+			rsync -p "$cmd" "$host:$hcmd"
+		fi
 	else
 		test -d "$dir"
 	fi
@@ -53,7 +59,13 @@ fi
 
 if [[ -n $collect ]] ; then
 	if [[ -n $host ]] ; then
-		rsync "$host:$dir/$id.$fmt" "$collect"
+		if [[ -n $mount ]] ; then
+			ssh "$host" rsync "$dir/$id.$fmt" "$mount/$dir/$id.$fmt"
+			mv "$mount/$dir/$id.$fmt" "$collect"
+			rm -f "$mount/$dir/$id"
+		else
+			rsync "$host:$dir/$id.$fmt" "$collect"
+		fi
 		ssh "$host" rm -f "$dir/$id" "$dir/$id.$fmt"
 	else
 		mv "$dir/$id.$fmt" "$collect"
@@ -61,7 +73,11 @@ if [[ -n $collect ]] ; then
 	fi
 elif [[ -n $host ]] ; then
 	if [[ -z $kill ]] ; then
-		rsync "$src" "$host:$dir/$id"
+		if [[ -n $mount ]] ; then
+			ln -fT "$src" "$mount/$dir/$id"
+		else
+			rsync "$src" "$host:$dir/$id"
+		fi
 	fi
 	ssh "$host" "$hcmd" `escape "$@"` | sed 's/^\([0-9]\+\)\.[.a-z0-9-]*$/\1/'
 elif [[ -n $kill ]] ; then
