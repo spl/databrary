@@ -110,8 +110,7 @@ app.directive 'volumeMeter', [
         for m in metrics
           d++ if m.done = m.test()
           t++
-        $scope.meter = d / t
-        $scope.meterPercent = $scope.meter.toFixed(2);
+        $scope.meter = d / t;
 
       calculate()
 ]

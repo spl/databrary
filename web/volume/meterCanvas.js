@@ -28,11 +28,11 @@ app.directive('volumeMeterCanvas', [
           meterContext.stroke();
           meterContext.closePath();
 
-          meterContext.font = "30px Verdana";
+          meterContext.font = "60px Verdana";
           meterContext.textAlign = "center";
           meterContext.textBaseline = "middle";
           meterContext.fillStyle = "#333333";
-          meterContext.fillText(100*$scope.meterPercent+'%',meterCanvas.width/2, meterCanvas.height/2);
+          meterContext.fillText((100*$scope.meter).toFixed()+'%',meterCanvas.width/2, meterCanvas.height/2);
 
         });
       }
