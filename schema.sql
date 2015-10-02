@@ -478,6 +478,7 @@ CREATE TABLE "asset" (
 ALTER TABLE "asset"
 	ALTER "name" SET STORAGE EXTERNAL,
 	ALTER "sha1" SET STORAGE EXTERNAL;
+CREATE INDEX ON "asset" ("sha1");
 COMMENT ON TABLE "asset" IS 'Assets reflecting files in primary storage.';
 
 SELECT audit.CREATE_TABLE ('asset');

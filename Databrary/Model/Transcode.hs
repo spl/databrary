@@ -9,12 +9,13 @@ module Databrary.Model.Transcode
   , updateTranscode
   , findTranscode
   , findMatchingTranscode
+  , checkAlreadyTranscoded
   ) where
 
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Lazy as BSL
-import Data.Maybe (fromMaybe)
+import Data.Maybe (fromMaybe, isJust)
 import Data.Monoid ((<>))
 import Database.PostgreSQL.Typed.Query (pgSQL)
 
@@ -32,6 +33,7 @@ import Databrary.Model.Id
 import Databrary.Model.Party
 import Databrary.Model.Segment
 import Databrary.Model.Volume.Types
+import Databrary.Model.Format
 import Databrary.Model.Asset
 import Databrary.Model.Transcode.Types
 import Databrary.Model.Transcode.SQL
@@ -99,3 +101,8 @@ findMatchingTranscode :: MonadDB c m => Transcode -> m (Maybe Transcode)
 findMatchingTranscode Transcode{..} =
   dbQuery1 $(selectQuery selectTranscode "WHERE orig.sha1 = ${assetSHA1 transcodeOrig} AND transcode.segment = ${transcodeSegment} AND transcode.options = ${map Just transcodeOptions} AND asset.id < ${assetId transcodeAsset} ORDER BY asset.id LIMIT 1")
 
+checkAlreadyTranscoded :: MonadDB c m => Asset -> Probe -> m Bool
+checkAlreadyTranscoded Asset{ assetFormat = fmt, assetSHA1 = Just sha1 } ProbeAV{ probeTranscode = tfmt, probeAV = av }
+  | fmt == tfmt && avProbeCheckFormat fmt av =
+    (isJust :: Maybe Int32 -> Bool) <$> dbQuery1' [pgSQL|SELECT 1 FROM asset JOIN transcode ON asset.id = transcode.asset WHERE asset.sha1 = ${sha1} AND asset.format = ${formatId fmt} LIMIT 1|]
+checkAlreadyTranscoded _ _ = return False

@@ -50,6 +50,7 @@ import Databrary.Store.Asset
 import Databrary.Store.Upload
 import Databrary.Store.Temp
 import Databrary.Store.Transcode
+import Databrary.Store.AV (avProbeLength)
 import Databrary.Store.Probe
 import Databrary.HTTP.Request
 import Databrary.HTTP.Form.Errors
@@ -182,8 +183,11 @@ processAsset api target = do
     case target of
       AssetTargetAsset _ -> supersedeAsset a a'
       _ -> return ()
+    td <- checkAlreadyTranscoded a' (fileUploadProbe up)
     te <- peeks transcodeEnabled
     t <- case fileUploadProbe up of
+      ProbeAV{ probeAV = av } | td ->
+        return a'{ assetDuration = avProbeLength av }
       probe@ProbeAV{} | te -> do
         t <- addTranscode a' fullSegment defaultTranscodeOptions probe
         _ <- forkTranscode t
