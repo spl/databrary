@@ -7,57 +7,48 @@
     <span>Your volume is {{100*meter | number:0}}% complete!</span>
   </div>
   <div>
-    <div class="volume-meter-category col-desktop-7 col-tablet-4 col-mobile-6">
-      <input type="checkbox" readonly ng-checked="::metrics.name.done" ng-nameclick="goto(metrics.name.link)"/>
-      {{::metrics.name.title}}<span ng-if="::!metrics.name.done">: {{::metrics.name.help}}</span>        
+    <div class="volume-meter-category volume-meter-done col-desktop-7 col-tablet-9 col-mobile-6" ng-click="goto(metrics.name.link)">
+      {{::metrics.name.title}}<span ng-if="::!metrics.name.done">: {{::metrics.name.help}}</span>     
     </div>
-    <div class="volume-meter-category col-desktop-7 col-tablet-4 col-mobile-6">
-      <div>
-        <input type="checkbox" readonly ng-checked="::metrics.description.done" ng-click="goto(metrics.description.link)"/>
-        {{::metrics.description.title}}<span ng-if="::!metrics.description.done">: {{::metrics.description.help}}</span>        
+    <div class="volume-meter-category col-desktop-7 col-tablet-9 col-mobile-6">
+      <div ng-click="goto(metrics.description.link)" ng-class="{'volume-meter-done':metrics.description.done}">
+        {{::metrics.description.title}}
+        <span ng-if="::!metrics.description.done">: {{::metrics.description.help}}</span>        
       </div>
-      <div>
-        <input type="checkbox" readonly ng-checked="::metrics.citation.done" ng-click="goto(metrics.citation.link)"/>
+      <div ng-click="goto(metrics.citation.link)" ng-class="{'volume-meter-done':metrics.citation.done}">
         {{::metrics.citation.title}}<span ng-if="::!metrics.citation.done">: {{::metrics.citation.help}}</span>        
       </div>  
-      <div>
-        <input type="checkbox" readonly ng-checked="::metrics.keywords.done" ng-click="goto(metrics.keywords.link)"/>
-        {{::metrics.keywords.title}}<span ng-if="::!metrics.keywords.done">: {{::metrics.keywords.help}}</span>        
+      <div ng-click="goto(metrics.keywords.link)" ng-class="{'volume-meter-done':metrics.keywords.done}">
+        {{::metrics.keywords.title}}
+        <span ng-if="::!metrics.keywords.done">: {{::metrics.keywords.help}}</span>    
       </div>      
     </div>
-    <div class="volume-meter-category col-desktop-7 col-tablet-4 col-mobile-6">
-      <div>
-        <input type="checkbox" readonly ng-checked="::metrics.asset.done" ng-click="goto(metrics.asset.link)"/>
+    <div class="volume-meter-category col-desktop-7 col-tablet-9 col-mobile-6">
+      <div ng-click="goto(metrics.asset.link)" ng-class="{'volume-meter-done':metrics.asset.done}">
         {{::metrics.asset.title}}<span ng-if="::!metrics.asset.done">: {{::metrics.asset.help}}</span>        
       </div>
-      <div>
-        <input type="checkbox" readonly ng-checked="::metrics.excerpts.done" ng-click="goto(metrics.excerpts.link)"/>
-        {{::metrics.excerpts.title}}<span ng-if="::!metrics.excerpts.done">: {{::metrics.excerpts.help}}</span>        
+      <div ng-click="goto(metrics.excerpts.link)" ng-class="{'volume-meter-done':metrics.excerpts.done}">
+        {{::metrics.excerpts.title}}<span ng-if="::!metrics.excerpts.done">: {{::metrics.excerpts.help}}</span>
       </div>
     </div>
-    <div class="volume-meter-category col-desktop-7 col-tablet-4 col-mobile-6">
-      <div>
-        <input type="checkbox" readonly ng-checked="::metrics.design.done" ng-click="goto(metrics.design.link)"/>
+    <div class="volume-meter-category col-desktop-7 col-tablet-9 col-mobile-6">
+      <div ng-click="goto(metrics.design.link)" ng-class="{'volume-meter-done':metrics.design.done}">
         {{::metrics.design.title}}<span ng-if="::!metrics.design.done">: {{::metrics.design.help}}</span>        
       </div> 
-      <div>
-        <input type="checkbox" readonly ng-checked="::metrics.session.done" ng-click="goto(metrics.session.link)"/>
+      <div ng-click="goto(metrics.session.link)" ng-class="{'volume-meter-done':metrics.session.done}">
         {{::metrics.session.title}}<span ng-if="::!metrics.session.done">: {{::metrics.session.help}}</span>        
       </div>  
-      <div>
-        <input type="checkbox" readonly ng-checked="::metrics.record.done" ng-click="goto(metrics.record.link)"/>
+      <div ng-click="goto(metrics.record.link)" ng-class="{'volume-meter-done':metrics.record.done}">
         {{::metrics.record.title}}<span ng-if="::!metrics.record.done">: {{::metrics.session.help}}</span>        
       </div>             
     </div>
 
-    <div class="volume-meter-category col-desktop-7 col-tablet-4 col-mobile-6">
-      <input type="checkbox" readonly ng-checked="::metrics.share.done" ng-nameclick="goto(metrics.share.link)"/>
-      {{::metrics.share.title}}<span ng-if="::!metrics.share.done">: {{::metrics.share.help}}</span>        
+    <div class="volume-meter-category col-desktop-7 col-tablet-9 col-mobile-6" ng-click="goto(metrics.share.link)"  ng-class="{'volume-meter-done':metrics.share.done}">
+      {{::metrics.share.title}}<span ng-if="::!metrics.share.done">: {{::metrics.share.help}}</span>    
     </div>    
 
 
 <!--     <div ng-repeat="(n, m) in ::metrics">
-      <input type="checkbox" readonly="true" ng-checked="::m.done" ng-click="goto(m.link)"/>
       {{::m.title}}<span ng-if="::!m.done">: {{::m.help}}</span>
     </div> -->
   </div>
