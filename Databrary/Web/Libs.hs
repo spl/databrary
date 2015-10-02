@@ -28,13 +28,12 @@ jsDeps = -- sourced on js pages
   , ("lodash",              "lodash")
   ]
 jsIncludes = -- included in app
-  map (\n -> ("jquery.ui." ++ n, "jquery-ui/ui")) ["core", "widget", "mouse", "slider", "sortable"] ++
-  [ ("slider",              "angular-ui-slider/src")
-  , ("pivot",               "pivottable/dist")
-  ]
+  map (\n -> ("jquery.ui." ++ n, "jquery-ui/ui")) ["core", "widget", "mouse", "slider"]
+  ++ [("slider", "angular-ui-slider/src")]
 jsLibs = -- only linked
   [ ("jquery-ui",           "jquery-ui/ui/minified")
   , ("jquery.csv",          "jquery-csv/src")
+  , ("pivot",               "pivottable/dist")
   ] 
 jsAll = jsDeps ++ jsIncludes ++ jsLibs
 
