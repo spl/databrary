@@ -10,6 +10,7 @@ app.directive 'volumeMeter', [
       volumeFn: '&volume'
     link: ($scope, $element, $attrs, wizard) ->
       $scope.volume = volume = $scope.volumeFn()
+      return unless volume
       $scope.name = 'meter'
       $scope.id = wizard.name + '-meter'
       $scope.complete = true

@@ -6,11 +6,14 @@ app.directive('wizardPage', [
       restrict: 'E',
       templateUrl: 'site/wizardPage.html',
       require: '^wizard',
-      scope: {},
+      scope: {
+        disabledFn: '&disabled'
+      },
       transclude: true,
       link: {
         pre: function ($scope, $element, $attrs, wizard) {
           $scope.name = $attrs.name;
+          $scope.disabled = $scope.disabledFn();
           $scope.id = wizard.name + '-' + $scope.name;
         },
         post: function ($scope, $element, $attrs, wizard) {

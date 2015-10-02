@@ -22,30 +22,30 @@
 
       <div class="col" ng-if="::!!(volume || owners.length)">
         <wizard name="volume-edit">
-          <volume-meter ng-if="::!!volume" volume="volume">
+          <volume-meter volume="volume">
           </volume-meter>
 
-          <wizard-page ng-if="::true" name="overview">
+          <wizard-page name="overview">
             <volume-edit-overview-form></volume-edit-overview-form>
           </wizard-page>
 
-          <wizard-page name="access" ng-if="::volume.checkPermission(page.permission.ADMIN)">
+          <wizard-page name="access" disabled="!volume.checkPermission(page.permission.ADMIN)">
             <volume-edit-access-form></volume-edit-access-form>
           </wizard-page>
 
-          <wizard-page name="design" ng-if="::!!volume">
+          <wizard-page name="design" disabled="!volume">
             <volume-design></volume-design>
           </wizard-page>
 
-          <wizard-page name="data" ng-if="::!!volume">
+          <wizard-page name="data" disabled="!volume">
             <spreadsheet edit></spreadsheet>
           </wizard-page>
 
-          <wizard-page name="links" ng-if="::!!volume">
+          <wizard-page name="links" disabled="!volume">
             <volume-edit-links-form></volume-edit-links-form>
           </wizard-page>
 
-          <wizard-page name="funding" ng-if="::!!volume">
+          <wizard-page name="funding" disabled="!volume">
             <volume-edit-funding-form></volume-edit-funding-form>
           </wizard-page>
         </wizard>
