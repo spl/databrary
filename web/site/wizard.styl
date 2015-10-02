@@ -14,7 +14,7 @@
       padding 0
       margin-bottom 0
 
-  li
+  li:not(.unstyled)
     position relative
     background-color white
     transition transition
@@ -75,10 +75,7 @@
     &.complete
       &.blocked
         background-color green51
-        
-    &.complete:first-child
-    // volume completeness meter
-      position relative
+      
 
 .wizard-list-name
   font-size f90

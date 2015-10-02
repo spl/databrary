@@ -14,6 +14,7 @@ app.directive 'volumeMeter', [
       $scope.id = wizard.name + '-meter'
       $scope.complete = true
       $scope.tab = $compile($templateCache.get('volume/meterTab.html'))($scope)
+      $scope.unstyled = true
       wizard.addStep($scope)
 
       $scope.goto = wizard.activateStep
