@@ -17,15 +17,15 @@
             <party-edit-profile-form></party-edit-profile-form>
           </wizard-page>
 
-          <wizard-page name="account" ng-if="::!party.institution && party.checkPermission(page.permission.SUPER)">
+          <wizard-page name="account" disabled="party.institution || !party.checkPermission(page.permission.SUPER)">
             <party-edit-account-form></party-edit-account-form>
           </wizard-page>
 
-          <wizard-page name="apply" ng-if="::party.checkPermission(page.permission.ADMIN)">
+          <wizard-page name="apply" disabled="!party.checkPermission(page.permission.ADMIN)">
             <party-edit-apply-form></party-edit-apply-form>
           </wizard-page>
 
-          <wizard-page name="grant" ng-if="::party.checkPermission(page.permission.ADMIN)">
+          <wizard-page name="grant" disabled="!party.checkPermission(page.permission.ADMIN)">
             <party-edit-grant-form></party-edit-grant-form>
           </wizard-page>
         </wizard>
