@@ -150,7 +150,7 @@ okResp desc schema = Response (Just HTTP.ok200)
 op :: T.Text -> Route r a -> a -> T.Text -> T.Text -> [Parameter] -> [Response] -> (T.Text, Object)
 op i rte arg summary desc param resp =
   ( swaggerPath (routePath rte) arg $ pathParameters param
-  , HM.singleton (T.toLower (TE.decodeLatin1 (routeMethod rte))) $ object
+  , HM.singleton (T.toLower $ TE.decodeLatin1 $ HTTP.renderStdMethod $ routeMethod rte) $ object
     [ "operationId" .= i
     , "summary" .= summary
     , "description" .= desc

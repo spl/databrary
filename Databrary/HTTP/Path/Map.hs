@@ -2,10 +2,8 @@
 module Databrary.HTTP.Path.Map
   ( PathMap
   , PathMapConflict(..)
-  , empty
   , singleton
   , lookup
-  , union
   , insert
   ) where
 
@@ -17,6 +15,7 @@ import Control.Exception (Exception, throw)
 import Data.Hashable (Hashable(..))
 import qualified Data.HashMap.Strict as HM
 import qualified Data.Map.Strict as M
+import Data.Monoid (Monoid(..), (<>))
 import Data.Proxy (Proxy(..))
 import qualified Data.Text as T
 import Data.Typeable (Typeable, typeRep)
@@ -83,27 +82,27 @@ singleton (PathElementFixed e:l) a = PathMap Nothing (HM.singleton e (singleton 
 singleton (PathElementParameter e:l) a = PathMap Nothing HM.empty (M.singleton (pathParameterRep e) (singleton l a))
 singleton (PathElementAny _:_) a = PathMapAny a
 
-unionMaybe :: Maybe a -> Maybe a -> Maybe a
-unionMaybe Nothing a = a
-unionMaybe a Nothing = a
-unionMaybe _ _ = throw PathMapConflict
-
 unionAny :: a -> PathMap a -> PathMap a
 unionAny a m
   | null m = PathMapAny a
   | otherwise = throw PathMapConflict
 
-union :: PathMap a -> PathMap a -> PathMap a
+union :: Monoid a => PathMap a -> PathMap a -> PathMap a
 union (PathMap n1 f1 d1) (PathMap n2 f2 d2) =
-  PathMap (unionMaybe n1 n2) (HM.unionWith union f1 f2) (M.unionWith union d1 d2)
+  PathMap (n1 <> n2) (HM.unionWith union f1 f2) (M.unionWith union d1 d2)
+union (PathMapAny a) (PathMapAny b) = PathMapAny (a <> b)
 union (PathMapAny a) m = unionAny a m
 union m (PathMapAny a) = unionAny a m
 
-insert :: PathElements -> a -> PathMap a -> PathMap a
-insert [] a p@PathMap{ pathMapNull = n } = p{ pathMapNull = unionMaybe (Just a) n }
+insert :: Monoid a => PathElements -> a -> PathMap a -> PathMap a
+insert [] a p@PathMap{ pathMapNull = n } = p{ pathMapNull = Just (maybe id (<>) n a) }
 insert (PathElementFixed e:l) a p@PathMap{ pathMapFixed = f } =
   p{ pathMapFixed = HM.insertWith (const $ insert l a) e (singleton l a) f }
 insert (PathElementParameter e:l) a p@PathMap{ pathMapParameter = d } =
   p{ pathMapParameter = M.insertWith (const $ insert l a) (pathParameterRep e) (singleton l a) d }
 insert (PathElementAny _:_) a m = unionAny a m
 insert _ _ _ = throw PathMapConflict
+
+instance Monoid a => Monoid (PathMap a) where
+  mempty = empty
+  mappend = union

@@ -22,7 +22,7 @@ import Control.Monad.Reader (MonadReader, ReaderT(..), withReaderT)
 import Control.Monad.Trans.Control (MonadBaseControl(..))
 import Control.Monad.Trans.Resource (MonadThrow, MonadResource(..), runInternalState)
 import Data.Time (getCurrentTime)
-import Network.HTTP.Types (hDate)
+import Network.HTTP.Types (hDate, methodHead)
 import qualified Network.Wai as Wai
 
 import Databrary.Has
@@ -77,7 +77,10 @@ runAction rc (Action auth act) req send = do
     return (i, r))
     rc
   logAccess ts req (foldIdentity Nothing (Just . (show :: Id Party -> String) . view) i) r (serviceLogs rc)
-  send $ Wai.mapResponseHeaders ((hDate, formatHTTPTimestamp ts) :) r
+  let r' = Wai.mapResponseHeaders ((hDate, formatHTTPTimestamp ts) :) r
+  send $ if Wai.requestMethod req == methodHead
+    then emptyResponse (Wai.responseStatus r') (Wai.responseHeaders r')
+    else r'
 
 forkAction :: ActionM a -> RequestContext -> (Either SomeException a -> IO ()) -> IO ThreadId
 forkAction f (RequestContext c r i) = forkFinally $

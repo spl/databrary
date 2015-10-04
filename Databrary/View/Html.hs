@@ -17,7 +17,7 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Lazy as BSL
 import Data.Monoid ((<>))
-import Network.HTTP.Types (Query, QueryLike(..), renderQueryBuilder)
+import Network.HTTP.Types (Query, QueryLike(..), renderQueryBuilder, renderStdMethod)
 import qualified Text.Blaze.Internal as Markup
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as HA
@@ -54,7 +54,7 @@ actionLink r a = HA.href . actionValue r a
 
 actionForm :: Route r a -> a -> JSOpt -> H.Html -> H.Html
 actionForm r@Route{ routeMethod = g, routeMultipart = p } a j = H.form
-  H.! HA.method (H.unsafeByteStringValue g)
+  H.! HA.method (H.unsafeByteStringValue (renderStdMethod g))
   H.!? (p, HA.enctype "multipart/form-data")
   H.! HA.action (builderValue $ routeURL Nothing r a <> renderQueryBuilder True (toQuery j))
 

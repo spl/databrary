@@ -9,7 +9,8 @@ module Databrary.Ops
   , (>$)  ,   ($<)
   , Min(..)
   , Max(..)
-  , leftJust, rightJust
+  , rightJust
+  , maybeRight
   , maybeA
   , fromMaybeM
   , orElseM
@@ -110,13 +111,13 @@ instance (Ord a, Bounded a) => Monoid (Max a) where
   mappend = max
   mconcat = maximum
 
-leftJust :: Either a b -> Maybe a
-leftJust (Left a) = Just a
-leftJust _ = Nothing
-
 rightJust :: Either a b -> Maybe b
 rightJust (Right a) = Just a
 rightJust _ = Nothing
+
+maybeRight :: a -> Maybe b -> Either a b
+maybeRight _ (Just a) = Right a
+maybeRight a Nothing = Left a
 
 maybeA :: Alternative m => Maybe a -> m a
 maybeA (Just x) = pure x

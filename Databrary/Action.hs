@@ -22,10 +22,11 @@ module Databrary.Action
   , runActionRoute
   ) where
 
+import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as BSB
+import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy as BSL
-import Data.Maybe (fromMaybe)
-import Network.HTTP.Types (Status, seeOther303, forbidden403, notFound404, ResponseHeaders, hLocation)
+import Network.HTTP.Types (Status, seeOther303, forbidden403, notFound404, methodNotAllowed405, ResponseHeaders, hLocation, renderStdMethod)
 import qualified Network.Wai as Wai
 
 import Databrary.Has (peeks)
@@ -56,5 +57,8 @@ maybeAction Nothing = result =<< peeks notFoundResponse
 
 runActionRoute :: RouteMap Action -> Service -> Wai.Application
 runActionRoute rm rc req = runAction rc
-  (fromMaybe (withoutAuth $ peeks notFoundResponse) (lookupRoute req rm))
-  req
+  (either err id $ lookupRoute req rm)
+  req where
+  err [] = withoutAuth $ peeks notFoundResponse
+  err l = withoutAuth $ peeks $ response methodNotAllowed405
+    [("allow", BS.intercalate (BSC.singleton ',') $ map renderStdMethod l)] . htmlNotFound

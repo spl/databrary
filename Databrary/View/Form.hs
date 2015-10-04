@@ -26,7 +26,6 @@ import qualified Data.Foldable as Fold
 import Data.Monoid (mempty)
 import qualified Data.Text as T
 import Data.Time.Format (formatTime)
-import Network.HTTP.Types (methodGet)
 import qualified Text.Blaze.Internal as M
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as HA
@@ -160,7 +159,7 @@ htmlForm :: T.Text -> ActionRoute a -> a -> FormHtml f -> (JSOpt -> H.Html) -> R
 htmlForm title act arg form body req = liftWith $ \run -> do
   htmlTemplate req (Just title) $ \js -> do
     actionForm act arg js $ do
-      (_, err) <- run $ when (routeMethod act /= methodGet) (csrfForm req) >> form
+      (_, err) <- run $ when (routeMethod act /= GET) (csrfForm req) >> form
       errorLists $ allFormErrors err
       H.input
         H.! HA.type_ "submit"

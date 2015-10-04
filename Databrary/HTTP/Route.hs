@@ -1,4 +1,4 @@
-{-# LANGUAGE ExistentialQuantification, RecordWildCards, ImpredicativeTypes #-}
+{-# LANGUAGE ExistentialQuantification, RecordWildCards, ImpredicativeTypes, GeneralizedNewtypeDeriving #-}
 module Databrary.HTTP.Route
   ( Route(..)
   , route
@@ -14,11 +14,10 @@ import Prelude hiding (lookup)
 import Control.Applicative ((<$>))
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Lazy.Char8 as BSLC
-import qualified Data.HashMap.Strict as HM
-import Data.List (foldl')
+import Data.Foldable (foldMap)
 import Data.Maybe (fromMaybe)
-import Data.Monoid ((<>))
-import Network.HTTP.Types (Method)
+import Data.Monoid (Monoid, (<>))
+import Network.HTTP.Types (StdMethod)
 import Network.URI (URI(..), nullURI)
 import qualified Network.Wai as Wai
 
@@ -29,9 +28,10 @@ import Databrary.HTTP.Path.Types
 import qualified Databrary.HTTP.Path.Map as PM
 import Databrary.HTTP.Path.Parser
 import Databrary.HTTP.Path
+import qualified Databrary.HTTP.Method.Map as MM
 
 data Route r a = Route
-  { routeMethod :: !Method
+  { routeMethod :: !StdMethod
   , routeMultipart :: !Bool
   , routePath :: PathParser a
   , routeAction :: a -> r
@@ -46,7 +46,7 @@ instance Invariant (Route r) where
 type RouteResult r = PathElements -> r
 
 data RouteCase r = RouteCase
-  { _routeMethod :: !Method
+  { _routeMethod :: !StdMethod
   , _routeElements :: PathElements
   , _routeResult :: RouteResult r
   }
@@ -57,28 +57,32 @@ route Route{ routeMethod = m, routePath = p, routeAction = f } = cf <$> pathCase
     (v, []) <- rf r
     return $ f v
 
-newtype RouteMap r = RouteMap (HM.HashMap Method (PM.PathMap (RouteResult r)))
+newtype RouteMap r = RouteMap (PM.PathMap (MM.MethodMap (RouteResult r)))
+  deriving (Monoid)
 
-empty :: RouteMap a
-empty = RouteMap HM.empty
-
-insert :: RouteCase r -> RouteMap r -> RouteMap r
-insert (RouteCase a p r) (RouteMap m) = RouteMap $
-  HM.insertWith (const $ PM.insert p r) a (PM.singleton p r) m
+singleton :: RouteCase r -> RouteMap r
+singleton (RouteCase a p r) = RouteMap $
+  PM.singleton p (MM.singleton a r)
 
 fromRouteList :: [[RouteCase r]] -> RouteMap r
-fromRouteList = foldl' (flip insert) empty . concat
+fromRouteList = foldMap singleton . concat
 
-lookupRoute :: Wai.Request -> RouteMap r -> Maybe r
-lookupRoute q (RouteMap m) = fmap (uncurry (flip ($))) $
-  PM.lookup (Wai.pathInfo q) =<< HM.lookup (Wai.requestMethod q) m
+lookupRoute :: Wai.Request -> RouteMap r -> Either [StdMethod] r
+lookupRoute q (RouteMap m) = do
+  (p, mm) <- maybe (Left []) Right $ PM.lookup (Wai.pathInfo q) m
+  r <- MM.lookup (Wai.requestMethod q) mm
+  return $ r p
+
+routeBuilder :: Route r a -> a -> BSB.Builder
+routeBuilder Route{ routePath = p } a =
+  encodePathSegments' $ elementsPath $ producePath p a
 
 routeURL :: Maybe Wai.Request -> Route r a -> a -> BSB.Builder
-routeURL req Route{ routePath = p } a =
-  maybe id ((<>) . BSB.byteString . requestHost) req $ encodePathSegments' $ elementsPath $ producePath p a
+routeURL req r a =
+  maybe id ((<>) . BSB.byteString . requestHost) req $ routeBuilder r a
 
 routeURI :: Maybe Wai.Request -> Route r a -> a -> URI
-routeURI req Route{ routePath = p } a = (maybe nullURI requestURI req)
-  { uriPath = BSLC.unpack $ BSB.toLazyByteString $ encodePathSegments' $ elementsPath $ producePath p a
+routeURI req r a = (maybe nullURI requestURI req)
+  { uriPath = BSLC.unpack $ BSB.toLazyByteString $ routeBuilder r a
   , uriQuery = ""
   }
