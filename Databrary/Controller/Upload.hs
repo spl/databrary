@@ -56,7 +56,7 @@ uploadStart = action POST (pathJSON >/> pathId </< "upload") $ \vi -> withAuth $
   tok <- createUpload vol filename size
   file <- peeks $ uploadFile tok
   liftIO $ bracket
-    (openFd file WriteOnly (Just 0o600) defaultFileFlags{ exclusive = True })
+    (openFd file WriteOnly (Just 0o640) defaultFileFlags{ exclusive = True })
     closeFd
     (`setFdSize` COff size)
   return $ okResponse [] $ unId (view tok :: Id Token)

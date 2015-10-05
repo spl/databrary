@@ -75,7 +75,6 @@ elif [[ -n $host ]] ; then
 	if [[ -z $kill ]] ; then
 		if [[ -n $mount ]] ; then
 			ln -fT "$src" "$mount/$dir/$id"
-			chmod +r "$mount/$dir/$id" # FIXME
 		else
 			rsync "$src" "$host:$dir/$id"
 		fi
