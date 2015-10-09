@@ -11,7 +11,7 @@
     </div>
     <div class="volume-meter-category col-desktop-15 col-tablet-9 col-mobile-6">
       <div class="icon done-not"></div> 
-      <h5>Add more information</h5>
+      <h5>Add more volume information</h5>
       <p>Make it easier for others to find your volume.</p>
       <ul>
         <li ng-click="goto(metrics.description.link)" ng-class="{'volume-meter-done':metrics.description.done}">
@@ -30,8 +30,8 @@
     </div>
     <div class="volume-meter-category col-desktop-15 col-tablet-9 col-mobile-6">
       <div class="icon done-not"></div> 
-      <h5>Study design and data</h5>
-      <p>Describe your data, create and label sessions.</p>
+      <h5>Study design and data spreadsheet.</h5>
+      <p>Describe your study design, then start creating and labeling sessions in the data spreadsheet.</p>
       <ul>
         <li ng-click="goto(metrics.design.link)" ng-class="{'volume-meter-done':metrics.design.done}">
           <span ng-if="::!!metrics.design.done">{{::metrics.design.title}}</span>
@@ -49,7 +49,7 @@
     </div>
     <div class="volume-meter-category col-desktop-15 col-tablet-9 col-mobile-6">
       <div class="icon done-not"></div> 
-      <h5>Start adding files</h5>
+      <h5>Start adding files to the volume</h5>
       <p>If you have created a materials or a session folder, you can now start adding files</p>
       <ul>
         <li ng-click="goto(metrics.asset.link)" ng-class="{'volume-meter-done':metrics.asset.done}">
