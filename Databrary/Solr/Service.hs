@@ -8,9 +8,7 @@ module Databrary.Solr.Service
 
 import Control.Monad (when, forM_)
 import Control.Monad.IO.Class (MonadIO)
-import qualified Data.Configurator as C
-import qualified Data.Configurator.Types as C
-import Data.Maybe (isNothing)
+import Data.Maybe (isNothing, fromMaybe)
 import qualified Network.HTTP.Client as HC
 import System.Directory (makeAbsolute, createDirectoryIfMissing, getDirectoryContents, copyFile)
 import System.Environment (getEnvironment)
@@ -22,6 +20,7 @@ import System.Timeout (timeout)
 import Paths_databrary (getDataFileName)
 import Databrary.Ops
 import Databrary.Has
+import qualified Databrary.Store.Config as C
 import Databrary.HTTP.Client (HTTPClient)
 import Databrary.Model.Enum (pgEnumValues)
 import Databrary.Model.Permission.Types
@@ -49,13 +48,7 @@ confSolr src dst = do
 
 initSolr :: Bool -> C.Config -> IO Solr
 initSolr fg conf = do
-  bin <- C.lookupDefault "solr" conf "bin"
-  run <- C.lookupDefault fg conf "run"
-  host <- C.lookupDefault "127.0.0.1" conf "host"
-  port <- C.require conf "port"
-  home <- makeAbsolute =<< C.require conf "home"
-  core <- C.lookupDefault "databrary" conf "core"
-  logf <- C.lookup conf "log"
+  home <- makeAbsolute $ conf C.! "home"
 
   dir <- makeAbsolute =<< getDataFileName "solr"
   createDirectoryIfMissing True (home </> core </> "conf")
@@ -65,8 +58,8 @@ initSolr fg conf = do
   confSolr (dir </> "conf") (home </> core </> "conf")
 
   env <- getEnvironment
-  out <- maybe (return Proc.Inherit) (\f -> Proc.UseHandle <$> openFile f AppendMode) logf
-  p <- run ?$> Proc.createProcess (Proc.proc bin ["start", "-Djetty.host=" ++ host, "-p", show port, "-f", "-s", home])
+  out <- maybe (return Proc.Inherit) (\f -> Proc.UseHandle <$> openFile f AppendMode) $ conf C.! "log"
+  p <- fromMaybe fg (conf C.! "run") ?$> Proc.createProcess (Proc.proc (fromMaybe "solr" $ conf C.! "bin") ["start", "-Djetty.host=" ++ host, "-p", show port, "-f", "-s", home])
     { Proc.std_out = out
     , Proc.std_err = out
     , Proc.close_fds = True
@@ -82,6 +75,10 @@ initSolr fg conf = do
       }
     , solrProcess = (\(_,_,_,h) -> h) <$> p
     }
+  where
+  host = fromMaybe "127.0.0.1" $ conf C.! "host"
+  port = conf C.! "port"
+  core = fromMaybe "databrary" $ conf C.! "core"
 
 finiSolr :: Solr -> IO ()
 finiSolr Solr{ solrProcess = Just ph } = do

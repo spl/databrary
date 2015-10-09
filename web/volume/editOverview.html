@@ -2,9 +2,9 @@
   <scroll-float>
     <fieldset class="clean">
       <div class="col">
-        <button ng-click="volumeEditOverviewForm.save()" message="save" class="green" ng-disabled="volumeEditOverviewForm.$pristine || volumeEditOverviewForm.$invalid || volumeEditOverviewForm.$submitted"></button>
-        <button ng-if="::!!volume" ng-click="volumeEditOverviewForm.resetAll()" message="revert" ng-disabled="volumeEditOverviewForm.$pristine"></button>
-        <button ng-if="::!volume" ng-click="page.router.back()" message="volume.edit.cancel"></a>
+        <button ng-click="volumeEditOverviewForm.save()" class="green" ng-disabled="volumeEditOverviewForm.$pristine || volumeEditOverviewForm.$invalid || volumeEditOverviewForm.$submitted">Save</button>
+        <button ng-if="::!!volume" ng-click="volumeEditOverviewForm.resetAll()" ng-disabled="volumeEditOverviewForm.$pristine">Revert</button>
+        <button ng-if="::!volume" ng-click="page.router.back()">Cancel</a>
       </button>
     </fieldset>
   </scroll-float>
@@ -23,8 +23,8 @@
     </label>
   </fieldset>
   <ng-form name="volumeEditOverviewForm.doi" ng-if="volumeEditOverviewForm.data.published===true"><fieldset>
-    <validator name="citation.url" label="volume.edit.autodoi">
-      <input type="text" name="citation.url" ng-model="volumeEditOverviewForm.data.citation.url" placeholder="{{::'volume.edit.autodoi.placeholder' | message}}" ng-pattern="/^((doi:|hdl:)?10\.[\.0-9]+|ftp:/|http:/|https:/)//">
+    <validator name="citation.url" label="volume.edit.autodoi.title">
+      <input type="text" name="citation.url" ng-model="volumeEditOverviewForm.data.citation.url" placeholder="10.XXXX/XXXXXXXXX" ng-pattern="/^((doi:|hdl:)?10\.[\.0-9]+|ftp:/|http:/|https:/)//">
     </validator>
     <div message="volume.edit.autodoi.instructions"></div>
     <button class="mini" ng-disabled="!page.constants.regex.doi.test(volumeEditOverviewForm.data.citation.url) || volumeEditOverviewForm.doi.$pristine" ng-click="volumeEditOverviewForm.autoDOI()" message="volume.edit.autodoi.lookup"></button>

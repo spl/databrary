@@ -9,7 +9,7 @@
           <strong ng-bind="::'profile.volumes.'+vl.type+'.title' | message:vl.parent.party.name"></strong> 
           <a ng-if="::vl.type === 'individual' && party.authorization >= page.constants.permission.EDIT || vl.parent.parent.member >= page.constants.permission.ADMIN" ng-href="{{page.router.volumeCreate([vl.parent.party.id])}}" class="button mini small white">Create volume</a>
           <div class="profile-additional" ng-if="::!!vl.parent">
-            <span ng-bind="('auth.member.'+page.constants.permission[vl.parent.parent.member]+'.title' | message)+': '+('auth.member.'+page.constants.permission[vl.parent.parent.member] | message:'their')"></span>
+            <span ng-bind="('auth.member.'+page.constants.permission[vl.parent.parent.member]+'.title' | message)+': '+('auth.member.'+page.constants.permission[vl.parent.parent.member]+'.description' | message:'their')"></span>
           </div>
         </div>
         <ul class="flat">
@@ -56,7 +56,7 @@
             </div>
             <div ng-if="::p.parent.site" class="profile-additional small">
               <span ng-bind="::'auth.site.'+page.constants.permission[p.parent.site]+'.title' | message"></span>: 
-              <span ng-bind="::'auth.site.'+page.constants.permission[p.parent.site] | message:'their'"></span>
+              <span ng-bind="::'auth.site.'+page.constants.permission[p.parent.site]+'.description' | message:'their'"></span>
             </div>
 
           </li>
@@ -71,7 +71,7 @@
           <div class="profile-subsection-header small">
             <span ng-if="member" class="icon network"></span> 
             <strong ng-bind="::'auth.member.'+page.constants.permission[member]+'.title' | message"></strong>: 
-            <span ng-bind="::'auth.member.'+page.constants.permission[member] | possessive:party"></span> 
+            <span ng-bind="::'auth.member.'+page.constants.permission[member]+'.description' | possessive:party"></span> 
           </div>     
           <ul>
             <li ng-repeat="p in cl" ng-class="{'profile-highlight': !!p.selected}">
@@ -79,7 +79,7 @@
                 <span ng-click="p.select()" class="icon" ng-class="p.class()" tooltip="'Click to highlight ' + ('profile.parties.selected' | message:'this individual')"></span>
               </div>
               <div class="profile-right-icons">
-                <span class="icon site" ng-class="::page.constants.permission[p.child.site]" tooltip="('auth.site.'+page.constants.permission[p.child.site]+'.title' | message)+': '+('auth.site.'+page.constants.permission[p.child.site] | possessive:party)"></span>
+                <span class="icon site" ng-class="::page.constants.permission[p.child.site]" tooltip="('auth.site.'+page.constants.permission[p.child.site]+'.title' | message)+': '+('auth.site.'+page.constants.permission[p.child.site]+'.description' | possessive:party)"></span>
               </div>
 
               <div class="profile-link">

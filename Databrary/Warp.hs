@@ -5,8 +5,6 @@ module Databrary.Warp
 
 import Control.Applicative ((<$>), (<|>))
 import qualified Data.ByteString.Char8 as BSC
-import qualified Data.Configurator as C
-import qualified Data.Configurator.Types as C
 import Data.Monoid ((<>))
 import Data.Time (getCurrentTime)
 import qualified Data.Traversable as Trav
@@ -18,23 +16,21 @@ import qualified Network.Wai.Handler.WarpTLS as WarpTLS
 #endif
 
 import Paths_databrary (version)
+import qualified Databrary.Store.Config as C
 import Databrary.Service.Types
 import Databrary.Service.Log
 
 runWarp :: C.Config -> Service -> Wai.Application -> IO ()
 runWarp conf rc app = do
-  port <- C.require conf "port"
 #ifdef VERSION_warp_tls
-  key <- C.lookup conf "ssl.key"
-  let certs c = C.convert c <|> return <$> C.convert c
+  let certs c = C.config c <|> return <$> C.config c
       run (Just k) (Just (cert:chain)) = WarpTLS.runTLS (WarpTLS.tlsSettingsChain cert chain k)
       run _ _ = Warp.runSettings
-  cert <- C.lookup conf "ssl.cert"
-  run key (certs =<< cert)
+  run (conf C.! "ssl.key") (certs $ conf C.! "ssl.cert")
 #else
   Warp.runSettings
 #endif
-    ( Warp.setPort port
+    ( Warp.setPort (conf C.! "port")
     $ Warp.setTimeout 300
     $ Warp.setServerName (BSC.pack $ "databrary/" ++ showVersion version)
     $ Warp.setOnException (\req e -> do

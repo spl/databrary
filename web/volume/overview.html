@@ -25,7 +25,7 @@
 
       <div ng-if="::!!volume.citation" frame id="frame-citation" frame-title="volume.citation.title" fold>
         <p class="panel-overview-volume-citation">
-          <span ng-bind="::volume.citation.head"></span>&nbsp;<a ng-if="::volume.citation.url" ng-href="{{::volume.citation.url | handle}}" ng-title="::volume.citation.title" target="_blank" message="link.link"></a>
+          <span ng-bind="::volume.citation.head"></span>&nbsp;<a ng-if="::volume.citation.url" ng-href="{{::volume.citation.url | handle}}" ng-title="::volume.citation.title" target="_blank">(external link)</a>
         </p>
       </div>
 
@@ -72,7 +72,7 @@
         <ul>
           <li ng-repeat="link in ::volume.links">
             <span ng-bind="::link.head"></span>
-            <a ng-href="{{::link.url | handle}}" message="link.link"></a>
+            <a ng-href="{{::link.url | handle}}">(external link)</a>
           </li>
         </ul>
       </div>

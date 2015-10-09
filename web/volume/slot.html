@@ -62,7 +62,7 @@
 
                 <ng-form ng-if="::editing" name="form.edit" ng-switch="current.type">
                   <div ng-switch-when="asset">
-                    <validator name="name" label="asset.name">
+                    <validator name="name" label="asset.name.title">
                       <input type="text" name="name" ng-model="current.data.name" placeholder="{{::'asset.name.placeholder' | message}}">
                     </validator>
 
@@ -76,7 +76,7 @@
               <div ng-init="updatePlayerHeight()" id="player-viewport" class="player-viewport">
                 <div ng-if="editing && $flow.support && current.type === 'asset' && !current.file && !current.asset" flow-drop flow-btn flow-drag-enter="dropClasses['over-zone'] = true" flow-drag-leave="dropClasses['over-zone'] = false" ng-class="dropClasses" class="player-drop">
                   <span class="icon line add"></span>
-                  <span class="dropzone-message" message="asset.add-drop{{::current.asset ? '.replace' : ''}}"></span>
+                  <span class="dropzone-message" message="asset.add-drop{{::current.asset ? '.replace' : '.new'}}"></span>
                   <span class="dropzone-message">See our <a ng-href="{{::page.router.helpFormats()}}" target="_blank">list of accepted file types</a>.</span>
                 </div>
                 <div ng-if="::!$flow.support" class="player-drop">
@@ -238,7 +238,7 @@
         <div ng-if="::!editing" class="slot-download" ng-show="!!assets[0].asset">
           <a ng-href="{{::slot.zipRoute()}}">
             <span class="icon download"></span>
-            <span class="download" message="download.zip"></span>
+            <span class="download" message="download.zip.title"></span>
           </a>
         </div>
 

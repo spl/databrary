@@ -31,8 +31,6 @@ import Control.Monad (unless, (<=<))
 import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.Trans.Reader (ReaderT(..))
 import qualified Data.ByteString.Lazy as BSL
-import qualified Data.Configurator as C
-import qualified Data.Configurator.Types as C
 import Data.IORef (IORef, newIORef, atomicModifyIORef')
 import Data.Maybe (fromMaybe, isJust)
 import Data.Pool (Pool, withResource, createPool, destroyAllResources)
@@ -44,38 +42,38 @@ import Network (PortID(..))
 import System.IO.Unsafe (unsafePerformIO)
 
 import Databrary.Has
+import qualified Databrary.Store.Config as C
 
-getPGDatabase :: C.Config -> IO PGDatabase
-getPGDatabase conf = do
-  host <- C.lookup conf "host"
-  port <- C.lookupDefault (5432 :: Int) conf "port"
-  sock <- C.lookupDefault "/tmp/.s.PGSQL.5432" conf "sock"
-  user <- C.require conf "user"
-  db <- C.lookupDefault user conf "db"
-  passwd <- C.lookupDefault "" conf "pass"
-  debug <- C.lookupDefault False conf "debug"
-  return $ defaultPGDatabase
-    { pgDBHost = fromMaybe "localhost" host
-    , pgDBPort = if isJust host then PortNumber (fromIntegral port) else UnixSocket sock
-    , pgDBName = db
-    , pgDBUser = user
-    , pgDBPass = passwd
-    , pgDBDebug = debug
-    }
+confPGDatabase :: C.Config -> PGDatabase
+confPGDatabase conf = defaultPGDatabase
+  { pgDBHost = fromMaybe "localhost" host
+  , pgDBPort = if isJust host
+      then PortNumber (maybe 5432 fromInteger $ conf C.! "port")
+      else UnixSocket (fromMaybe "/tmp/.s.PGSQL.5432" $ conf C.! "sock")
+  , pgDBName = fromMaybe user $ conf C.! "db"
+  , pgDBUser = user
+  , pgDBPass = fromMaybe "" $ conf C.! "pass"
+  , pgDBDebug = fromMaybe False $ conf C.! "debug"
+  }
+  where
+  host = conf C.! "host"
+  user = conf C.! "user"
+
 
 newtype DBPool = PGPool (Pool PGConnection)
 type DBConn = PGConnection
 
 initDB :: C.Config -> IO DBPool
-initDB conf = do
-  db <- getPGDatabase conf
-  stripes <- C.lookupDefault 1 conf "stripes"
-  idle <- C.lookupDefault 300 conf "idle"
-  conn <- C.lookupDefault 16 conf "maxconn"
+initDB conf =
   PGPool <$> createPool
     (pgConnect db)
     pgDisconnect
-    stripes (fromRational idle) conn
+    stripes (fromInteger idle) conn
+  where
+  db = confPGDatabase conf
+  stripes = fromMaybe 1 $ conf C.! "stripes"
+  idle = fromMaybe 300 $ conf C.! "idle"
+  conn = fromMaybe 16 $ conf C.! "maxconn"
 
 finiDB :: DBPool -> IO ()
 finiDB (PGPool p) = do
@@ -151,7 +149,7 @@ dbTransaction f = liftDB $ \c -> do
 -- For connections outside runtime:
 
 loadPGDatabase :: IO PGDatabase
-loadPGDatabase = getPGDatabase . C.subconfig "db" =<< C.load [C.Required "databrary.conf"]
+loadPGDatabase = confPGDatabase . C.get "db" <$> C.load "databrary.conf"
 
 runDBConnection :: DBM a -> IO a
 runDBConnection f = bracket

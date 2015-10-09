@@ -18,7 +18,7 @@ app.directive 'authSearchForm', [
           form.validator.client({
               name:{tips: constants.message('auth.search.' + (principal || 'placeholder') + '.help')}
             }, true)
-          form.placeholderText = $attrs.placeholderText || constants.message('auth.search.' + (form.principal || 'placeholder'))
+          form.placeholderText = $attrs.placeholderText || constants.message('auth.search.' + (form.principal || 'placeholder') + '.prompt')
           return
 
       select = (found) -> ->

@@ -14,8 +14,6 @@ module Databrary.Service.Log
 import Control.Applicative ((<$>), (<*>))
 import Control.Monad.IO.Class (MonadIO)
 import qualified Data.ByteString.Char8 as BSC
-import qualified Data.Configurator as C
-import qualified Data.Configurator.Types as C
 import qualified Data.Foldable as Fold
 import Data.Maybe (fromMaybe, catMaybes)
 import Data.Monoid ((<>))
@@ -29,6 +27,7 @@ import System.Locale (defaultTimeLocale)
 import System.Log.FastLogger
 
 import Databrary.Has (MonadHas)
+import qualified Databrary.Store.Config as C
 import Databrary.Model.Time
 
 data Logs = Logs
@@ -39,24 +38,25 @@ type MonadLog c m = (MonadHas Logs c m, MonadIO m)
 
 initLog :: FilePath -> C.Config -> IO (Maybe LoggerSet)
 initLog def conf = do
-  file <- C.lookupDefault def conf "file"
-  buf <- C.lookupDefault defaultBufSize conf "buf"
   case file of
     "" -> return Nothing
     "stdout" -> Just <$> newStdoutLoggerSet buf
     "stderr" -> Just <$> newStderrLoggerSet buf
     _ -> do
-      num <- C.lookup conf "rotate"
-      size <- C.lookupDefault (1024*1024) conf "size"
-      let spec = FileLogSpec file size
       check $ spec $ fromMaybe 0 num
       Fold.mapM_ (rotate . spec) num
       Just <$> newFileLoggerSet buf file
+  where
+  file = fromMaybe def $ conf C.! "file"
+  buf = fromMaybe defaultBufSize $ conf C.! "buf"
+  num = conf C.! "rotate"
+  size = fromMaybe (1024*1024) $ conf C.! "size"
+  spec = FileLogSpec file size
 
 initLogs :: C.Config -> IO Logs
 initLogs conf = Logs
-  <$> initLog "stderr" (C.subconfig "messages" conf)
-  <*> initLog "stdout" (C.subconfig "access" conf)
+  <$> initLog "stderr" (conf C.! "messages")
+  <*> initLog "stdout" (conf C.! "access")
 
 finiLogs :: Logs -> IO ()
 finiLogs (Logs lm la) =

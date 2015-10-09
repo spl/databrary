@@ -4,7 +4,7 @@ app.controller('party/register', [
   '$scope', 'pageService', 'user', 'token',
   function ($scope, page, user, token) {
     $scope.page = page;
-    page.display.title = page.constants.message('register.title');
+    page.display.title = "Register";
 
     $scope.auth = {};
 

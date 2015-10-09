@@ -11,7 +11,7 @@ app.factory('updateInterceptor', [
         if (res.headers && (server = res.headers('server')) && !server.endsWith(version))
           messages.add({
             type: 'yellow',
-            body: $sce.trustAsHtml(constants.message('app.update') + ' ' + constants.message('app.reload')),
+            body: $sce.trustAsHtml('The Databrary website has been updated. ' + constants.message('app.reload')),
             persist: true
           });
 

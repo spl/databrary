@@ -26,7 +26,7 @@ app.directive('partyNetwork', [
               message: messages.add({
                 type: 'yellow',
                 persist: true,
-                body: $sce.trustAsHtml('<span>' + constants.message('auth.pending.notice', {sce:$sce.HTML}, party.party.name) + ' <a href="' + $scope.party.editRoute('grant') + '#auth-' + party.party.id + '">Manage</a>.</span>')
+                body: $sce.trustAsHtml('<span>' + constants.message('auth.notice.pending', {sce:$sce.HTML}, party.party.name) + ' <a href="' + $scope.party.editRoute('grant') + '#auth-' + party.party.id + '">Manage</a>.</span>')
               })
             };
           }

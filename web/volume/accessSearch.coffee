@@ -9,7 +9,7 @@ app.directive 'accessSearchForm', [
       volume = $scope.volume
       form = $scope.accessSearchForm
 
-      form.placeholderText = $attrs.placeholderText || constants.messages['access.search']
+      form.placeholderText = $attrs.placeholderText || constants.message('access.search.placeholder')
 
       select = (found) -> ->
         $scope.selectFn(found)

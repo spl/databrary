@@ -7,7 +7,7 @@ app.directive('validator', [
       $scope.validator = {};
       $scope.validator.label = $attrs.label && constants.message($attrs.label);
       if ('required' in $attrs)
-        $scope.validator.label += ' ' + constants.message('required');
+        $scope.validator.label += ' (required)';
       $scope.validator.prefix = $scope.validator.label ? '<strong>' + $sce.getTrustedHtml($scope.validator.label) + ':</strong> ' : '';
     };
 

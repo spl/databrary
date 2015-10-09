@@ -519,13 +519,6 @@ app.factory('modelService', [
         });
     };
 
-    Object.defineProperty(Volume.prototype, 'type', {
-      get: function () {
-        if ('citation' in this)
-          return this.citation ? 'study' : 'dataset';
-      }
-    });
-
     Object.defineProperty(Volume.prototype, 'displayName', {
       get: function () {
         return this.alias !== undefined ? this.alias : this.name;
@@ -717,7 +710,7 @@ app.factory('modelService', [
 
     Object.defineProperty(Slot.prototype, 'displayName', {
       get: function () {
-        return constants.message(this.container.top ? 'materials' : 'session') + (this.name ? ': ' + this.name : '');
+        return constants.message((this.container.top ? 'materials' : 'session') + '.name') + (this.name ? ': ' + this.name : '');
       }
     });
 

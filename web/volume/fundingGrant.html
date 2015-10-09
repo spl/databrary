@@ -5,11 +5,11 @@
         <span ng-bind="::funding.funder.name"></span>
       </div>
     </fieldset>
-    <label message="funding.awards"></label>
+    <label>Grant #</label>
 
     <div ng-repeat="award in fundingGrantForm.data.awards track by $index" ng-show="award !== null">
       <validator name="funding.awards[{{$index}}]" noclientval>
-        <input type="text" name="funding.awards[{{$index}}]" ng-model="fundingGrantForm.data.awards[$index]" placeholder="{{::'funding.awards.placeholder' | message}}" ng-change="fundingGrantForm.awardChange()">
+        <input type="text" name="funding.awards[{{$index}}]" ng-model="fundingGrantForm.data.awards[$index]" placeholder="XXX-XXXXXX-XX" ng-change="fundingGrantForm.awardChange()">
         <button ng-click="fundingGrantForm.awardRemove($index)" class="icon trash mini pull"></button>
       </validator>
     </div>

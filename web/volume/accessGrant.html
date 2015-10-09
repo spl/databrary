@@ -22,7 +22,7 @@
             <input type="radio" ng-model="accessGrantForm.data.individual" name="access-{{access.party.id}}-individual" ng-value="val" required>
             <label class="option" tooltip="'access.edit.'+name+'.who' | message">
               <span class="icon user-access" ng-class="::name"></span> 
-              <span ng-bind="::'access.edit.'+name | message:access.party.name"></span>
+              <span ng-bind="::'access.edit.'+name+'.title' | message:access.party.name"></span>
             </label>
           </div>
         </fieldset>

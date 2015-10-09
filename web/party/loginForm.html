@@ -1,13 +1,13 @@
 <ng-form name="loginForm" class="login-form">
-  <validator name="email" label="email">
+  <validator name="email" label="login.email.title">
     <input id="loginEmail" name="email" ng-model="loginForm.data.email" required>
   </validator>
 
-  <validator name="password" label="password">
+  <validator name="password" label="login.password.title">
     <input id="loginPassword" name="password" type="password" ng-model="loginForm.data.password" required key-enter="loginForm.submit()">
   </validator>
 
-  <button id="loginSubmit" type="submit" class="green" ng-click="loginForm.submit()" ng-disabled="loginForm.$pristine || loginForm.$invalid || loginForm.$submitted" message="login.login"></button>
+  <button id="loginSubmit" type="submit" class="green" ng-click="loginForm.submit()" ng-disabled="loginForm.$pristine || loginForm.$invalid || loginForm.$submitted">Login</button>
 
-  <a ng-href="{{::page.router.password()}}" message="login.forgot"></a>
+  <a ng-href="{{::page.router.password()}}">Forgot your password?</a>
 </ng-form>

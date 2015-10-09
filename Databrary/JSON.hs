@@ -18,6 +18,7 @@ module Databrary.JSON
   , quoteByteString
   ) where
 
+import Control.Arrow ((***))
 import Data.Aeson hiding (object)
 import Data.Aeson.Types hiding (object)
 import Data.Aeson.Encode (encodeToTextBuilder)
@@ -25,7 +26,6 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as B
 import qualified Data.ByteString.Builder.Prim as BP
 import Data.ByteString.Internal (c2w)
-import qualified Data.Configurator.Types as C
 import qualified Data.HashMap.Strict as HM
 import Data.List (foldl')
 import Data.Monoid ((<>))
@@ -36,6 +36,8 @@ import qualified Data.Traversable as Trav
 import qualified Data.Vector as V
 import Data.Word (Word8)
 import Network.HTTP.Types (Query)
+
+import qualified Databrary.Store.Config as C
 
 object :: [Pair] -> Object
 object = HM.fromList
@@ -79,10 +81,12 @@ instance FromJSON BS.ByteString where
   parseJSON = fmap TE.encodeUtf8 . parseJSON
 
 instance ToJSON C.Value where
-  toJSON (C.Bool b) = Bool b
-  toJSON (C.String t) = String t
-  toJSON (C.Number r) = Number $ fromRational r
+  toJSON C.Empty = Null
+  toJSON (C.Boolean b) = Bool b
+  toJSON (C.String s) = String $ TE.decodeUtf8 s
+  toJSON (C.Integer i) = Number $ fromInteger i
   toJSON (C.List l) = Array $ V.fromList $ map toJSON l
+  toJSON (C.Sub c) = Object $ object $ map (TE.decodeUtf8 *** toJSON) $ HM.toList c
 
 jsonQuery :: (Monad m) => Object -> (BS.ByteString -> Maybe BS.ByteString -> m (Maybe Value)) -> Query -> m Object
 jsonQuery j _ [] = return j

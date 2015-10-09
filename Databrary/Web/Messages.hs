@@ -6,23 +6,21 @@ module Databrary.Web.Messages
 import Control.Monad.IO.Class (liftIO)
 import qualified Data.Aeson.Encode as JSON
 import qualified Data.ByteString.Builder as BSB
-import qualified Data.Configurator as C
 import System.IO (withBinaryFile, IOMode(WriteMode), hPutStr)
 
-import Paths_databrary (getDataFileName)
 import qualified Databrary.JSON as JSON
+import Databrary.Service.Messages
 import Databrary.Web
 import Databrary.Web.Types
 import Databrary.Web.Generate
 
 generateMessagesJS :: WebGenerator
 generateMessagesJS fo@(f, _) = do
-  -- it'd be nice to use Service.Messages here but there's no good way
-  mf <- liftIO $ getDataFileName "messages.conf"
+  mf <- liftIO messagesFile
   webRegenerate (do
-    ml <- C.getMap =<< C.load [C.Optional mf]
+    msg <- liftIO $ loadMessagesFrom mf
     withBinaryFile (webFileAbs f) WriteMode $ \h -> do
       hPutStr h "app.constant('messageData',"
-      BSB.hPutBuilder h $ JSON.encodeToBuilder $ JSON.toJSON ml
+      BSB.hPutBuilder h $ JSON.encodeToBuilder $ JSON.toJSON msg
       hPutStr h ");")
     [mf] [] fo

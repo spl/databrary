@@ -7,11 +7,12 @@ module Databrary.Static.Service
 import qualified Crypto.Hash.Algorithms as Hash
 import Crypto.MAC.HMAC (HMAC, hmac)
 import qualified Data.ByteString as BS
-import qualified Data.Configurator as C
-import qualified Data.Configurator.Types as C
+import Data.Maybe (fromMaybe)
 import qualified Data.Traversable as Trav
 import qualified Network.HTTP.Client as HC
 import Network.HTTP.Types (methodPost, hContentType)
+
+import qualified Databrary.Store.Config as C
 
 data Static = Static
   { staticAuthorizeAddr :: BS.ByteString
@@ -21,9 +22,7 @@ data Static = Static
 
 initStatic :: C.Config -> IO Static
 initStatic conf = do
-  authaddr <- C.require conf "authorize"
-  fillin <- Trav.mapM HC.parseUrl =<< C.lookup conf "fillin"
-  key <- C.lookupDefault ("databrary" :: BS.ByteString) conf "key"
+  fillin <- Trav.mapM HC.parseUrl $ conf C.! "fillin"
   return $ Static
     { staticAuthorizeAddr = authaddr
     , staticInvestigator = fmap (\f -> f
@@ -34,3 +33,6 @@ initStatic conf = do
       }) fillin
     , staticKey = hmac key
     }
+  where
+  authaddr = conf C.! "authorize"
+  key = fromMaybe ("databrary" :: BS.ByteString) $ conf C.! "key"

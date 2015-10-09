@@ -3,7 +3,7 @@
 app.controller('party/edit', [
   '$scope', 'party', 'pageService', function ($scope, party, page) {
     $scope.party = party;
-    page.display.title = page.constants.message('party.edit');
+    page.display.title = "Edit " + party.name;
 
     function leavingSoSoon() {
       return $scope.partyEditForm.resetAll(false, true);

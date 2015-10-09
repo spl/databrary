@@ -41,7 +41,7 @@ app.directive 'tags', [
 
               messages.add
                 type: 'green'
-                body: constants.message('tags.vote.'+(if vote then 'up' else 'null')+'.success', {sce: $sce.HTML}, tag.id)
+                body: constants.message('tags.vote.success.'+(if vote then 'up' else 'null'), {sce: $sce.HTML}, tag.id)
                 owner: $scope
               tooltips.clear() # hack for broken tooltips
               return

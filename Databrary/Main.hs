@@ -8,6 +8,7 @@ import Control.Monad.Reader (runReaderT)
 #endif
 import qualified Data.Aeson.Encode as J (encodeToBuilder)
 import Data.ByteString.Builder (hPutBuilder)
+import Data.Either (partitionEithers)
 import qualified System.Console.GetOpt as Opt
 import System.Environment (getProgName, getArgs)
 import System.Exit (exitSuccess, exitFailure)
@@ -19,7 +20,8 @@ import Databrary.Service.Types (serviceDB)
 import Databrary.Service.DB (withDB)
 import Databrary.Service.DB.Schema (updateDBSchema)
 #endif
-import Databrary.Service.Init (loadConfig, withService)
+import qualified Databrary.Store.Config as Conf
+import Databrary.Service.Init (withService)
 import Databrary.Context
 import Databrary.Web.Rules (generateWebFiles)
 import Databrary.Action (runActionRoute)
@@ -29,24 +31,35 @@ import Databrary.Warp (runWarp)
 import Databrary.EZID.Volume (updateEZID)
 
 data Flag
-  = FlagWeb
+  = FlagConfig FilePath
+  | FlagWeb
   | FlagAPI
   | FlagEZID
   deriving (Eq)
 
 opts :: [Opt.OptDescr Flag]
 opts =
-  [ Opt.Option "w" ["webgen"] (Opt.NoArg FlagWeb) "Generate web assets only"
+  [ Opt.Option "c" ["config"] (Opt.ReqArg FlagConfig "FILE") "Path to configuration file [./databrary.conf]"
+  , Opt.Option "w" ["webgen"] (Opt.NoArg FlagWeb) "Generate web assets only"
   , Opt.Option "a" ["api"] (Opt.NoArg FlagAPI) "Output Swagger API documention"
   , Opt.Option "e" ["ezid"] (Opt.NoArg FlagEZID) "Update EZID DOIs"
   ]
+
+flagConfig :: Flag -> Either FilePath Flag
+flagConfig (FlagConfig f) = Left f
+flagConfig f = Right f
 
 main :: IO ()
 main = do
   prog <- getProgName
   args <- getArgs
-  conf <- loadConfig
-  case Opt.getOpt Opt.Permute opts args of
+  let (flags, args', err) = Opt.getOpt Opt.Permute opts args
+      (configs, flags') = partitionEithers $ map flagConfig flags
+  conf <- Conf.load $ case configs of
+    [] -> "databrary.conf"
+    [f] -> f
+    _ -> fail "Multiple config files"
+  case (flags', args', err) of
     ([FlagWeb], [], []) -> do
       void generateWebFiles
       exitSuccess
@@ -57,7 +70,7 @@ main = do
       r <- withService False conf $ runContextM $ withBackgroundContextM updateEZID
       if r == Just True then exitSuccess else exitFailure
     ([], [], []) -> return ()
-    (_, _, err) -> do
+    (_, _, _) -> do
       mapM_ putStrLn err
       putStrLn $ Opt.usageInfo ("Usage: " ++ prog ++ " [OPTION...]") opts
       exitFailure

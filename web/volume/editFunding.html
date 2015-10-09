@@ -2,8 +2,8 @@
   <scroll-float>
     <fieldset class="clean">
       <div class="col-desktop-5 col-tablet-4 col-mobile-3">
-        <button ng-click="volumeEditFundingForm.saveAll()" class="green" message="save" ng-disabled="volumeEditFundingForm.$pristine || volumeEditFundingForm.$submitted"></button>
-        <button ng-click="volumeEditFundingForm.resetAll()" class="neutral" message="revert" ng-disabled="volumeEditFundingForm.$pristine"></button>
+        <button ng-click="volumeEditFundingForm.saveAll()" class="green" ng-disabled="volumeEditFundingForm.$pristine || volumeEditFundingForm.$submitted">Save</button>
+        <button ng-click="volumeEditFundingForm.resetAll()" class="neutral" ng-disabled="volumeEditFundingForm.$pristine">Revert</button>
       </div>
       <funding-search-form class="col-desktop-6 col-tablet-5 col-mobile-3"></funding-search-form>
     </fieldset>

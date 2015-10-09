@@ -1,38 +1,44 @@
 {-# LANGUAGE CPP, OverloadedStrings #-}
 module Databrary.Service.Messages
   ( Messages
-  , initMessages
+  , messagesFile
+  , loadMessagesFrom
+  , loadMessages
   , getMessage
-  , listMessages
   ) where
 
 import Control.Applicative ((<$>))
-import qualified Data.ByteString.Short as BSS
-import qualified Data.Configurator as C
-import qualified Data.Configurator.Types as C
+import Control.Arrow (first, (***))
+import qualified Data.ByteString as BS
 import qualified Data.HashMap.Strict as HM
-import Data.Maybe (mapMaybe)
 import Data.Monoid ((<>))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 
-#if !MIN_VERSION_hashable(1,2,3)
-import Data.Hashable (Hashable(..))
-instance Hashable BSS.ShortByteString where
-  hashWithSalt i = hashWithSalt i . BSS.fromShort
-  hash = hash . BSS.fromShort
-#endif
+import Paths_databrary (getDataFileName)
+import qualified Databrary.Store.Config as C
+import qualified Databrary.JSON as JSON
 
-newtype Messages = Messages { messagesMap :: HM.HashMap BSS.ShortByteString T.Text }
+newtype Messages = Messages (HM.HashMap BS.ByteString T.Text)
 
-initMessages :: C.Config -> IO Messages
-initMessages c = Messages .
-  HM.fromList . mapMaybe f . HM.toList <$> C.getMap c where
-  f (k, C.String v) | Just m <- T.stripPrefix "message." k = Just (BSS.toShort $ TE.encodeUtf8 m, v)
-  f _ = Nothing
+confMessages :: C.Config -> [([BS.ByteString], T.Text)]
+confMessages = HM.foldrWithKey (\k v -> (map (first (k :)) (val v) ++)) [] where
+  val v
+    | Just t <- C.config v = [([], t)]
+    | Just c <- C.config v = confMessages c
+    | otherwise = []
 
-getMessage :: BSS.ShortByteString -> Messages -> T.Text
-getMessage m = HM.lookupDefault ("[" <> TE.decodeLatin1 (BSS.fromShort m) <> "]") m . messagesMap
+messagesFile :: IO FilePath
+messagesFile = getDataFileName "messages.conf"
 
-listMessages :: Messages -> [(BSS.ShortByteString, T.Text)]
-listMessages = HM.toList . messagesMap
+loadMessagesFrom :: FilePath -> IO Messages
+loadMessagesFrom f = Messages . HM.fromList . map (first (C.pathKey . C.Path)) . confMessages <$> C.load f
+
+loadMessages :: IO Messages
+loadMessages = loadMessagesFrom =<< messagesFile
+
+getMessage :: C.Path -> Messages -> T.Text
+getMessage p (Messages m) = HM.lookupDefault ("[" <> TE.decodeLatin1 k <> "]") k m where k = C.pathKey p
+
+instance JSON.ToJSON Messages where
+  toJSON (Messages m) = JSON.Object $ JSON.object $ map (TE.decodeUtf8 *** JSON.String) $ HM.toList m

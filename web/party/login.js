@@ -3,7 +3,7 @@
 app.controller('party/login', [
   '$location', 'displayService', 'constantService', 'modelService',
   function ($location, display, constants, models) {
-    display.title = constants.message('login.title');
+    display.title = "Login";
     if (models.Login.isLoggedIn())
       $location.url('/');
   }

@@ -2,8 +2,8 @@
   <div class="wrap">
     <div class="row">
       <hgroup class="col">
-        <h1 class="view-context" message="register.title"></h1>
-        <h2 class="view-title" message="register.title.sub"></h2>
+        <h1 class="view-context">Register</h1>
+        <h2 class="view-title">Get Databrary Access</h2>
       </hgroup>
 
       <div class="col">
@@ -26,7 +26,7 @@
                 <input id="field-affiliation" name="affiliation" type="text" ng-model="registerForm.data.affiliation" placeholder="University" key-enter="proceed()">
               </validator>
 
-              <button class="green" type="submit" ng-disabled="registerForm.$pristine || registerForm.$invalid" ng-click="proceed()" message="register.continue"></button>
+              <button class="green" type="submit" ng-disabled="registerForm.$pristine || registerForm.$invalid" ng-click="proceed()">Continue</button>
             </ng-form>
           </wizard-step>
 
@@ -47,7 +47,7 @@
               </label>
             </p>
 
-            <button class="green" ng-click="proceed()" ng-disabled="registerForm.$pristine || registerForm.$invalid || !registerForm.data.agreement" message="register.register">Agree and register</button>
+            <button class="green" ng-click="proceed()" ng-disabled="registerForm.$pristine || registerForm.$invalid || !registerForm.data.agreement">Agree and register</button>
           </wizard-step>
 
           <wizard-step name="email">
@@ -66,7 +66,7 @@
                 <input id="fieldPasswordAgain" name="again" type="password" ng-model="passwordForm.data.again" key-enter="passwordForm.save()">
               </validator>
 
-              <button class="green" type="submit" ng-disabled="passwordForm.$pristine || passwordForm.$invalid || passwordForm.data.once !== passwordForm.data.again || passwordForm.$submitted" ng-click="passwordForm.save()" message="register.continue"></button>
+              <button class="green" type="submit" ng-disabled="passwordForm.$pristine || passwordForm.$invalid || passwordForm.data.once !== passwordForm.data.again || passwordForm.$submitted" ng-click="passwordForm.save()">Continue</button>
             </ng-form>
           </wizard-step>
 

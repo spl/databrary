@@ -1,13 +1,13 @@
 <ng-form name="partyEditProfileForm">
   <scroll-float>
     <fieldset class="clean">
-      <button ng-click="partyEditProfileForm.save()" message="save" class="green" ng-disabled="partyEditProfileForm.$pristine || partyEditProfileForm.$invalid || partyEditProfileForm.$submitted"></button>
-      <button ng-click="partyEditProfileForm.resetAll()" message="revert" class="red" ng-disabled="partyEditProfileForm.$pristine"></button>
+      <button ng-click="partyEditProfileForm.save()" class="green" ng-disabled="partyEditProfileForm.$pristine || partyEditProfileForm.$invalid || partyEditProfileForm.$submitted">Save</button>
+      <button ng-click="partyEditProfileForm.resetAll()" class="red" ng-disabled="partyEditProfileForm.$pristine">Revert</button>
     </fieldset>
   </scroll-float>
 
   <fieldset>
-    <legend message="party.edit.personal"></legend>
+    <legend>Personal Information</legend>
 
     <validator name="prename" label="prename" class="grid-clear-left col-desktop-7 col-tablet-4 col-mobile-6">
       <input type="text" name="prename" ng-model="partyEditProfileForm.data.prename">

@@ -7,20 +7,16 @@ module Databrary.Model.URL
   , parseURL
   ) where
 
-import Control.Monad ((<=<))
+import Control.Monad ((<=<), guard)
 import Data.Aeson (ToJSON(..))
-import qualified Data.Configurator as C ()
-import qualified Data.Configurator.Types as C
-import Data.Maybe (fromMaybe)
-import qualified Data.Text as T
+import Data.Char (isDigit)
+import Data.Maybe (fromMaybe, isNothing)
 import Database.PostgreSQL.Typed.Types (PGParameter(..), PGColumn(..))
 import Language.Haskell.TH.Lift (deriveLiftMany)
 import Network.URI
 import qualified Text.Blaze as H
 
-import Control.Monad (guard)
-import Data.Char (isDigit)
-import Data.Maybe (isNothing)
+import qualified Databrary.Store.Config as C
 
 toPG :: URI -> String
 toPG u = uriToString id u ""
@@ -39,8 +35,8 @@ instance PGColumn "text" URI where
 instance ToJSON URI where
   toJSON = toJSON . show
 
-instance C.Configured URI where
-  convert = parseAbsoluteURI . T.unpack <=< C.convert
+instance C.Configurable URI where
+  config = parseAbsoluteURI <=< C.config
 
 instance H.ToValue URI where
   toValue = H.stringValue . show

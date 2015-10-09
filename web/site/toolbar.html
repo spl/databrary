@@ -57,11 +57,11 @@
       <div class="toolbar-user" ng-class="{'col-mobile-3': page.models.Login.isLoggedIn(), 'col-mobile-4': !page.models.Login.isLoggedIn()}" ng-if="!hoverNav">
 
         <span ng-if="!page.models.Login.isLoggedIn()">
-          <a ng-href="{{::page.router.login()}}" message="toolbar.login"></a>
+          <a ng-href="{{::page.router.login()}}">login</a>
 
           <span class="sep">|</span>
 
-          <a ng-href="{{::page.router.register()}}" message="toolbar.register"></a>
+          <a ng-href="{{::page.router.register()}}">register</a>
         </span>
 
         <span ng-if="page.models.Login.isLoggedIn()">
@@ -78,7 +78,7 @@
 
         <span class="sep">|</span>
 
-        <a href="//databrary.org/about/support.html" class="icon contact" id="toolbar-contact" target="_blank" tooltip="'toolbar.contact' | message"></a>
+        <a href="//databrary.org/about/support.html" class="icon contact" id="toolbar-contact" target="_blank" tooltip="'Get help or contact us with comments, problems, and suggestions'"></a>
 
       </div>
 
@@ -88,15 +88,15 @@
             <ul class="flat">
               <li><strong ng-bind="::page.models.Login.user.name"></strong></li>
               <li ng-if="::!page.models.Login.isAuthorized()">
-                <a ng-href="{{::page.models.Login.user.editRoute('apply')}}" message="toolbar.reregister"></a>
+                <a ng-href="{{::page.models.Login.user.editRoute('apply')}}">get authorized</a>
               </li>
               <li>
-                <a ng-href="{{::page.router.profile()}}" message="toolbar.profile"></a>
+                <a ng-href="{{::page.router.profile()}}">View profile</a>
               </li>
               <li>
                 <a ng-href="{{::page.router.volumeCreate()}}" message="volume.edit.create" ng-if="::page.models.Login.isAuthorized()"></a>
               </li>
-              <li><a href="" ng-click="page.auth.logout()" message="toolbar.logout"></a>
+              <li><a href="" ng-click="page.auth.logout()">Logout</a>
               </li>
             </ul>
           </div>

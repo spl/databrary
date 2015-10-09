@@ -74,7 +74,7 @@ app.factory('messageService', [
         });
 
         if (messageBody)
-          body += ' ' + constants.message('error.report', encodeURIComponent(constants.message('error.report.subject', message.status || 0, message.url || '')), encodeURIComponent(constants.message('error.report.body', messageBody))) + moreBody;
+          body += ' ' + constants.message('error.report', encodeURIComponent(constants.message('error.mail.subject', message.status || 0, message.url || '')), encodeURIComponent(constants.message('error.mail.body', messageBody))) + moreBody;
         if (message.status == 409)
           body += "<br>" + constants.message('app.reload');
       }

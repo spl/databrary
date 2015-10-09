@@ -22,16 +22,16 @@
         <div frame id="frame-contact" frame-title="party.contact.title" fold>
           <div>
             <dl class="flat">
-              <dt ng-if="::party.affiliation" message="affiliation"/>
+              <dt ng-if="::party.affiliation">Affiliation</dt>
               <dd ng-if="::party.affiliation" ng-bind="::party.affiliation"></dd>
 
-              <dt ng-if="::party.email" message="email"/>
+              <dt ng-if="::party.email">Email</dt>
               <dd ng-if="::party.email"><a ng-href="mailto:{{::party.email}}" ng-bind="::party.email"></a></dd>
 
-              <dt ng-if="::party.orcid" message="orcid"/>
+              <dt ng-if="::party.orcid">ORCID iD</dt>
               <dd ng-if="::party.orcid"><a ng-href="http://orcid.org/{{::party.orcid}}" ng-bind="::party.orcid"></a></dd>
 
-              <dt ng-if="::party.url" message="party.view.url"/>
+              <dt ng-if="::party.url">Website</dt>
               <dd class="party-url" ng-if="::party.url"><a ng-href="{{::party.url}}" ng-bind="::party.url"></a></dd>
             </dl>
           </div>
