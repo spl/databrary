@@ -28,7 +28,7 @@ app.directive 'volumeMeter', [
         description:
           test: () -> volume.body?.length >= 500
           title: 'Description written'
-          help: 'Add a description of at least 500 characters that summarizes what your volume contains and how the data were collected to help others find it.'
+          help: 'Add a description of at least 500 characters that summarizes what your volume contains and how the data were collected.'
           link: 'overview'
         citation:
           test: () -> !!volume.citation
@@ -51,7 +51,7 @@ app.directive 'volumeMeter', [
               n++
               return true if n >= 3
           title: 'Highlights selected'
-          help: 'Select at least three highlights from your data to represent your volume.'
+          help: 'Now that you have uploaded files, select at least three highlights from your data to represent your volume.'
           link: 'data'
         thumbnail:
           test: () ->

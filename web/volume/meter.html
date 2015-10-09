@@ -5,11 +5,14 @@
   <div class="wizard-step-instructions" message="wizard.volume-edit-meter.description" message-html></div>
   <div>
     <div class="volume-meter-category volume-meter-done col-desktop-15 col-tablet-9 col-mobile-6" ng-click="goto(metrics.name.link)">
+      <div class="icon done"></div>
       <h5>{{::metrics.name.title}}</h5>
       <span ng-if="::!metrics.name.done">: {{::metrics.name.help}}</span>
     </div>
     <div class="volume-meter-category col-desktop-15 col-tablet-9 col-mobile-6">
+      <div class="icon done-not"></div> 
       <h5>Add more information</h5>
+      <p>Make it easier for others to find your volume.</p>
       <ul>
         <li ng-click="goto(metrics.description.link)" ng-class="{'volume-meter-done':metrics.description.done}">
           <span ng-if="::!!metrics.description.done">{{::metrics.description.title}}</span>
@@ -26,20 +29,9 @@
       </ul>      
     </div>
     <div class="volume-meter-category col-desktop-15 col-tablet-9 col-mobile-6">
-      <h5>Start adding files</h5>
-      <ul>
-        <li ng-click="goto(metrics.asset.link)" ng-class="{'volume-meter-done':metrics.asset.done}">
-          <span ng-if="::!!metrics.asset.done">{{::metrics.asset.title}}</span>
-          <span ng-if="::!metrics.asset.done">{{::metrics.asset.help}}</span>        
-        </li>
-        <li ng-click="goto(metrics.excerpts.link)" ng-class="{'volume-meter-done':metrics.excerpts.done}">
-          <span ng-if="::!!metrics.excerpts.done">{{::metrics.excerpts.title}}</span>
-          <span ng-if="::!metrics.excerpts.done">{{::metrics.excerpts.help}}</span>
-        </li>
-      </ul>
-    </div>
-    <div class="volume-meter-category col-desktop-15 col-tablet-9 col-mobile-6">
+      <div class="icon done-not"></div> 
       <h5>Study design and data</h5>
+      <p>Describe your data, create and label sessions.</p>
       <ul>
         <li ng-click="goto(metrics.design.link)" ng-class="{'volume-meter-done':metrics.design.done}">
           <span ng-if="::!!metrics.design.done">{{::metrics.design.title}}</span>
@@ -49,16 +41,31 @@
           <span ng-if="::!!metrics.session.done">{{::metrics.session.title}}</span>
           <span ng-if="::!metrics.session.done">{{::metrics.session.help}}</span>        
         </li>  
-        <li ng-click="goto(metrics.record.link)" ng-class="{'volume-meter-done':metrics.record.done}">
+        <li ng-if="::!!metrics.session.done" ng-click="goto(metrics.record.link)" ng-class="{'volume-meter-done':metrics.record.done}">
           <span ng-if="::!!metrics.session.done">{{::metrics.record.title}}</span>
           <span ng-if="::!metrics.record.done">{{::metrics.record.help}}</span>        
         </li>   
       </ul>          
     </div>
-
+    <div class="volume-meter-category col-desktop-15 col-tablet-9 col-mobile-6">
+      <div class="icon done-not"></div> 
+      <h5>Start adding files</h5>
+      <p>If you have created a materials or a session folder, you can now start adding files</p>
+      <ul>
+        <li ng-click="goto(metrics.asset.link)" ng-class="{'volume-meter-done':metrics.asset.done}">
+          <span ng-if="::!!metrics.asset.done">{{::metrics.asset.title}}</span>
+          <span ng-if="::!metrics.asset.done">{{::metrics.asset.help}}</span>        
+        </li>
+        <li ng-if="::!!metrics.asset.done" ng-click="goto(metrics.excerpts.link)" ng-class="{'volume-meter-done':metrics.excerpts.done}">
+          <span ng-if="::!!metrics.excerpts.done">{{::metrics.excerpts.title}}</span>
+          <span ng-if="::!metrics.excerpts.done">{{::metrics.excerpts.help}}</span>
+        </li>
+      </ul>
+    </div>
     <div class="volume-meter-category col-desktop-15 col-tablet-9 col-mobile-6" ng-click="goto(metrics.share.link)"  ng-class="{'volume-meter-done':metrics.share.done}">
+      <div class="icon" ng-class="{'done':!!metrics.share.done,'done-not':!metrics.share.done}"></div> 
       <h5>{{::metrics.share.title}}</h5>
-      <span ng-if="::!metrics.share.done">: {{::metrics.share.help}}</span> 
+      <p ng-if="::!metrics.share.done">{{::metrics.share.help}}</p>
     </div>    
 
 

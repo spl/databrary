@@ -1,11 +1,33 @@
 .volume-meter-canvas
   position relative 
   width 100%
+  cursor pointer
   
 .volume-meter-category
   border-radius b3
   border 1px solid neutral
   margin b2
+  padding-bottom b2
+  & > ul
+  & > span
+    padding-left b1
+    margin-bottom 0
+  & > ul
+    margin-top b2
+  p 
+    margin-bottom 0
+  li
+    margin-height b3
+  li:before
+    content none
+  h5
+    color blue
+  & > .done.icon
+  & > .done-not.icon
+    float left
+    size 1.5
+    margin-height b3
+    margin-right 0.5
   
 .volume-meter-done
   opacity 0.6
