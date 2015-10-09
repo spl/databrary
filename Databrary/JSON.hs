@@ -80,13 +80,16 @@ instance ToJSON BS.ByteString where
 instance FromJSON BS.ByteString where
   parseJSON = fmap TE.encodeUtf8 . parseJSON
 
+instance ToJSON C.Config where
+  toJSON = Object . object . map (TE.decodeUtf8 *** toJSON) . HM.toList
+
 instance ToJSON C.Value where
   toJSON C.Empty = Null
   toJSON (C.Boolean b) = Bool b
   toJSON (C.String s) = String $ TE.decodeUtf8 s
   toJSON (C.Integer i) = Number $ fromInteger i
   toJSON (C.List l) = Array $ V.fromList $ map toJSON l
-  toJSON (C.Sub c) = Object $ object $ map (TE.decodeUtf8 *** toJSON) $ HM.toList c
+  toJSON (C.Sub c) = toJSON c
 
 jsonQuery :: (Monad m) => Object -> (BS.ByteString -> Maybe BS.ByteString -> m (Maybe Value)) -> Query -> m Object
 jsonQuery j _ [] = return j

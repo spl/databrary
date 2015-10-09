@@ -4,6 +4,14 @@ app.factory('constantService', [
   '$log', '$sce', 'constantData', 'messageData',
   function ($log, $sce, constants, messages) {
 
+    messages.get = function (k) {
+      if (typeof k === 'string')
+        k = k.split('.');
+      var m = this;
+      for (var i = 0; m && i < k.length; i ++)
+        m = m[k[i]];
+      return m;
+    };
     constants.messages = messages;
 
     constants.regex = {
@@ -38,9 +46,10 @@ app.factory('constantService', [
         constants.party[uname] = party.id;
     });
 
+    var msgnot = messages.not;
     _.forEach(constants.category, function (cat) {
-      var m = 'not.' + cat.name;
-      cat.not = m in messages ? messages[m] : 'No ' + cat.name;
+      var n = cat.name;
+      cat.not = n in msgnot ? msgnot[n] : 'No ' + n;
     });
 
     _.forEach(constants.format, function (fmt) {
@@ -58,7 +67,7 @@ app.factory('constantService', [
     ];
 
     constants.message = function (key /*, args...*/) {
-      var msg = messages[key];
+      var msg = messages.get(key);
 
       if (msg === undefined) {
         $log.info('Message key [' + key + '] is undefined.');
