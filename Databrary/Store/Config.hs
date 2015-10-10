@@ -5,6 +5,8 @@ module Databrary.Store.Config
   , keyPath
   , Value(..)
   , Config
+  , configMap
+  , configPath
   , load
   , Configurable(..)
   , get
@@ -49,7 +51,11 @@ instance IsString Path where
 
 data ConfigError
   = ParseError P.ParseError
-  | ValueError Value TypeRep
+  | ValueError
+    { errorPath :: Path
+    , errorValue :: Value
+    , errorNeeded :: TypeRep
+    }
   deriving (Typeable, Show)
 
 instance Exception ConfigError
@@ -63,7 +69,15 @@ data Value
   | Sub !Config
   deriving (Typeable, Show)
 
-type Config = HM.HashMap BS.ByteString Value
+type ConfigMap = HM.HashMap BS.ByteString Value
+
+data Config = Config
+  { configPath' :: ![Key]
+  , configMap :: !ConfigMap
+  } deriving (Typeable, Show)
+
+configPath :: Config -> Path
+configPath = Path . reverse . configPath'
 
 type Parser = P.Parsec BSL.ByteString Config
 
@@ -71,19 +85,20 @@ parser :: Parser Config
 parser = whiteSpace *> block *> P.eof *> P.getState where
   block = P.skipMany pair
   pair = do
-    c <- P.getState
+    c@Config{ configMap = cm } <- P.getState
     ks <- identifier P.<?> "key"
     let k = BSC.pack ks
-    P.setState =<< case HM.lookupDefault Empty k c of
-      Empty -> return HM.empty
+        k' = k : configPath' c
+    P.setState =<< case HM.lookupDefault Empty k cm of
+      Empty -> return $ Config k' HM.empty
       Sub kc -> return kc
-      _ -> dup ks
+      _ -> dup k'
     r <- lexeme dot *> (Nothing <$ pair) <|> rhs
     kc <- P.getState
     kv <- maybe (return $ Sub kc) (\v -> do
-      unless (HM.null kc) $ dup ks
+      unless (HM.null $ configMap kc) $ dup k'
       return v) r
-    P.putState $ HM.insert k kv c
+    P.putState c{ configMap = HM.insert k kv cm }
   rhs =
     Nothing <$ braces block <|>
     lexeme (P.char '=') *> (Just <$> val)
@@ -107,17 +122,17 @@ parser = whiteSpace *> block *> P.eof *> P.getState where
     , PT.reservedOpNames = ["="]
     , PT.caseSensitive = True
     }
-  dup = fail . ("Duplicate/conflicting key value: " ++)
+  dup = fail . ("Duplicate/conflicting key value: " ++) . show . Path . reverse
 
 load :: FilePath -> IO Config
 load f = do
   i <- BSLC.readFile f
-  either (throw . ParseError) return $ P.runP parser HM.empty f i
+  either (throw . ParseError) return $ P.runP parser (Config [] HM.empty) f i
 
-lookup :: Config -> Path -> Value
-lookup c (Path []) = Sub c
-lookup c (Path [k]) | Just v <- HM.lookup k c = v
-lookup c (Path (k:l)) | Just (Sub kc) <- HM.lookup k c = lookup kc (Path l)
+lookup :: Config -> [Key] -> Value
+lookup c [] = Sub c
+lookup Config{ configMap = cm } [k] | Just v <- HM.lookup k cm = v
+lookup Config{ configMap = cm } (k:l) | Just (Sub kc) <- HM.lookup k cm = lookup kc l
 lookup _ _ = Empty
 
 class Typeable a => Configurable a where
@@ -148,7 +163,6 @@ instance Configurable a => Configurable [a] where
 
 instance Configurable Config where
   config (Sub c) = Just c
-  config Empty = Just HM.empty
   config _ = Nothing
 
 instance Configurable T.Text where
@@ -164,12 +178,12 @@ configBoundedInt = f <=< config where
 instance Configurable Int where
   config = configBoundedInt
 
-config' :: Configurable a => Value -> a
-config' v = fromMaybe (throw $ ValueError v $ typeRep r) r where r = config v
+config' :: Configurable a => Path -> Value -> a
+config' p v = fromMaybe (throw $ ValueError p v $ typeRep r) r where r = config v
 
 infixl 9 !
 (!) :: Configurable a => Config -> Path -> a
-(!) c = config' . lookup c
+c ! Path p = config' (Path $ reverse (configPath' c) ++ p) $ lookup c p
 
 get :: Configurable a => Path -> Config -> a
 get = flip (!)
