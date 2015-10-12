@@ -1,5 +1,5 @@
 <ng-form name="form">
-<div class="spreadsheet-dynamic-info" ng-if="::editing && !top" ng-show="key.id === 'slot'">
+<div class="spreadsheet-dynamic-info" ng-if="::editing" ng-show="key.id === 'slot'">
   <a href="" ng-click="showConsents=false" ng-show="showConsents">
     Hide legend of session release levels
   </a>
@@ -14,14 +14,22 @@
     </li>
   </ul>
 </div>
-<div class="spreadsheet-dynamic-info" ng-if="::editing && !top" ng-show="key.id !== 'slot'">
+<div class="spreadsheet-dynamic-info" ng-if="::editing" ng-show="key.id !== 'slot'">
   You are in <span class="icon list"></span> <em><span ng-bind="key.name"></span> view</em>. 
   Here you can manage the list of labels in this category. 
   Return to the <a href="" ng-click="setKey('slot')">folder view</a> to edit session data.
 </div>
 
+<div ng-if="::!editing">
+  Show <select ng-model="filter.top" ng-change="setFilters()">
+    <option value="undefined">All folders</option>
+    <option value="true">Materials</option>
+    <option value="false">Sessions</option>
+  </select>
+</div>
+
 <div class="spreadsheet-options">
-  <a ng-if="::!editing && !top" ng-href="{{::volume.csvRoute()}}">export data</a>
+  <a ng-if="::!editing" ng-href="{{::volume.csvRoute()}}">export data</a>
 </div>
 
 <div class="spreadsheet" ng-class="::{'edit': editing, 'view': !editing}">
@@ -56,7 +64,7 @@
   </table>
 </div>
 
-<a ng-if="::!editing && !top" ng-href="{{::page.router.volumeDescription([volume.id])}}">
+<a ng-if="::!editing" ng-href="{{::page.router.volumeDescription([volume.id])}}">
   <span class="icon download"></span>
   <span class="download" message="download.zip.title"></span>
 </a>

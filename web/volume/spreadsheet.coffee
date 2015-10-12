@@ -88,20 +88,17 @@ app.directive 'spreadsheet', [
         volume = $scope.volume
 
         Editing = $scope.editing = $attrs.edit != undefined
-        Top = $scope.top = $attrs.top != undefined
-        Top ||= undefined if Editing
-        ID = $scope.id = $attrs.id ? if Top then 'sst' else 'ss'
+        ID = $scope.id = $attrs.id ? 'ss'
         Limit = $attrs.limit
         Key = undefined
         filter = new Filter()
-        filter.set('slot', 'top', Top) if Top?
 
         pseudoCategory =
           slot:
             id: 'slot'
-            name: if Top? then pseudoMetric.top.options[Top] else 'folder'
-            not: 'No ' + (if Top then 'materials' else if Top == false then 'sessions' else 'folders')
-            metrics: if Top then ['name'] else if Top == false then ['name', 'date', 'release'] else ['top', 'name', 'date', 'release']
+            name: 'folder'
+            not: 'No folders'
+            metrics: ['top', 'name', 'date', 'release']
             fixed: true
           asset:
             id: 'asset'
@@ -323,10 +320,7 @@ app.directive 'spreadsheet', [
             unless Editing
               cats = cats.filter((i) -> Cats[i])
             cats = cats.sort(byNumber).map((i) -> constants.category[i])
-            if Top
-              cats.unshift(pseudoCategory.asset)
-            else
-              cats.push(pseudoCategory.asset)
+            cats.push(pseudoCategory.asset)
             cats.unshift(pseudoCategory.slot)
           else
             slot = [pseudoMetric.summary]
@@ -729,7 +723,7 @@ app.directive 'spreadsheet', [
           row
 
         createSlot = (info) ->
-          saveRun info.cell, volume.createContainer({top:Top}).then (slot) ->
+          saveRun info.cell, volume.createContainer($scope.filter.top).then (slot) ->
             arr(slot, 'records')
             addRow(populateSlot(slot))
 
@@ -1201,11 +1195,21 @@ app.directive 'spreadsheet', [
         $scope.setKey = (key) ->
           unedit()
           Key = $scope.key = key? && getCategory(key) || pseudoCategory.slot
-          $location.replace().search('key', if Key != pseudoCategory.slot then Key.id) unless Top
+          $location.replace().search('key', if Key != pseudoCategory.slot then Key.id)
           populate()
           $scope.tabOptionsClick = undefined
 
-        $scope.setKey($attrs.key || !Top && $location.search().key)
+        $scope.setFilters = () ->
+          unedit()
+          filter.set('slot', 'top', switch $scope.filter.top
+            when 'true'
+              true
+            when 'false'
+              false)
+          populate()
+        $scope.filter = {top:'undefined'}
+
+        $scope.setKey($attrs.key || $location.search().key)
         return
 
     ]

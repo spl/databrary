@@ -5,10 +5,7 @@
   <panel id="panel-excerpts" panel-title="excerpts.title" fold ng-if="::volume.excerpts.length">
     <volume-excerpts release></volume-excerpts>
   </panel>
-  <panel id="panel-materials" edit-link="{{::volume.checkPermission(page.permission.EDIT) ? volume.editRoute('data') : ''}}" panel-title="materials.title" fold>
-    <spreadsheet top></spreadsheet>
-  </panel>
-  <panel id="panel-sessions" panel-title="sessions.title" edit-link="{{::volume.checkPermission(page.permission.EDIT) ? volume.editRoute('data') : ''}}" fold>
+  <panel id="panel-data" panel-title="data.title" edit-link="{{::volume.checkPermission(page.permission.EDIT) ? volume.editRoute('data') : ''}}" fold>
     <spreadsheet limit="32"></spreadsheet>
   </panel>
   <panel id="panel-tags" panel-title="tags.title" fold ng-if="::page.models.Login.isAuthorized() || volume.tags" edit-link="{{::volume.checkPermission(page.permission.EDIT) ? volume.editRoute('overview')+'#overview-keywords' : ''}}">
