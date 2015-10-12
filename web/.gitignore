@@ -27,6 +27,7 @@
 /party/editGrant.js
 /party/profile.js
 /party/search.js
+/service/filter.js
 /service/offset.js
 /service/play.js
 /service/styles.js

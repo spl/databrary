@@ -1,8 +1,8 @@
 'use strict'
 
 app.directive 'spreadsheet', [
-  'constantService', 'displayService', 'messageService', 'tooltipService', 'styleService', '$compile', '$templateCache', '$timeout', '$document', '$location',
-  (constants, display, messages, tooltips, styles, $compile, $templateCache, $timeout, $document, $location) ->
+  'constantService', 'displayService', 'messageService', 'tooltipService', 'styleService', '$compile', '$templateCache', '$timeout', '$document', '$location', 'slotFilter',
+  (constants, display, messages, tooltips, styles, $compile, $templateCache, $timeout, $document, $location, Filter) ->
     maybeInt = (s) ->
       if isNaN(i = parseInt(s, 10)) then s else i
     byDefault = (a,b) -> +(a > b) || +(a == b) - 1
@@ -93,6 +93,8 @@ app.directive 'spreadsheet', [
         ID = $scope.id = $attrs.id ? if Top then 'sst' else 'ss'
         Limit = $attrs.limit
         Key = undefined
+        filter = new Filter()
+        filter.set('slot', 'top', Top) if Top?
 
         pseudoCategory =
           slot:
@@ -397,7 +399,7 @@ app.directive 'spreadsheet', [
           row
 
         populateSlots = () ->
-          for ci, slot of volume.containers when Top != !slot.top
+          for ci, slot of volume.containers when filter.apply(slot)
             populateSlot(slot)
 
         populateRecord = (record) ->
@@ -411,7 +413,7 @@ app.directive 'spreadsheet', [
             records[r] = populateRecord(record)
 
           nor = undefined
-          for s, slot of volume.containers when Top != !slot.top && slot.id != volume.top.id
+          for s, slot of volume.containers when filter.apply(slot) && slot.id != volume.top.id
             recs = slot.records
             any = false
             for rr in recs when (row = records[rr.id])
