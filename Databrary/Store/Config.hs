@@ -163,6 +163,7 @@ instance Configurable a => Configurable [a] where
 
 instance Configurable Config where
   config (Sub c) = Just c
+  config Empty = Just $ Config [] HM.empty
   config _ = Nothing
 
 instance Configurable T.Text where
