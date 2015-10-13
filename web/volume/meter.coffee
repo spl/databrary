@@ -51,7 +51,7 @@ app.directive 'volumeMeter', [
               n++
               return true if n >= 3
           title: 'Highlights selected'
-          help: 'Now that you have uploaded files, select at least three highlights from your data to represent your volume.'
+          help: 'Select at least three highlights from your data to represent your volume.'
           link: 'data'
         thumbnail:
           test: () ->
@@ -64,21 +64,21 @@ app.directive 'volumeMeter', [
           test: () ->
             for m of volume.metrics
               return true
-          title: 'Specify study design'
+          title: 'Study design specified'
           help: 'Choose the categories and fields by which you organize your data.'
           link: 'design'
         session:
           test: () ->
             for ci, c of volume.containers when !c.top
               return true
-          title: 'Create a session'
+          title: 'Created a session'
           help: 'Create at least one session in order to start uploading data.'
           link: 'data'
         record:
           test: () ->
             for ri, r of volume.records
               return true
-          title: 'Create a label'
+          title: 'Created a label'
           help: 'Enter a label to use for your data such as participant, task, condition, etc.'
           link: 'data'
         asset:
@@ -86,7 +86,7 @@ app.directive 'volumeMeter', [
             for ai, a of volume.assets when a.container
               return true
           title: 'Upload a file'
-          help: 'Upload at least one file to your volume.'
+          help: 'Upload at least one file to your volume. Start by selecting "add file" in one of your folders in the data spreadsheet.'
           link: 'data'
         share:
           name: 'share'
