@@ -1166,10 +1166,11 @@ app.directive 'spreadsheet', [
             else
               ({text:o, select: editSelect, default: input && i==0} for o, i in match)
 
-        $scope.clickMetric = (col) ->
+        $scope.clickHeader = (col) ->
           unless Editing
             $scope.filter.add(col)
-          sortBy(col)
+          if col.metric
+            sortBy(col)
 
         clickRemove = (event) ->
           return unless info = parseId(event.target.parentNode)
@@ -1222,7 +1223,7 @@ app.directive 'spreadsheet', [
             if info.category.id != 'asset'
               @list.push
                 category: info.category
-                metric: info.metric
+                metric: info.metric || constants.metricName.indicator
                 value: info.v
             return
 

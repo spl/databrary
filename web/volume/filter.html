@@ -8,8 +8,10 @@
         <option value="">any</option>
         <option ng-if="::filt.metric.type==='top'" value="true">materials</option>
         <option ng-if="::filt.metric.type==='top'" value="false">sessions</option>
-        <option ng-if="::filt.metric.type!=='top'" value="eq">is</option>
-        <option ng-if="::filt.metric.type!=='top'" value="ne">is not</option>
+        <option ng-if="::filt.metric.type==='void'" value="true">{{::filt.category.name}}</option>
+        <option ng-if="::filt.metric.type==='void'" value="false">{{::filt.category.not}}</option>
+        <option ng-if="::filt.metric.type!=='top' && filt.metric.type!=='void'" value="eq">is</option>
+        <option ng-if="::filt.metric.type!=='top' && filt.metric.type!=='void'" value="ne">is not</option>
         <option ng-if="::filt.metric.type==='text' && !filt.metric.options" value="contains">contains</option>
         <option ng-if="::filt.metric.type==='date'" value="ge">after</option>
         <option ng-if="::filt.metric.type==='date'" value="le">before</option>
