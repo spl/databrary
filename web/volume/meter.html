@@ -31,21 +31,21 @@
             <span class="icon done"></span>
             {{::metrics.citation.title}}
           </span>
-          <span ng-click="goto(metrics.citation.link)" ng-if="::!metrics.citation.done">{{::metrics.citation.help}}</span>        
+          <span ng-click="goto(metrics.citation.link)" ng-if="::!metrics.citation.done">{{::metrics.citation.help}}</span>
         </li>  
         <li ng-class="metrics.keywords.done? 'volume-meter-done' : 'clickable'">
           <span ng-if="::!!metrics.keywords.done">
             <span class="icon done"></span>
             {{::metrics.keywords.title}}
           </span>
-          <span ng-click="goto(metrics.keywords.link)" ng-if="::!metrics.keywords.done">{{::metrics.keywords.help}}</span>    
+          <span ng-click="goto(metrics.keywords.link)" ng-if="::!metrics.keywords.done">{{::metrics.keywords.help}}</span>
         </li>
       </ul>      
     </div>
 
     <div class="volume-meter-category col-desktop-15 col-tablet-9 col-mobile-6" ng-class="{'volume-meter-done': !!metrics.design.done && !!metrics.session.done && !!metrics.record.done}">
       <div class="icon done-not">
-        <span ng-if="::!!metrics.design.done && !!metrics.session.done && !!metrics.record.done" class="icon done"></span>        
+        <span ng-if="::!!metrics.design.done && !!metrics.session.done && !!metrics.record.done" class="icon done"></span>
       </div> 
       <h5>Study design and data spreadsheet.</h5>
       <p>Describe your study design, then start creating and labeling sessions in the data spreadsheet.</p>
@@ -55,7 +55,7 @@
             <span class="icon done"></span> 
             {{::metrics.design.title}}
           </span>
-          <span ng-click="goto(metrics.design.link)" ng-if="::!metrics.design.done">{{::metrics.design.help}}</span>        
+          <span ng-click="goto(metrics.design.link)" ng-if="::!metrics.design.done">{{::metrics.design.help}}</span>
         </li> 
         <li ng-class="metrics.session.done? 'volume-meter-done' : 'clickable'">
           <span ng-if="::!!metrics.session.done">
@@ -71,7 +71,7 @@
             <span class="icon done"></span>
             {{::metrics.record.title}}
           </span>
-          <span ng-click="goto(metrics.record.link)" ng-if="::!metrics.record.done">{{::metrics.record.help}}</span>        
+          <span ng-click="goto(metrics.record.link)" ng-if="::!metrics.record.done">{{::metrics.record.help}}</span>
         </li>   
       </ul>          
     </div>
@@ -124,15 +124,10 @@
 
     <div class="volume-meter-category col-desktop-15 col-tablet-9 col-mobile-6" ng-click="goto(metrics.share.link)"  ng-class="metrics.share.done? 'volume-meter-done' : 'clickable'">
       <div class="icon done-not">
-        <span ng-if="::!!metrics.share.done" class="icon done"></span>        
+        <span ng-if="::!!metrics.share.done" class="icon done"></span>
       </div> 
       <h5>{{::metrics.share.title}}</h5>
       <p ng-if="::!metrics.share.done">{{::metrics.share.help}}</p>
     </div>    
-
-
-<!--     <div ng-repeat="(n, m) in ::metrics">
-      {{::m.title}}<span ng-if="::!m.done">: {{::m.help}}</span>
-    </div> -->
   </div>
 </div>
