@@ -1,24 +1,22 @@
-<div>
-  Show
-  <ul>
-    <li ng-repeat="filt in filter.list">
-      <button class="mini icon trash" ng-click="filter.remove($index)"></button>
-      {{::filt.category.name}} {{::filt.metric.name}}
-      <select ng-model="filt.op" ng-change="filter.change()">
-        <option value="">any</option>
-        <option ng-if="::filt.metric.type==='top'" value="true">materials</option>
-        <option ng-if="::filt.metric.type==='top'" value="false">sessions</option>
-        <option ng-if="::filt.metric.type!=='top'" value="eq">is</option>
-        <option ng-if="::filt.metric.type!=='top'" value="ne">is not</option>
-        <option ng-if="::filt.metric.type==='date'" value="gt">after</option>
-        <option ng-if="::filt.metric.type==='date'" value="lt">before</option>
-        <option ng-if="::filt.metric.type==='number' || filt.metric.type==='release'" value="ge">at least</option>
-        <option ng-if="::filt.metric.type==='number' || filt.metric.type==='release'" value="le">at most</option>
-      </select>
-      <input ng-if="filt.metric.type==='text' && filt.op" type="text" ng-model="filt.value" key-enter="filter.change()"/>
-      <input ng-if="filt.metric.type==='date' && filt.op" input-date ng-model="filt.value" key-enter="filter.change()" placeholder="YYYY-MM-DD"/>
-      <input ng-if="filt.metric.type==='number' && filt.op" type="number" ng-model="filt.value" key-enter="filter.change()"/>
-      <select ng-if="filt.metric.type==='release' && filt.op" ng-model="filt.value" ng-options="c as 'release.'+page.constants.release[c]+'.title' | message for c in ::page.constants.releases" ng-change="filter.change()"></select>
-    </li>
-  </ul>
+<div class="volume-filters">
+  <b>Filter by</b>
+  <div class="volume-filter" ng-repeat="filt in filter.list">
+    <span class="volume-filter-label">{{::filt.category.name}} {{::filt.metric.name}}</span>
+    <select class="volume-filter-part" ng-model="filt.op" ng-change="filter.change()">
+      <option value="">any</option>
+      <option ng-if="::filt.metric.type==='top'" value="true">materials</option>
+      <option ng-if="::filt.metric.type==='top'" value="false">sessions</option>
+      <option ng-if="::filt.metric.type!=='top'" value="eq">is</option>
+      <option ng-if="::filt.metric.type!=='top'" value="ne">is not</option>
+      <option ng-if="::filt.metric.type==='date'" value="gt">after</option>
+      <option ng-if="::filt.metric.type==='date'" value="lt">before</option>
+      <option ng-if="::filt.metric.type==='number' || filt.metric.type==='release'" value="ge">at least</option>
+      <option ng-if="::filt.metric.type==='number' || filt.metric.type==='release'" value="le">at most</option>
+    </select>
+    <input class="volume-filter-part" ng-if="filt.metric.type==='text' && filt.op" type="text" ng-model="filt.value" key-enter="filter.change()"/>
+    <input class="volume-filter-part" ng-if="filt.metric.type==='date' && filt.op" input-date ng-model="filt.value" key-enter="filter.change()" placeholder="YYYY-MM-DD"/>
+    <input class="volume-filter-part" ng-if="filt.metric.type==='number' && filt.op" type="number" ng-model="filt.value" key-enter="filter.change()"/>
+    <select class="volume-filter-part" ng-if="filt.metric.type==='release' && filt.op" ng-model="filt.value" ng-options="c as 'release.'+page.constants.release[c]+'.title' | message for c in ::page.constants.releases" ng-change="filter.change()"></select>
+    <button class="volume-filter-remove icon trash neutral" ng-click="filter.remove($index)"></button>
+  </div>
 </div>
