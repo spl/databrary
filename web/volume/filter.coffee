@@ -19,6 +19,7 @@ app.directive 'slotFilter', [
         ge: (o,v) -> join(o, '&&', 'v>='+JSON.stringify(v))
         lt: (o,v) -> join(o, '&&', 'v<'+JSON.stringify(v))
         le: (o,v) -> join(o, '&&', 'v<='+JSON.stringify(v))
+        contains: (o,v) -> join(o, '&&', '(v&&v.includes('+JSON.stringify(v)+'))')
 
       $scope.filter.makeFilter = () ->
         exp = ['var v,c,i,r']
@@ -60,6 +61,20 @@ app.directive 'slotFilter', [
         $scope.filter.change()
 
       $scope.filter.change = $scope.filter.update
+
+      $scope.filterCompleter = (f, input) ->
+        i = input.toLowerCase()
+        match = (o for o in f.metric.options when o.toLowerCase().startsWith(i))
+        switch match.length
+          when 0 then input
+          when 1 then match[0]
+          else for o, i in match
+            text: o
+            select: () ->
+              f.value = this.text
+              $scope.filter.change()
+              this.text
+            default: input && i==0
 
       return
 ]
