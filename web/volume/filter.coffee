@@ -51,7 +51,8 @@ app.directive 'slotFilter', [
             exp.push('c['+mets.index+']=1')
           exp.push('}}for(i=0;i<'+ci+';i++)if(!c[i])return')
         exp.push('return true;')
-        #console.log(exp.join(';'))
+        if DEBUG
+          console.log(exp.join(';'))
         new Function('slot', exp.join(';'))
 
       $scope.filter.remove = (i) ->

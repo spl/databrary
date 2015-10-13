@@ -1219,11 +1219,12 @@ app.directive 'spreadsheet', [
             last = @list.pop()
             if last?.op
               @list.push(last)
-            @list.push
-              category: info.category
-              metric: info.metric
-              value: info.v
-
+            if info.category.id != 'asset'
+              @list.push
+                category: info.category
+                metric: info.metric
+                value: info.v
+            return
 
         $scope.setKey($attrs.key || $location.search().key)
         return
