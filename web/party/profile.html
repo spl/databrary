@@ -1,6 +1,6 @@
 <article class="view party-view">
   <ng-include src="'party/overview.html'"></ng-include>
-  <panel id="panel_browser" panel-title="profile.title" fold ng-if="::party.volumes || page.models.Login.isAuthorized()" class="profile">  
+  <panel id="panel_browser" panel-title="profile.title" fold ng-if="::party.volumes || page.models.Login.isAuthorized()" class="profile">
 
     <section id="profile-volumes" class="profile-volumes col-desktop-9 col-tablet-5 col-mobile-6">
       <legend class="hide-desktop hide-tablet" message="volumes.title"></legend>
@@ -72,7 +72,7 @@
             <span ng-if="member" class="icon network"></span> 
             <strong ng-bind="::'auth.member.'+page.constants.permission[member]+'.title' | message"></strong>: 
             <span ng-bind="::'auth.member.'+page.constants.permission[member]+'.description' | possessive:party"></span> 
-          </div>     
+          </div>
           <ul>
             <li ng-repeat="p in cl" ng-class="{'profile-highlight': !!p.selected}">
               <div class="profile-left-icons hide-mobile">

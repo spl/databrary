@@ -32,7 +32,7 @@
             {{::metrics.citation.title}}
           </span>
           <span ng-click="goto(metrics.citation.link)" ng-if="::!metrics.citation.done">{{::metrics.citation.help}}</span>
-        </li>  
+        </li>
         <li ng-class="metrics.keywords.done? 'volume-meter-done' : 'clickable'">
           <span ng-if="::!!metrics.keywords.done">
             <span class="icon done"></span>
@@ -40,7 +40,7 @@
           </span>
           <span ng-click="goto(metrics.keywords.link)" ng-if="::!metrics.keywords.done">{{::metrics.keywords.help}}</span>
         </li>
-      </ul>      
+      </ul>
     </div>
 
     <div class="volume-meter-category col-desktop-15 col-tablet-9 col-mobile-6" ng-class="{'volume-meter-done': !!metrics.design.done && !!metrics.session.done && !!metrics.record.done}">
@@ -63,22 +63,22 @@
             {{::metrics.session.title}}
           </span>
           <span ng-click="goto(metrics.session.link)" ng-if="::!metrics.session.done">{{::metrics.session.help}}<br>
-          <small>Click 'add folder' and select 'session' in the folder type dropdown on the left of the spreadsheet</small>
-          </span>        
-        </li>  
+            <small>Click 'add folder' and select 'session' in the folder type dropdown on the left of the spreadsheet</small>
+          </span>
+        </li>
         <li ng-class="metrics.record.done? 'volume-meter-done' : 'clickable'">
           <span ng-if="::!!metrics.record.done">
             <span class="icon done"></span>
             {{::metrics.record.title}}
           </span>
           <span ng-click="goto(metrics.record.link)" ng-if="::!metrics.record.done">{{::metrics.record.help}}</span>
-        </li>   
-      </ul>          
+        </li>
+      </ul>
     </div>
 
     <div class="volume-meter-category col-desktop-15 col-tablet-9 col-mobile-6" ng-click="goto(metrics.asset.link)" ng-class="metrics.asset.done? 'volume-meter-done' : 'clickable'">
       <div class="icon done-not">
-        <span ng-if="::!!metrics.asset.done" class="icon done"></span>        
+        <span ng-if="::!!metrics.asset.done" class="icon done"></span>
       </div> 
       <h5>{{::metrics.asset.title}}</h5>
       <p ng-if="::!metrics.asset.done">{{::metrics.asset.help}}</p>
@@ -119,7 +119,7 @@
             </small>
           </span>
         </li>
-      </ul>      
+      </ul>
     </div>
 
     <div class="volume-meter-category col-desktop-15 col-tablet-9 col-mobile-6" ng-click="goto(metrics.share.link)"  ng-class="metrics.share.done? 'volume-meter-done' : 'clickable'">
@@ -128,6 +128,6 @@
       </div> 
       <h5>{{::metrics.share.title}}</h5>
       <p ng-if="::!metrics.share.done">{{::metrics.share.help}}</p>
-    </div>    
+    </div>
   </div>
 </div>
