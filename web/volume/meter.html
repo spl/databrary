@@ -24,7 +24,7 @@
             <span class="icon done"></span>
             {{::metrics.description.title}}
           </span>
-          <span ng-click="goto(metrics.description.link)" ng-if="::!metrics.description.done">{{::metrics.description.help}}</span>        
+          <span ng-click="goto(metrics.description.link)" ng-if="::!metrics.description.done">{{::metrics.description.help}}</span>
         </li>
         <li ng-class="metrics.citation.done? 'volume-meter-done' : 'clickable'">
           <span ng-if="::!!metrics.citation.done">
