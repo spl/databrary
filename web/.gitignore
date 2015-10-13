@@ -27,7 +27,6 @@
 /party/editGrant.js
 /party/profile.js
 /party/search.js
-/service/filter.js
 /service/offset.js
 /service/play.js
 /service/styles.js
@@ -46,6 +45,7 @@
 /volume/design.js
 /volume/editLinks.js
 /volume/excerpts.js
+/volume/filter.js
 /volume/fundingSearch.js
 /volume/meter.js
 /volume/overview.js

@@ -20,13 +20,8 @@
   Return to the <a href="" ng-click="setKey('slot')">folder view</a> to edit session data.
 </div>
 
-<div ng-if="::!editing">
-  Show <select ng-model="filter.top" ng-change="setFilters()">
-    <option value="undefined">All folders</option>
-    <option value="true">Materials</option>
-    <option value="false">Sessions</option>
-  </select>
-</div>
+<slot-filter ng-if="::!editing">
+</slot-filter>
 
 <div class="spreadsheet-options">
   <a ng-if="::!editing" ng-href="{{::volume.csvRoute()}}">export data</a>

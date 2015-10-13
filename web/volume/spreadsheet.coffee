@@ -1,8 +1,8 @@
 'use strict'
 
 app.directive 'spreadsheet', [
-  'constantService', 'displayService', 'messageService', 'tooltipService', 'styleService', '$compile', '$templateCache', '$timeout', '$document', '$location', 'slotFilter',
-  (constants, display, messages, tooltips, styles, $compile, $templateCache, $timeout, $document, $location, Filter) ->
+  'constantService', 'displayService', 'messageService', 'tooltipService', 'styleService', '$compile', '$templateCache', '$timeout', '$document', '$location',
+  (constants, display, messages, tooltips, styles, $compile, $templateCache, $timeout, $document, $location) ->
     maybeInt = (s) ->
       if isNaN(i = parseInt(s, 10)) then s else i
     byDefault = (a,b) -> +(a > b) || +(a == b) - 1
@@ -91,7 +91,7 @@ app.directive 'spreadsheet', [
         ID = $scope.id = $attrs.id ? 'ss'
         Limit = $attrs.limit
         Key = undefined
-        filter = new Filter()
+        filter = (slot) -> slot.id != volume.top.id
 
         pseudoCategory =
           slot:
@@ -393,7 +393,7 @@ app.directive 'spreadsheet', [
           row
 
         populateSlots = () ->
-          for ci, slot of volume.containers when filter.apply(slot)
+          for ci, slot of volume.containers when filter(slot)
             populateSlot(slot)
 
         populateRecord = (record) ->
@@ -407,7 +407,7 @@ app.directive 'spreadsheet', [
             records[r] = populateRecord(record)
 
           nor = undefined
-          for s, slot of volume.containers when filter.apply(slot) && slot.id != volume.top.id
+          for s, slot of volume.containers when filter(slot)
             recs = slot.records
             any = false
             for rr in recs when (row = records[rr.id])
@@ -1066,7 +1066,10 @@ app.directive 'spreadsheet', [
                 ';\n text-}')
               info.cell.classList.add('selected')
 
-          edit(info) if Editing
+          if Editing
+            edit(info)
+          else if info.metric
+            $scope.filter.add(info)
           return
 
         $scope.click = (event) ->
@@ -1163,7 +1166,10 @@ app.directive 'spreadsheet', [
             else
               ({text:o, select: editSelect, default: input && i==0} for o, i in match)
 
-        $scope.clickMetric = sortBy
+        $scope.clickMetric = (col) ->
+          unless Editing
+            $scope.filter.add(col)
+          sortBy(col)
 
         clickRemove = (event) ->
           return unless info = parseId(event.target.parentNode)
@@ -1199,15 +1205,25 @@ app.directive 'spreadsheet', [
           populate()
           $scope.tabOptionsClick = undefined
 
-        $scope.setFilters = () ->
-          unedit()
-          filter.set('slot', 'top', switch $scope.filter.top
-            when 'true'
-              true
-            when 'false'
-              false)
-          populate()
-        $scope.filter = {top:'undefined'}
+        $scope.filter =
+          list:
+            [
+              category: pseudoCategory.slot
+              metric: pseudoMetric.top
+            ]
+          update: () ->
+            unedit()
+            filter = @makeFilter()
+            populate()
+          add: (info) ->
+            last = @list.pop()
+            if last?.op
+              @list.push(last)
+            @list.push
+              category: info.category
+              metric: info.metric
+              value: info.v
+
 
         $scope.setKey($attrs.key || $location.search().key)
         return
