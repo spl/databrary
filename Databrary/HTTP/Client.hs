@@ -25,6 +25,7 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.CaseInsensitive as CI
 import qualified Data.Foldable as Fold
+import Data.Function (on)
 import Data.Monoid ((<>), mempty)
 import qualified Network.HTTP.Client as HC
 import Network.HTTP.Client.TLS (tlsManagerSettings)
@@ -54,14 +55,16 @@ withResponseCookies :: (MonadIO m, MonadHas HTTPClient c m) => HC.Request -> (HC
 withResponseCookies q f = StateT $ \c -> focusIO $ \m ->
   HC.withResponse q{ HC.cookieJar = HC.cookieJar q <> Just c } m $ \r -> (, HC.responseCookieJar r) <$> f r
 
-contentTypeIs :: BS.ByteString -> BS.ByteString -> Bool
-contentTypeIs t c = t `BS.isPrefixOf` c && (BS.length c == tl || BSC.index c tl == ';') where
-  tl = BS.length t
+contentTypeEq :: BS.ByteString -> BS.ByteString -> Bool
+contentTypeEq = (==) `on` f where
+  f s
+    | Just i <- BSC.elemIndex ';' s = BS.take i s
+    | otherwise = s
 
 checkContentOk :: BS.ByteString -> Status -> ResponseHeaders -> HC.CookieJar -> Maybe SomeException
 checkContentOk ct s h cj
   | not $ statusIsSuccessful s = Just $ toException $ HC.StatusCodeException s h cj
-  | not $ Fold.any (contentTypeIs ct) ht = Just $ toException $ HC.InvalidHeader $ CI.original hContentType <> ": " <> Fold.fold ht
+  | not $ Fold.any (contentTypeEq ct) ht = Just $ toException $ HC.InvalidHeader $ CI.original hContentType <> ": " <> Fold.fold ht
   | otherwise = Nothing
   where ht = lookup hContentType h
 
