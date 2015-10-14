@@ -76,7 +76,7 @@ postRecordMeasure = action POST (pathAPI </>> pathId </> pathId) $ \(api, ri, mi
       (lift $ removeRecordMeasure $ meas "")
       (\d -> do
         r <- lift $ changeRecordMeasure $ meas d
-        when (isNothing r) $ deformError $ T.pack $ "Invalid " ++ show (metricType met)
+        when (isNothing r) $ deformError $ T.pack $ "Invalid " ++ show (metricType met) ++ (if metricType met == MeasureTypeDate then " (please use YYYY-MM-DD)" else "")
         return $ fromMaybe rec r)
   case api of
     JSON -> return $ okResponse [] $ recordJSON rec'

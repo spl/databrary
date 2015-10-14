@@ -51,16 +51,19 @@ app.factory('messageService', [
       if (!message.errors) {
         body += ' ' + constants.message('error.suffix');
       } else if (angular.isString(message.errors)) {
-        var errors = message.errors;
-        message.fn = function () {
-          // escape angular
-          window.setTimeout(function() {
-            document.open('text/html', 'replace');
-            document.write(errors); // jshint ignore:line
-            document.close();
-          }, 0);
-        };
-        body += ' <a href="">' + constants.message('error.view') + '</a>';
+        // try to guess content-type since it's not in report:
+        if (message.errors.startsWith('<')) {
+          message.fn = function () {
+            // escape angular
+            window.setTimeout(function() {
+              document.open('text/html');
+              document.write(message.errors); // jshint ignore:line
+              document.close();
+            }, 0);
+          };
+          body += ' <a href="">' + constants.message('error.view') + '</a>';
+        } else
+          body += "<br>" + $sanitize(message.errors);
       } else if (angular.isObject(message.errors)) {
         var moreBody = '';
         var messageBody = '';

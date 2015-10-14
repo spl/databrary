@@ -698,7 +698,7 @@ app.directive 'spreadsheet', [
               cell.classList.remove('saving')
               cell.classList.add('error')
               messages.addError
-                body: 'Error saving data' # FIXME
+                body: 'Could not save data' # FIXME
                 report: res
                 owner: cell
               return
