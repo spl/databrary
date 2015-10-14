@@ -53,7 +53,7 @@
     </tbody>
     <tfoot>
       <tr ng-if="more">
-        <td colspan="{{cols.length}}" class="null" ng-click="unlimit()" ng-bind="::'spreadsheet.unlimit' | message:more"></td>
+        <td colspan="{{cols.length}}" class="null" ng-click="unlimit()" ng-bind="'spreadsheet.unlimit' | message:more"></td>
       </tr>
     </tfoot>
   </table>
