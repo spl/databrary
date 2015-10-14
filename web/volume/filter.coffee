@@ -22,7 +22,7 @@ app.directive 'slotFilter', [
         ge: (o,x) -> join(o, '||', 'v<'+JSON.stringify(x))
         lt: (o,x) -> join(o, '||', 'v>='+JSON.stringify(x))
         le: (o,x) -> join(o, '||', 'v>'+JSON.stringify(x))
-        contains: (o,v,x) -> join(o, '||', '!('+v+'&&'+v+'.includes('+JSON.stringify(x)+'))')
+        contains: (o,x) -> join(o, '||', '!(v&&v.includes('+JSON.stringify(x)+'))')
       indicator = constants.metricName.indicator.id
 
       makeFilter = () ->
@@ -67,7 +67,7 @@ app.directive 'slotFilter', [
               'for(i=0;i<s.records.length;i++){if(!(r=s.records[i].record)){continue')
             for c, mets of cats when c != 'slot'
               exp.push('}else if(r.category==='+c+'){c['+mets.$index+']=1')
-              if record(mets, 'r', 's.record[i].age', 'continue')
+              if record(mets, 'r', 's.records[i].age', 'continue')
                 exp.push('c['+mets.$index+']=2')
             exp.push('}}')
             for c, mets of cats when c != 'slot'
