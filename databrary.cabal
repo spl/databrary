@@ -140,7 +140,7 @@ Executable databrary
     xml
 
   if flag(tls)
-    Build-depends: tls, warp-tls
+    Build-depends: warp-tls
 
   default-language: Haskell2010
   default-extensions: MultiParamTypeClasses, FlexibleContexts, FlexibleInstances, ScopedTypeVariables, ConstraintKinds, PatternGuards
