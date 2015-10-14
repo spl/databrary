@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Databrary.Web.All
   ( generateAllJS
+  , generateAllCSS
   ) where
 
 import Control.Monad (when, forM_)
@@ -12,8 +13,8 @@ import Databrary.Web.Types
 import Databrary.Web.Generate
 import Databrary.Web.Libs
 
-generateAllJS :: WebGenerator
-generateAllJS fo@(f, _) = do
+generateMerged :: [WebFilePath] -> WebGenerator
+generateMerged l fo@(f, _) = do
   webRegenerate
     (allocaBytes z $ \b ->
       withBinaryFile (webFileAbs f) WriteMode $ \h ->
@@ -23,10 +24,15 @@ generateAllJS fo@(f, _) = do
           hPutChar h '\n')
     [] l fo
   where
-  l = webDeps False ++ ["app.min.js"]
   copy b h i = do
     n <- hGetBufSome i b z
     when (n > 0) $ do
       hPutBuf h b n
       copy b h i
   z = 32768
+
+generateAllJS :: WebGenerator
+generateAllJS = generateMerged (webDeps False ++ ["app.min.js"])
+
+generateAllCSS :: WebGenerator
+generateAllCSS = generateMerged (cssWebDeps False)

@@ -19,7 +19,7 @@ import Databrary.Has (view)
 import Databrary.Model.Identity
 import Databrary.Action.Types
 import Databrary.Web (WebFilePath, webFileRelRaw)
-import Databrary.Web.Libs (webDeps)
+import Databrary.Web.Libs (webDeps, cssWebDeps)
 import Databrary.Controller.Web
 import Databrary.View.Html
 import Databrary.View.Template
@@ -52,9 +52,10 @@ htmlAngular debug nojs auth = H.docTypeHtml H.! ngAttribute "app" "databraryModu
         H.! HA.rel "apple-touch-icon-precomposed"
         H.! HA.href (webURL $ "icons/apple-touch-icon" <> maybe "" (BSC.cons '-') size <> ".png")
         !? (HA.sizes . byteStringValue <$> size)
-    H.link
-      H.! HA.rel "stylesheet"
-      H.! HA.href (webURL $ if isJust debug then "app.css" else "app.min.css")
+    forM_ (if isJust debug then cssWebDeps True else ["all.min.css"]) $ \css ->
+      H.link
+        H.! HA.rel "stylesheet"
+        H.! HA.href (webURL $ webFileRelRaw css)
     H.script $ do
       H.preEscapedString "window.$play={user:"
       H.unsafeLazyByteString $ JSON.encode $ identityJSON (view auth)

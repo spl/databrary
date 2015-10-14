@@ -2,6 +2,7 @@
 module Databrary.Web.Libs
   ( generateLib
   , webDeps
+  , cssWebDeps
   , webLibs
   , webIncludes
   ) where
@@ -19,7 +20,7 @@ import Databrary.Web.Generate
 prefix :: FilePath
 prefix = "bower_components"
 
-jsDeps, jsIncludes, jsLibs, jsAll :: [(FilePath, FilePath)]
+jsDeps, jsIncludes, jsAll :: [(FilePath, FilePath)]
 jsDeps = -- sourced on js pages
   [ ("jquery",              "jquery/dist")
   , ("angular",             "angular")
@@ -28,17 +29,14 @@ jsDeps = -- sourced on js pages
   , ("lodash",              "lodash")
   ]
 jsIncludes = -- included in app
-  map (\n -> ("jquery.ui." ++ n, "jquery-ui/ui")) ["core", "widget", "mouse", "slider"]
-  ++ [("slider", "angular-ui-slider/src")]
-jsLibs = -- only linked
-  [ ("jquery-ui",           "jquery-ui/ui/minified")
-  , ("jquery.csv",          "jquery-csv/src")
+  map (\n -> ("jquery.ui." ++ n, "jquery-ui/ui")) ["core", "widget", "mouse", "slider", "sortable"] ++
+  [ ("slider",              "angular-ui-slider/src")
   , ("pivot",               "pivottable/dist")
-  ] 
-jsAll = jsDeps ++ jsIncludes ++ jsLibs
+  ]
+jsAll = jsDeps ++ jsIncludes
 
 extensions :: [FilePath]
-extensions = ["js", "min.js", "min.map", "min.js.map", "css"]
+extensions = ["js", "min.js", "min.map", "min.js.map", "css", "min.css"]
 
 generateLib :: WebGenerator
 generateLib fo@(f, _)
@@ -53,8 +51,11 @@ webJS mn = map (fromString . ("lib" </>) . (<.> if mn then ".min.js" else ".js")
 webDeps :: Bool -> [WebFilePath]
 webDeps debug = webJS (not debug) jsDeps
 
+cssWebDeps :: Bool -> [WebFilePath]
+cssWebDeps debug = map (fromString . (<.> if debug then ".css" else ".min.css")) ["lib/pivot", "app"]
+
 webLibs :: [WebFilePath]
-webLibs = webJS True (jsDeps ++ jsLibs) ++ ["lib/pivot.css"]
+webLibs = webJS True jsDeps ++ ["lib/pivot.css"]
 
 webIncludes :: [WebFilePath]
 webIncludes = webJS False jsIncludes

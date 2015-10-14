@@ -39,9 +39,10 @@ fixedGenerators =
   [ ("messages.js",    generateMessagesJS)
   , ("templates.js",   generateTemplatesJS)
   , ("app.min.js",     generateUglifyJS)
-  , ("all.min.js",     generateAllJS)
   , ("app.css",        generateStylusCSS) -- not actually used in production
   , ("app.min.css",    generateStylusCSS)
+  , ("all.min.js",     generateAllJS)
+  , ("all.min.css",    generateAllCSS)
   ]
 
 generateFixed :: Bool -> WebGenerator
