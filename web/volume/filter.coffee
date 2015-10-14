@@ -8,66 +8,74 @@ app.directive 'slotFilter', [
     link: ($scope) ->
       join = (o, op, e) ->
         if o then o + op + e else e
-      ops =
+      ops = # these are all negated
         '': (o) -> o
-        any: (o) -> join(o, '&&', 'true')
-        true: (o) -> join(o, '||', 'v')
-        false: (o) -> join(o, '||', '!v')
-        eq: (o,v) -> join(o, '||', 'v=='+JSON.stringify(v))
-        ne: (o,v) -> join(o, '&&', 'v!='+JSON.stringify(v))
-        gt: (o,v) -> join(o, '&&', 'v>'+JSON.stringify(v))
-        ge: (o,v) -> join(o, '&&', 'v>='+JSON.stringify(v))
-        lt: (o,v) -> join(o, '&&', 'v<'+JSON.stringify(v))
-        le: (o,v) -> join(o, '&&', 'v<='+JSON.stringify(v))
-        contains: (o,v) -> join(o, '&&', '(v&&v.includes('+JSON.stringify(v)+'))')
+        any: (o) -> o || 'true'
+        true: (o) -> join(o, '&&', '!v')
+        false: (o) -> join(o, '&&', 'v')
+        two: (o) -> join(o, '&&', 'v!==2')
+        eq: (o,x) -> join(o, '&&', if x then 'v!='+JSON.stringify(x) else 'v')
+        ne: (o,x) -> join(o, '||', 'v=='+JSON.stringify(x))
+        gt: (o,x) -> join(o, '||', 'v<='+JSON.stringify(x))
+        ge: (o,x) -> join(o, '||', 'v<'+JSON.stringify(x))
+        lt: (o,x) -> join(o, '||', 'v>='+JSON.stringify(x))
+        le: (o,x) -> join(o, '||', 'v>'+JSON.stringify(x))
+        contains: (o,v,x) -> join(o, '||', '!('+v+'&&'+v+'.includes('+JSON.stringify(x)+'))')
       indicator = constants.metricName.indicator.id
 
-      $scope.filter.makeFilter = () ->
+      makeFilter = () ->
         exp = ['var v,c,i,r']
-        exp.push('if(slot.id==='+$scope.volume.top.id+')return')
+        exp.push('if(s.id==='+$scope.volume.top.id+')return')
         cats = {slot:{}}
         ci = 0
-        for f in @list when f.op
+        for f in $scope.filter.list when f.op
           c = f.category.id
           unless c of cats
             cats[c] =
               $index:ci++
-            cats[c][indicator] = 'v===2'
           m = f.metric.id
           cats[c][m] = ops[f.op](cats[c][m], f.value)
         for m, e of cats.slot when e
-          exp.push('v=slot.'+m,
-            'if(!('+e+'))return')
+          exp.push('v=s.'+m,
+            'if('+e+')return')
         if ci
           exp.push('c=new Uint8Array(new ArrayBuffer('+ci+'))',
-            'for(i=0;i<slot.records.length;i++){if(!(r=slot.records[i].record)){continue')
+            'for(i=0;i<s.records.length;i++){if(!(r=s.records[i].record)){continue')
           for c, mets of cats when c != 'slot'
             exp.push('}else if(r.category==='+c+'){c['+mets.$index+']=1')
-            for m, e of mets when e && m != '$index'
-              if `m == indicator`
-                exp.push('v=1')
-              else if m == 'age'
-                exp.push('v=slot.records[i].age')
+            any = false
+            for m, e of mets when e && m != '$index' && `m != indicator`
+              any = true
+              if m == 'age'
+                exp.push('v=s.records[i].age')
               else
                 exp.push('v=r.measures['+m+']')
                 if constants.metric[m].assumed
                   exp.push('if(v==null)v='+JSON.stringify(constants.metric[m].assumed))
-              exp.push('if(!('+e+'))continue')
-            exp.push('c['+mets.$index+']=2')
+              exp.push('if('+e+')continue')
+            if any
+              exp.push('c['+mets.$index+']=2')
+              cats[c][indicator] = ops.two(cats[c][indicator])
           exp.push('}}')
           for c, mets of cats when c != 'slot'
             exp.push('v=c['+mets.$index+']',
-              'if(!('+mets[indicator]+'))return')
+              'if('+mets[indicator]+')return')
         exp.push('return true;')
-        if DEBUG
-          console.log(exp.join(';'))
-        new Function('slot', exp.join(';'))
+        exp = exp.join(';')
+        console.log(exp) if DEBUG
+        exp
 
       $scope.filter.remove = (i) ->
         @list.splice(i, 1)
         $scope.filter.change()
 
-      $scope.filter.change = $scope.filter.update
+      old = undefined
+      $scope.filter.change = () ->
+        f = makeFilter()
+        return if f == old
+        old = f
+        $scope.filter.update(new Function('s', f))
+        return
 
       $scope.filterCompleter = (f, input) ->
         i = input.toLowerCase()
