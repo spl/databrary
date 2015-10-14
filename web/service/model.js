@@ -1059,6 +1059,9 @@ app.factory('modelService', [
       return this.container.route(params);
     };
 
+    // override Slot's delegation #4144
+    AssetSlot.prototype.name = undefined;
+
     Object.defineProperty(AssetSlot.prototype, 'icon', {
       get: function () {
         return '/web/images/filetype/16px/' + this.format.extension + '.svg';
