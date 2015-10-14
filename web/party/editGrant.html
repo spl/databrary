@@ -24,6 +24,7 @@
               <a ng-href="{{::auth.party.route()}}" class="permission-auth-username" ng-bind="::auth.party.name"></a><wbr>
               <span class="permission-auth-email" ng-if="::!!auth.party.email" ng-bind="::auth.party.email"></span> 
               <button ng-click="authGrantForm.deny()" class="icon trash"></button>
+              <span ng-if="!(auth.member || auth.site)" class="permission-auth-pending" message="auth.pending"></span>
             </div>
 
             <div class="col-desktop-11 col-tablet-7 col-mobile-6">
