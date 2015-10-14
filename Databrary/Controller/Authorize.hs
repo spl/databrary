@@ -106,16 +106,18 @@ postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarge
           $ BSL.fromChunks
           [ "Dear ", TE.encodeUtf8 (partyName child), ",\n\n\
             \You have been authorized by ", TE.encodeUtf8 (partyName parent), ", allowing you to access all the shared data in Databrary. \
-            \As you begin exploring, you can find illustrative videos for teaching, see how to conduct procedures, generate citations to your work, preserve data, and repurpose videos to ask new questions outside the scope of the original study.\
+            \As you begin exploring, you can find illustrative videos for teaching, see how to conduct procedures, generate citations to your work, preserve data, and repurpose shared videos to ask new questions outside the scope of the original study.\
             \\n\n\
-            \Databrary's unique 'upload-as-you-go' data management functionality also enables you to manage, organize, and preserve your videos and associated metadata in a secure web-based library. \
-            \With this feature, you can add data and video files as soon as they are collected so that they are organized and securely backed-up. \
+            \Databrary's unique video data management functionality also enables you to manage, organize, and preserve your videos and associated metadata in a secure web-based library. \
+            \With this feature, you can add data and video files as soon as soon as they are collected so that they are immediately organized and securely backed-up. \
             \Data remains private and accessible only to your lab members and collaborators until you are ready to share with the Databrary community. \
-            \Sharing is as easy as clicking a button!\
+            \When you are ready, sharing is as easy as clicking a button!\
             \\n\n\
-            \To help you get started, we've developed a template Databrary Release form for obtaining informed consent for sharing from participants, which can be found here: http://databrary.org/access/policies/release-template.html\n\
-            \It's completely adaptable and can be added to new or existing IRB protocols. \
-            \We also have lots of information and helpful tips in our User Guide: http://databrary.org/access/guide\
+            \To help you get started, we've developed a template Databrary Release form for obtaining informed consent for sharing from your participants, which can be found here: http://databrary.org/access/policies/release-template.html\n\
+            \It can be added to new or existing IRB protocols, and best of all, it's completely adaptable and can be customized as much or as little as necessary to suit your needs. \
+            \We also have lots of information and helpful tips about managing and sharing your video data in our User Guide: http://databrary.org/access/guide. \
+            \As soon as your protocol is amended to allow you to share data, you can start uploading your data from each new session. \
+            \Don't wait until your data collection is finished or your study is complete to do it--it's much easier to do it continually while your study is in progress! \
             \\n\n\
             \Our support team is dedicated to providing assistance to the Databrary community. \
             \Please contact us at support@databrary.org with any questions or for help getting started.\
