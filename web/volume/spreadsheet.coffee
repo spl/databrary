@@ -3,82 +3,6 @@
 app.directive 'spreadsheet', [
   'constantService', 'displayService', 'messageService', 'tooltipService', 'styleService', '$compile', '$templateCache', '$timeout', '$document', '$location',
   (constants, display, messages, tooltips, styles, $compile, $templateCache, $timeout, $document, $location) ->
-    maybeInt = (s) ->
-      if isNaN(i = parseInt(s, 10)) then s else i
-    byDefault = (a,b) -> +(a > b) || +(a == b) - 1
-    byNumber = (a,b) -> a-b
-    byType = (a,b) ->
-      ta = typeof a
-      tb = typeof b
-      if ta != tb
-        a = ta
-        b = tb
-      byDefault(a,b)
-    byMagic = (a,b) ->
-      if isNaN(d = a-b) then byType(a,b) else d
-    bySortId = (a,b) ->
-      (a.sort || a.id)-(b.sort || b.id)
-    parseIntish = (c) ->
-      if isNaN(i = parseInt(c, 10)) then c else i
-
-    stripPrefix = (s, prefix) ->
-      if s.startsWith(prefix) then s.substr(prefix.length)
-
-    # autovivification
-    arr = (a, f) ->
-      if f of a then a[f] else a[f] = []
-    obj = (a, f) ->
-      if f of a then a[f] else a[f] = {}
-    inc = (a, f) ->
-      if f of a then a[f]++ else
-        a[f] = 1
-        0
-
-    pseudoMetric =
-      top: # slot
-        id: 'top'
-        name: 'type'
-        type: 'top'
-        sort: -10000
-        options:
-          false: 'session'
-          true: 'materials'
-      name: # slot, asset
-        id: 'name'
-        name: 'name'
-        type: 'text'
-        sort: -9000
-      date: # slot
-        id: 'date'
-        name: 'test date'
-        type: 'date'
-        description: 'Date on which this session was acquired'
-        sort: -8000
-      release: # slot
-        id: 'release'
-        name: 'release'
-        type: 'release'
-        description: 'Level of data release to which depicted participant(s) consented'
-        sort: -7000
-      age: # record
-        id: 'age'
-        name: 'age'
-        type: 'number'
-        release: constants.release.EXCERPTS
-        sort: constants.metricName.birthdate.id + 0.5
-        description: 'Time between birthdate and test date'
-        readonly: true
-      summary: # slot
-        id: 'summary'
-        name: 'summary'
-        type: 'text'
-        sort: 10000
-        readonly: true
-    constants.deepFreeze(pseudoMetric)
-    getMetric = (m) ->
-      pseudoMetric[m] || constants.metric[m]
-
-    {
     restrict: 'E'
     scope: true
     templateUrl: 'volume/spreadsheet.html'
@@ -91,7 +15,82 @@ app.directive 'spreadsheet', [
         ID = $scope.id = $attrs.id ? 'ss'
         Limit = $attrs.limit
         Key = undefined
-        filter = (slot) -> slot.id != volume.top.id
+        Filter = () -> true
+
+        maybeInt = (s) ->
+          if isNaN(i = parseInt(s, 10)) then s else i
+        byDefault = (a,b) -> +(a > b) || +(a == b) - 1
+        byNumber = (a,b) -> a-b
+        byType = (a,b) ->
+          ta = typeof a
+          tb = typeof b
+          if ta != tb
+            a = ta
+            b = tb
+          byDefault(a,b)
+        byMagic = (a,b) ->
+          if isNaN(d = a-b) then byType(a,b) else d
+        bySortId = (a,b) ->
+          (a.sort || a.id)-(b.sort || b.id)
+        parseIntish = (c) ->
+          if isNaN(i = parseInt(c, 10)) then c else i
+
+        stripPrefix = (s, prefix) ->
+          if s.startsWith(prefix) then s.substr(prefix.length)
+
+        # autovivification
+        arr = (a, f) ->
+          if f of a then a[f] else a[f] = []
+        obj = (a, f) ->
+          if f of a then a[f] else a[f] = {}
+        inc = (a, f) ->
+          if f of a then a[f]++ else
+            a[f] = 1
+            0
+
+        pseudoMetric =
+          top: # slot
+            id: 'top'
+            name: 'type'
+            type: 'top'
+            sort: -10000
+            options:
+              false: 'session'
+              true: 'materials'
+          name: # slot, asset
+            id: 'name'
+            name: 'name'
+            type: 'text'
+            sort: -9000
+          date: # slot
+            id: 'date'
+            name: 'test date'
+            type: 'date'
+            description: 'Date on which this session was acquired'
+            sort: -8000
+          release: # slot
+            id: 'release'
+            name: 'release'
+            type: 'release'
+            description: 'Level of data release to which depicted participant(s) consented'
+            sort: -7000
+          age: # record
+            id: 'age'
+            name: 'age'
+            type: 'number'
+            release: constants.release.EXCERPTS
+            sort: constants.metricName.birthdate.id + 0.5
+            description: 'Time between birthdate and test date'
+            readonly: true
+          summary: # slot
+            id: 'summary'
+            name: 'summary'
+            type: 'text'
+            sort: 10000
+            readonly: true
+        constants.deepFreeze(pseudoMetric)
+        getMetric = (m) ->
+          pseudoMetric[m] || constants.metric[m]
 
         pseudoCategory =
           slot:
@@ -375,7 +374,6 @@ app.directive 'spreadsheet', [
         populateSlot = (slot) ->
           row = new Row()
           row.add('slot', populateSlotData(slot))
-          row.top = true if slot.top && slot.id == volume.top.id
 
           for rr in slot.records
             record = rr.record
@@ -393,7 +391,7 @@ app.directive 'spreadsheet', [
           row
 
         populateSlots = () ->
-          for ci, slot of volume.containers when filter(slot)
+          for ci, slot of volume.containers when slot != volume.top
             populateSlot(slot)
 
         populateRecord = (record) ->
@@ -407,7 +405,7 @@ app.directive 'spreadsheet', [
             records[r] = populateRecord(record)
 
           nor = undefined
-          for s, slot of volume.containers when filter(slot)
+          for ci, slot of volume.containers when slot != volume.top
             recs = slot.records
             any = false
             for rr in recs when (row = records[rr.id])
@@ -461,11 +459,7 @@ app.directive 'spreadsheet', [
               icon = cell.appendChild(document.createElement('span'))
               icon.className = 'icon release ' + constants.release[asset.release] + ' hint-release-' + constants.release[asset.release]
             else
-              if Editing && Key.id == info.c && info.row.top
-                cell.classList.add('top-level-materials')
-                delspace = cell.appendChild(document.createElement('span'))
-                delspace.className = 'icon'
-              if Editing && Key.id == info.c && !info.row.top
+              if Editing && Key.id == info.c
                 cell.classList.add('folder-type')
                 cell.classList.add('clickable')
                 del = cell.appendChild(document.createElement('a'))
@@ -480,11 +474,7 @@ app.directive 'spreadsheet', [
                 a.setAttribute('href', if Editing then slot.editRoute() else slot.route())
           switch info.metric.id
             when 'name'
-              if info.row.top && info.c == 'slot'
-                cell.classList.add('top-level-materials')
-                v ?= constants.message('materials.top')
-              else
-                v ?= ''
+              v ?= ''
             when 'release'
               cn = constants.release[v]
               cell.className = cn + ' release icon hint-release-' + cn
@@ -583,8 +573,6 @@ app.directive 'spreadsheet', [
           tr = row.tr
           tr.id = ID + '_' + i
           tr.data = i
-          if Editing && info.row.top
-            tr.className = 'top'
 
           for col in Groups
             info.category = (info.cols = col).category
@@ -631,7 +619,7 @@ app.directive 'spreadsheet', [
 
         # Generate all rows.
         generate = ->
-          for i, n in Order
+          for i in Order
             generateRow(i)
           fill()
           if Editing
@@ -643,13 +631,16 @@ app.directive 'spreadsheet', [
         # Place all rows into spreadsheet.
         fill = ->
           collapse()
-          delete $scope.more
-          for i, n in Order
-            if n >= Limit
-              $scope.more = Order.length
-              TBody.removeChild(Rows[i].tr) if Rows[i].tr.parentNode
-            else
+          n = 0
+          for i in Order
+            if Filter(Rows[i]) && n++ < Limit
               TBody.appendChild(Rows[i].tr)
+            else
+              TBody.removeChild(Rows[i].tr) if Rows[i].tr.parentNode
+          if n > Limit
+            $scope.more = n
+          else
+            delete $scope.more
           return
 
         # Populate order based on compare function applied to values.
@@ -673,11 +664,7 @@ app.directive 'spreadsheet', [
             c = col.category.id
             m = col.metric.id
             sort (i) ->
-              r = Rows[i]
-              if r.top
-                null
-              else
-                r.get(c)?[m]
+              Rows[i].get(c)?[m]
             currentSort = col
             currentSortDirection = false
           fill()
@@ -723,7 +710,8 @@ app.directive 'spreadsheet', [
           row
 
         createSlot = (info) ->
-          saveRun info.cell, volume.createContainer($scope.filter.top).then (slot) ->
+          # TODO: top
+          saveRun info.cell, volume.createContainer(false).then (slot) ->
             arr(slot, 'records')
             addRow(populateSlot(slot))
 
@@ -960,7 +948,6 @@ app.directive 'spreadsheet', [
                 # for now, just go to slot edit
                 $location.url(info.slot.editRoute({asset:info.d.id}))
                 return
-              return if info.row.top
               m = info.metric
               if m.name == 'indicator'
                 # trash/bullet: remove
@@ -1003,7 +990,6 @@ app.directive 'spreadsheet', [
                 # for now, just go to slot edit
                 $location.url(info.slot.editRoute())
                 return
-              return if info.row.top
               c = info.category
               editInput.value = (info.d?.id ? 'remove')+''
               editScope.type = 'record'
@@ -1199,12 +1185,14 @@ app.directive 'spreadsheet', [
 
         ################################# main
 
-        $scope.setKey = (key) ->
-          unedit()
-          Key = $scope.key = key? && getCategory(key) || pseudoCategory.slot
-          $location.replace().search('key', if Key != pseudoCategory.slot then Key.id)
-          populate()
-          $scope.tabOptionsClick = undefined
+        setFilter = (f) ->
+          if !f
+            Filter = () -> true
+          else if Key.id == 'slot'
+            Filter = (row) -> f(row.slot.slot)
+          else
+            Filter = (row) -> f(row.key?.record)
+          return
 
         $scope.filter =
           list:
@@ -1214,23 +1202,31 @@ app.directive 'spreadsheet', [
             ]
           update: (f) ->
             unedit()
-            filter = f
-            populate()
+            setFilter(f)
+            fill()
           add: (info) ->
             last = @list.pop()
             if last?.op
               @list.push(last)
-            return if info.category.id == 'asset'
-            return if info.category.id == 'slot' && !info.metric
+            return if info.category != Key && Key != pseudoCategory.slot || info.category == pseudoCategory.asset
             @list.push
               category: info.category
               metric: info.metric || constants.metricName.indicator
               value: info.v
             return
 
+        $scope.setKey = (key) ->
+          unedit()
+          Key = $scope.key = key? && getCategory(key) || pseudoCategory.slot
+          $location.replace().search('key', if Key != pseudoCategory.slot then Key.id)
+          if ($scope.filter.key = Key.id) != 'slot'
+            $scope.filter.list = $scope.filter.list.filter((f) -> f.category == Key && f.metric.type != 'void')
+          setFilter($scope.filter.make?())
+          populate()
+          $scope.tabOptionsClick = undefined
+
         $scope.setKey($attrs.key || $location.search().key)
         return
 
     ]
-    }
 ]
