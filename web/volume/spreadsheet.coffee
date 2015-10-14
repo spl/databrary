@@ -13,7 +13,7 @@ app.directive 'spreadsheet', [
 
         Editing = $scope.editing = $attrs.edit != undefined
         ID = $scope.id = $attrs.id ? 'ss'
-        Limit = $attrs.limit
+        Limit = $attrs.limit || Infinity
         Key = undefined
         Filter = () -> true
 
@@ -1168,7 +1168,7 @@ app.directive 'spreadsheet', [
           false
 
         $scope.unlimit = ->
-          Limit = undefined
+          Limit = Infinity
           fill()
 
         if Editing
