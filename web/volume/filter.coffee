@@ -36,24 +36,25 @@ app.directive 'slotFilter', [
               $index:ci++
           m = f.metric.id
           cats[c][m] = ops[f.op](cats[c][m], f.value)
+
+        record = (mets, rv, age, brk) ->
+          any = false
+          for m, e of mets when e && m != '$index' && `m != indicator`
+            any = true
+            if m == 'age'
+              exp.push('v='+age)
+            else
+              exp.push('v='+rv+'.measures['+m+']')
+              if constants.metric[m].assumed
+                exp.push('if(v==null)v='+JSON.stringify(constants.metric[m].assumed))
+            exp.push('if('+e+')'+brk)
+          mets[indicator] = ops[if any then 'two' else 'any'](mets[indicator])
+          any
+
         if filter.key && filter.key != 'slot'
           if mets = cats[filter.key]
             exp.push('if(s){')
-            any = false
-            for m, e of mets when e && m != '$index' && `m != indicator`
-              any = true
-              if m == 'age'
-                exp.push('v=undefined')
-              else
-                exp.push('v=s.measures['+m+']')
-                if constants.metric[m].assumed
-                  exp.push('if(v==null)v='+JSON.stringify(constants.metric[m].assumed))
-              exp.push('if('+e+')return')
-            if any
-              exp.push('v=2')
-              mets[indicator] = ops.two(mets[indicator])
-            else
-              exp.push('v=1')
+            exp.push('v='+(if record(mets, 's', 'undefined', 'return') then 2 else 1))
             exp.push('}else v=0',
               'if('+mets[indicator]+')return')
         else
@@ -66,19 +67,8 @@ app.directive 'slotFilter', [
               'for(i=0;i<s.records.length;i++){if(!(r=s.records[i].record)){continue')
             for c, mets of cats when c != 'slot'
               exp.push('}else if(r.category==='+c+'){c['+mets.$index+']=1')
-              any = false
-              for m, e of mets when e && m != '$index' && `m != indicator`
-                any = true
-                if m == 'age'
-                  exp.push('v=s.records[i].age')
-                else
-                  exp.push('v=r.measures['+m+']')
-                  if constants.metric[m].assumed
-                    exp.push('if(v==null)v='+JSON.stringify(constants.metric[m].assumed))
-                exp.push('if('+e+')continue')
-              if any
+              if record(mets, 'r', 's.record[i].age', 'continue')
                 exp.push('c['+mets.$index+']=2')
-                mets[indicator] = ops.two(mets[indicator])
             exp.push('}}')
             for c, mets of cats when c != 'slot'
               exp.push('v=c['+mets.$index+']',
