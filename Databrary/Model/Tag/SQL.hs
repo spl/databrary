@@ -38,7 +38,7 @@ makeTagUseRow w c s k t = TagUseRow t (fromMaybe False k) w (SlotId c s)
 tagUseRow :: Selector -- ' @'Tag' -> 'TagUseRow'@
 tagUseRow = addSelects '($)
   (selectColumns 'makeTagUseRow "tag_use" ["who", "container", "segment"])
-  [SelectExpr "tag_use.tableoid = 'keyword_use'::regclass::oid"]
+  [SelectExpr "tag_use.tableoid = 'keyword_use'::regclass"]
 
 selectTagUseRow :: Selector -- ^ @'TagUseId'@
 selectTagUseRow = selectJoin '($)
@@ -94,8 +94,8 @@ tagCoverageColumns :: TH.Name -- ^ @'Party'@
   -> [(String, String)]
 tagCoverageColumns acct = tagWeightColumns ++
   [ ("coverage", "segments_union(segment)")
-  , ("keywords", "segments_union(CASE WHEN tableoid = 'keyword_use'::regclass::oid THEN segment ELSE 'empty' END)")
-  , ("votes", "segments_union(CASE WHEN tableoid = 'tag_use'::regclass::oid AND who = ${partyId " ++ nameRef acct ++ "} THEN segment ELSE 'empty' END)")
+  , ("keywords", "segments_union(CASE WHEN tableoid = 'keyword_use'::regclass THEN segment ELSE 'empty' END)")
+  , ("votes", "segments_union(CASE WHEN tableoid = 'tag_use'::regclass AND who = ${partyId " ++ nameRef acct ++ "} THEN segment ELSE 'empty' END)")
   ]
 
 selectTagCoverage :: TH.Name -- ^ @'Party'@
