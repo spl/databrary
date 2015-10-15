@@ -7,11 +7,11 @@
       </div>
     </fieldset>
   </scroll-float>
-  <div class="link-label">
+  <div class="link-label row">
     <span class="col-desktop-7 col-tablet-4 col-mobile-3">Enter resource title</span>
     <span class="col-desktop-8 col-tablet-5 col-mobile-3">Enter link (URL or DOI)</span>
   </div>
-  <fieldset class="link-field clean skinny" ng-repeat="link in volumeEditLinksForm.data" ng-show="!link.removed">
+  <fieldset class="row link-field clean skinny" ng-repeat="link in volumeEditLinksForm.data" ng-show="!link.removed">
     <validator class="col-desktop-7 col-tablet-4 col-mobile-3" name="{{$index}}.head">
       <input type="text" name="{{$index}}.head" ng-model="link.head" placeholder="Title/description">
     </validator>
