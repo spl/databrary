@@ -683,7 +683,6 @@ app.directive 'spreadsheet', [
           row
 
         createSlot = (info) ->
-          # TODO: top
           saveRun info.cell, volume.createContainer(false).then (slot) ->
             arr(slot, 'records')
             addRow(populateSlot(slot))
