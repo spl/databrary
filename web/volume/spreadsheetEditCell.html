@@ -5,7 +5,7 @@
   <input ng-switch-when="date" name="edit" input-date ng-model="input.value" key-enter="unedit($event)" ng-blur="unedit($event)" key-tab="unedit($event)" key-escape="unedit(false)" placeholder="YYYY-MM-DD"/>
   <input ng-switch-when="numeric" name="edit" type="text" ng-model="input.value" key-enter="unedit($event)" ng-blur="unedit($event)" key-tab="unedit($event)" key-escape="unedit(false)"/>
   <input-completer ng-switch-when="options" input-name="edit" ng-model="input.value" min="0" completer="optionsCompleter($input)" submit="unedit($event)" key-escape="unedit(false)"></input-completer>
-  <select ng-switch-when="top" name="edit" ng-model="input.value" ng-options="k as v for (k, v) in options" key-tab="unedit($event)" key-escape="unedit(false)"/>
+  <select ng-switch-when="top" name="edit" ng-model="input.value" ng-options="k as v for (k, v) in options" key-tab="unedit($event)" key-escape="unedit(false)"></select>
   <select ng-switch-when="release" name="edit" ng-model="input.value" ng-options="c as 'release.'+constants.release[c]+'.title' | message for c in ::constants.releases" key-tab="unedit($event)" key-escape="unedit(false)"></select>
   <select ng-switch-when="record" name="edit" ng-model="input.value" ng-options="id as label for (id, label) in options" key-tab="unedit($event)" key-escape="unedit(false)"></select>
   <select ng-switch-when="metric" name="edit" ng-model="input.value" ng-options="m.id as m.name for m in options track by m.id" key-escape="unedit(false)"></select>

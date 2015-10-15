@@ -489,7 +489,7 @@ app.directive 'spreadsheet', [
         generateAdd = (info, td) ->
           info.m = info.cols.start
           width = info.width || info.cols.metrics.length
-          if typeof info.metric.id == 'number' && info.metric.type != 'void'
+          if info.metric.type == 'top' || typeof info.metric.id == 'number' && info.metric.type != 'void'
             info.id = ID+'-'+info.i+'_'+info.cols.start+(if info.hasOwnProperty('n') then '_'+info.n else '')
             info.cell = info.tr.appendChild(document.createElement('td'))
             generateText(info)
@@ -700,10 +700,10 @@ app.directive 'spreadsheet', [
 
         removeRow = (i) ->
           unedit(false)
-          [row] = Rows.splice(i, 1)
+          row = Rows[i]
+          delete Rows[i]
           TBody.removeChild(row.tr) if row.tr.parentNode
           Order.remove(i)
-          Order = Order.map (j) -> j - (j > i)
           return
 
         removeSlot = (info) ->
