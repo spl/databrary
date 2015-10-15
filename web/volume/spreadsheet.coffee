@@ -15,7 +15,6 @@ app.directive 'spreadsheet', [
         ID = $scope.id = $attrs.id ? 'ss'
         Limit = $attrs.limit || Infinity
         Key = undefined
-        Filter = () -> true
 
         maybeInt = (s) ->
           if isNaN(i = parseInt(s, 10)) then s else i
@@ -141,6 +140,7 @@ app.directive 'spreadsheet', [
           constructor: (i) ->
             @i = i ? Rows.length
             Rows[@i] = this
+            @filt = true
             return
 
           add: (c, d) ->
@@ -421,24 +421,6 @@ app.directive 'spreadsheet', [
               d.summary = (rrr.record.displayName for rrr in recs).join(', ')
               nor.add('slot', d)
               
-        # Call all populate functions
-        populate = ->
-          foot = Rows[-1]
-          Rows = []
-          if bySlot = Key == pseudoCategory.slot
-            populateSlots()
-          else
-            populateRecords()
-          if Order.length != Rows.length
-            Order = if Rows.length then [0..Rows.length-1] else []
-          $(TBody).empty()
-          Expanded = undefined
-          Rows[-1] = foot if foot
-          populateCols(bySlot)
-          generate()
-          tooltips.clear()
-          return
-
         ################################# Generate HTML
 
         # Add or replace the text contents of cell c for measure/type m with value v
@@ -617,15 +599,6 @@ app.directive 'spreadsheet', [
                   info.cell = document.getElementById(premid + n)
                   generateText(info) if info.cell
 
-        # Generate all rows.
-        generate = ->
-          for i in Order
-            generateRow(i)
-          fill()
-          if Editing
-            generateFoot()
-          return
-
         ################################# Place DOM elements
 
         # Place all rows into spreadsheet.
@@ -633,7 +606,7 @@ app.directive 'spreadsheet', [
           collapse()
           n = 0
           for i in Order
-            if Filter(Rows[i]) && n++ < Limit
+            if Rows[i].filt && n++ < Limit
               TBody.appendChild(Rows[i].tr)
             else
               TBody.removeChild(Rows[i].tr) if Rows[i].tr.parentNode
@@ -727,9 +700,10 @@ app.directive 'spreadsheet', [
 
         removeRow = (i) ->
           unedit(false)
+          [row] = Rows.splice(i, 1)
+          TBody.removeChild(row.tr) if row.tr.parentNode
           Order.remove(i)
           Order = Order.map (j) -> j - (j > i)
-          populate()
           return
 
         removeSlot = (info) ->
@@ -737,7 +711,7 @@ app.directive 'spreadsheet', [
           saveRun info.cell, info.slot.remove().then (done) ->
             unless done
               messages.add
-                body: constants.message('slot.remove.notempty')
+                body: "You must remove all associated records and files before you can remove this folder."
                 type: 'red'
                 owner: info.cell
               return
@@ -748,7 +722,7 @@ app.directive 'spreadsheet', [
           saveRun info.cell, info.record.remove().then (done) ->
             unless done
               messages.add
-                body: constants.message('record.remove.notempty')
+                body: "You must remove all associated sessions and materials before you can remove this " + info.category.name + "."
                 type: 'red'
                 owner: info.cell
               return
@@ -1187,11 +1161,14 @@ app.directive 'spreadsheet', [
 
         setFilter = (f) ->
           if !f
-            Filter = () -> true
+            for row in Rows
+              row.filt = true
           else if Key.id == 'slot'
-            Filter = (row) -> f(row.slot.slot)
+            for row in Rows
+              row.filt = f(row.slot.slot)
           else
-            Filter = (row) -> f(row.key?.record)
+            for row in Rows
+              row.filt = f(row.key?.record)
           return
 
         $scope.filter =
@@ -1215,14 +1192,36 @@ app.directive 'spreadsheet', [
               value: info.v
             return
 
+        # Call all populate functions
+        populate = ->
+          foot = Rows[-1]
+          Rows = []
+          if bySlot = Key == pseudoCategory.slot
+            populateSlots()
+          else
+            populateRecords()
+          if Order.length != Rows.length
+            Order = if Rows.length then [0..Rows.length-1] else []
+          $(TBody).empty()
+          Expanded = undefined
+          Rows[-1] = foot if foot
+          populateCols(bySlot)
+          for i in Order
+            generateRow(i)
+          if Editing
+            generateFoot()
+          tooltips.clear()
+          return
+
         $scope.setKey = (key) ->
           unedit()
           Key = $scope.key = key? && getCategory(key) || pseudoCategory.slot
           $location.replace().search('key', if Key != pseudoCategory.slot then Key.id)
           if ($scope.filter.key = Key.id) != 'slot'
             $scope.filter.list = $scope.filter.list.filter((f) -> f.category == Key && f.metric.type != 'void')
-          setFilter($scope.filter.make?())
           populate()
+          setFilter($scope.filter.make?())
+          fill()
           $scope.tabOptionsClick = undefined
 
         $scope.setKey($attrs.key || $location.search().key)
