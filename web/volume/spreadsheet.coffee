@@ -390,7 +390,7 @@ app.directive 'spreadsheet', [
 
           row
 
-        populateSlots = () ->
+        populateSlots = ->
           for ci, slot of volume.containers when slot != volume.top
             populateSlot(slot)
 
@@ -399,7 +399,7 @@ app.directive 'spreadsheet', [
           row.add(record.category, populateRecordData(record))
           row
 
-        populateRecords = () ->
+        populateRecords = ->
           records = {}
           for r, record of volume.records when record.category == Key.id
             records[r] = populateRecord(record)
@@ -777,7 +777,7 @@ app.directive 'spreadsheet', [
             v = v == 'true' if info.metric.id == 'top'
             data[info.metric.id] = v ? ''
             return if `info.slot[info.metric.id] == v`
-            saveRun info.cell, info.slot.save(data).then () ->
+            saveRun info.cell, info.slot.save(data).then ->
               updateDatum(info, v)
               return
           else if info.c == 'asset'
@@ -785,12 +785,12 @@ app.directive 'spreadsheet', [
             t = info.metric.id
             data[t] = v ? ''
             return if info.asset[t] == data[t]
-            saveRun info.cell, info.asset.save(data).then () ->
+            saveRun info.cell, info.asset.save(data).then ->
               updateDatum(info, v)
               return
           else
             return if info.record.measures[info.metric.id] == v
-            saveRun info.cell, info.record.measureSet(info.metric.id, v).then () ->
+            saveRun info.cell, info.record.measureSet(info.metric.id, v).then ->
               updateDatum(info, v)
               return
 
@@ -1079,7 +1079,7 @@ app.directive 'spreadsheet', [
           if info.d
             if input == info.record.measures[info.metric.id]
               add("Keep " + info.record.displayName,
-                () -> return,
+                -> return,
                 true)
             if !input
               add("Remove " + info.record.displayName + " from this session",
@@ -1158,6 +1158,12 @@ app.directive 'spreadsheet', [
 
         ################################# main
 
+        $scope.pivot =
+          show: ->
+            @run(Rows)
+          hide: ->
+            @clear()
+
         setFilter = (f) ->
           if !f
             for row in Rows
@@ -1168,6 +1174,8 @@ app.directive 'spreadsheet', [
           else
             for row in Rows
               row.filt = f(row.key?.record)
+          if $scope.pivot.active
+            $scope.pivot.show()
           return
 
         $scope.filter =
