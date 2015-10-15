@@ -56,6 +56,16 @@ app.factory('displayService', [
     var ageKeys = ['auto', 'day', 'month', 'year'];
     display.age = storage.get('displayAge') || 'auto';
 
+    display.ageMode = function (days) {
+      if (display.age !== 'auto')
+        return display.age;
+      if (days < 3*constants.age.month)
+        return 'day';
+      if (days < 37*constants.age.month)
+        return 'month';
+      return 'year';
+    };
+
     display.toggleAge = function () {
       display.age = ageKeys[(ageKeys.indexOf(display.age) + 1) % ageKeys.length];
       $rootScope.$broadcast('displayService-toggleAge', display.age);

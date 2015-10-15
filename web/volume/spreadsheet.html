@@ -22,9 +22,13 @@
 
 <slot-filter ng-if="::!editing">
 </slot-filter>
+<volume-pivot ng-if="::!editing">
+</volume-pivot>
 
-<div class="spreadsheet-options">
-  <a ng-if="::!editing" ng-href="{{::volume.csvRoute()}}">export data</a>
+<div ng-if="::!editing" class="spreadsheet-options">
+  <a ng-href="{{::volume.csvRoute()}}">export</a> | 
+  <a ng-if="!pivot.active" ng-click="pivot.show()">summarize</a>
+  <a ng-if="pivot.active" ng-click="pivot.hide()">hide summary</a>
 </div>
 
 <div class="spreadsheet" ng-class="::{'edit': editing, 'view': !editing}">

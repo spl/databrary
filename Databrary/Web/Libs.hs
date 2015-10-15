@@ -21,17 +21,17 @@ prefix :: FilePath
 prefix = "bower_components"
 
 jsDeps, jsIncludes, jsAll :: [(FilePath, FilePath)]
-jsDeps = -- sourced on js pages
+jsDeps = -- included in all
   [ ("jquery",              "jquery/dist")
   , ("angular",             "angular")
   , ("angular-route",       "angular-route")
   , ("ng-flow-standalone",  "ng-flow/dist")
+  , ("pivot",               "pivottable/dist")
   , ("lodash",              "lodash")
   ]
-jsIncludes = -- included in app
+jsIncludes = -- included in app (along with our js)
   map (\n -> ("jquery.ui." ++ n, "jquery-ui/ui")) ["core", "widget", "mouse", "slider", "sortable"] ++
   [ ("slider",              "angular-ui-slider/src")
-  , ("pivot",               "pivottable/dist")
   ]
 jsAll = jsDeps ++ jsIncludes
 
