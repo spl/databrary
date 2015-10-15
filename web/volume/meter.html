@@ -19,26 +19,26 @@
       <h5>Add more volume information</h5>
       <p>Make it easier for others to find your volume.</p>
       <ul ng-if="::!metrics.description.done || !metrics.citation.done || !metrics.keywords.done">
-        <li ng-class="metrics.description.done? 'volume-meter-done' : 'clickable'">
+        <li ng-class="{'volume-meter-done': metrics.description.done}">
           <span ng-if="::!!metrics.description.done">
             <span class="icon done"></span>
             {{::metrics.description.title}}
           </span>
-          <span ng-click="goto(metrics.description.link)" ng-if="::!metrics.description.done">{{::metrics.description.help}}</span>
+          <span ng-click="goto(metrics.description.link)" ng-if="::!metrics.description.done" class="clickable">{{::metrics.description.help}}</span>
         </li>
-        <li ng-class="metrics.citation.done? 'volume-meter-done' : 'clickable'">
+        <li ng-class="{'volume-meter-done': metrics.citation.done}">
           <span ng-if="::!!metrics.citation.done">
             <span class="icon done"></span>
             {{::metrics.citation.title}}
           </span>
-          <span ng-click="goto(metrics.citation.link)" ng-if="::!metrics.citation.done">{{::metrics.citation.help}}</span>
+          <span ng-click="goto(metrics.citation.link)" ng-if="::!metrics.citation.done" class="clickable">{{::metrics.citation.help}}</span>
         </li>
-        <li ng-class="metrics.keywords.done? 'volume-meter-done' : 'clickable'">
+        <li ng-class="{'volume-meter-done': metrics.keywords.done}">
           <span ng-if="::!!metrics.keywords.done">
             <span class="icon done"></span>
             {{::metrics.keywords.title}}
           </span>
-          <span ng-click="goto(metrics.keywords.link)" ng-if="::!metrics.keywords.done">{{::metrics.keywords.help}}</span>
+          <span ng-click="goto(metrics.keywords.link)" ng-if="::!metrics.keywords.done" class="clickable">{{::metrics.keywords.help}}</span>
         </li>
       </ul>
     </div>
@@ -99,7 +99,7 @@
             <span class="icon done"></span>
             {{::metrics.excerpts.title}}
           </span>
-          <span ng-click="goto(metrics.excerpts.link)" ng-if="::!metrics.excerpts.done">
+          <span ng-click="goto(metrics.excerpts.link)" ng-if="::!metrics.excerpts.done" class="clickable">
             {{::metrics.excerpts.help}}<br>
             <small>
               <b>Clicking will take you to the data spreadsheet<br></b>
@@ -112,7 +112,7 @@
             <span class="icon done"></span>
             {{::metrics.thumbnail.title}}
           </span>
-          <span ng-click="goto(metrics.thumbnail.link)" ng-if="::!metrics.thumbnail.done">
+          <span ng-click="goto(metrics.thumbnail.link)" ng-if="::!metrics.thumbnail.done" class="clickable">
             {{::metrics.thumbnail.help}}<br>
             <small>
               <b>Clicking will take you to the data spreadsheet. </b>Select 'Public' in the sharing level dropdown, and the highlight will automatically be used as your volume thumbnail.
