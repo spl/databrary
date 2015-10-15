@@ -8,36 +8,6 @@ app.directive('partyNetwork', [
     templateUrl: 'party/network.html',
     scope: false,
     link: function ($scope) {
-      var actionMessages = {};
-
-      $scope.$on('$destroy', function () {
-        _.each(actionMessages, function (bundle) {
-          bundle.message.remove();
-        });
-      });
-
-      $scope.isAdmin = $scope.party.checkPermission(constants.permission.ADMIN);
-      if ($scope.isAdmin)
-      _.each($scope.party.children, function (party) {
-        if (!party.member && !party.site) {
-          if (!actionMessages[party.id]) {
-            actionMessages[party.id] = {
-              party: party,
-              message: messages.add({
-                type: 'yellow',
-                persist: true,
-                body: $sce.trustAsHtml('<span>' + constants.message('auth.notice.pending', {sce:$sce.HTML}, party.party.name) + ' <a href="' + $scope.party.editRoute('grant') + '#auth-' + party.party.id + '">Manage</a>.</span>')
-              })
-            };
-          }
-          else {
-            actionMessages[party.id].party = party;
-          }
-        }
-      });
-
-      //
-
       var user = models.Login.user.id;
       function isUser(a) {
         return a.party.id === user;

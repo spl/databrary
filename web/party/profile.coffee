@@ -1,8 +1,8 @@
 'use strict'
 
 app.controller 'party/profile', [
-  '$rootScope', '$scope', '$location', '$filter', 'displayService', 'constantService', 'modelService', 'messageService', 'party'
-  ($rootScope, $scope, $location, $filter, display, constants, models, messages, party) ->
+  '$rootScope', '$scope', '$location', '$filter', '$sce', 'displayService', 'constantService', 'modelService', 'messageService', 'party'
+  ($rootScope, $scope, $location, $filter, $sce, display, constants, models, messages, party) ->
     display.title = party.name
     $scope.party = party
 
@@ -131,6 +131,10 @@ app.controller 'party/profile', [
       p = Party.make(a.party)
       p.child = a
       (parties.children[a.member] || (parties.children[a.member] = [])).push(p)
+      unless a.member || a.site
+        messages.add
+          type: 'yellow',
+          body: $sce.trustAsHtml('<span>' + constants.message('auth.notice.pending', {sce:$sce.HTML}, a.party.name) + ' <a href="' + party.editRoute('grant') + '#auth-' + a.party.id + '">Manage</a>.</span>')
     parties.collaborators = (Party.all[pi] for pi of collaborators)
 
     stringSort = (a,b) -> +(a > b) || +(a == b) - 1
