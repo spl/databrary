@@ -459,6 +459,7 @@ INSERT INTO "format" ("mimetype", "extension", "name") VALUES ('video/x-ms-wmv',
 INSERT INTO "format" ("mimetype", "extension", "name") VALUES ('text/x-chat',									ARRAY['cha','chat'], 'Codes for the Human Analysis of Transcripts');
 INSERT INTO "format" ("mimetype", "extension", "name") VALUES ('audio/aac',								        ARRAY['aac'], 'Advanced Audio Coding');
 INSERT INTO "format" ("mimetype", "extension", "name") VALUES ('audio/x-ms-wma',								ARRAY['wma'], 'Windows Media audio');
+INSERT INTO "format" ("mimetype", "extension", "name") VALUES ('application/vnd.lena.interpreted-time-segments',				ARRAY['its'], 'LENA Interpreted Time Segments');
 
 -- The privledged formats with special handling (image and video for now) have hard-coded IDs:
 INSERT INTO "format" ("id", "mimetype", "extension", "name") VALUES (-800, 'video/mp4',								ARRAY['mp4'], 'MPEG-4 video');
