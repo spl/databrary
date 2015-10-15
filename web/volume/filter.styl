@@ -15,8 +15,8 @@
 .volume-filter-label
   padding-right b4
  
-select.volume-filter-part
-input.volume-filter-part
+select.volume-filter-part //necessary to override select styles
+.volume-filter-part
 .volume-filter-part > input
   width auto
   position relative
@@ -28,9 +28,12 @@ input.volume-filter-part
   margin 0
   padding-height 0
   box-shadow none
-  border-collapse collapse
+  display inline-block
   &:focus
     box-shadow none
+
+.volume-filter-part >input-completer
+  display inline-block
 
 select.volume-filter-part
   padding-right b1
