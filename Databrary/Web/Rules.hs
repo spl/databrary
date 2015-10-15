@@ -26,6 +26,7 @@ import Databrary.Web.Stylus
 import Databrary.Web.Libs
 import Databrary.Web.JSHint
 import Databrary.Web.All
+import Databrary.Web.GZip
 
 staticGenerators :: [(FilePath, WebGenerator)]
 staticGenerators =
@@ -60,6 +61,7 @@ generateRules a f = msum $ map ($ f)
   , generateLib
   , checkJSHint
   , generateStatic
+  , generateGZip
   ]
 
 updateWebInfo :: WebFilePath -> WebGeneratorM WebFileInfo

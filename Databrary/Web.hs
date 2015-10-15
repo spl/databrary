@@ -6,7 +6,8 @@ module Databrary.Web
   , webFileAbsRaw
   , webDir
   , webDirRaw
-  , splitWebFileExtensions
+  , splitWebExtensions
+  , splitWebExtension
   , replaceWebExtension
   ) where
 
@@ -63,9 +64,13 @@ instance IsFilePath WebFilePath where
   WebFilePath f fa r ra </> WebFilePath f' _ r' _ = WebFilePath (f FP.</> f') (fa FP.</> f') (r RFP.</> r') (ra RFP.</> r')
   WebFilePath f fa r ra <.> WebFilePath f' _ r' _ = WebFilePath (f FP.<.> f') (fa FP.<.> f') (r RFP.<.> r') (ra RFP.<.> r')
 
-splitWebFileExtensions :: WebFilePath -> (WebFilePath, BS.ByteString)
-splitWebFileExtensions f =
+splitWebExtensions :: WebFilePath -> (WebFilePath, BS.ByteString)
+splitWebExtensions f =
   first (makeWebFilePath (FP.dropExtensions $ webFileRel f)) $ RFP.splitExtensions $ webFileRelRaw f
+
+splitWebExtension :: WebFilePath -> (WebFilePath, BS.ByteString)
+splitWebExtension f =
+  first (makeWebFilePath (FP.dropExtension $ webFileRel f)) $ RFP.splitExtension $ webFileRelRaw f
 
 replaceWebExtension :: String -> WebFilePath -> WebFilePath
 replaceWebExtension e (WebFilePath f fa r ra) = WebFilePath (FP.replaceExtension f e) (FP.replaceExtension fa e) (RFP.replaceExtension r re) (RFP.replaceExtension ra re) where re = BSC.pack e

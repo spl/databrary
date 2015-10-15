@@ -15,7 +15,7 @@ import Databrary.Web.Generate
 
 generateCoffeeJS :: WebGenerator
 generateCoffeeJS fo@(f, _)
-  | (b, e) <- splitWebFileExtensions f, e `elem` [".js", ".js.map"] = do
+  | (b, e) <- splitWebExtensions f, e `elem` [".js", ".js.map"] = do
     let src = b <.> ".coffee"
     webRegenerate
       (callProcess (binDir </> "coffee") ["-b", "-c", "-m", "-o", takeDirectory (webFileAbs f), webFileAbs src])
