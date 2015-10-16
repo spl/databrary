@@ -52,6 +52,11 @@ pathStatic = invMap parseStaticPath (maybe [] $ map TE.decodeLatin1 . splitDirec
 webFile :: ActionRoute (Maybe StaticPath)
 webFile = action GET ("web" >/> pathStatic) $ \sp -> withoutAuth $ do
   StaticPath p <- maybeAction sp
-  (wf, wfi) <- either (result . response notFound404 [] . T.pack) return =<< focusIO (lookupWebFile p)
-  let wfp = toRawFilePath wf
-  serveFile wfp (unknownFormat{ formatMimeType = webFileFormat wfi }) Nothing (convertToBase Base16 $ webFileHash wfi)
+  (wf, wfi) <- 
+#ifdef DEVEL
+    either (result . response notFound404 [] . T.pack) return
+#else
+    maybeAction
+#endif
+    =<< focusIO (lookupWebFile p)
+  serveFile (toRawFilePath wf) (unknownFormat{ formatMimeType = webFileFormat wfi }) Nothing (convertToBase Base16 $ webFileHash wfi)

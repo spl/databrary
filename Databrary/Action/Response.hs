@@ -9,7 +9,9 @@ module Databrary.Action.Response
   , proxyResponse
   ) where
 
+import Control.Applicative ((<$>))
 import Control.Exception (Exception, throwIO, handle)
+import Control.Monad (join)
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import qualified Data.Aeson as JSON
 import qualified Data.ByteString as BS
@@ -23,6 +25,7 @@ import Data.Typeable (Typeable)
 import qualified Network.HTTP.Client as HC
 import Network.HTTP.Types (ResponseHeaders, Status, ok200, hContentType)
 import Network.Wai (Response, responseBuilder, responseLBS, StreamingBody, responseStream, FilePart(..), responseFile, responseStatus)
+import System.Posix.Types (FileOffset)
 import qualified Text.Blaze.Html as Html
 import qualified Text.Blaze.Html.Renderer.Utf8 as Html
 
@@ -57,6 +60,9 @@ instance IsFilePath f => ResponseData (f, Maybe FilePart) where
 
 instance IsFilePath f => ResponseData (f, FilePart) where
   response s h (f, p) = response s h (f, Just p)
+
+instance IsFilePath f => ResponseData (f, Maybe FileOffset) where
+  response s h (f, z) = response s h (f, join (FilePart 0) . toInteger <$> z)
 
 instance ResponseData String where
   response s h =

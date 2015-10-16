@@ -7,24 +7,33 @@ module Databrary.HTTP.File
 import Control.Monad (when, mfilter)
 import Control.Monad.IO.Class (liftIO)
 import qualified Data.ByteString as BS
+import qualified Data.ByteString.Char8 as BSC
+import Data.Char (toLower)
 import qualified Data.Foldable as Fold
+import Data.Maybe (isJust)
 import Data.Monoid ((<>))
-import Network.HTTP.Types (ResponseHeaders, hLastModified, hContentType, hCacheControl, hIfModifiedSince, notModified304, hIfRange)
-import qualified Network.Wai as Wai
+import Network.HTTP.Types (ResponseHeaders, hLastModified, hContentType, hCacheControl, hIfModifiedSince, notModified304, hIfRange, hContentEncoding)
+import System.Posix.Types (FileOffset)
 
 import Databrary.Ops
-import Databrary.Has (peek)
+import Databrary.Has
 import Databrary.Files
 import Databrary.HTTP.Request
 import Databrary.HTTP
 import Databrary.Action
 import Databrary.Model.Format
 
-fileResponse :: RawFilePath -> Format -> Maybe BS.ByteString -> BS.ByteString -> ActionM (ResponseHeaders, Maybe Wai.FilePart)
-fileResponse file fmt save etag = do
+bsLCEq :: BS.ByteString -> BS.ByteString -> Bool
+bsLCEq t s
+  | BS.length t == BS.length s = t == BSC.map toLower s
+  | otherwise = False
+
+fileResponse :: RawFilePath -> Bool -> Format -> Maybe BS.ByteString -> BS.ByteString -> ActionM (ResponseHeaders, (RawFilePath, Maybe FileOffset))
+fileResponse file agz fmt save etag = do
   (sz, mt) <- maybeAction =<< liftIO (fileInfo file)
-  let szi = toInteger sz
-      fh = 
+  gzi <- liftIO $ if agz then mfilter ((sz >) . (24 +) . fst) <$> fileInfo filegz else return Nothing
+  let gz = isJust gzi
+      fh =
         [ ("etag", quoteHTTP etag)
         , (hLastModified, formatHTTPTimestamp mt)
         , (hContentType, formatMimeType fmt)
@@ -38,12 +47,14 @@ fileResponse file fmt save etag = do
         | null ifnm = Fold.any (mt <=) $ (parseHTTPTimestamp =<<) $ lookupRequestHeader hIfModifiedSince req
         | otherwise = any (\m -> m == "*" || m == etag) ifnm
   when notmod $ result $ emptyResponse notModified304 fh
-  let ifrng = unquoteHTTP <$> lookupRequestHeader hIfRange req
-      part = mfilter (etag /=) ifrng $> -- allow range detection
-        Wai.FilePart 0 szi szi -- force full file
-  return (fh, part)
+  let part = maybe sz fst gzi <? -- allow range detection or force full file
+        Fold.any ((etag /=) . unquoteHTTP) (lookupRequestHeader hIfRange req)
+  return
+    ( (if gz then ((hContentEncoding, "gzip") :) else id) fh
+    , (if gz then filegz else file, part))
+  where filegz = file <.> "gz"
 
 serveFile :: RawFilePath -> Format -> Maybe BS.ByteString -> BS.ByteString -> ActionM Response
 serveFile file fmt save etag = do
-  (fh, part) <- fileResponse file fmt save etag
-  return $ okResponse fh (file, part)
+  agz <- any (bsLCEq "gzip") . concatMap splitHTTP <$> peeks (lookupRequestHeaders "accept-encoding")
+  uncurry okResponse <$> fileResponse file agz fmt save etag

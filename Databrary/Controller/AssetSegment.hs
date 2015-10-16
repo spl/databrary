@@ -8,6 +8,7 @@ module Databrary.Controller.AssetSegment
   ) where
 
 import Control.Monad ((<=<), join, when, mfilter)
+import Control.Monad.IO.Class (liftIO)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Char8 as BSC
@@ -22,6 +23,7 @@ import Text.Read (readMaybe)
 import Databrary.Ops
 import Databrary.Has (view, peeks)
 import qualified Databrary.JSON as JSON
+import Databrary.Files (fileInfo)
 import Databrary.Model.Id
 import Databrary.Model.Permission
 import Databrary.Model.Volume
@@ -76,12 +78,14 @@ serveAssetSegment dl as = do
   sz <- peeks $ readMaybe . BSC.unpack <=< join . listToMaybe . lookupQueryParameters "size"
   when dl $ auditAssetSegmentDownload True as
   store <- maybeAction =<< getAssetFile a
-  (hd, part) <- fileResponse store (view as) (dl ?> makeFilename (assetSegmentDownloadName as)) (BSL.toStrict $ BSB.toLazyByteString $
+  (hd, (_, part)) <- fileResponse store False (view as) (dl ?> makeFilename (assetSegmentDownloadName as)) (BSL.toStrict $ BSB.toLazyByteString $
     BSB.byteStringHex (fromJust (assetSHA1 a)) <> BSB.string8 (assetSegmentTag as sz))
   either
-    (okResponse hd)
-    (okResponse hd . (, part))
-    <$> getAssetSegmentStore as sz
+    (return . okResponse hd)
+    (\f -> do
+      Just (z, _) <- liftIO $ fileInfo f
+      return $ okResponse hd (f, z <$ part))
+    =<< getAssetSegmentStore as sz
   where
   a = slotAsset $ segmentAsset as
 
