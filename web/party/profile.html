@@ -8,7 +8,7 @@
         <div class="profile-section-header">
           <strong ng-bind="::'profile.volumes.'+vl.type+'.title' | message:vl.parent.party.name"></strong> 
           <a ng-if="::vl.type === 'individual' && party.authorization >= page.constants.permission.EDIT || vl.parent.parent.member >= page.constants.permission.ADMIN" ng-href="{{page.router.volumeCreate([vl.parent.party.id])}}" class="button mini small white">Create volume</a>
-          <div class="profile-additional" ng-if="::!!vl.parent">
+          <div class="profile-additional small" ng-if="::!!vl.parent">
             <span ng-bind="('auth.member.'+page.constants.permission[vl.parent.parent.member]+'.title' | message)+': '+('auth.member.'+page.constants.permission[vl.parent.parent.member]+'.description' | message:'their')"></span>
           </div>
         </div>
