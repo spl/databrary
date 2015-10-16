@@ -2,6 +2,7 @@
 *.min.*
 *.map
 *.js.hinted
+*.gz
 /constants.js
 /constants.json
 /messages.js

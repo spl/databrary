@@ -6,7 +6,9 @@ module Databrary.Controller.Angular
   ) where
 
 import Control.Arrow (second)
+#ifdef DEVEL
 import Control.Monad.IO.Class (liftIO)
+#endif
 import qualified Data.ByteString.Builder as BSB
 import Data.Default.Class (Default(..))
 import qualified Data.Foldable as Fold
