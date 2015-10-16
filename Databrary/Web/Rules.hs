@@ -61,8 +61,8 @@ generateRules a f = msum $ map ($ f)
   , generateCoffeeJS
   , generateLib
   , checkJSHint
-  , generateStatic
   , generateGZip
+  , generateStatic
   ]
 
 updateWebInfo :: WebFilePath -> WebGeneratorM WebFileInfo

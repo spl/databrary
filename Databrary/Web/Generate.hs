@@ -48,7 +48,7 @@ whether g = (g <$) . when g
 webRegenerate :: IO () -> [FilePath] -> [WebFilePath] -> WebGenerator
 webRegenerate g fs ws (f, o) = do
   wr <- mapM (generateWebFile False) ws
-  ft <- maybe (fmap snd <$> liftIO (fileInfo f)) (return . Just . webFileTimestamp) o
+  ft <- liftIO $ maybe (fmap snd <$> fileInfo f) (return . Just . webFileTimestamp) o
   fr <- maybe (return False) (\t -> anyM $ map (fileNewerThan t) fs) ft
   liftIO $ whether (Fold.all (\t -> fr || any ((t <) . webFileTimestamp) wr) ft) g
 
