@@ -17,8 +17,7 @@ generateGZip :: WebGenerator
 generateGZip fo@(f, _)
   | (b, ".gz") <- splitWebExtension f
   , takeExtension (webFileRel b) `notElem` [".png"] -- things that don't compress
-  = do
-    webRegenerate
+  = webRegenerate
       (BSL.writeFile (toFilePath f) . GZ.compress =<< BSL.readFile (toFilePath b))
       [] [b] fo
   | otherwise = mzero
