@@ -76,7 +76,7 @@ app.directive 'spreadsheet', [
           age: # record
             id: 'age'
             name: 'age'
-            type: 'numeric'
+            type: 'age'
             release: constants.release.EXCERPTS
             sort: constants.metricName.birthdate.id + 0.5
             description: 'Time between birthdate and test date'

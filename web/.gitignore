@@ -34,6 +34,7 @@
 /service/tooltip.js
 /service/upload.js
 /site/errors.js
+/site/inputAge.js
 /site/inputCompleter.js
 /site/search.js
 /site/searchForm.js

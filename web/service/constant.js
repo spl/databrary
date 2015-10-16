@@ -90,7 +90,7 @@ app.factory('constantService', [
       return msg;
     };
 
-    constants.age = { day: 1, year: 365.24219 };
+    constants.age = { day: 1, week: 7, year: 365.24219 };
     constants.age.month = constants.age.year / 12;
     constants.age.limit = constants.age.year * 90;
 

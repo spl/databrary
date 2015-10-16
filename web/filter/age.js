@@ -18,6 +18,9 @@ app.filter('age', [
         case 'month':
           return (days/AGE.month).toFixed(1) + ' mos';
 
+        case 'week':
+          return (days/AGE.week).toFixed(1) + ' wks';
+
         default:
           return days.toFixed() + ' days';
       }

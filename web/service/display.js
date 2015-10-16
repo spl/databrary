@@ -66,8 +66,8 @@ app.factory('displayService', [
       return 'year';
     };
 
-    display.toggleAge = function () {
-      display.age = ageKeys[(ageKeys.indexOf(display.age) + 1) % ageKeys.length];
+    display.toggleAge = function (mode) {
+      display.age = mode || ageKeys[(ageKeys.indexOf(display.age) + 1) % ageKeys.length];
       $rootScope.$broadcast('displayService-toggleAge', display.age);
       storage.set('displayAge', display.age);
     };
