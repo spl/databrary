@@ -21,8 +21,10 @@ import Databrary.Web.Libs
 
 appWebJS :: IO [WebFilePath]
 appWebJS = liftM2 union
-  ((webIncludes ++) . ("app.js" :) . filter (not . (liftM2 (||) (isPrefixOf "lib/") (`elem` ["app.js", "debug.js"])) . webFileRel) <$> findWebFiles ".js")
-  (map (replaceWebExtension ".js") <$> findWebFiles ".coffee")
+  ((webIncludes ++) . (tail pre ++) .
+    filter (\f -> not (isPrefixOf "lib/" (webFileRel f)) && f `notElem` pre) <$> findWebFiles ".js")
+  (map (replaceWebExtension ".js") <$> findWebFiles ".coffee") where
+  pre = ["debug.js", "app.js", "constants.js", "routes.js", "messages.js", "templates.js"]
 
 generateUglifyJS :: WebGenerator
 generateUglifyJS fo@(f, _) = do

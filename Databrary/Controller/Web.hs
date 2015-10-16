@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, CPP #-}
+{-# LANGUAGE OverloadedStrings #-}
 module Databrary.Controller.Web
   ( StaticPath(..)
   , staticPath
@@ -61,12 +61,7 @@ pathStatic = invMap parseStaticPath (maybe [] $ map TE.decodeLatin1 . splitDirec
 webFile :: ActionRoute (Maybe StaticPath)
 webFile = action GET ("web" >/> pathStatic) $ \sp -> withoutAuth $ do
   StaticPath p <- maybeAction sp
-  (wf, wfi) <- 
-#ifdef DEVEL
-    either (result . response notFound404 [] . T.pack) return
-#else
-    maybeAction
-#endif
+  (wf, wfi) <- either (\e -> result =<< if null e then peeks notFoundResponse else return $ response notFound404 [] (T.pack e)) return
     =<< focusIO (lookupWebFile p)
   agz <- any (bsLCEq "gzip") . concatMap splitHTTP <$> peeks (lookupRequestHeaders "accept-encoding")
   wgz <- if agz then rightJust <$> focusIO (lookupWebFile (p <.> ".gz")) else return Nothing

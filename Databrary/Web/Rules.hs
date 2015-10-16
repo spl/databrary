@@ -14,6 +14,7 @@ import Databrary.Ops
 import Databrary.Files
 import Databrary.Web
 import Databrary.Web.Types
+import Databrary.Web.Files
 import Databrary.Web.Info
 import Databrary.Web.Generate
 import Databrary.Web.Constants
@@ -40,7 +41,7 @@ fixedGenerators =
   [ ("messages.js",    generateMessagesJS)
   , ("templates.js",   generateTemplatesJS)
   , ("app.min.js",     generateUglifyJS)
-  , ("app.css",        generateStylusCSS) -- not actually used in production
+  , ("app.css",        generateStylusCSS)
   , ("app.min.css",    generateStylusCSS)
   , ("all.min.js",     generateAllJS)
   , ("all.min.css",    generateAllCSS)
@@ -81,9 +82,11 @@ generateWebFile a f = withExceptT (label (webFileRel f)) $ do
 
 generateAll :: WebGeneratorM ()
 generateAll = do
+  svg <- liftIO $ findWebFiles ".svg"
   mapM_ (generateWebFile True) $
-    webLibs ++
-    map (fromFilePath . fst) (staticGenerators ++ fixedGenerators)
+    (map (fromFilePath . fst) staticGenerators) ++
+    ["constants.json.gz", "all.min.js.gz", "all.min.css.gz"] ++
+    map (<.> ".gz") svg
 
 generateWebFiles :: IO WebFileMap
 generateWebFiles = do
