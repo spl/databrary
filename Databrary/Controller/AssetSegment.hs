@@ -78,7 +78,7 @@ serveAssetSegment dl as = do
   sz <- peeks $ readMaybe . BSC.unpack <=< join . listToMaybe . lookupQueryParameters "size"
   when dl $ auditAssetSegmentDownload True as
   store <- maybeAction =<< getAssetFile a
-  (hd, (_, part)) <- fileResponse store False (view as) (dl ?> makeFilename (assetSegmentDownloadName as)) (BSL.toStrict $ BSB.toLazyByteString $
+  (hd, part) <- fileResponse store (view as) (dl ?> makeFilename (assetSegmentDownloadName as)) (BSL.toStrict $ BSB.toLazyByteString $
     BSB.byteStringHex (fromJust (assetSHA1 a)) <> BSB.string8 (assetSegmentTag as sz))
   either
     (return . okResponse hd)

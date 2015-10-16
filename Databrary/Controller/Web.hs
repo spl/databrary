@@ -8,21 +8,25 @@ module Databrary.Controller.Web
 import Data.ByteArray.Encoding (convertToBase, Base(Base16))
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
-import Data.Char (isAscii, isAlphaNum)
+import Data.Char (isAscii, isAlphaNum, toLower)
+import Data.Maybe (isJust)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
-import Network.HTTP.Types (notFound404)
+import Network.HTTP.Types (notFound404, hContentEncoding)
+import qualified Network.Wai as Wai
 import System.Posix.FilePath (joinPath, splitDirectories)
 
 import Databrary.Iso.Types (invMap)
 import Databrary.Ops
-import Databrary.Has (focusIO)
+import Databrary.Has
 import Databrary.Files
 import Databrary.Model.Format
 import Databrary.Action.Route
 import Databrary.Action.Types
 import Databrary.Action.Response
 import Databrary.Action
+import Databrary.HTTP
+import Databrary.HTTP.Request
 import Databrary.HTTP.File
 import Databrary.HTTP.Path.Parser (PathParser(..), (>/>))
 import Databrary.Web.Types
@@ -35,6 +39,11 @@ ok '.' = True
 ok '-' = True
 ok '_' = True
 ok c = isAscii c && isAlphaNum c
+
+bsLCEq :: BS.ByteString -> BS.ByteString -> Bool
+bsLCEq t s
+  | BS.length t == BS.length s = t == BSC.map toLower s
+  | otherwise = False
 
 staticPath :: [BS.ByteString] -> StaticPath
 staticPath = StaticPath . joinPath . map component where
@@ -59,4 +68,7 @@ webFile = action GET ("web" >/> pathStatic) $ \sp -> withoutAuth $ do
     maybeAction
 #endif
     =<< focusIO (lookupWebFile p)
-  serveFile (toRawFilePath wf) (unknownFormat{ formatMimeType = webFileFormat wfi }) Nothing (convertToBase Base16 $ webFileHash wfi)
+  agz <- any (bsLCEq "gzip") . concatMap splitHTTP <$> peeks (lookupRequestHeaders "accept-encoding")
+  wgz <- if agz then rightJust <$> focusIO (lookupWebFile (p <.> ".gz")) else return Nothing
+  r <- serveFile (toRawFilePath $ maybe wf fst wgz) (unknownFormat{ formatMimeType = webFileFormat wfi }) Nothing (convertToBase Base16 $ webFileHash wfi)
+  return $ if isJust wgz then Wai.mapResponseHeaders ((hContentEncoding, "gzip") :) r else r

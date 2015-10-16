@@ -23,6 +23,7 @@ staticFormats = concatMap (\f -> map (\e -> ('.':BSC.unpack e, formatMimeType f)
   , (".js", "application/javascript")
   , (".css", "text/css")
   , (".svg", "image/svg+xml")
+  , (".json", "application/json")
   ]
 
 makeWebFileInfo :: WebFilePath -> IO WebFileInfo

@@ -21,15 +21,8 @@ import Databrary.Service.Types
 import Databrary.Service.Log
 
 runWarp :: C.Config -> Service -> Wai.Application -> IO ()
-runWarp conf rc app = do
-#ifdef VERSION_warp_tls
-  let certs c = C.config c <|> return <$> C.config c
-      run (Just k) (Just (cert:chain)) = WarpTLS.runTLS (WarpTLS.tlsSettingsChain cert chain k)
-      run _ _ = Warp.runSettings
+runWarp conf rc app =
   run (conf C.! "ssl.key") (certs $ conf C.! "ssl.cert")
-#else
-  Warp.runSettings
-#endif
     ( Warp.setPort (conf C.! "port")
     $ Warp.setTimeout 300
     $ Warp.setServerName (BSC.pack $ "databrary/" ++ showVersion version)
@@ -39,3 +32,9 @@ runWarp conf rc app = do
       logMsg t (maybe id (\m -> (<>) (m <> "\n")) msg $ toLogStr $ show e) (serviceLogs rc))
     $ Warp.defaultSettings)
     app
+  where
+  certs c = C.config c <|> return <$> C.config c
+#ifdef VERSION_warp_tls
+  run (Just k) (Just (cert:chain)) = WarpTLS.runTLS (WarpTLS.tlsSettingsChain cert chain k)
+#endif
+  run _ _ = Warp.runSettings
