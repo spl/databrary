@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveDataTypeable, GeneralizedNewtypeDeriving, ScopedTypeVariables, TypeSynonymInstances, FlexibleInstances, RecordWildCards, OverlappingInstances #-}
+{-# LANGUAGE DeriveDataTypeable, GeneralizedNewtypeDeriving, ScopedTypeVariables, TypeSynonymInstances, FlexibleInstances, RecordWildCards #-}
 module Databrary.Store.Config
   ( Path(..)
   , pathKey
@@ -15,7 +15,7 @@ module Databrary.Store.Config
 
 import Prelude hiding (lookup)
 
-import Control.Applicative ((*>), (<|>))
+import Control.Applicative ((<|>))
 import Control.Exception (Exception, throw)
 import Control.Monad ((<=<), unless)
 import qualified Data.ByteString as BS
@@ -24,7 +24,6 @@ import qualified Data.ByteString.Lazy as BSL
 import qualified Data.ByteString.Lazy.Char8 as BSLC
 import qualified Data.HashMap.Strict as HM
 import Data.Maybe (fromMaybe)
-import Data.Monoid (Monoid)
 import Data.String (IsString(..))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -157,7 +156,7 @@ instance Configurable BS.ByteString where
   config (String s) = Just s
   config _ = Nothing
 
-instance Configurable a => Configurable [a] where
+instance {-# OVERLAPPABLE #-} Configurable a => Configurable [a] where
   config (List l) = mapM config l
   config _ = Nothing
 
@@ -169,7 +168,7 @@ instance Configurable Config where
 instance Configurable T.Text where
   config = rightJust . TE.decodeUtf8' <=< config
 
-instance Configurable String where
+instance {-# OVERLAPPING #-} Configurable String where
   config v = BSC.unpack <$> config v
 
 configBoundedInt :: forall a . (Integral a, Bounded a) => Value -> Maybe a

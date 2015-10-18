@@ -4,7 +4,7 @@ module Databrary.View.Asset
   ) where
 
 import Data.Foldable (fold)
-import Data.Monoid ((<>), mempty)
+import Data.Monoid ((<>))
 
 import Databrary.Model.Volume
 import Databrary.Model.Asset

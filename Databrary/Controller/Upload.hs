@@ -5,7 +5,6 @@ module Databrary.Controller.Upload
   , testChunk
   ) where
 
-import Control.Applicative ((<$>), (<*>))
 import Control.Exception (bracket)
 import Control.Monad ((<=<))
 import Control.Monad.IO.Class (liftIO)

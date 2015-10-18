@@ -7,7 +7,6 @@ module Databrary.EZID.DataCite
 import Control.Arrow (first)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
-import Data.Foldable (foldMap)
 import Data.Maybe (isNothing, catMaybes)
 import Data.Monoid ((<>))
 import qualified Data.Text as T

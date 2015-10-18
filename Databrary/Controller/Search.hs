@@ -3,7 +3,6 @@ module Databrary.Controller.Search
   ( postSearch
   ) where
 
-import Control.Applicative ((<$>), (<*>))
 import Control.Monad (when)
 import Data.Maybe (fromMaybe)
 

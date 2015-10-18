@@ -9,7 +9,6 @@ module Databrary.Controller.Permission
   ) where
 
 import Control.Monad (void, unless, liftM2)
-import qualified Data.Foldable as Fold
 
 import Databrary.Has (Has, view, peek, peeks)
 import Databrary.Model.Permission
@@ -46,7 +45,7 @@ checkMemberADMIN = do
 checkVerfHeader :: ActionM Bool
 checkVerfHeader = do
   header <- peeks $ lookupRequestHeader "x-csverf"
-  peeks $ Fold.or . liftM2 (==) header . identityVerf
+  peeks $ or . liftM2 (==) header . identityVerf
 
 guardVerfHeader :: ActionM ()
 guardVerfHeader = do

@@ -3,10 +3,9 @@ module Databrary.Model.Citation.Types
   ( Citation(..)
   ) where
 
-import Control.Applicative ((<$>), (<|>))
+import Control.Applicative ((<|>))
 import Data.Int (Int16)
 import Data.Maybe (catMaybes)
-import Data.Monoid (Monoid(..))
 import qualified Data.Text as T
 
 import qualified Databrary.JSON as JSON

@@ -4,7 +4,6 @@ module Databrary.Web.Uglify
   , generateUglifyJS
   ) where
 
-import Control.Applicative ((<$>))
 import Control.Monad (guard, liftM2)
 import Control.Monad.IO.Class (liftIO)
 import Data.List (isPrefixOf, union)

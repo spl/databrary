@@ -23,7 +23,6 @@ import Data.Typeable (cast)
 
 import qualified Databrary.Iso as I
 import Databrary.Iso.TH
-import Databrary.Ops
 import Databrary.HTTP.Path.Types
 
 parserUndef :: PathParser a -> a

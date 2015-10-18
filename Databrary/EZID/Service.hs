@@ -4,10 +4,9 @@ module Databrary.EZID.Service
   , initEZID
   ) where
 
-import Control.Monad (unless)
+import Control.Monad (unless, forM)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
-import qualified Data.Traversable as Trav
 import qualified Network.HTTP.Client as HC
 import Network.HTTP.Types (hContentType)
 
@@ -19,7 +18,7 @@ data EZID = EZID
   }
 
 initEZID :: C.Config -> IO (Maybe EZID)
-initEZID conf = conf C.! "ns" `Trav.forM` \ns -> do
+initEZID conf = conf C.! "ns" `forM` \ns -> do
   unless ("doi:10." `BSC.isPrefixOf` ns) $
     fail "ezid.ns must be for DOIs"
   req <- HC.parseUrl "https://ezid.cdlib.org/"

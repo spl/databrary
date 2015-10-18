@@ -3,7 +3,7 @@ module Databrary.View.VolumeAccess
   ( htmlVolumeAccessForm
   ) where
 
-import Data.Monoid ((<>), mempty)
+import Data.Monoid ((<>))
 
 import Databrary.Action
 import Databrary.Model.Party

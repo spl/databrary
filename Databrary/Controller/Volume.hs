@@ -14,7 +14,7 @@ module Databrary.Controller.Volume
   , volumeJSONQuery
   ) where
 
-import Control.Applicative ((<*>), (<|>), optional)
+import Control.Applicative ((<|>), optional)
 import Control.Arrow ((&&&), (***))
 import Control.Monad (mfilter, guard, void, when)
 import Control.Monad.Trans.Class (lift)
@@ -24,7 +24,7 @@ import qualified Data.ByteString.Char8 as BSC
 import qualified Data.HashMap.Lazy as HML
 import qualified Data.HashMap.Strict as HM
 import Data.Maybe (fromMaybe, isNothing)
-import Data.Monoid (Monoid(..), (<>), mempty)
+import Data.Monoid ((<>))
 import qualified Data.Text as T
 import qualified Network.Wai as Wai
 

@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TemplateHaskell, DataKinds #-}
 module Databrary.Model.Format.Boot
   ( loadFormats
   ) where

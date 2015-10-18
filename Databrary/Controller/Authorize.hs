@@ -12,9 +12,9 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Lazy as BSL
 import qualified Data.ByteString.Lazy.Char8 as BSLC
-import qualified Data.Foldable as Fold
+import Data.Foldable (fold)
 import Data.Maybe (fromMaybe, isNothing, mapMaybe)
-import Data.Monoid (mempty, (<>))
+import Data.Monoid ((<>))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Time (UTCTime(..), fromGregorian, addGregorianYearsRollOver)
@@ -79,7 +79,7 @@ postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarge
         req <- peek
         sendMail (map Right dl ++ authaddr)
           ("Databrary authorization request from " <> partyName child)
-          $ BSL.fromChunks [TE.encodeUtf8 (partyName child), " <", Fold.fold agent, "> has requested to be authorized by ", TE.encodeUtf8 (partyName parent), ". \
+          $ BSL.fromChunks [TE.encodeUtf8 (partyName child), " <", fold agent, "> has requested to be authorized by ", TE.encodeUtf8 (partyName parent), ". \
             \To approve or reject this authorization request, go to:\n\n" ] <>
             BSB.toLazyByteString (actionURL (Just req) viewPartyEdit (TargetParty $ partyId parent) [("page", Just "grant")]) <> "#auth-" <> BSLC.pack (show $ partyId child) <> "\n\n\
             \Find more information about authorizing and managing affiliates here: \
@@ -96,11 +96,11 @@ postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarge
         delete ?!$> do
           site <- "site" .:> deform
           member <- "member" .:> deform
-          expires <- "expires" .:> (deformCheck "Expiration must be within two years." (Fold.all (\e -> su || e > minexp && e <= maxexp))
+          expires <- "expires" .:> (deformCheck "Expiration must be within two years." (all (\e -> su || e > minexp && e <= maxexp))
             =<< (<|> (su ?!> maxexp)) <$> deformNonEmpty deform)
           return $ Authorize (Authorization (Access site member) child parent) $ fmap (`UTCTime` 43210) expires
-      maybe (Fold.mapM_ removeAuthorize c) changeAuthorize a
-      when (Fold.any ((PermissionPUBLIC <) . accessSite) a && Fold.all ((PermissionPUBLIC >=) . accessSite) c) $
+      maybe (mapM_ removeAuthorize c) changeAuthorize a
+      when (any ((PermissionPUBLIC <) . accessSite) a && all ((PermissionPUBLIC >=) . accessSite) c) $
         sendMail (maybe id (:) (Right <$> partyAccount child) authaddr)
           "Databrary authorization approved"
           $ BSL.fromChunks
@@ -125,7 +125,7 @@ postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarge
           ]
       return a
   case api of
-    JSON -> return $ okResponse [] $ JSON.Object $ Fold.foldMap authorizeJSON a JSON..+ ("party" JSON..= partyJSON o)
+    JSON -> return $ okResponse [] $ JSON.Object $ foldMap authorizeJSON a JSON..+ ("party" JSON..= partyJSON o)
     HTML -> peeks $ otherRouteResponse [] viewAuthorize arg
 
 deleteAuthorize :: ActionRoute (API, PartyTarget, AuthorizeTarget)
@@ -138,8 +138,8 @@ deleteAuthorize = action DELETE (pathAPI </>> pathPartyTarget </> pathAuthorizeT
     JSON -> return $ okResponse [] $ JSON.object ["party" JSON..= partyJSON o]
     HTML -> peeks $ otherRouteResponse [] viewAuthorize arg
 
-postAuthorizeNotFound :: ActionRoute (API, PartyTarget)
-postAuthorizeNotFound = action POST (pathAPI </> pathPartyTarget </< "notfound") $ \(api, i) -> withAuth $ do
+postAuthorizeNotFound :: ActionRoute (PartyTarget)
+postAuthorizeNotFound = action POST (pathJSON >/> pathPartyTarget </< "notfound") $ \i -> withAuth $ do
   p <- getParty (Just PermissionADMIN) i
   agent <- peeks $ fmap accountEmail . partyAccount
   (name, info) <- runForm Nothing $ liftM2 (,)
@@ -148,5 +148,5 @@ postAuthorizeNotFound = action POST (pathAPI </> pathPartyTarget </< "notfound")
   authaddr <- peeks authorizeAddr
   sendMail authaddr
     ("Databrary authorization request from " <> partyName p)
-    $ BSL.fromChunks [TE.encodeUtf8 (partyName p), " <", Fold.fold agent, "> has requested to be authorized by ", TE.encodeUtf8 name, maybe "" (\it -> " (" <> TE.encodeUtf8 it <> ")") info, ".\n"]
+    $ BSL.fromChunks [TE.encodeUtf8 (partyName p), " <", fold agent, "> has requested to be authorized by ", TE.encodeUtf8 name, maybe "" (\it -> " (" <> TE.encodeUtf8 it <> ")") info, ".\n"]
   return $ emptyResponse noContent204 []

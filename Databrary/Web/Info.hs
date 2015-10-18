@@ -4,7 +4,6 @@ module Databrary.Web.Info
   , loadWebFileMap
   ) where
 
-import Control.Applicative ((<$>), (<*>))
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.HashMap.Strict as HM

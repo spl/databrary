@@ -22,7 +22,6 @@ import Data.Monoid ((<>))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Time.Clock (getCurrentTime)
-import qualified Data.Traversable as Trav
 import qualified Network.HTTP.Client as HC
 import Network.HTTP.Types (methodGet, methodPut, methodPost)
 import Network.URI (URI)
@@ -49,7 +48,7 @@ type EZIDM a = CookiesT (ReaderT EZIDContext IO) a
 
 runEZIDM :: EZIDM a -> BackgroundContextM (Maybe a)
 runEZIDM f = ReaderT $ \ctx ->
-  Trav.mapM (runReaderT (runCookiesT f) . EZIDContext ctx)
+  mapM (runReaderT (runCookiesT f) . EZIDContext ctx)
     (serviceEZID $ contextService $ backgroundContext ctx)
   
 ezidCall :: BS.ByteString -> BS.ByteString -> ANVL.ANVL -> EZIDM (Maybe ANVL.ANVL)

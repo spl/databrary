@@ -1,9 +1,8 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TemplateHaskell, DataKinds #-}
 module Databrary.Model.RecordCategory.Boot
   ( loadRecordCategories
   ) where
 
-import Control.Applicative ((<$>))
 import Database.PostgreSQL.Typed.Array ()
 import qualified Language.Haskell.TH as TH
 import qualified Language.Haskell.TH.Syntax as TH

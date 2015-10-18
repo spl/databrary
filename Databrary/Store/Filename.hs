@@ -7,7 +7,7 @@ import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Lazy as BSL
 import Data.Char (isSpace)
 import Data.List (intersperse)
-import Data.Monoid (mempty, (<>), mconcat)
+import Data.Monoid ((<>))
 import qualified Data.Text as T
 
 truncateFilename :: T.Text -> Int

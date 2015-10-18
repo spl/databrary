@@ -4,8 +4,6 @@ module Databrary.View.Register
   , htmlPasswordReset
   ) where
 
-import Data.Monoid (mempty)
-
 import Databrary.Action
 import Databrary.View.Form
 

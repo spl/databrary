@@ -7,7 +7,7 @@ import qualified Data.ByteString.Builder as B
 import qualified Data.ByteString.Builder.Prim as BP
 import qualified Data.ByteString.Char8 as BSC
 import Data.ByteString.Internal (c2w)
-import Data.Monoid (mempty, (<>), mconcat)
+import Data.Monoid ((<>))
 
 inter :: B.Builder -> [B.Builder] -> B.Builder
 inter _ [] = mempty

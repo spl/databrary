@@ -3,10 +3,8 @@ module Databrary.Controller.Analytics
   ( angularAnalytics
   ) where
 
-import Control.Applicative ((<$>), (<*>))
 import Control.Monad (when)
 import qualified Data.Attoparsec.ByteString as P
-import qualified Data.Foldable as Fold
 import qualified Data.HashMap.Strict as HM
 import Data.Maybe (mapMaybe, maybeToList)
 import qualified Data.Vector as V
@@ -19,7 +17,7 @@ import Databrary.HTTP.Request
 angularAnalytics :: MonadAudit q m => m ()
 angularAnalytics = do
   req <- peek
-  when (Fold.any ("DatabraryClient" ==) $ lookupRequestHeader "x-requested-with" req) $
+  when (any ("DatabraryClient" ==) $ lookupRequestHeader "x-requested-with" req) $
     mapM_ auditAnalytic $ pr . P.parseOnly JSON.json' =<< lookupRequestHeaders "analytics" req
   where
   pr (Left _) = []

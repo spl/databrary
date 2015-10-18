@@ -4,7 +4,6 @@ module Databrary.Routes.JS
   ) where
 
 import qualified Data.ByteString.Builder as B
-import Data.Monoid (mconcat)
 
 import Databrary.Model.Id.Types
 import Databrary.Model.Segment
@@ -96,7 +95,7 @@ jsRoutes = mconcat
   , jsRoute "postAuthorize" postAuthorize (JSON, TargetParty party, AuthorizeTarget False party)
   , jsRoute "deleteAuthorize" deleteAuthorize (JSON, TargetParty party, AuthorizeTarget False party)
   , jsRoute "deleteAuthorizeParent" deleteAuthorize (JSON, TargetParty party, AuthorizeTarget True party)
-  , jsRoute "postAuthorizeNotFound" postAuthorizeNotFound (JSON, TargetParty party)
+  , jsRoute "postAuthorizeNotFound" postAuthorizeNotFound (TargetParty party)
 
   , jsRoute "getVolume" viewVolume (JSON, volume)
   , jsRoute "postVolume" postVolume (JSON, volume)

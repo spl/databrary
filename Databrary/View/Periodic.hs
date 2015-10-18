@@ -3,8 +3,6 @@ module Databrary.View.Periodic
   ( htmlPeriodic
   ) where
 
-import Data.Monoid (mempty)
-
 import Databrary.Action.Types
 import Databrary.View.Form
 

@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, TemplateHaskell, QuasiQuotes, RecordWildCards #-}
+{-# LANGUAGE OverloadedStrings, TemplateHaskell, QuasiQuotes, RecordWildCards, DataKinds #-}
 module Databrary.Model.Party 
   ( module Databrary.Model.Party.Types
   , nobodyParty
@@ -30,7 +30,7 @@ import qualified Data.ByteString as BS
 import Data.Int (Int64)
 import Data.List (intercalate)
 import Data.Maybe (catMaybes, isNothing, fromMaybe)
-import Data.Monoid (Monoid(..), (<>))
+import Data.Monoid ((<>))
 import qualified Data.Text as T
 import Database.PostgreSQL.Typed (pgSQL)
 import Database.PostgreSQL.Typed.Query (unsafeModifyQuery)

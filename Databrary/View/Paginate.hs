@@ -4,8 +4,8 @@ module Databrary.View.Paginate
   ) where
 
 import Control.Arrow (first)
+import Control.Monad (forM_)
 import qualified Data.ByteString.Char8 as BSC
-import qualified Data.Foldable as Fold
 import Data.Int (Int32)
 import Data.Maybe (catMaybes)
 import qualified Network.Wai as Wai
@@ -39,6 +39,6 @@ htmlPaginate :: ([a] -> H.Html) -> Paginate -> [a] -> Wai.Request -> H.Html
 htmlPaginate f p c q = do
   f c'
   H.ul $ do
-    Fold.forM_ prev (\p' -> H.li $ H.a H.! paginateLink p' q $ "prev")
-    Fold.forM_ next (\p' -> H.li $ H.a H.! paginateLink p' q $ "next")
+    forM_ prev (\p' -> H.li $ H.a H.! paginateLink p' q $ "prev")
+    forM_ next (\p' -> H.li $ H.a H.! paginateLink p' q $ "next")
   where (prev, c', next) = paginateContent p c

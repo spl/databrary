@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell, QuasiQuotes, RecordWildCards, OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell, QuasiQuotes, RecordWildCards, OverloadedStrings, DataKinds #-}
 module Databrary.Model.Funding
   ( module Databrary.Model.Funding.Types
   , lookupFunder
@@ -14,7 +14,6 @@ module Databrary.Model.Funding
 import qualified Data.Text as T
 import Database.PostgreSQL.Typed (pgSQL)
 
-import Databrary.Ops
 import qualified Databrary.JSON as JSON
 import Databrary.Service.DB
 import Databrary.Model.SQL

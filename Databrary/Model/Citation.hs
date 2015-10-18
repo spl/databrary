@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TemplateHaskell, DataKinds #-}
 module Databrary.Model.Citation
   ( module Databrary.Model.Citation.Types
   , lookupVolumeCitation
@@ -7,8 +7,6 @@ module Databrary.Model.Citation
   , lookupVolumeLinks
   , changeVolumeLinks
   ) where
-
-import Control.Applicative ((<$>))
 
 import Databrary.Has (peek, view)
 import Databrary.Service.DB

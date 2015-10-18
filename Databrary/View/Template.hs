@@ -6,8 +6,7 @@ module Databrary.View.Template
   , htmlSocialMedia
   ) where
 
-import Control.Monad (void, when)
-import qualified Data.Foldable as Fold
+import Control.Monad (void, when, forM_)
 import qualified Data.ByteString.Builder as BSB
 import Data.Monoid ((<>))
 import qualified Data.Text as T
@@ -34,7 +33,7 @@ import {-# SOURCE #-} Databrary.Controller.Web
 
 htmlHeader :: Maybe BSB.Builder -> JSOpt -> H.Html
 htmlHeader canon hasjs = do
-  Fold.forM_ canon $ \c ->
+  forM_ canon $ \c ->
     H.link
       H.! HA.rel "canonical"
       H.! HA.href (builderValue c)
@@ -44,7 +43,7 @@ htmlHeader canon hasjs = do
   H.link
     H.! HA.rel "start"
     H.! actionLink viewRoot HTML hasjs
-  Fold.forM_ ["news", "about", "access", "community"] $ \l -> H.link
+  forM_ ["news", "about", "access", "community"] $ \l -> H.link
     H.! HA.rel l
     H.! HA.href ("//databrary.org/" <> l <> ".html")
 
@@ -95,10 +94,10 @@ htmlTemplate req title body = H.docTypeHtml $ do
   H.head $ do
     htmlHeader canon hasjs
     H.title $ do
-      Fold.mapM_ (\t -> H.toHtml t >> " || ") title
+      mapM_ (\t -> H.toHtml t >> " || ") title
       "Databrary"
   H.body $ do
-    when (hasjs /= JSEnabled) $ Fold.forM_ canon $ \c -> H.div $ do
+    when (hasjs /= JSEnabled) $ forM_ canon $ \c -> H.div $ do
       H.preEscapedString "Our site works best with modern browsers (Firefox, Chrome, Safari &ge;6, IE &ge;10, and others). \
         \You are viewing the simple version of our site: some functionality may not be available. \
         \Try switching to the "
@@ -120,7 +119,7 @@ htmlTemplate req title body = H.docTypeHtml $ do
                 H.! HA.type_ "submit"
                 $ "logout")
           $ requestIdentity req
-    Fold.mapM_ (H.h1 . H.toHtml) title
+    mapM_ (H.h1 . H.toHtml) title
     r <- body hasjs
     H.hr
     htmlFooter

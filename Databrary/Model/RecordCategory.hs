@@ -7,7 +7,6 @@ module Databrary.Model.RecordCategory
   , recordCategoryJSON
   ) where
 
-import Control.Applicative ((<$>))
 import qualified Data.IntMap.Strict as IntMap
 import Data.Maybe (catMaybes)
 

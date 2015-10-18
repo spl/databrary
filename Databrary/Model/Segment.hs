@@ -78,12 +78,12 @@ instance Read Segment where
       return Range.full
     rr :: RP.ReadP (Range.Range Offset)
     rr = do
-      lb <- optional $ ('[' ==) <$> RP.satisfy (`elem` "([")
+      lb <- optional $ ('[' ==) <$> RP.satisfy (`elem` ['(','['])
       l <- optional readP
       (guard (isNothing lb) >> Range.point <$> maybeA l) RP.+++ do
-        _ <- if isNothing lb && isNothing l then RP.char ',' else RP.satisfy (`elem` ",-")
+        _ <- if isNothing lb && isNothing l then RP.char ',' else RP.satisfy (`elem` [',','-'])
         u <- optional readP
-        ub <- optional $ ('[' ==) <$> RP.satisfy (`elem` ")]")
+        ub <- optional $ ('[' ==) <$> RP.satisfy (`elem` [')',']'])
         return $ Range.range (mb True lb l) (mb False ub u)
     -- more liberal than Range.makeBound:
     mb :: Bool -> Maybe Bool -> Maybe Offset -> Range.Bound Offset

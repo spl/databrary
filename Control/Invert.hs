@@ -5,7 +5,6 @@ module Control.Invert
   , give
   ) where
 
-import Control.Applicative (Applicative(..), (<$>))
 import Control.Monad (join)
 import Control.Monad.IO.Class (MonadIO(..))
 import Control.Monad.Trans.Cont (ContT(..))

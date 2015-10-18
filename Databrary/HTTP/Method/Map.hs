@@ -11,7 +11,6 @@ import Prelude hiding (lookup)
 import Control.Applicative ((<|>))
 import Control.Exception (Exception, throw)
 import qualified Data.Map.Strict as M
-import Data.Monoid (Monoid(..))
 import Data.Typeable (Typeable)
 import Network.HTTP.Types.Method (Method, StdMethod(HEAD, GET), parseMethod)
 

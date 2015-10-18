@@ -9,13 +9,12 @@ module Databrary.HTTP.Path.Map
 
 import Prelude hiding (lookup, null)
 
-import Control.Applicative ((<$>))
 import Control.Arrow (first)
 import Control.Exception (Exception, throw)
 import Data.Hashable (Hashable(..))
 import qualified Data.HashMap.Strict as HM
 import qualified Data.Map.Strict as M
-import Data.Monoid (Monoid(..), (<>))
+import Data.Monoid ((<>))
 import Data.Proxy (Proxy(..))
 import qualified Data.Text as T
 import Data.Typeable (Typeable, typeRep)

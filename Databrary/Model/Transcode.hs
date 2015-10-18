@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, RecordWildCards, TemplateHaskell, QuasiQuotes #-}
+{-# LANGUAGE OverloadedStrings, RecordWildCards, TemplateHaskell, QuasiQuotes, DataKinds #-}
 module Databrary.Model.Transcode
   ( module Databrary.Model.Transcode.Types
   , defaultTranscodeOptions
@@ -19,7 +19,6 @@ import Data.Maybe (fromMaybe, isJust)
 import Data.Monoid ((<>))
 import Database.PostgreSQL.Typed.Query (pgSQL)
 
-import Databrary.Ops
 import Databrary.Has (peek)
 import Databrary.Service.DB
 import Databrary.Service.Types

@@ -2,7 +2,6 @@ module Databrary.Setup.Git
   ( setGitVersion
   ) where
 
-import Control.Applicative ((<$>))
 import Data.Version (parseVersion)
 import Distribution.Simple
 import Distribution.PackageDescription

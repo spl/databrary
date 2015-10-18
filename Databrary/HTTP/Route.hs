@@ -11,12 +11,10 @@ module Databrary.HTTP.Route
 
 import Prelude hiding (lookup)
 
-import Control.Applicative ((<$>))
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Lazy.Char8 as BSLC
-import Data.Foldable (foldMap)
 import Data.Maybe (fromMaybe)
-import Data.Monoid (Monoid, (<>))
+import Data.Monoid ((<>))
 import Network.HTTP.Types (StdMethod)
 import Network.URI (URI(..), nullURI)
 import qualified Network.Wai as Wai

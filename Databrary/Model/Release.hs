@@ -1,10 +1,9 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TemplateHaskell, DataKinds #-}
 module Databrary.Model.Release
   ( module Databrary.Model.Release.Types
   , changeRelease
   ) where
 
-import Control.Applicative ((<$>))
 import Control.Monad (guard)
 
 import Databrary.Service.DB
@@ -14,6 +13,8 @@ import Databrary.Model.Slot.Types
 import Databrary.Model.Container.Types
 import Databrary.Model.Release.Types
 import Databrary.Model.Release.SQL
+
+useTDB
 
 changeRelease :: MonadAudit c m => Slot -> Maybe Release -> m Bool
 changeRelease s Nothing = do

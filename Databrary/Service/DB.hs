@@ -25,7 +25,6 @@ module Databrary.Service.DB
   , runTDB
   ) where
 
-import Control.Applicative ((<$>))
 import Control.Exception (onException, tryJust, bracket)
 import Control.Monad (unless, (<=<))
 import Control.Monad.IO.Class (MonadIO)

@@ -5,7 +5,6 @@ module Databrary.View.Record
   ) where
 
 import qualified Data.ByteString.Char8 as BSC
-import Data.Monoid (mempty)
 
 import Databrary.Model.Volume
 import Databrary.Model.Record

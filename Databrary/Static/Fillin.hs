@@ -8,12 +8,10 @@ import Control.Exception (handle)
 import Control.Monad (void)
 import Data.ByteArray.Encoding (convertToBase, Base(Base16))
 import qualified Data.ByteString.Char8 as BSC
-import qualified Data.Foldable as Fold
 import qualified Data.Text.Encoding as TE
-import Data.Time.Format (formatTime)
+import Data.Time.Format (formatTime, defaultTimeLocale)
 import qualified Network.HTTP.Client as HC
 import Network.HTTP.Types.URI (renderSimpleQuery)
-import System.Locale (defaultTimeLocale)
 
 import Databrary.Service.Types
 import Databrary.Service.Log
@@ -30,7 +28,7 @@ staticSendInvestigator p Context{ contextTimestamp = t, contextService = rc@Serv
       } (serviceHTTPClient rc)
   where
   fields =
-    [ ("auth", convertToBase Base16 $ key $ Fold.foldMap snd $ tail fields)
+    [ ("auth", convertToBase Base16 $ key $ foldMap snd $ tail fields)
     , ("id", BSC.pack $ show $ partyId p)
     , ("name", TE.encodeUtf8 $ partyName p)
     , ("date", BSC.pack $ formatTime defaultTimeLocale "%B %e, %Y" t)

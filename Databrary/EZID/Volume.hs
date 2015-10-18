@@ -1,4 +1,4 @@
-{-# LANGUAGE RecordWildCards, TemplateHaskell, QuasiQuotes #-}
+{-# LANGUAGE RecordWildCards, TemplateHaskell, QuasiQuotes, DataKinds #-}
 module Databrary.EZID.Volume
   ( updateEZID
   ) where

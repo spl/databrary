@@ -9,7 +9,6 @@ import Control.Monad (liftM2)
 import qualified Data.Text as T
 import Network.HTTP.Types (StdMethod(DELETE))
 
-import Databrary.Ops
 import Databrary.Has (focusIO)
 import qualified Databrary.JSON as JSON
 import Databrary.Model.Id

@@ -5,7 +5,7 @@ module Databrary.Model.AssetSlot.Types
   , assetNoSlot
   ) where
 
-import Control.Applicative ((<$>), (<|>))
+import Control.Applicative ((<|>))
 
 import Databrary.Has (Has(..))
 import Databrary.Model.Id.Types

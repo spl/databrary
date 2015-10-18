@@ -9,14 +9,12 @@ module Databrary.View.Party
 
 import Control.Monad (when, forM_, void)
 import qualified Data.ByteString.Char8 as BSC
-import qualified Data.Foldable as Fold
 import Data.Maybe (fromMaybe)
-import Data.Monoid ((<>), mempty)
+import Data.Monoid ((<>))
 import Network.HTTP.Types (toQuery)
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as HA
 
-import Databrary.Ops
 import Databrary.Has (view)
 import Databrary.Model.Permission
 import Databrary.Model.Party
@@ -43,17 +41,17 @@ htmlPartyView p@Party{..} req = htmlTemplate req (Just $ partyName p) $ \js -> d
   H.img
     H.! HA.src (builderValue $ actionURL Nothing viewAvatar partyId [])
   H.dl $ do
-    Fold.forM_ partyAffiliation $ \a -> do
+    forM_ partyAffiliation $ \a -> do
       H.dt "affiliation"
       H.dd $ H.text a
-    Fold.forM_ partyURL $ \u -> do
+    forM_ partyURL $ \u -> do
       let us = show u
       H.dt "url"
       H.dd $ H.a H.! HA.href (H.stringValue us) $ H.string us
-    Fold.forM_ (partyEmail p) $ \e -> do
+    forM_ (partyEmail p) $ \e -> do
       H.dt "email"
       H.dd $ H.a H.! HA.href (byteStringValue $ "mailto:" <> e) $ byteStringHtml e
-    Fold.forM_ partyORCID $ \o -> do
+    forM_ partyORCID $ \o -> do
       H.dt "orcid"
       H.dd $ H.a H.! HA.href (H.stringValue $ show $ orcidURL o) $ H.string $ show o
   H.a H.! actionLink queryVolumes HTML (toQuery js <> [("party", Just $ BSC.pack $ show partyId)]) $ "volumes"
@@ -81,7 +79,7 @@ htmlPartyList js pl = H.ul $ forM_ pl $ \p -> H.li $ do
   H.h2
     $ H.a H.! actionLink viewParty (HTML, TargetParty (partyId p)) js
     $ H.text $ partyName p
-  Fold.mapM_ H.text $ partyAffiliation p
+  mapM_ H.text $ partyAffiliation p
 
 htmlPartySearchForm :: PartyFilter -> FormHtml f
 htmlPartySearchForm pf = do
@@ -112,8 +110,8 @@ htmlPartyAdmin pf pl req = htmlForm "party admin" adminParties ()
           H.td $ H.a H.! actionLink viewParty (HTML, TargetParty partyId) js
             $ H.string $ show partyId
           H.td $ H.text $ partyName p
-          H.td $ Fold.mapM_ (byteStringHtml . accountEmail) partyAccount
-          H.td $ Fold.mapM_ H.text partyAffiliation
+          H.td $ mapM_ (byteStringHtml . accountEmail) partyAccount
+          H.td $ mapM_ H.text partyAffiliation
           H.td $ do
             actionForm resendInvestigator partyId js
               $ H.input H.! HA.type_ "submit" H.! HA.value "agreement"

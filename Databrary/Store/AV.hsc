@@ -12,7 +12,7 @@ module Databrary.Store.AV
   , avFrame
   ) where
 
-import Control.Applicative ((<*>), (<|>))
+import Control.Applicative ((<|>))
 import Control.Arrow (first)
 import Control.Concurrent.MVar (MVar, newMVar, takeMVar, putMVar)
 import Control.Exception (Exception, throwIO, bracket, bracket_, finally, onException)
@@ -23,7 +23,7 @@ import Data.Int (Int32, Int64)
 import Data.Maybe (isNothing)
 import Data.Ratio (Ratio, (%), numerator, denominator)
 import Data.Time.Clock (DiffTime)
-import Data.Time.Format (parseTime)
+import Data.Time.Format (parseTimeM, defaultTimeLocale)
 import Data.Time.LocalTime (ZonedTime)
 import qualified Data.Traversable as Trav
 import Data.Typeable (Typeable)
@@ -37,7 +37,6 @@ import Foreign.Ptr (Ptr, FunPtr, nullPtr, plusPtr, castPtr)
 import Foreign.StablePtr
 import Foreign.Storable
 import System.IO.Unsafe (unsafeDupablePerformIO)
-import System.Locale (defaultTimeLocale)
 
 import Databrary.Ops
 import Databrary.Files
@@ -426,7 +425,7 @@ avProbe f AV = withAVInput f Nothing $ \ic -> do
         t <- #{peek AVCodecContext, codec_type} c
         n <- BS.packCString =<< avcodecGetName =<< #{peek AVCodecContext, codec_id} c
         return (t, n)
-    <*> ((=<<) (\t -> parseTime defaultTimeLocale "%F %T%Z" t <|> parseTime defaultTimeLocale "%F %T %Z" t) <$>
+    <*> ((=<<) (\t -> parseTimeM True defaultTimeLocale "%F %T%Z" t <|> parseTimeM True defaultTimeLocale "%F %T %Z" t) <$>
       ((`orElseM` getAVDictionary meta "creation_time") =<< getAVDictionary meta "date"))
 
 

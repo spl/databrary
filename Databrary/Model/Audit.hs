@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell, QuasiQuotes, RecordWildCards #-}
+{-# LANGUAGE TemplateHaskell, QuasiQuotes, RecordWildCards, DataKinds #-}
 module Databrary.Model.Audit
   ( module Databrary.Model.Audit.Types
   , MonadAudit
@@ -8,7 +8,6 @@ module Databrary.Model.Audit
   , auditAnalytic
   ) where
 
-import Control.Applicative ((<$>), (<*>))
 import Data.Maybe (fromMaybe)
 import qualified Data.Text as T
 import Database.PostgreSQL.Typed (pgSQL)

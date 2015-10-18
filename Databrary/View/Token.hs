@@ -3,8 +3,6 @@ module Databrary.View.Token
   ( htmlPasswordToken
   ) where
 
-import Data.Monoid (mempty)
-
 import Databrary.Model.Id
 import Databrary.Model.Token
 import Databrary.Action

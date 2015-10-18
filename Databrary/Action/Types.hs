@@ -12,7 +12,7 @@ module Databrary.Action.Types
   , withReAuth
   ) where
 
-import Control.Applicative (Applicative, Alternative)
+import Control.Applicative (Alternative)
 import Control.Concurrent (ThreadId, forkFinally)
 import Control.Exception (SomeException)
 import Control.Monad (MonadPlus)

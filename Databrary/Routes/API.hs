@@ -3,7 +3,6 @@ module Databrary.Routes.API
   ( swagger
   ) where
 
-import Control.Applicative ((<$>))
 import Data.Aeson.Types
 import Data.Char (toLower)
 import qualified Data.HashMap.Strict as HM

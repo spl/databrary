@@ -13,7 +13,6 @@ module Databrary.HTTP.Request
 
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
-import qualified Data.Foldable as Fold
 import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
 import Network.HTTP.Types (HeaderName)
@@ -41,7 +40,7 @@ boolValue "" = False
 boolValue _ = True
 
 boolParameterValue :: Maybe BS.ByteString -> Bool
-boolParameterValue = Fold.all boolValue
+boolParameterValue = all boolValue
 
 boolQueryParameter :: BS.ByteString -> Wai.Request -> Bool
 boolQueryParameter q = any boolParameterValue . lookupQueryParameters q

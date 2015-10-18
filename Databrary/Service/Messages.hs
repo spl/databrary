@@ -7,7 +7,6 @@ module Databrary.Service.Messages
   , getMessage
   ) where
 
-import Control.Applicative ((<$>))
 import Data.Maybe (fromMaybe)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE

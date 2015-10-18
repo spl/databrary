@@ -7,7 +7,6 @@ module Databrary.Store.Probe
   , avProbeCheckFormat
   ) where
 
-import Control.Applicative ((<$>))
 import Control.Arrow (left)
 import Control.Exception (try)
 import Control.Monad.Trans.Except (ExceptT(..), runExceptT, throwE)

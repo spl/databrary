@@ -7,7 +7,7 @@ import Control.Monad (liftM2)
 import qualified Data.ByteString.Builder as B
 import Data.Char (isAscii, isAlphaNum, toLower)
 import Data.List (intersperse)
-import Data.Monoid ((<>), mempty, mconcat)
+import Data.Monoid ((<>))
 import qualified Data.Text.Encoding as TE
 import Data.Typeable (typeOf)
 

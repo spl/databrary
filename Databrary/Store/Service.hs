@@ -5,7 +5,6 @@ module Databrary.Store.Service
   ) where
 
 import Control.Monad (unless, foldM_)
-import qualified Data.Foldable as Fold
 import Data.Maybe (catMaybes)
 import System.Directory (getTemporaryDirectory, createDirectoryIfMissing)
 import System.IO.Error (mkIOError, doesNotExistErrorType, illegalOperationErrorType)
@@ -27,12 +26,12 @@ initStorage conf = do
     unless (isDirectory s)
       $ ioError $ mkIOError doesNotExistErrorType "storage directory" Nothing (Just (toFilePath f))
     let d = deviceID s
-    unless (Fold.all (d ==) dev)
+    unless (all (d ==) dev)
       $ ioError $ mkIOError illegalOperationErrorType "storage filesystem" Nothing (Just (toFilePath f))
     return $ Just d)
     Nothing $ catMaybes [Just master, Just temp, Just upload, stage]
 
-  Fold.mapM_ (\c -> createDirectoryIfMissing False (toFilePath c </> "tmp")) cache
+  mapM_ (\c -> createDirectoryIfMissing False (toFilePath c </> "tmp")) cache
 
   tc <- initTranscoder (conf C.! "transcode")
 

@@ -12,7 +12,7 @@ module Databrary.Controller.Form
   , csrfForm
   ) where
 
-import Control.Applicative ((<$>), (<*>), (<|>))
+import Control.Applicative ((<|>))
 import Control.Monad (unless)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Reader (ask)
@@ -22,7 +22,6 @@ import qualified Data.Aeson as JSON
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import Data.Char (toLower)
-import qualified Data.Foldable as Fold
 import Data.Monoid ((<>))
 import qualified Data.Text.Encoding as TE
 import Data.Word (Word64)
@@ -92,7 +91,7 @@ passwordForm acct = do
     p <- deform
     deformGuard "Password too short. Must be 7 characters." (7 <= BS.length p)
     c <- lift $ passwdCheck p (accountEmail acct) (TE.encodeUtf8 $ partyName $ accountParty acct)
-    Fold.mapM_ (deformError . ("Insecure password: " <>) . TE.decodeLatin1) c
+    mapM_ (deformError . ("Insecure password: " <>) . TE.decodeLatin1) c
     return p
   "again" .:> do
     a <- deform

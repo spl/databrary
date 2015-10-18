@@ -32,7 +32,6 @@ import Data.Monoid ((<>))
 import qualified Data.Text.Encoding as TE
 import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.Builder as TLB
-import qualified Data.Traversable as Trav
 import qualified Data.Vector as V
 import Data.Word (Word8)
 import Network.HTTP.Types (Query)
@@ -65,7 +64,7 @@ o .+? Just p = o .+ p
 a .! i = maybe (fail $ "index " ++ show i ++ " out of range") parseJSON $ a V.!? i
 
 (.!?) :: FromJSON a => Array -> Int -> Parser (Maybe a)
-a .!? i = Trav.mapM parseJSON $ a V.!? i
+a .!? i = mapM parseJSON $ a V.!? i
 
 resultToEither :: Result a -> Either String a
 resultToEither (Error e) = Left e

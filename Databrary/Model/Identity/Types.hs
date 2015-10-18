@@ -8,7 +8,6 @@ module Databrary.Model.Identity.Types
   , identitySuperuser
   ) where
 
-import Control.Applicative (Applicative)
 import Control.Monad.Reader (MonadReader)
 import qualified Data.ByteString as BS
 

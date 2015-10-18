@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, TemplateHaskell, QuasiQuotes, RecordWildCards #-}
+{-# LANGUAGE OverloadedStrings, TemplateHaskell, QuasiQuotes, RecordWildCards, DataKinds #-}
 module Databrary.Model.Container
   ( module Databrary.Model.Container.Types
   , blankContainer
@@ -17,9 +17,8 @@ module Databrary.Model.Container
 import Control.Monad (guard)
 import Data.Either (isRight)
 import Data.Maybe (catMaybes)
-import Data.Time.Format (formatTime)
+import Data.Time.Format (formatTime, defaultTimeLocale)
 import Database.PostgreSQL.Typed.Query (pgSQL)
-import System.Locale (defaultTimeLocale)
 
 import Databrary.Ops
 import Databrary.Has (view, peek)

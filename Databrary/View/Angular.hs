@@ -10,11 +10,10 @@ import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Char8 as BSC
 import Data.Default.Class (def)
 import Data.Maybe (isJust)
-import Data.Monoid (mempty, (<>))
+import Data.Monoid ((<>))
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as HA
 
-import Databrary.Ops
 import Databrary.Has (view)
 import Databrary.Model.Identity
 import Databrary.Action.Types

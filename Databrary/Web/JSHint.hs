@@ -3,11 +3,9 @@ module Databrary.Web.JSHint
   ( checkJSHint
   ) where
 
-import Control.Applicative ((<$>))
 import Control.Monad (mzero, when)
 import Control.Monad.IO.Class (liftIO)
 import qualified Data.ByteString.Char8 as BSC
-import qualified Data.Foldable as Fold
 import System.FilePath (takeExtensions)
 import System.Posix.FilePath (splitFileName, addExtension)
 import System.Posix.IO.ByteString (openFd, OpenMode(WriteOnly), defaultFileFlags, closeFd)
@@ -26,7 +24,7 @@ checkJSHint fo@(f, _)
     when r $ liftIO $ do
       ht <- fmap snd <$> fileInfo h
       ft <- modificationTimestamp <$> getFileStatus f
-      when (Fold.all (ft >) ht) $ do
+      when (all (ft >) ht) $ do
         callProcess (binDir </> "jshint") [webFileAbs f]
         maybe
           (openFd h WriteOnly (Just 0o666) defaultFileFlags >>= closeFd)

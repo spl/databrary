@@ -7,12 +7,10 @@ module Databrary.View.Volume
   ) where
 
 import Control.Monad (when, forM_)
-import qualified Data.Foldable as Fold
-import Data.Monoid ((<>), mempty)
+import Data.Monoid ((<>))
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as HA
 
-import Databrary.Ops
 import Databrary.Has (view)
 import Databrary.Action
 import Databrary.Model.Permission
@@ -37,16 +35,16 @@ htmlVolumeView v req = htmlTemplate req (Just (volumeName v)) $ \js -> do
   H.img
     H.! HA.src (builderValue $ actionURL Nothing thumbVolume (volumeId v) [])
   H.dl $ do
-    Fold.forM_ (getVolumeAlias v) $ \a -> do
+    forM_ (getVolumeAlias v) $ \a -> do
       H.dt "alias"
       H.dd $ H.text a
     forM_ (volumeOwners v) $ \(p, n) -> do
       H.dt "owner"
       H.dd $ H.a H.! actionLink viewParty (HTML, TargetParty p) js $ H.text n
-    Fold.forM_ (volumeBody v) $ \b -> do
+    forM_ (volumeBody v) $ \b -> do
       H.dt "body"
       H.dd $ H.text b -- format
-    Fold.forM_ (volumeDOI v) $ \d -> do
+    forM_ (volumeDOI v) $ \d -> do
       H.dt "doi"
       H.dd $ byteStringHtml d
 
@@ -79,7 +77,7 @@ htmlVolumeList js vl = H.ul $ forM_ vl $ \v -> H.li $ do
   H.ul $ forM_ (volumeOwners v) $ \(p, o) -> H.li $ do
     H.a H.! actionLink viewParty (HTML, TargetParty p) js
       $ H.text o
-  Fold.mapM_ (H.p . H.text) $ volumeBody v
+  mapM_ (H.p . H.text) $ volumeBody v
 
 htmlVolumeSearch :: VolumeFilter -> [Volume] -> RequestContext -> FormHtml f
 htmlVolumeSearch VolumeFilter{..} vl req = htmlForm "Volume search" queryVolumes HTML

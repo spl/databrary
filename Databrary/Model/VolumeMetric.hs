@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell, QuasiQuotes #-}
+{-# LANGUAGE TemplateHaskell, QuasiQuotes, DataKinds #-}
 module Databrary.Model.VolumeMetric
   ( lookupVolumeMetrics
   , addVolumeCategory

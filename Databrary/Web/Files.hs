@@ -13,7 +13,6 @@ import System.Posix.Directory.Foreign (dtDir, dtReg)
 import System.Posix.Directory.Traversals (readDirEnt)
 import System.Posix.FilePath (takeExtensions)
 
-import Databrary.Ops
 import Databrary.Files
 import Databrary.Web
 

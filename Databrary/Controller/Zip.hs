@@ -9,7 +9,6 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy as BSL
-import qualified Data.Foldable as Fold
 import Data.Function (on)
 import Data.List (groupBy, partition)
 import Data.Maybe (fromJust, maybeToList)
@@ -80,7 +79,7 @@ volumeDescription inzip top@Container{ containerVolume = v } al = do
   desc <- peeks $ htmlVolumeDescription inzip top (maybeToList cite ++ links) fund at ab
   return (desc, at, ab)
   where
-  (at, ab) = partition (Fold.any (containerTop . slotContainer) . assetSlot . head) $ groupBy (me `on` fmap (containerId . slotContainer) . assetSlot) al
+  (at, ab) = partition (any (containerTop . slotContainer) . assetSlot . head) $ groupBy (me `on` fmap (containerId . slotContainer) . assetSlot) al
   me (Just x) (Just y) = x == y
   me _ _ = False
 

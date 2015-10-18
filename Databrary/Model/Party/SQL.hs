@@ -14,9 +14,8 @@ module Databrary.Model.Party.SQL
   , deleteAccount
   ) where
 
-import Control.Applicative ((<$>))
 import qualified Data.ByteString as BS
-import qualified Data.Foldable as Fold
+import Data.Foldable (fold)
 import Data.Monoid ((<>))
 import qualified Language.Haskell.TH as TH
 
@@ -94,7 +93,7 @@ selectAccount ident = selectMap ((`TH.AppE` TH.VarE ident) . (`TH.AppE` (TH.ConE
   selectPermissionAccount
 
 makeSiteAuth :: (Permission -> Maybe Access -> Account) -> Maybe BS.ByteString -> Maybe Access -> SiteAuth
-makeSiteAuth p w a = SiteAuth (p maxBound $ Just maxBound) w (Fold.fold a)
+makeSiteAuth p w a = SiteAuth (p maxBound $ Just maxBound) w (fold a)
 
 selectSiteAuth :: Selector -- @'SiteAuth'@
 selectSiteAuth = selectJoin 'makeSiteAuth

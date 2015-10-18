@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, RecordWildCards, ViewPatterns, TemplateHaskell, QuasiQuotes #-}
+{-# LANGUAGE OverloadedStrings, RecordWildCards, ViewPatterns, TemplateHaskell, QuasiQuotes, DataKinds #-}
 module Databrary.Model.Slot
   ( module Databrary.Model.Slot.Types
   , lookupSlot
@@ -8,7 +8,6 @@ module Databrary.Model.Slot
 
 import Database.PostgreSQL.Typed (pgSQL)
 
-import Databrary.Ops
 import qualified Databrary.JSON as JSON
 import Databrary.Service.DB
 import Databrary.Model.Id

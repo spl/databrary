@@ -14,7 +14,6 @@ import qualified Data.Text as T
 import Network.HTTP.Types.Status (movedPermanently301)
 import qualified Network.Wai as Wai
 
-import Databrary.Ops
 import Databrary.Has (view, peeks)
 import qualified Databrary.JSON as JSON
 import Databrary.Model.Id

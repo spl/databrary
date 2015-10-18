@@ -3,14 +3,14 @@ module Databrary.Service.Mail
   ( sendMail
   ) where
 
-import Control.Applicative ((<$>), (<|>))
+import Control.Applicative ((<|>))
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy as BSL
 import qualified Data.ByteString.Lazy.Char8 as BSLC
 import Data.Char (isSpace)
-import Data.Monoid ((<>), mempty)
+import Data.Monoid ((<>))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Network.Mail.Mime

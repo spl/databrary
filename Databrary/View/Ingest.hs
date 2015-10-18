@@ -5,7 +5,7 @@ module Databrary.View.Ingest
 
 import Control.Monad (void, forM_)
 import qualified Data.Aeson as JSON
-import Data.Monoid ((<>), mempty)
+import Data.Monoid ((<>))
 import qualified Text.Blaze.Html5 as H
 
 import Databrary.Action.Types

@@ -14,10 +14,9 @@ module Databrary.HTTP.Form
 import qualified Data.Aeson as JSON
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
-import qualified Data.Foldable as Fold
 import qualified Data.HashMap.Strict as HM
 import qualified Data.Map.Strict as Map
-import Data.Monoid (Monoid(..), (<>))
+import Data.Monoid ((<>))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.Vector as V
@@ -121,15 +120,15 @@ subForms :: Form a -> [(FormKey, Form a)]
 subForms f = subFormsFor formDataPost f ++ jsonSubForms f ++ subFormsFor formDataQuery f
 
 jsonFormDatum :: Form a -> FormDatum
-jsonFormDatum Form{ formJSON = j } = Fold.foldMap FormDatumJSON j
+jsonFormDatum Form{ formJSON = j } = foldMap FormDatumJSON j
 
 queryFormDatum :: Form a -> FormDatum
 queryFormDatum Form{ formData = FormData{ formDataQuery = m }, formPathBS = p } =
-  Fold.foldMap (maybe FormDatumFlag FormDatumBS) $ Map.lookup p m
+  foldMap (maybe FormDatumFlag FormDatumBS) $ Map.lookup p m
 
 postFormDatum :: Form a -> FormDatum
 postFormDatum Form{ formData = FormData{ formDataPost = m }, formPathBS = p } =
-  Fold.foldMap FormDatumBS $ Map.lookup p m
+  foldMap FormDatumBS $ Map.lookup p m
 
 getFormDatum :: Form a -> FormDatum
 getFormDatum form = postFormDatum form <> jsonFormDatum form <> queryFormDatum form

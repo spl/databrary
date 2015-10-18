@@ -1,11 +1,10 @@
-{-# LANGUAGE TemplateHaskell, OverloadedStrings, DeriveDataTypeable #-}
+{-# LANGUAGE TemplateHaskell, OverloadedStrings, DeriveDataTypeable, DataKinds #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Databrary.Model.Release.Types 
   ( Release(..)
   ) where
 
 import Data.Foldable (fold)
-import Data.Monoid (Monoid(..))
 import Language.Haskell.TH.Lift (deriveLift)
 
 import Databrary.Has (Has(..))

@@ -6,7 +6,6 @@ module Databrary.Ingest.Action
   , clearIngest
   ) where
 
-import Control.Applicative ((<$>))
 import Control.Arrow (left)
 import Control.Concurrent (killThread)
 import Control.Concurrent.MVar (readMVar, swapMVar, withMVar, modifyMVar, modifyMVar_)

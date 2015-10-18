@@ -6,7 +6,6 @@ module Databrary.Model.Offset
   , offsetDiffTime
   ) where
 
-import Control.Applicative ((<$>))
 import Data.Char (isDigit, digitToInt)
 import Data.Fixed (Fixed(..), HasResolution(..), Milli, Pico)
 import qualified Data.Scientific as Sci

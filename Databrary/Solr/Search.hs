@@ -10,8 +10,7 @@ import qualified Data.ByteString.Builder as B
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy as BSL
 import Data.Char (isAlphaNum)
-import Data.Foldable (foldMap)
-import Data.Monoid ((<>), mempty)
+import Data.Monoid ((<>))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Network.HTTP.Client as HC
@@ -49,8 +48,8 @@ checkTerm = cq False [] . T.unpack where
   cq False ('{':gs) (']':s) = cq False gs s
   cq False ('{':gs) ('}':s) = cq False gs s
   cq False g (c:s)
-    | c `elem` "([{" = cq False (c:g) s
-    | c `elem` ")]}" = False
+    | c `elem` ['(','[','{'] = cq False (c:g) s
+    | c `elem` [')',']','}'] = False
   cq q g (_:s) = cq q g s
   cq _ _ _ = False
 
