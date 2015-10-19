@@ -97,7 +97,7 @@ htmlTemplate req title body = H.docTypeHtml $ do
     H.title $ do
       Fold.mapM_ (\t -> H.toHtml t >> " || ") title
       "Databrary"
-  H.body $ do
+  H.body H.! H.customAttribute "vocab" "http://schema.org" $ do
     when (hasjs /= JSEnabled) $ Fold.forM_ canon $ \c -> H.div $ do
       H.preEscapedString "Our site works best with modern browsers (Firefox, Chrome, Safari &ge;6, IE &ge;10, and others). \
         \You are viewing the simple version of our site: some functionality may not be available. \

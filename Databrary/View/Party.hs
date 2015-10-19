@@ -36,28 +36,30 @@ import {-# SOURCE #-} Databrary.Controller.Volume
 import {-# SOURCE #-} Databrary.Controller.Register
 
 htmlPartyView :: Party -> RequestContext -> H.Html
-htmlPartyView p@Party{..} req = htmlTemplate req (Just $ partyName p) $ \js -> do
-  when (view p >= PermissionEDIT) $
-    H.p $
-      H.a H.! actionLink viewPartyEdit (TargetParty partyId) js $ "edit"
-  H.img
-    H.! HA.src (builderValue $ actionURL Nothing viewAvatar partyId [])
-  H.dl $ do
-    Fold.forM_ partyAffiliation $ \a -> do
-      H.dt "affiliation"
-      H.dd $ H.text a
-    Fold.forM_ partyURL $ \u -> do
-      let us = show u
-      H.dt "url"
-      H.dd $ H.a H.! HA.href (H.stringValue us) $ H.string us
-    Fold.forM_ (partyEmail p) $ \e -> do
-      H.dt "email"
-      H.dd $ H.a H.! HA.href (byteStringValue $ "mailto:" <> e) $ byteStringHtml e
-    Fold.forM_ partyORCID $ \o -> do
-      H.dt "orcid"
-      H.dd $ H.a H.! HA.href (H.stringValue $ show $ orcidURL o) $ H.string $ show o
-  H.a H.! actionLink queryVolumes HTML (toQuery js <> [("party", Just $ BSC.pack $ show partyId)]) $ "volumes"
-  return ()
+htmlPartyView p@Party{..} req = htmlTemplate req Nothing $ \js -> do
+  H.div H.! H.customAttribute "typeof" "person" $ do
+    H.h1 H.! H.customAttribute "property" "name" $ H.text $ partyName p
+    when (view p >= PermissionEDIT) $
+      H.p $
+        H.a H.! actionLink viewPartyEdit (TargetParty partyId) js $ "edit"
+    H.img
+      H.! HA.src (builderValue $ actionURL Nothing viewAvatar partyId [])
+    H.dl $ do
+      Fold.forM_ partyAffiliation $ \a -> do
+        H.dt "affiliation"
+        H.dd H.! H.customAttribute "property" "affiliation" $ H.text a
+      Fold.forM_ partyURL $ \u -> do
+        let us = show u
+        H.dt "url"
+        H.dd H.! H.customAttribute "property" "url" $ H.a H.! HA.href (H.stringValue us) $ H.string us
+      Fold.forM_ (partyEmail p) $ \e -> do
+        H.dt "email"
+        H.dd H.! H.customAttribute "property" "email" $ H.a H.! HA.href (byteStringValue $ "mailto:" <> e) $ byteStringHtml e
+      Fold.forM_ partyORCID $ \o -> do
+        H.dt "orcid"
+        H.dd H.! H.customAttribute "property" "sameAs" $ H.a H.! HA.href (H.stringValue $ show $ orcidURL o) $ H.string $ show o
+    H.a H.! actionLink queryVolumes HTML (toQuery js <> [("party", Just $ BSC.pack $ show partyId)]) $ "volumes"
+    return ()
 
 htmlPartyForm :: Maybe Party -> FormHtml TempFile
 htmlPartyForm t = do

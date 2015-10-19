@@ -30,25 +30,27 @@ import {-# SOURCE #-} Databrary.Controller.Party
 import {-# SOURCE #-} Databrary.Controller.Volume
 
 htmlVolumeView :: Volume -> RequestContext -> H.Html
-htmlVolumeView v req = htmlTemplate req (Just (volumeName v)) $ \js -> do
-  when (view v >= PermissionEDIT) $
-    H.p $
-      H.a H.! actionLink viewVolumeEdit (volumeId v) js $ "edit"
-  H.img
-    H.! HA.src (builderValue $ actionURL Nothing thumbVolume (volumeId v) [])
-  H.dl $ do
-    Fold.forM_ (getVolumeAlias v) $ \a -> do
-      H.dt "alias"
-      H.dd $ H.text a
-    forM_ (volumeOwners v) $ \(p, n) -> do
-      H.dt "owner"
-      H.dd $ H.a H.! actionLink viewParty (HTML, TargetParty p) js $ H.text n
-    Fold.forM_ (volumeBody v) $ \b -> do
-      H.dt "body"
-      H.dd $ H.text b -- format
-    Fold.forM_ (volumeDOI v) $ \d -> do
-      H.dt "doi"
-      H.dd $ byteStringHtml d
+htmlVolumeView v req = htmlTemplate req Nothing $ \js -> do
+  H.div H.! H.customAttribute "typeof" "dataset" $ do
+    H.h1 H.! H.customAttribute "property" "name" $ H.text $ volumeName v
+    when (view v >= PermissionEDIT) $
+      H.p $
+        H.a H.! actionLink viewVolumeEdit (volumeId v) js $ "edit"
+    H.img
+      H.! HA.src (builderValue $ actionURL Nothing thumbVolume (volumeId v) [])
+    H.dl $ do
+      Fold.forM_ (getVolumeAlias v) $ \a -> do
+        H.dt "alias"
+        H.dd H.! H.customAttribute "property" "alternateName" $ H.text a
+      forM_ (volumeOwners v) $ \(p, n) -> do
+        H.dt "owner"
+        H.dd H.! H.customAttribute "property" "creator" $ H.a H.! actionLink viewParty (HTML, TargetParty p) js $ H.text n
+      Fold.forM_ (volumeBody v) $ \b -> do
+        H.dt "body"
+        H.dd H.! H.customAttribute "property" "description" $ H.text b -- format
+      Fold.forM_ (volumeDOI v) $ \d -> do
+        H.dt "doi"
+        H.dd H.! H.customAttribute "property" "alternateName" $ byteStringHtml d
 
 htmlVolumeForm :: Maybe Volume -> Maybe Citation -> FormHtml f
 htmlVolumeForm vol cite = do
