@@ -22,7 +22,7 @@
       <input ng-switch-when="date" input-date ng-model="filt.value" key-enter="filter.change()" placeholder="YYYY-MM-DD" class="volume-filter-part"/>
       <input ng-switch-when="numeric" type="number" ng-model="filt.value" key-enter="filter.change()" class="volume-filter-part"/>
       <input-age ng-switch-when="age" ng-model="filt.value" key-enter="filter.change()" class="volume-filter-part"></input-age>
-      <select ng-switch-when="release" ng-model="filt.value" ng-options="c as 'release.'+page.constants.release[c]+'.title' | message for c in ::page.constants.releases" ng-change="filter.change()" class="volume-filter-part" ></select>
+      <select ng-switch-when="release" ng-model="filt.value" ng-options="c as 'release.'+page.constants.release[c]+'.title' | message for c in ::page.constants.releases" ng-change="filter.change()" class="volume-filter-part"></select>
     </span>
     <button ng-click="filter.remove($index)" class="volume-filter-remove icon trash neutral" ></button>
   </div>
