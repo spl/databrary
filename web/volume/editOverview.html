@@ -16,7 +16,7 @@
   <fieldset>
     <div>Does this volume correspond to a published paper or resource?</div>
     <label class="line-option">
-      <input type="radio" name="published" ng-model="volumeEditOverviewForm.data.published" ng-value="true" required>Yes
+      <input id="citation" type="radio" name="published" ng-model="volumeEditOverviewForm.data.published" ng-value="true" required>Yes
     </label>
     <label class="line-option">
       <input type="radio" name="published" ng-model="volumeEditOverviewForm.data.published" ng-value="false" required>No
@@ -47,7 +47,7 @@
     </div>
     <!-- description and alias -->
     <validator name="body" label="volume.body" noclientval>
-      <textarea name="body" ng-model="volumeEditOverviewForm.data.body" placeholder="{{::'volume.edit.body.placeholder' | message}}"></textarea>
+      <textarea id="body" name="body" ng-model="volumeEditOverviewForm.data.body" placeholder="{{::'volume.edit.body.placeholder' | message}}"></textarea>
     </validator>
 
     <validator name="alias" label="volume.alias">

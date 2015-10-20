@@ -39,12 +39,14 @@ app.factory('displayService', [
 
     display.scrollTo = function (target) {
       $timeout(function () {
-        if (angular.isFunction(target))
+        if (typeof target === 'function')
           target = target();
-        if (angular.isString(target))
+        if (typeof target === 'string')
           target = $(target);
-        if (!angular.isNumber(target)) {
+        if (target instanceof $) {
           if (!target.length) return;
+          if (target.is('input,textarea'))
+            target.focus();
           target = target.offset().top - 72;
         }
         $scroll.animate({
