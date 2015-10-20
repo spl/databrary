@@ -703,6 +703,7 @@ app.directive 'spreadsheet', [
           delete Rows[i]
           TBody.removeChild(row.tr) if row.tr.parentNode
           Order.remove(i)
+          Expanded = undefined if Expanded.i == i
           return
 
         removeSlot = (info) ->
@@ -933,7 +934,7 @@ app.directive 'spreadsheet', [
               if info.c == 'slot'
                 return if info.slot?.top && (mi == 'date' || mi == 'release')
                 v = info.slot?[mi]
-                v = !!v if mi == 'top'
+                v = !!v if mi == 'top' && info.slot
               else if info.c == 'asset' # not reached
                 v = info.asset[mi]
               else
