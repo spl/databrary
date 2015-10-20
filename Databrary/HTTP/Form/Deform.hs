@@ -198,6 +198,13 @@ instance Deform f (Maybe (FileInfo f)) where
 instance Deform f (FileInfo f) where
   deform = deformMaybe' "File upload required" =<< deform
 
+instance Deform f JSON.Value where
+  deform = asks (j . formDatum) where
+    j FormDatumNone = JSON.Null
+    j (FormDatumJSON v) = v
+    j (FormDatumBS b) = JSON.String $ TE.decodeUtf8 b
+    j FormDatumFlag = JSON.Bool True
+
 -- |'Text' fields are stripped of whitespace, while other string types are not.
 instance Deform f T.Text where
   deform = deformParse "" fv where

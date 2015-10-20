@@ -35,6 +35,7 @@ import Databrary.Controller.Zip
 import Databrary.Controller.Tag
 import Databrary.Controller.Comment
 import Databrary.Controller.CSV
+import Databrary.Controller.VolumeState
 import Databrary.Controller.Search
 import Databrary.Controller.Audit
 import Databrary.Web.Routes
@@ -126,6 +127,8 @@ jsRoutes = mconcat
   , jsRoute "addVolumeCategory" postVolumeMetric (volume, (category, Nothing))
   , jsRoute "deleteVolumeMetric" deleteVolumeMetric (volume, (category, Just metric))
   , jsRoute "deleteVolumeCategory" deleteVolumeMetric (volume, (category, Nothing))
+  , jsRoute "postVolumeState" postVolumeState (volume, "")
+  , jsRoute "deleteVolumeState" deleteVolumeState (volume, "")
 
   , jsRoute "getAsset" viewAsset (JSON, asset)
   , jsRoute "getAssetSegment" viewAssetSegment (JSON, Just volume, slot, asset)

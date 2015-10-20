@@ -28,6 +28,7 @@ import Databrary.Controller.Zip
 import Databrary.Controller.Tag
 import Databrary.Controller.Comment
 import Databrary.Controller.CSV
+import Databrary.Controller.VolumeState
 import Databrary.Controller.Audit
 import Databrary.Controller.Transcode
 import Databrary.Controller.Ingest
@@ -121,6 +122,8 @@ routeMap = fromRouteList
 
   , route postVolumeMetric
   , route deleteVolumeMetric
+  , route postVolumeState
+  , route deleteVolumeState
 
   , route queryTags
   , route postTag

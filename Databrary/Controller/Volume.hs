@@ -50,6 +50,7 @@ import Databrary.Model.AssetSlot
 import Databrary.Model.Excerpt
 import Databrary.Model.Tag
 import Databrary.Model.Comment
+import Databrary.Model.VolumeState
 import Databrary.Store.Filename
 import Databrary.HTTP.Form.Deform
 import Databrary.HTTP.Path.Parser
@@ -165,6 +166,8 @@ volumeJSONField o "comments" n = do
   t <- cacheVolumeTopContainer o
   tc <- lookupSlotComments (containerSlot t) (maybe 64 fst $ BSC.readInt =<< n)
   return $ Just $ JSON.toJSON $ map commentJSON tc
+volumeJSONField o "state" _ =
+  Just . JSON.toJSON . JSON.object . map (volumeStateKey &&& volumeStateValue) <$> lookupVolumeState o
 volumeJSONField o "filename" _ =
   return $ Just $ JSON.toJSON $ makeFilename $ volumeDownloadName o
 volumeJSONField _ _ _ = return Nothing

@@ -53,7 +53,7 @@ updateOrInsert upd ins = dbTransaction uoi where
       then return u
       else do
         _ <- dbExecuteSimple "SAVEPOINT pre_insert"
-        i <- dbTryJust (guard . ("23505" ==) . pgErrorCode) $ dbRunQuery ins
+        i <- dbTryJust (guard . isUniqueViolation) $ dbRunQuery ins
         either (\() -> do
           _ <- dbExecuteSimple "ROLLBACK TO SAVEPOINT pre_insert"
           uoi)
