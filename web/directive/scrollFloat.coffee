@@ -15,8 +15,10 @@ app.directive 'scrollFloat', [
         box = floater.getBoundingClientRect()
         skip = if constants.sandbox then 84 else 36
         $scope.scrollFloating = box.height && box.top < skip
-      window.addEventListener 'scroll', $scope.$lift(scroll)
+      handler = $scope.$lift(scroll)
+      window.addEventListener 'scroll', handler
       $scope.$on '$destroy', ->
-        window.removeEventListener 'scroll', scroll
+        window.removeEventListener 'scroll', handler
+      scroll()
       return
 ]
