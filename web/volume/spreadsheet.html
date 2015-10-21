@@ -26,7 +26,7 @@
       <option value=''>Restore report...</option>
     </select>
     <span ng-if="::volume.checkPermission(page.permission.EDIT)">
-      <input type="text" name="state" ng-model="state.name"/>
+      <input type="text" name="state" ng-model="state.name" ng-maxlength="64"/>
       <input type="checkbox" name="public" ng-model="state.public"/>
       <label for="public">Public</label>
       <button ng-click="state.save()">Save report</button>

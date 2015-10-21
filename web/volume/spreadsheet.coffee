@@ -1273,7 +1273,7 @@ app.directive 'spreadsheet', [
             delete state.pivot unless state.pivot
             delete state.public unless state.public
 
-            router.http(router.controllers.postVolumeState, volume.id, @name, state).then =>
+            router.http(router.controllers.postVolumeState, volume.id, encodeURIComponent(@name), state).then =>
                 volume.state[@name] = state
                 return
               , (res) ->
@@ -1285,7 +1285,7 @@ app.directive 'spreadsheet', [
 
           delete: ->
             return unless @name
-            router.http(router.controllers.deleteVolumeState, volume.id, @name).then =>
+            router.http(router.controllers.deleteVolumeState, volume.id, encodeURIComponent(@name)).then =>
                 delete volume.state[@name]
                 return
               , (res) ->
