@@ -40,9 +40,6 @@ app.directive('wizard', [
           newStep.active = true;
           tooltips.clear();
           messages.clear();
-          $timeout(function() {
-            window.dispatchEvent(new Event('scroll'));
-          });
         };
 
         this.activateStep = function(s) {
