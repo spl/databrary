@@ -21,24 +21,24 @@
 </div>
 
 <div ng-if="::!editing">
-  <div>
-    <select ng-options="k as k for (k,s) in volume.state" ng-model="state.name" ng-change="state.restore()" class="width-auto">
-      <option value=''>Restore report...</option>
-    </select>
-    <span ng-if="::volume.checkPermission(page.permission.EDIT)" class="spreadsheet-pivot-manage">
-      <input type="text" name="state" ng-model="state.name" ng-maxlength="64" class="width-auto"/>
-      <input type="checkbox" name="public" ng-model="state.public" class="width-auto"/>
-      <label for="public" class="option">Public</label>
-      <button ng-click="state.save()">Save report</button>
-      <button ng-click="state.delete()" class="icon trash neutral"></button>
-    </span>
-  </div>
 
   <slot-filter></slot-filter>
-
   <div ng-if="::!editing" class="spreadsheet-options">
     <a ng-if="!pivot.active" ng-click="pivot.show()">Summarize</a>
     <a ng-if="pivot.active" ng-click="pivot.hide()">Hide summary</a>
+  </div><wbr>
+  <div class="spreadsheet-options">
+    <select ng-options="k as k for (k,s) in volume.state" ng-model="state.name" ng-change="state.restore()" class="width-auto spreadsheet-pivot-manage">
+      <option value=''>Restore saved summary...</option>
+    </select>
+    <span ng-if="::volume.checkPermission(page.permission.EDIT)" class="spreadsheet-pivot-manage">
+      Current summary: 
+      <input type="text" name="state" ng-model="state.name" ng-maxlength="64" class="width-auto" placeholder="Enter a name" />
+      <input type="checkbox" name="public" ng-model="state.public" class="width-auto"/>
+      <label for="public" class="option">Public</label>
+      <button ng-click="state.save()">Save summary</button>
+      <button ng-click="state.delete()" class="icon trash neutral"></button>
+    </span>
   </div>
   <volume-pivot></volume-pivot>
 </div>

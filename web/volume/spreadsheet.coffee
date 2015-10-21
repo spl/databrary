@@ -1287,6 +1287,7 @@ app.directive 'spreadsheet', [
             return unless @name
             router.http(router.controllers.deleteVolumeState, volume.id, encodeURIComponent(@name)).then =>
                 delete volume.state[@name]
+                @name = undefined
                 return
               , (res) ->
                 messages.addError
