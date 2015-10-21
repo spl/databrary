@@ -228,7 +228,7 @@ app.directive 'spreadsheet', [
             return unless (if i? then @id = i else i = @id) and (i = stripPrefix(i, ID+'-'))
             s = i.split '_'
             switch s[0]
-              when 'add', 'more'
+              when 'add', 'more', 'no'
                 @t = s[0]
                 @i = parseInt(s[1], 10)
                 @c = parseIntish(s[2])
@@ -519,6 +519,7 @@ app.directive 'spreadsheet', [
                 generateAdd(info, td)
               else if !info.n
                 td.appendChild(document.createTextNode(info.category.not))
+                td.id = ID + '-no_' + info.i + '_' + info.c
           else
             td.appendChild(document.createTextNode(t + " " + info.category.name + "s"))
             td.className = 'more'
@@ -1032,7 +1033,7 @@ app.directive 'spreadsheet', [
 
           if Editing
             edit(info)
-          else if info.metric
+          else if info.category
             $scope.filter.add(info)
           return
 
@@ -1195,7 +1196,7 @@ app.directive 'spreadsheet', [
             last = @list.pop()
             if last?.op
               @list.push(last)
-            return if info.category != Key && Key != pseudoCategory.slot || info.category == pseudoCategory.asset
+            return if info.category != Key && Key != pseudoCategory.slot || info.category == pseudoCategory.asset || info.category == pseudoCategory.slot && !info.metric
             @list.push
               category: info.category
               metric: info.metric || constants.metricName.indicator
