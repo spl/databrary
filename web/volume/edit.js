@@ -4,7 +4,7 @@ app.controller('volume/edit', [
   '$scope', 'constantService', 'displayService', 'routerService', 'modelService', 'volume',
   function ($scope, constants, display, router, models, volume) {
     $scope.volume = volume;
-    display.title = volume ? "Edit " + volume.title : constants.message('volume.edit.create');
+    display.title = volume ? "Edit " + volume.displayName : constants.message('volume.edit.create');
 
     if (!volume) {
       $scope.owners = _.chain(models.Login.user.parents

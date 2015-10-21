@@ -10,7 +10,7 @@
       <hgroup class="col" ng-if="::volume">
         <h1 class="view-context">Manage volume</h1>
         <h2 class="view-title">
-          <span ng-bind="volume.alias || volume.name"></span>
+          <span ng-bind="volume.displayName"></span>
           <a ng-href="{{::volume.route()}}"><span class="button green icon view-icon"></span></a>
         </h2>
       </hgroup>
