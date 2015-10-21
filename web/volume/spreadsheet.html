@@ -22,13 +22,13 @@
 
 <div ng-if="::!editing">
   <div>
-    <select ng-options="k as k for (k,s) in volume.state" ng-model="state.name" ng-change="state.restore()">
+    <select ng-options="k as k for (k,s) in volume.state" ng-model="state.name" ng-change="state.restore()" class="width-auto">
       <option value=''>Restore report...</option>
     </select>
-    <span ng-if="::volume.checkPermission(page.permission.EDIT)">
-      <input type="text" name="state" ng-model="state.name" ng-maxlength="64"/>
-      <input type="checkbox" name="public" ng-model="state.public"/>
-      <label for="public">Public</label>
+    <span ng-if="::volume.checkPermission(page.permission.EDIT)" class="spreadsheet-pivot-manage">
+      <input type="text" name="state" ng-model="state.name" ng-maxlength="64" class="width-auto"/>
+      <input type="checkbox" name="public" ng-model="state.public" class="width-auto"/>
+      <label for="public" class="option">Public</label>
       <button ng-click="state.save()">Save report</button>
       <button ng-click="state.delete()" class="icon trash neutral"></button>
     </span>
