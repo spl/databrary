@@ -1,8 +1,8 @@
 'use strict'
 
 app.directive 'spreadsheet', [
-  'constantService', 'displayService', 'messageService', 'tooltipService', 'styleService', '$compile', '$templateCache', '$timeout', '$document', '$location',
-  (constants, display, messages, tooltips, styles, $compile, $templateCache, $timeout, $document, $location) ->
+  'constantService', 'displayService', 'messageService', 'tooltipService', 'styleService', '$compile', '$templateCache', '$timeout', '$document', '$location', 'routerService',
+  (constants, display, messages, tooltips, styles, $compile, $templateCache, $timeout, $document, $location, router) ->
     restrict: 'E'
     scope: true
     templateUrl: 'volume/spreadsheet.html'
@@ -629,8 +629,8 @@ app.directive 'spreadsheet', [
         currentSortDirection = false
 
         # Sort by column
-        sortBy = (col) ->
-          if currentSort == col
+        sortBy = (col, dir) ->
+          if currentSort == col && !dir?
             currentSortDirection = !currentSortDirection
             Order.reverse()
           else
@@ -639,7 +639,11 @@ app.directive 'spreadsheet', [
             sort (i) ->
               Rows[i].get(c)?[m]
             currentSort = col
-            currentSortDirection = false
+            if dir
+              currentSortDirection = true
+              Order.reverse()
+            else
+              currentSortDirection = false
           fill()
           return
 
@@ -1159,11 +1163,44 @@ app.directive 'spreadsheet', [
 
         ################################# main
 
+        pivotOpts = undefined
         $scope.pivot =
           show: ->
             @run(Rows)
+            return
           hide: ->
             @clear()
+            return
+          load: (opts) ->
+            if @run
+              if opts
+                @run(Rows, opts)
+              else
+                @clear()
+            else
+              pivotOpts = opts
+            return
+          init: ->
+            @run(Rows, pivotOpts) if pivotOpts
+            pivotOpts = undefined
+            return
+
+        $scope.filter =
+          update: (f) ->
+            unedit()
+            setFilter(f)
+            fill()
+            return
+          add: (info) ->
+            last = @list.pop()
+            if last?.op
+              @list.push(last)
+            return if info.category != Key && Key != pseudoCategory.slot || info.category == pseudoCategory.asset
+            @list.push
+              category: info.category
+              metric: info.metric || constants.metricName.indicator
+              value: if info.metric?.type == 'numeric' then parseFloat(info.v) else info.v
+            return
 
         setFilter = (f) ->
           if !f
@@ -1178,27 +1215,6 @@ app.directive 'spreadsheet', [
           if $scope.pivot.active
             $scope.pivot.show()
           return
-
-        $scope.filter =
-          list:
-            [
-              category: pseudoCategory.slot
-              metric: pseudoMetric.top
-            ]
-          update: (f) ->
-            unedit()
-            setFilter(f)
-            fill()
-          add: (info) ->
-            last = @list.pop()
-            if last?.op
-              @list.push(last)
-            return if info.category != Key && Key != pseudoCategory.slot || info.category == pseudoCategory.asset
-            @list.push
-              category: info.category
-              metric: info.metric || constants.metricName.indicator
-              value: info.v
-            return
 
         # Call all populate functions
         populate = ->
@@ -1232,8 +1248,80 @@ app.directive 'spreadsheet', [
           fill()
           $scope.tabOptionsClick = undefined
 
-        $scope.setKey($attrs.key || $location.search().key)
-        return
+        $scope.state =
+          name: 'default'
+          save: ->
+            return unless @name
+            state =
+              key: Key.id
+              sort: currentSort && {
+                  c: currentSort.category.id
+                  m: currentSort.metric.id
+                  dir: currentSortDirection
+                }
+              filter: $scope.filter.list.map (f) ->
+                c: f.category.id
+                m: f.metric.id
+                op: f.op
+                value: f.value
+              pivot: $scope.pivot.get()
+              public: @public
+            delete state.sort unless state.sort
+            l = state.filter.pop()
+            if l?.op
+              state.filter.push(l)
+            delete state.pivot unless state.pivot
+            delete state.public unless state.public
 
+            router.http(router.controllers.postVolumeState, volume.id, @name, state).then =>
+                volume.state[@name] = state
+                return
+              , (res) ->
+                messages.addError
+                  body: 'Error saving report state'
+                  report: res
+                return
+            return
+
+          delete: ->
+            return unless @name
+            router.http(router.controllers.deleteVolumeState, volume.id, @name).then =>
+                delete volume.state[@name]
+                return
+              , (res) ->
+                messages.addError
+                  body: 'Error deleting report state'
+                  report: res
+                return
+            return
+          
+          restore: (key) ->
+            state = volume.state?[@name] || {}
+            state.public = !!state.public
+            if state.filter
+              l = []
+              for f in state.filter
+                r =
+                  category: getCategory(f.c)
+                  metric: getMetric(f.m)
+                  op: f.op
+                  value: f.value
+                l.push r if r.category && r.metric
+              $scope.filter.list = l
+            else
+              $scope.filter.list = [
+                category: pseudoCategory.slot
+                metric: pseudoMetric.top
+              ]
+            $scope.setKey(key || state.key)
+            if state.sort && col = Cols.find((c) -> c.category.id == state.sort.c && c.metric.id == state.sort.m)
+              sortBy(col, state.sort.currentSortDirection)
+            $scope.pivot.load(state.pivot)
+            return
+
+        return
     ]
+    link: ($scope, $element, $attrs) ->
+      $scope.state.restore($attrs.key || $location.search().key)
+      return
 ]

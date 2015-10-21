@@ -9,7 +9,7 @@ app.directive 'volumePivot', [
 
       indicator = constants.metricName.indicator.id
 
-      pivot.run = (rows) ->
+      pivot.run = (rows, opts) ->
         cols = $scope.groups
         head = []
         for g in cols when g.category.id != 'asset'
@@ -60,13 +60,24 @@ app.directive 'volumePivot', [
                     else
                       d.push('<em>multiple</em>')
                 
-        $element.pivotUI(data)
+        $element.pivotUI(data, opts, opts?)
         @active = true
         return
 
       pivot.clear = ->
         @active = false
         $element.empty()
+
+      pivot.get = ->
+        return unless @active
+        opts = $element.data('pivotUIOptions')
+        r = {}
+        for k in ['rendererName', 'cols', 'rows', 'aggregatorName', 'vals']
+          if k of opts
+            r[k] = opts[k]
+        r
+
+      pivot.init?()
 
       return
 ]

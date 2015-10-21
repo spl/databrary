@@ -29,13 +29,16 @@ app.directive 'slotFilter', [
         exp = ['var v']
         cats = {slot:{}}
         ci = 0
+        any = false
         for f in filter.list when f.op
+          any = true
           c = f.category.id
           unless c of cats
             cats[c] =
               $index:ci++
           m = f.metric.id
           cats[c][m] = ops[f.op](cats[c][m], f.value)
+        return unless any
 
         record = (mets, rv, age, brk) ->
           any = false
@@ -78,15 +81,18 @@ app.directive 'slotFilter', [
         console.log(exp) if DEBUG
         exp
 
+      make = (f) ->
+        f && new Function('s', makeFilter())
+
       filter.make = () ->
-        new Function('s', makeFilter())
+        make(makeFilter())
 
       old = undefined
       filter.change = () ->
         f = makeFilter()
         return if f == old
         old = f
-        filter.update(new Function('s', f))
+        filter.update(make(f))
         return
 
       filter.remove = (i) ->
@@ -106,6 +112,8 @@ app.directive 'slotFilter', [
               filter.change()
               this.text
             default: input && i==0
+
+      filter.change()
 
       return
 ]

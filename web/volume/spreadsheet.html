@@ -20,15 +20,28 @@
   Return to the <a href="" ng-click="setKey('slot')">folder view</a> to edit session data.
 </div>
 
-<slot-filter ng-if="::!editing">
-</slot-filter>
-<div ng-if="::!editing" class="spreadsheet-options">
-  <a ng-if="!pivot.active" ng-click="pivot.show()">Summarize</a>
-  <a ng-if="pivot.active" ng-click="pivot.hide()">Hide summary</a>
-</div>
+<div ng-if="::!editing">
+  <div>
+    <select ng-options="k as k for (k,s) in volume.state" ng-model="state.name" ng-change="state.restore()">
+      <option value=''>Restore report...</option>
+    </select>
+    <span ng-if="::volume.checkPermission(page.permission.EDIT)">
+      <input type="text" name="state" ng-model="state.name"/>
+      <input type="checkbox" name="public" ng-model="state.public"/>
+      <label for="public">Public</label>
+      <button ng-click="state.save()">Save report</button>
+      <button ng-click="state.delete()" class="icon trash neutral"></button>
+    </span>
+  </div>
 
-<volume-pivot ng-if="::!editing">
-</volume-pivot>
+  <slot-filter></slot-filter>
+
+  <div ng-if="::!editing" class="spreadsheet-options">
+    <a ng-if="!pivot.active" ng-click="pivot.show()">Summarize</a>
+    <a ng-if="pivot.active" ng-click="pivot.hide()">Hide summary</a>
+  </div>
+  <volume-pivot></volume-pivot>
+</div>
 
 <div class="spreadsheet" ng-class="::{'edit': editing, 'view': !editing}">
   <table class="spreadsheet-table" ng-click="click($event)">
