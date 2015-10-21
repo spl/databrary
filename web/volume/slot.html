@@ -63,7 +63,7 @@
                 <ng-form ng-if="::editing" name="form.edit" ng-switch="current.type">
                   <div ng-switch-when="asset">
                     <validator name="name" label="asset.name.title">
-                      <input type="text" name="name" ng-model="current.data.name" placeholder="{{::'asset.name.placeholder' | message}}">
+                      <input type="text" name="name" ng-model="current.data.name" placeholder="Please add a name. This name will be displayed to all users.">
                     </validator>
 
                     <validator name="classification" label="asset.classification">
@@ -146,14 +146,14 @@
               </select>
             </ng-form>
             <ng-form ng-switch-when="record" name="form.position">
-              <input input-position="-Infinity" class="position-input" type="text" size="10" name="position-lower" ng-model="current.l" position-max="current.u" ng-change="current.updatePosition(false)" key-enter="updatePosition()" placeholder="{{::'position.placeholder' | message}}"> 
+              <input input-position="-Infinity" class="position-input" type="text" size="10" name="position-lower" ng-model="current.l" position-max="current.u" ng-change="current.updatePosition(false)" key-enter="updatePosition()" placeholder="MM:SS"> 
               &ndash; 
-              <input input-position="Infinity" class="position-input" type="text" size="10" name="position-upper" ng-model="current.u" position-min="current.l" ng-change="current.updatePosition(true)" placeholder="{{::'position.placeholder' | message}}"> 
+              <input input-position="Infinity" class="position-input" type="text" size="10" name="position-upper" ng-model="current.u" position-min="current.l" ng-change="current.updatePosition(true)" placeholder="MM:SS"> 
               <button ng-click="current.finishPosition()">Cancel</button>
               <button class="green" ng-click="current.savePosition()" ng-disabled="form.position.$pristine || form.position.$invalid">Save</button>
             </ng-form>
             <ng-form ng-switch-when="asset" name="form.position">
-              <input input-position="-Infinity" class="position-input" type="text" size="10" name="position-lower" ng-model="current.l" ng-change="current.updatePosition(false)" key-enter="updatePosition()" placeholder="{{::'position.placeholder' | message}}"> 
+              <input input-position="-Infinity" class="position-input" type="text" size="10" name="position-lower" ng-model="current.l" ng-change="current.updatePosition(false)" key-enter="updatePosition()" placeholder="MM:SS"> 
               &ndash; 
               <span ng-bind="current.u | timecode:true"></span> 
               <button ng-click="current.finishPosition()">Cancel</button>
@@ -244,7 +244,7 @@
 
         <section ng-if="::!editing" id="slot-comments" class="slot-comments">
           <div ng-if="!commentReply && authorized">
-            <textarea ng-model="form.comment.text" placeholder="{{::'comments.prompt' | message}}"></textarea>
+            <textarea ng-model="form.comment.text" placeholder="Post a comment..."></textarea>
             <button ng-disabled="!form.comment.text.length" ng-click="addComment(form.comment.text)" class="mini" message="comments.post"></button>
           </div>
 
