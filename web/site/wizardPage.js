@@ -7,7 +7,7 @@ app.directive('wizardPage', [
       templateUrl: 'site/wizardPage.html',
       require: '^wizard',
       scope: {
-        disabledFn: '&disabled'
+        disabledFn: '&wizardDisabled'
       },
       transclude: true,
       link: {

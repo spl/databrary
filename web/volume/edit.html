@@ -29,23 +29,23 @@
             <volume-edit-overview-form></volume-edit-overview-form>
           </wizard-page>
 
-          <wizard-page name="access" disabled="!volume.checkPermission(page.permission.ADMIN)">
+          <wizard-page name="access" wizard-disabled="!volume.checkPermission(page.permission.ADMIN)">
             <volume-edit-access-form></volume-edit-access-form>
           </wizard-page>
 
-          <wizard-page name="design" disabled="!volume">
+          <wizard-page name="design" wizard-disabled="!volume">
             <volume-design></volume-design>
           </wizard-page>
 
-          <wizard-page name="data" disabled="!volume">
+          <wizard-page name="data" wizard-disabled="!volume">
             <spreadsheet edit></spreadsheet>
           </wizard-page>
 
-          <wizard-page name="links" disabled="!volume">
+          <wizard-page name="links" wizard-disabled="!volume">
             <volume-edit-links-form></volume-edit-links-form>
           </wizard-page>
 
-          <wizard-page name="funding" disabled="!volume">
+          <wizard-page name="funding" wizard-disabled="!volume">
             <volume-edit-funding-form></volume-edit-funding-form>
           </wizard-page>
         </wizard>
