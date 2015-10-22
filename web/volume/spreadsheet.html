@@ -22,23 +22,25 @@
 
 <div ng-if="::!editing">
   <div class="spreadsheet-options">
-    <select ng-options="k as k for (k,s) in volume.state" ng-model="state.name" ng-change="state.restore()" class="width-auto">
+    <select ng-options="k as k for (k,s) in volume.state" ng-model="state.name" ng-change="state.restore()" class="width-auto spreadsheet-pivot-part">
       <option value=''>Restore saved report...</option>
     </select>
     <wbr>
-    <span ng-if="::volume.checkPermission(page.permission.EDIT)" class="spreadsheet-report-manage spreadsheet-pivot-part">
+    <div ng-if="::volume.checkPermission(page.permission.EDIT)" class="spreadsheet-report-manage spreadsheet-pivot-part">
       Report 
-      <input type="text" name="state" ng-model="state.name" ng-maxlength="64" class="width-auto spreadsheet-pivot-part" placeholder="Enter a name..." />
-      <input type="checkbox" name="public" ng-model="state.public" class="width-auto spreadsheet-pivot-part"/>
-      <label for="public" class="option">Public</label>
-      <div class="spreadsheet-pivot-part">
+      <input type="text" name="state" ng-model="state.name" ng-maxlength="64" class="width-auto spreadsheet-pivot-part" placeholder="Enter a name..." /><wbr>
+      <span class="spreadsheet-pivot-part">
+        <input type="checkbox" name="public" ng-model="state.public" class="width-auto"/>
+        <label for="public" class="option">Public</label>
+      </span>
+      <span class="spreadsheet-pivot-part">
         <button ng-click="state.save()">Save</button>
         <button ng-click="state.delete()">
           <span class="icon trash2"></span>
           Delete
         </button>
-      </div>
-    </span>
+      </span>
+    </div>
   </div>
   <hr>
   <slot-filter></slot-filter>
