@@ -26,16 +26,16 @@
         <li ng-class="{'volume-meter-done': metrics.description.done}">
           <span ng-if="::!!metrics.description.done">
             <span class="icon done"></span>
-            Description written
+            Description added
           </span>
-          <span ng-click="goto('overview', '#body')" ng-if="::!metrics.description.done" class="clickable">Add a description of at least 500 characters that summarizes what your volume contains and how the data were collected.</span>
+          <span ng-click="goto('overview', '#body')" ng-if="::!metrics.description.done" class="clickable">Add a description of at least 500 characters. <br><small> This will summarize what your volume contains and how the data were collected (e.g., the abstract of a corresponding publication).</small></span>
         </li>
         <li ng-class="{'volume-meter-done': metrics.citation.done}">
           <span ng-if="::!!metrics.citation.done">
             <span class="icon done"></span>
             Publication linked
           </span>
-          <span ng-click="goto('overview', '#citation')" ng-if="::!metrics.citation.done" class="clickable">Link your volume to any corresponding published work by adding a DOI or citation.</span>
+          <span ng-click="goto('overview', '#citation')" ng-if="::!metrics.citation.done" class="clickable">Link your volume to any corresponding publication by adding a DOI or citation.</span>
         </li>
         <li ng-class="{'volume-meter-done': metrics.keywords.done}">
           <span ng-if="::!!metrics.keywords.done">
@@ -52,30 +52,31 @@
         <span ng-if="::!!metrics.design.done && !!metrics.session.done && !!metrics.record.done" class="icon done"></span>
       </div> 
       <h5>Study design and data spreadsheet</h5>
-      <p>Describe your study design, then start creating and labeling sessions in the data spreadsheet.</p>
+      <p>Define your study design, then start creating and describing sessions in the data spreadsheet.</p>
       <ul ng-if="::!metrics.design.done || !metrics.session.done || !metrics.record.done">
         <li ng-class="metrics.design.done? 'volume-meter-done' : 'clickable'">
           <span ng-if="::!!metrics.design.done">
             <span class="icon done"></span> 
-            Study design specified
+            Study design defined
           </span>
-          <span ng-click="goto('design')" ng-if="::!metrics.design.done">Choose the categories and fields by which you organize your data.</span>
+          <span ng-click="goto('design')" ng-if="::!metrics.design.done">Select the categories and fields by which you will describe your sessions.</span>
         </li> 
         <li ng-class="metrics.session.done? 'volume-meter-done' : 'clickable'">
           <span ng-if="::!!metrics.session.done">
             <span class="icon done"></span>
-            Created a session
+            Created a study session
           </span>
-          <span ng-click="goto('data')" ng-if="::!metrics.session.done">Create at least one session in order to start uploading data.<br>
+          <span ng-click="goto('data')" ng-if="::!metrics.session.done">Create at least one study session in order to start uploading data.<br>
             <small>Click 'add folder' and select 'session' in the folder type dropdown on the left of the spreadsheet</small>
           </span>
         </li>
         <li ng-class="metrics.record.done? 'volume-meter-done' : 'clickable'">
           <span ng-if="::!!metrics.record.done">
             <span class="icon done"></span>
-            Created a label
+            Described a session
           </span>
-          <span ng-click="goto('data')" ng-if="::!metrics.record.done">Enter a label to use for your data such as participant, task, condition, etc.</span>
+          <span ng-click="goto('data')" ng-if="::!metrics.record.done">
+          Fill out the fields for a session category such as participant, task, condition, etc.</span>
         </li>
       </ul>
     </div>
@@ -85,16 +86,16 @@
         <span ng-if="::!!metrics.asset.done" class="icon done"></span>
       </div> 
       <h5>Upload a file</h5>
-      <p ng-if="::!metrics.asset.done">Upload at least one file to your volume. Start by selecting "add file" in one of your folders in the data spreadsheet.</p>
+      <p ng-if="::!metrics.asset.done">Upload at least one file to a session. Start by selecting "add file" in one of your folders in the data spreadsheet.</p>
     </div>
 
     <div class="volume-meter-category col-desktop-15 col-tablet-9 col-mobile-6" ng-class="{'volume-meter-done': !!metrics.excerpts.done && !!metrics.asset.done}">
       <div class="icon done-not">
         <span ng-if="::!!metrics.excerpts.done && !!metrics.thumbnail.done" class="icon done"></span>
       </div>
-      <h5>Highlight data representative of your study</h5>
+      <h5>Highlight data that represents your study</h5>
       <p ng-if="::!metrics.excerpts.done || !metrics.thumbnail.done">
-        Highlighting data or files makes it easier for others to understand what your volume is about.
+        Highlighting data or files makes it easier for others to understand what your volume contains.
         <span ng-if="::!metrics.asset.done" class="reminder"><br>Note: You need to have uploaded at least one file before you can select a highlight.</span>
       </p>
       <ul ng-if="::!metrics.excerpts.done || !metrics.thumbnail.done">
