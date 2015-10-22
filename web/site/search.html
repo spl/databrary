@@ -48,10 +48,8 @@
         <div class="search-filter">
           <span>Participants' age</span><br>
           <div ui-slider="{range:true}" min="0" max="{{ageMax()}}" step="1" ng-model="fields.record_age"></div>
-          <div>
-            <input-age ng-model="fields.record_age[0]"></input-age>
-            <input-age ng-model="fields.record_age[1]" class="slider-right-label"></input-age>
-          </div>
+          <input-age ng-model="fields.record_age[0]" class="inline-block"></input-age> - 
+          <input-age ng-model="fields.record_age[1]" class="inline-block"></input-age>
         </div>
         <div class="search-filter" ng-repeat="(mi, v) in metrics" ng-if="metrics[mi] !== undefined" ng-init="m=page.constants.metric[mi]">
           <span class="icon trash clickable" ng-click="removeMetric(mi)"></span>
