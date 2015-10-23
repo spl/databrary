@@ -34,7 +34,7 @@ data Service = Service
   , serviceLogs :: !Logs
   , serviceMessages :: !Messages
   , serviceDB :: !DBPool
-  , serviceStorage :: !Storage
+  , serviceStorage :: Storage
   , serviceAV :: !AV
   , serviceWeb :: !Web
   , serviceHTTPClient :: !HTTPClient

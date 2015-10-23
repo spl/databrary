@@ -19,7 +19,9 @@ import Databrary.Store.Types
 import Databrary.Store.Transcoder
 
 initStorage :: C.Config -> IO Storage
-initStorage conf = do
+initStorage conf
+  | Just down <- conf C.! "DOWN" = return $ error $ "Storage unavailable: " ++ down
+  | otherwise = do
   temp <- fromMaybeM (toRawFilePath <$> getTemporaryDirectory) $ conf C.! "temp"
 
   foldM_ (\dev f -> do

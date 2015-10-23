@@ -10,18 +10,18 @@ import Databrary.Has (MonadHas)
 import Databrary.Files
 
 data Transcoder = Transcoder
-  { transcoderCmd :: FilePath
-  , transcoderArgs :: [String]
+  { transcoderCmd :: !FilePath
+  , transcoderArgs :: ![String]
   }
 
 data Storage = Storage
   { storageMaster :: !RawFilePath
-  , storageFallback :: Maybe RawFilePath
+  , storageFallback :: !(Maybe RawFilePath)
   , storageTemp :: !RawFilePath
   , storageUpload :: !RawFilePath
-  , storageCache :: Maybe RawFilePath
-  , storageStage :: Maybe RawFilePath
-  , storageTranscoder :: Maybe Transcoder
+  , storageCache :: !(Maybe RawFilePath)
+  , storageStage :: !(Maybe RawFilePath)
+  , storageTranscoder :: !(Maybe Transcoder)
   }
 
 type MonadStorage c m = (MonadHas Storage c m, MonadIO m)
