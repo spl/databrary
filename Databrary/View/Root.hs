@@ -1,8 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Databrary.View.Root
   ( htmlRoot
+  , htmlDown
   ) where
 
+import qualified Data.Text as T
 import qualified Text.Blaze.Html5 as H
 
 import Databrary.Has (view)
@@ -25,4 +27,11 @@ htmlRoot req = htmlTemplate req Nothing $ \js -> do
       (view req)
     H.li $ H.a H.! actionLink queryVolumes HTML js $ "volumes"
     H.li $ H.a H.! actionLink queryParties HTML js $ "parties"
+  return ()
+
+htmlDown :: T.Text -> RequestContext -> H.Html
+htmlDown msg req = htmlTemplate req (Just "Status") $ \_ -> do
+  H.div $ do
+    H.p $ H.preEscapedText msg
+    H.p "Many services are unavailable, including all file uploads and downloads. Minimal account and authorization management is available."
   return ()

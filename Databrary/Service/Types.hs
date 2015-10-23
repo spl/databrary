@@ -3,10 +3,14 @@ module Databrary.Service.Types
   ( Secret(..)
   , Service(..)
   , MonadHasService
+#ifndef DOWN
+  , serviceDown
+#endif
   ) where
 
 import Control.Concurrent (ThreadId)
 import qualified Data.ByteString as BS
+import qualified Data.Text as T
 
 import Databrary.Has (makeHasRec)
 import Databrary.Service.DB (DBPool)
@@ -47,6 +51,14 @@ data Service = Service
   , serviceSolr :: !Solr
   , serviceEZID :: !(Maybe EZID)
   , servicePeriodic :: !(Maybe ThreadId)
+#ifdef DOWN
+  , serviceDown :: !(Maybe T.Text)
+#endif
   }
+
+#ifndef DOWN
+serviceDown :: Service -> Maybe T.Text
+serviceDown _ = Nothing
+#endif
 
 makeHasRec ''Service ['serviceSecret, 'serviceEntropy, 'servicePasswd, 'serviceLogs, 'serviceMessages, 'serviceDB, 'serviceStorage, 'serviceAV, 'serviceWeb, 'serviceHTTPClient, 'serviceStatic, 'serviceIngest, 'serviceSolr]

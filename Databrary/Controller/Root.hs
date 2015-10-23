@@ -7,9 +7,11 @@ module Databrary.Controller.Root
 
 import Control.Monad (when)
 import qualified Data.Aeson.Types as JSON
+import Data.Maybe (isNothing)
 import qualified Data.Text as T
 
 import Databrary.Has
+import Databrary.Service.Types
 import Databrary.HTTP.Path.Parser
 import Databrary.Action.Types
 import Databrary.Action
@@ -19,10 +21,11 @@ import Databrary.Web.Constants
 
 viewRoot :: ActionRoute API
 viewRoot = action GET pathAPI $ \api -> withAuth $ do
-  when (api == HTML) angular
+  down <- peeks serviceDown
+  when (api == HTML && isNothing down) angular
   case api of
     JSON -> return $ okResponse [] JSON.emptyObject
-    HTML -> peeks $ okResponse [] . htmlRoot
+    HTML -> peeks $ okResponse [] . maybe htmlRoot htmlDown down
 
 viewConstants :: ActionRoute ()
 viewConstants = action GET (pathJSON >/> "constants") $ \() -> withoutAuth $

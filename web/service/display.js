@@ -1,8 +1,8 @@
 'use strict';
 
 app.factory('displayService', [
-  '$rootScope', 'storageService', '$filter', 'messageService', 'tooltipService', 'constantService', '$timeout', '$window', 'analyticService',
-  function ($rootScope, storage, $filter, messages, tooltips, constants, $timeout, window, analytics) {
+  '$rootScope', 'storageService', '$filter', '$sce', 'messageService', 'tooltipService', 'constantService', '$timeout', '$window', '$play', 'analyticService',
+  function ($rootScope, storage, $filter, $sce, messages, tooltips, constants, $timeout, window, $play, analytics) {
     var display = {};
 
     display.title = '';
@@ -89,6 +89,13 @@ app.factory('displayService', [
       messages.add({
         type: 'yellow',
         body: constants.message('video.unsupported'),
+        persist: true
+      });
+
+    if ($play.down)
+      messages.add({
+        type: 'red',
+        body: $sce.trustAsHtml($play.down + " <a href='/'>Learn more.</a>"),
         persist: true
       });
 

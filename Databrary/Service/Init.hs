@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, TemplateHaskell, RecordWildCards #-}
+{-# LANGUAGE CPP, OverloadedStrings, TemplateHaskell, RecordWildCards #-}
 module Databrary.Service.Init
   ( withService
   ) where
@@ -57,6 +57,9 @@ initService fg conf = do
         , serviceSolr = solr
         , serviceEZID = ezid
         , servicePeriodic = Nothing
+#ifdef DOWN
+        , serviceDown = conf C.! "store.DOWN"
+#endif
         }
   periodic <- fg ?$> forkPeriodic rc
   return $! rc

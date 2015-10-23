@@ -3,7 +3,6 @@
 app.factory('messageService', [
   '$sanitize', '$sce', 'constantService',
   function ($sanitize, $sce, constants) {
-
     var defaults = {
       type: 'blue',
       persist: false,
