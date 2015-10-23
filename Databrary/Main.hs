@@ -1,6 +1,7 @@
 {-# LANGUAGE CPP, OverloadedStrings #-}
 module Main (main) where
 
+import Control.Applicative ((<$>))
 import Control.Exception (evaluate)
 import Control.Monad (void)
 #ifndef DEVEL
@@ -9,6 +10,7 @@ import Control.Monad.Reader (runReaderT)
 import qualified Data.Aeson.Encode as J (encodeToBuilder)
 import Data.ByteString.Builder (hPutBuilder)
 import Data.Either (partitionEithers)
+import Data.Monoid (mconcat)
 import qualified System.Console.GetOpt as Opt
 import System.Environment (getProgName, getArgs)
 import System.Exit (exitSuccess, exitFailure)
@@ -55,10 +57,9 @@ main = do
   args <- getArgs
   let (flags, args', err) = Opt.getOpt Opt.Permute opts args
       (configs, flags') = partitionEithers $ map flagConfig flags
-  conf <- Conf.load $ case configs of
-    [] -> "databrary.conf"
-    [f] -> f
-    _ -> fail "Multiple config files"
+  conf <- mconcat <$> mapM Conf.load (case configs of
+    [] -> ["databrary.conf"]
+    l -> l)
   case (flags', args', err) of
     ([FlagWeb], [], []) -> do
       void generateWebFiles
