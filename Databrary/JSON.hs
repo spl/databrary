@@ -81,7 +81,10 @@ instance FromJSON BS.ByteString where
   parseJSON = fmap TE.encodeUtf8 . parseJSON
 
 instance ToJSON C.Config where
-  toJSON = Object . object . map (TE.decodeUtf8 *** toJSON) . HM.toList . C.configMap
+  toJSON = toJSON . C.configMap
+
+instance ToJSON C.ConfigMap where
+  toJSON = Object . object . map (TE.decodeUtf8 *** toJSON) . HM.toList
 
 instance ToJSON C.Value where
   toJSON C.Empty = Null

@@ -70,7 +70,7 @@ main = do
       r <- withService False conf $ runContextM $ withBackgroundContextM updateEZID
       if r == Just True then exitSuccess else exitFailure
     ([], [], []) -> return ()
-    (_, _, _) -> do
+    _ -> do
       mapM_ putStrLn err
       putStrLn $ Opt.usageInfo ("Usage: " ++ prog ++ " [OPTION...]") opts
       exitFailure
