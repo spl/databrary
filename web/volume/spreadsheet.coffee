@@ -708,7 +708,7 @@ app.directive 'spreadsheet', [
           delete Rows[i]
           TBody.removeChild(row.tr) if row.tr.parentNode
           Order.remove(i)
-          Expanded = undefined if Expanded.i == i
+          Expanded = undefined if Expanded?.i == i
           return
 
         removeSlot = (info) ->
