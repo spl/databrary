@@ -1,11 +1,8 @@
-{-# LANGUAGE CPP, OverloadedStrings, TemplateHaskell, RecordWildCards #-}
+{-# LANGUAGE OverloadedStrings, TemplateHaskell, RecordWildCards #-}
 module Databrary.Service.Types
   ( Secret(..)
   , Service(..)
   , MonadHasService
-#ifndef DOWN
-  , serviceDown
-#endif
   ) where
 
 import Control.Concurrent (ThreadId)
@@ -38,11 +35,7 @@ data Service = Service
   , serviceLogs :: !Logs
   , serviceMessages :: !Messages
   , serviceDB :: !DBPool
-  , serviceStorage ::
-#ifndef DOWN
-                      !
-#endif
-                       Storage
+  , serviceStorage :: Storage -- may be down
   , serviceAV :: !AV
   , serviceWeb :: !Web
   , serviceHTTPClient :: !HTTPClient
@@ -51,14 +44,7 @@ data Service = Service
   , serviceSolr :: !Solr
   , serviceEZID :: !(Maybe EZID)
   , servicePeriodic :: !(Maybe ThreadId)
-#ifdef DOWN
   , serviceDown :: !(Maybe T.Text)
-#endif
   }
-
-#ifndef DOWN
-serviceDown :: Service -> Maybe T.Text
-serviceDown _ = Nothing
-#endif
 
 makeHasRec ''Service ['serviceSecret, 'serviceEntropy, 'servicePasswd, 'serviceLogs, 'serviceMessages, 'serviceDB, 'serviceStorage, 'serviceAV, 'serviceWeb, 'serviceHTTPClient, 'serviceStatic, 'serviceIngest, 'serviceSolr]
