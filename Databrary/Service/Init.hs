@@ -59,7 +59,7 @@ initService fg conf = do
         , servicePeriodic = Nothing
         }
   periodic <- fg ?$> forkPeriodic rc
-  return rc
+  return $! rc
     { servicePeriodic = periodic
     }
 

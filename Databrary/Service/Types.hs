@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, TemplateHaskell, RecordWildCards #-}
+{-# LANGUAGE CPP, OverloadedStrings, TemplateHaskell, RecordWildCards #-}
 module Databrary.Service.Types
   ( Secret(..)
   , Service(..)
@@ -34,7 +34,11 @@ data Service = Service
   , serviceLogs :: !Logs
   , serviceMessages :: !Messages
   , serviceDB :: !DBPool
-  , serviceStorage :: Storage
+  , serviceStorage ::
+#ifndef DOWN
+                      !
+#endif
+                       Storage
   , serviceAV :: !AV
   , serviceWeb :: !Web
   , serviceHTTPClient :: !HTTPClient

@@ -61,6 +61,11 @@ Flag sandbox
   default: False
   manual: True
 
+Flag down
+  description: Allow running with some services disabled and reported down
+  default: False
+  manual: True
+
 Executable schemabrary
   main-is: Databrary/Setup/DB.hs
   default-language: Haskell2010
@@ -158,6 +163,8 @@ Executable databrary
     ghc-options: -with-rtsopts -N
   if flag(sandbox)
     cpp-options: -DSANDBOX
+  if flag(down)
+    cpp-options: -DDOWN
 
   pkgconfig-depends: libavformat, libswscale, libavcodec, libavutil
   extra-libraries: crack
