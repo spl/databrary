@@ -95,7 +95,7 @@ app.factory('displayService', [
     if ($play.down)
       messages.add({
         type: 'red',
-        body: $sce.trustAsHtml($play.down + " <a href='/'>Learn more.</a>"),
+        body: $sce.trustAsHtml($play.down + " <a href='/' target='_self'>Learn more.</a>"),
         persist: true
       });
 
