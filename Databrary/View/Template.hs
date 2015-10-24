@@ -6,7 +6,7 @@ module Databrary.View.Template
   , htmlSocialMedia
   ) where
 
-import Control.Monad (void, when)
+import Control.Monad (void, when, forM_)
 import qualified Data.Foldable as Fold
 import qualified Data.ByteString.Builder as BSB
 import Data.Monoid ((<>))
@@ -94,6 +94,9 @@ htmlTemplate :: RequestContext -> Maybe T.Text -> (JSOpt -> H.Html) -> H.Html
 htmlTemplate req title body = H.docTypeHtml $ do
   H.head $ do
     htmlHeader canon hasjs
+    H.link
+      H.! HA.rel "stylesheet"
+      H.! actionLink webFile (Just $ StaticPath "all.min.css") ([] :: Query)
     H.title $ do
       Fold.mapM_ (\t -> H.toHtml t >> " || ") title
       "Databrary"
@@ -106,25 +109,48 @@ htmlTemplate req title body = H.docTypeHtml $ do
       " to see if it will work on your browser."
     H.section
       H.! HA.id "toolbar"
-      H.! HA.class_ "toolbar"
-      $ do
-        H.h1 $ H.a
-          H.! actionLink viewRoot HTML hasjs
-          $ "Databrary"
-        foldIdentity
-          (H.a H.! actionLink viewLogin () hasjs $ "login")
-          (\_ -> do
-            H.a H.! actionLink viewParty (HTML, TargetProfile) hasjs $ "profile"
-            actionForm postLogout HTML hasjs $
-              H.button
-                H.! HA.type_ "submit"
-                $ "logout")
-          $ requestIdentity req
-    Fold.mapM_ (H.h1 . H.toHtml) title
-    r <- body hasjs
-    H.hr
-    htmlFooter
-    return r
+      H.! HA.class_ "toolbar" 
+      $ H.div
+        H.! HA.class_ "wrap toolbar-main"
+        $ H.div
+          H.! HA.class_ "row"
+          $ H.nav
+            H.! HA.class_ "toolbar-nav no-angular cf"
+            $ do
+              H.ul
+                H.! HA.class_ "inline-block flat cf"
+                $ do
+                  H.li $ H.a
+                    H.! actionLink viewRoot HTML hasjs
+                    $ "Databrary"
+                  Fold.forM_ ["news", "about", "access", "community"] $ \l ->
+                    H.li $ H.a H.! HA.href (H.stringValue $ "//databrary.org/" ++ l ++ ".html") $ do
+                      H.string l
+              H.ul
+                H.! HA.class_ "toolbar-user inline-block flat cf"
+                $ foldIdentity
+                  (H.li $ H.a H.! actionLink viewLogin () hasjs $ "Login")
+                  (\_ -> do
+                    H.li $ H.a H.! actionLink viewParty (HTML, TargetProfile) hasjs $ "Your Dashboard"
+                    H.li $ actionForm postLogout HTML hasjs $
+                      H.button
+                        H.! HA.class_ "mini"
+                        H.! HA.type_ "submit"
+                        $ "Logout")
+                  $ requestIdentity req
+    H.section
+      H.! HA.id "main"
+      H.! HA.class_ "main"
+        $ H.div
+          H.! HA.class_ "wrap"
+          $ H.div
+            H.! HA.class_ "row"
+            $ do
+              Fold.mapM_ (H.h1 . H.toHtml) title
+                H.! HA.class_ "view-title"
+              r <- body hasjs
+              htmlFooter
+              return r
   where
   (hasjs, nojs) = jsURL JSDefault (view req)
   canon = Wai.requestMethod (view req) == methodGet && hasjs == JSDefault ?!> nojs
