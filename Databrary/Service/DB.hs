@@ -19,6 +19,7 @@ module Databrary.Service.DB
   , dbQuery1
   , dbQuery1'
   , dbTransaction
+  , dbTransaction'
 
   , runDBConnection
   , useTDB
@@ -27,8 +28,10 @@ module Databrary.Service.DB
 
 import Control.Applicative ((<$>))
 import Control.Exception (onException, tryJust, bracket)
-import Control.Monad (unless, (<=<))
+import qualified Control.Exception.Lifted as Lifted (onException)
+import Control.Monad (unless, (<=<), void)
 import Control.Monad.IO.Class (MonadIO)
+import Control.Monad.Trans.Control (MonadBaseControl)
 import Control.Monad.Trans.Reader (ReaderT(..))
 import qualified Data.ByteString.Lazy as BSL
 import Data.IORef (IORef, newIORef, atomicModifyIORef')
@@ -145,6 +148,16 @@ dbTransaction f = liftDB $ \c -> do
     return r)
     (pgSimpleQuery c "ROLLBACK")
 
+dbTransaction' :: (MonadBaseControl IO m, MonadDB c m) => m a -> m a
+dbTransaction' f = do
+  _ <- sq "BEGIN"
+  Lifted.onException (do
+    r <- f
+    _ <- sq "COMMIT"
+    return r)
+    (sq "ROLLBACK")
+  where
+  sq q = void $ liftDB $ \c -> pgSimpleQuery c q
 
 -- For connections outside runtime:
 

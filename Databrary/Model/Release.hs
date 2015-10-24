@@ -15,6 +15,8 @@ import Databrary.Model.Container.Types
 import Databrary.Model.Release.Types
 import Databrary.Model.Release.SQL
 
+useTDB
+
 changeRelease :: MonadAudit c m => Slot -> Maybe Release -> m Bool
 changeRelease s Nothing = do
   ident <- getAuditIdentity
