@@ -74,14 +74,21 @@ htmlVolumeLinksEdit vol links = htmlForm "Edit volume links" postVolumeLinks (HT
   (const mempty)
 
 htmlVolumeList :: JSOpt -> [Volume] -> H.Html
-htmlVolumeList js vl = H.ul $ forM_ vl $ \v -> H.li $ do
-  H.h2
-    $ H.a H.! actionLink viewVolume (HTML, volumeId v) js
-    $ H.text $ volumeName v
-  H.ul $ forM_ (volumeOwners v) $ \(p, o) -> H.li $ do
-    H.a H.! actionLink viewParty (HTML, TargetParty p) js
-      $ H.text o
-  Fold.mapM_ (H.p . H.text) $ volumeBody v
+htmlVolumeList js vl = H.ul 
+  H.! HA.class_ "flat"
+  $ forM_ vl $ \v -> H.li 
+    $ H.article
+      H.! HA.class_ "volume-list-result cf"
+      $ do
+        H.h1
+          $ H.a H.! actionLink viewVolume (HTML, volumeId v) js
+          $ H.text $ volumeName v
+        H.ul 
+          H.! HA.class_ "flat semicolon"
+          $ forM_ (volumeOwners v) $ \(p, o) -> H.li $ do
+            H.a H.! actionLink viewParty (HTML, TargetParty p) js
+              $ H.text o
+        Fold.mapM_ (H.p . H.text) $ volumeBody v
 
 htmlVolumeSearch :: VolumeFilter -> [Volume] -> RequestContext -> FormHtml f
 htmlVolumeSearch VolumeFilter{..} vl req = htmlForm "Volume search" queryVolumes HTML
