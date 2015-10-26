@@ -16,7 +16,7 @@ module Databrary.Model.AssetSlot
   ) where
 
 import Control.Applicative ((<*>))
-import Control.Monad (when, guard)
+import Control.Monad (join, when, guard)
 import qualified Data.Foldable as Fold
 import Data.Maybe (fromMaybe, isNothing, catMaybes)
 import qualified Data.Text as T
@@ -90,8 +90,8 @@ fixAssetSlotDuration as
   | otherwise = as
 
 findAssetContainerEnd :: MonadDB c m => Container -> m Offset
-findAssetContainerEnd c = fromMaybe 0 <$>
-  dbQuery1' [pgSQL|SELECT max(upper(segment))+'1s' FROM slot_asset WHERE container = ${containerId c}|]
+findAssetContainerEnd c = fromMaybe 0 . join <$>
+  dbQuery1 [pgSQL|SELECT max(pos)+'1s' FROM (SELECT upper(segment) AS pos FROM slot_asset WHERE container = ${containerId c} FOR NO KEY UPDATE) AS sa|]
 
 assetSlotName :: AssetSlot -> Maybe T.Text
 assetSlotName a = guard (Fold.any (containerTop . slotContainer) (assetSlot a) || dataPermission a > PermissionNONE) >> assetName (slotAsset a)

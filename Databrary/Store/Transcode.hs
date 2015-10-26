@@ -89,10 +89,10 @@ startTranscode tc = do
       return Nothing)
   where lock = Just (-1)
 
-forkTranscode :: Transcode -> ActionM ThreadId
-forkTranscode tc = focusIO $ \ctx ->
+forkTranscode :: ActionM () -> Transcode -> ActionM ThreadId
+forkTranscode lock tc = focusIO $ \ctx ->
   forkAction
-    (startTranscode tc) ctx
+    (lock >> startTranscode tc) ctx
     (either
       (\e -> logMsg (view ctx) ("forkTranscode: " ++ show e) (view ctx))
       (const $ return ()))
