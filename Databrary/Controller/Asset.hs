@@ -16,6 +16,8 @@ module Databrary.Controller.Asset
   ) where
 
 import Control.Applicative ((<|>))
+import Control.Concurrent.MVar.Lifted (newEmptyMVar, putMVar, takeMVar)
+import Control.Exception.Lifted (bracket)
 import Control.Monad ((<=<), void, guard, when)
 import Control.Monad.Trans.Class (lift)
 import qualified Data.ByteString as BS
@@ -31,6 +33,7 @@ import Network.Wai.Parse (FileInfo(..))
 import Databrary.Ops
 import Databrary.Has
 import qualified Databrary.JSON as JSON
+import Databrary.Service.DB
 import Databrary.Model.Segment
 import Databrary.Model.Permission
 import Databrary.Model.Id
@@ -132,7 +135,7 @@ detectUpload u =
     =<< lift (probeFile (fileUploadName u) =<< peeks (fileUploadPath u))
 
 processAsset :: API -> AssetTarget -> ActionM Response
-processAsset api target = do
+processAsset api target = bracket newEmptyMVar (`putMVar` ()) $ \lock -> dbTransaction' $ do
   let as@AssetSlot{ slotAsset = a, assetSlot = s } = case target of
         AssetTargetVolume t -> assetNoSlot $ blankAsset t
         AssetTargetSlot t -> AssetSlot (blankAsset (view t)) (Just t)
@@ -190,7 +193,7 @@ processAsset api target = do
         return a'{ assetDuration = avProbeLength av }
       probe@ProbeAV{} | te -> do
         t <- addTranscode a' fullSegment defaultTranscodeOptions probe
-        _ <- forkTranscode t
+        _ <- forkTranscode (takeMVar lock) t
         return $ transcodeAsset t
       _ -> return a'
     return $ fixAssetSlotDuration as'

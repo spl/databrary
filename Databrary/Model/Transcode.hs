@@ -15,7 +15,7 @@ module Databrary.Model.Transcode
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Lazy as BSL
-import Data.Maybe (fromMaybe, isJust)
+import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
 import Database.PostgreSQL.Typed.Query (pgSQL)
 
@@ -104,5 +104,5 @@ findMatchingTranscode Transcode{..} =
 checkAlreadyTranscoded :: MonadDB c m => Asset -> Probe -> m Bool
 checkAlreadyTranscoded Asset{ assetFormat = fmt, assetSHA1 = Just sha1 } ProbeAV{ probeTranscode = tfmt, probeAV = av }
   | fmt == tfmt && avProbeCheckFormat fmt av =
-    (isJust :: Maybe Int32 -> Bool) <$> dbQuery1' [pgSQL|SELECT 1 FROM asset JOIN transcode ON asset.id = transcode.asset WHERE asset.sha1 = ${sha1} AND asset.format = ${formatId fmt} LIMIT 1|]
+    (Just (Just (1 :: Int32)) ==) <$> dbQuery1 [pgSQL|SELECT 1 FROM asset JOIN transcode ON asset.id = transcode.asset WHERE asset.sha1 = ${sha1} AND asset.format = ${formatId fmt} LIMIT 1|]
 checkAlreadyTranscoded _ _ = return False

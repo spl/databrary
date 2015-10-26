@@ -44,7 +44,7 @@ htmlHeader canon hasjs = do
   H.link
     H.! HA.rel "start"
     H.! actionLink viewRoot HTML hasjs
-  Fold.forM_ ["news", "about", "access", "community"] $ \l -> H.link
+  forM_ ["news", "about", "access", "community"] $ \l -> H.link
     H.! HA.rel l
     H.! HA.href ("//databrary.org/" <> l <> ".html")
 
@@ -117,7 +117,7 @@ htmlTemplate req title body = H.docTypeHtml $ do
                   H.li $ H.a
                     H.! actionLink viewRoot HTML hasjs
                     $ "Databrary"
-                  Fold.forM_ ["news", "about", "access", "community"] $ \l ->
+                  forM_ ["news", "about", "access", "community"] $ \l ->
                     H.li $ H.a H.! HA.href (H.stringValue $ "//databrary.org/" ++ l ++ ".html") $ do
                       H.string l
               H.ul
