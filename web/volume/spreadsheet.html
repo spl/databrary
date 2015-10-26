@@ -45,10 +45,11 @@
   <hr>
   <slot-filter></slot-filter>
   <div ng-if="::!editing" class="spreadsheet-options">
-    <a ng-if="!pivot.active" ng-click="pivot.show()">Summarize</a>
+    <a ng-if="!pivot.active" ng-click="pivot.show()">Show summary</a>
     <a ng-if="pivot.active" ng-click="pivot.hide()">Hide summary</a>
   </div>
-  <div class="spreadsheet-toggle-section" ng-hide="!pivot.active">
+  <div class="spreadsheet-dynamic-section" ng-hide="!pivot.active">
+    <small class="reminder">Summarize by dragging fields of interest to the right</small>
     <volume-pivot></volume-pivot>
   </div>
 </div>
