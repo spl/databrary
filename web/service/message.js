@@ -15,6 +15,8 @@ app.factory('messageService', [
       this.id = init.id || 'message-' + sequence++;
       angular.extend(this, defaults, init);
 
+      if (Array.isArray(this.body))
+        this.body = (this.more = this.body).shift();
       /* suppress duplicate messages */
       if (this.body in byBody)
         return;
