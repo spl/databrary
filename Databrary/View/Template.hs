@@ -49,7 +49,7 @@ htmlHeader canon hasjs = do
     H.! HA.href ("//databrary.org/" <> l <> ".html")
 
 htmlSocialMedia :: H.Html
-htmlSocialMedia = 
+htmlSocialMedia =
   H.p $ do
     let sm n l a =
           H.a H.! HA.href l H.! HA.target "_blank" H.! HA.class_ "img" $
@@ -103,7 +103,7 @@ htmlTemplate req title body = H.docTypeHtml $ do
   H.body H.! H.customAttribute "vocab" "http://schema.org" $ do
     H.section
       H.! HA.id "toolbar"
-      H.! HA.class_ "toolbar" 
+      H.! HA.class_ "toolbar"
       $ H.div
         H.! HA.class_ "wrap toolbar-main"
         $ H.div

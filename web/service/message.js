@@ -20,14 +20,28 @@ app.factory('messageService', [
         return;
 
       Message.list[this.id] = this;
-      byBody[this.body] = this;
+      byBody[this.orig = this.body] = this;
     }
 
     Message.list = {};
 
     Message.prototype.remove = function () {
       delete Message.list[this.id];
-      delete byBody[this.body];
+      delete byBody[this.orig];
+    };
+
+    Message.prototype.next = function () {
+      var more;
+      if (Array.isArray(this.more))
+        more = this.more.shift();
+      else if (typeof this.more === 'string') {
+        more = this.more;
+        delete this.more;
+      }
+      if (more)
+        this.body = more;
+      else
+        this.remove();
     };
 
     Message.add = function (message) {
