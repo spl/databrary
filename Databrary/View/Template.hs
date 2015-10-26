@@ -101,12 +101,6 @@ htmlTemplate req title body = H.docTypeHtml $ do
       Fold.mapM_ (\t -> H.toHtml t >> " || ") title
       "Databrary"
   H.body H.! H.customAttribute "vocab" "http://schema.org" $ do
-    when (hasjs /= JSEnabled) $ Fold.forM_ canon $ \c -> H.div $ do
-      H.preEscapedString "Our site works best with modern browsers (Firefox, Chrome, Safari &ge;6, IE &ge;10, and others). \
-        \You are viewing the simple version of our site: some functionality may not be available. \
-        \Try switching to the "
-      H.a H.! HA.href (builderValue c) $ "modern version"
-      " to see if it will work on your browser."
     H.section
       H.! HA.id "toolbar"
       H.! HA.class_ "toolbar" 
@@ -146,6 +140,12 @@ htmlTemplate req title body = H.docTypeHtml $ do
           $ H.div
             H.! HA.class_ "row"
             $ do
+              when (hasjs /= JSEnabled) $ Fold.forM_ canon $ \c -> H.div $ do
+                H.preEscapedString "Our site works best with modern browsers (Firefox, Chrome, Safari &ge;6, IE &ge;10, and others). \
+                  \You are viewing the simple version of our site: some functionality may not be available. \
+                  \Try switching to the "
+                H.a H.! HA.href (builderValue c) $ "modern version"
+                " to see if it will work on your browser."
               Fold.mapM_ (H.h1 . H.toHtml) title
                 H.! HA.class_ "view-title"
               r <- body hasjs
