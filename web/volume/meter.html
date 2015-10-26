@@ -35,7 +35,7 @@
             <span class="icon done"></span>
             Publication linked
           </span>
-          <span ng-click="goto('overview', '#citation')" ng-if="::!metrics.citation.done" class="clickable">Link your volume to any corresponding publication by adding a DOI or citation.</span>
+          <span ng-click="goto('overview', '#citation',['Select yes to whether this volume corresponds to a published paper or resource. Additional fields for DOI and citation will appear.'])" ng-if="::!metrics.citation.done" class="clickable">Link your volume to any corresponding publication by adding a DOI or citation.</span>
         </li>
         <li ng-class="{'volume-meter-done': metrics.keywords.done}">
           <span ng-if="::!!metrics.keywords.done">
@@ -66,8 +66,7 @@
             <span class="icon done"></span>
             Created a study session
           </span>
-          <span ng-click="goto('data')" ng-if="::!metrics.session.done">Create at least one study session in order to start uploading data.<br>
-            <small>Click 'add folder' and select 'session' in the folder type dropdown on the left of the spreadsheet</small>
+          <span ng-click="goto('data',undefined,['Add a folder, and select session in the folder type dropdown on the left end of the spreadsheet'])" ng-if="::!metrics.session.done">Create at least one study session in order to start uploading data.
           </span>
         </li>
         <li ng-class="metrics.record.done? 'volume-meter-done' : 'clickable'">
@@ -81,12 +80,11 @@
       </ul>
     </div>
 
-    <div class="volume-meter-category col-desktop-15 col-tablet-9 col-mobile-6" ng-click="goto('data')" ng-class="metrics.asset.done? 'volume-meter-done' : 'clickable'">
+    <div class="volume-meter-category col-desktop-15 col-tablet-9 col-mobile-6" ng-click="goto('data',undefined,['Upload at least one file. Start by clicking add file in the right end of the spreadsheet.'])" ng-class="metrics.asset.done? 'volume-meter-done' : 'clickable'">
       <div class="icon done-not">
         <span ng-if="::!!metrics.asset.done" class="icon done"></span>
       </div> 
       <h5>Upload a file</h5>
-      <p ng-if="::!metrics.asset.done">Upload at least one file to a session. Start by selecting "add file" in one of your folders in the data spreadsheet.</p>
     </div>
 
     <div class="volume-meter-category col-desktop-15 col-tablet-9 col-mobile-6" ng-class="{'volume-meter-done': !!metrics.excerpts.done && !!metrics.asset.done}">
@@ -104,12 +102,8 @@
             <span class="icon done"></span>
             Highlights selected
           </span>
-          <span ng-click="goto('data')" ng-if="::!metrics.excerpts.done" class="clickable">
-            Select at least three highlights from your data to represent your volume.<br>
-            <small>
-              <b>Clicking will take you to the data spreadsheet</b><br>
-              Step 1: Select the file you wish to highlight from the 'file' tab. You will be taken to the timeline file viewer. <br>Step 2: You can highlight an entire video or a specific segment by clicking and dragging over the desired section of the timeline. <br>Step 3: Click the 'highlight on volume' button and choose your sharing level in the dropdown that appears.
-            </small>
+          <span ng-click="goto('data',undefined,['First, select the file you wish to highlight from the file tab. The file tab is on the right end of the spreadsheet. Click next once you are done','Quick tip: You can highlight an entire video or a specific segment by clicking and dragging over the desired section of the timeline.','Finally, click the highlight on volume button and choose your sharing level in the dropdown that appears. You now have a highlight!'])" ng-if="::!metrics.excerpts.done" class="clickable">
+            Select at least three highlights from your data to represent your volume.
           </span>
         </li>
         <li ng-class="{'volume-meter-done':metrics.thumbnail.done}">
@@ -117,12 +111,8 @@
             <span class="icon done"></span>
             Thumbnail chosen
           </span>
-          <span ng-click="goto('data')" ng-if="::!metrics.thumbnail.done" class="clickable">
-            Select a public highlight from a video or image to use as your volume thumbnail.<br>
-            <small>
-              <b>Clicking will take you to the data spreadsheet.</b><br>
-              Step 1: Select the file you wish to highlight from the 'file' tab. You will be taken to the timeline file viewer. <br>Step 2: Click the 'Edit highlight' button and choose 'Public: Available openly to anybody' in the dropdown. The highlight will automatically be used as your volume thumbnail.
-            </small>
+          <span ng-click="goto('data',undefined,['First, select the file you wish to highlight from the file tab. The file tab is on the right end of the spreadsheet. Click next once you are done','Click the Edit Highlight button and choose Public: Available openly to anybody in the dropdown. The highlight will be used as your volume thumbnail.'])" ng-if="::!metrics.thumbnail.done" class="clickable">
+            Select a public highlight from a video or image to use as your volume thumbnail.
           </span>
         </li>
       </ul>

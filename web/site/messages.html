@@ -5,7 +5,7 @@
         <div class="col">
           <div class="message-close icon close clickable" ng-click="message.remove()"></div>
           <div class="message-content" ng-bind-html="message.body" ng-click="message.fn()"></div>
-          <button ng-if="message.more.length" ng-click="message.next()">Next</button>
+          <button ng-if="message.more.length" ng-click="message.next()" class="mini message-next">Next</button>
         </div>
       </div>
     </div>
