@@ -19,7 +19,7 @@ import Databrary.Model.VolumeState.SQL
 
 lookupVolumeState :: (MonadDB c m) => Volume -> m [VolumeState]
 lookupVolumeState v =
-  dbQuery $ ($ v) <$> $(selectQuery selectVolumeState "$WHERE volume = ${volumeId v} AND public OR ${volumePermission v >= PermissionEDIT}")
+  dbQuery $ ($ v) <$> $(selectQuery selectVolumeState "$WHERE volume = ${volumeId v} AND (public OR ${volumePermission v >= PermissionEDIT})")
 
 changeVolumeState :: (MonadDB c m) => VolumeState -> m ()
 changeVolumeState VolumeState{..} = void $ updateOrInsert
