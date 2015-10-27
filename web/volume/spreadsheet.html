@@ -20,29 +20,14 @@
   Return to the <a href="" ng-click="setKey('slot')">folder view</a> to edit session data.
 </div>
 
+<div ng-if="::!editing" class="spreadsheet-report-manage">
+  <select ng-options="k as k for (k,s) in volume.state" ng-model="state.name" ng-change="state.restore()" class="width-auto spreadsheet-pivot-part">
+    <option value=''>Show saved display mode...</option>
+  </select>
+  <wbr>
+</div>
+
 <div ng-if="::!editing">
-  <div class="spreadsheet-options">
-    <select ng-options="k as k for (k,s) in volume.state" ng-model="state.name" ng-change="state.restore()" class="width-auto spreadsheet-pivot-part">
-      <option value=''>Restore saved report...</option>
-    </select>
-    <wbr>
-    <div ng-if="::volume.checkPermission(page.permission.EDIT)" class="spreadsheet-report-manage spreadsheet-pivot-part">
-      Report 
-      <input type="text" name="state" ng-model="state.name" ng-maxlength="64" class="width-auto spreadsheet-pivot-part" placeholder="Enter a name..." /><wbr>
-      <span class="spreadsheet-pivot-part">
-        <input type="checkbox" name="public" ng-model="state.public" class="width-auto"/>
-        <label for="public" class="option">Public</label>
-      </span>
-      <span class="spreadsheet-pivot-part">
-        <button ng-click="state.save()">Save</button>
-        <button ng-click="state.delete()">
-          <span class="icon trash2"></span>
-          Delete
-        </button>
-      </span>
-    </div>
-  </div>
-  <hr>
   <slot-filter></slot-filter>
   <div ng-if="::!editing" class="spreadsheet-options">
     <a ng-if="!pivot.active" ng-click="pivot.show()">Show summary</a>
@@ -84,6 +69,21 @@
       </tr>
     </tfoot>
   </table>
+</div>
+
+<div ng-if="::volume.checkPermission(page.permission.EDIT) && !editing" class="spreadsheet-report-manage">
+  <input type="text" name="state" ng-model="state.name" ng-maxlength="64" class="width-auto spreadsheet-pivot-part" placeholder="Name current display mode..." /><wbr>
+  <span class="spreadsheet-pivot-part">
+    <input type="checkbox" name="public" ng-model="state.public" class="width-auto"/>
+    <label for="public" class="option">Make mode public</label>
+  </span>
+  <span class="spreadsheet-pivot-part">
+    <button ng-click="state.save()">Save</button>
+    <button ng-click="state.delete()">
+      <span class="icon trash2"></span>
+      Delete
+    </button>
+  </span>
 </div>
 
 <div ng-if="::!editing" class="spreadsheet-options">
