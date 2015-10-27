@@ -1,8 +1,8 @@
 'use strict'
 
 app.directive 'volumeMeter', [
-  '$compile', '$templateCache', 'constantService', 'displayService', 'messageService'
-  ($compile, $templateCache, constants, display, messages) ->
+  '$compile', '$templateCache', 'constantService', 'displayService', 'messageService', '$sce'
+  ($compile, $templateCache, constants, display, messages, $sce) ->
     restrict: 'E'
     templateUrl: 'volume/meter.html'
     require: '^wizard',
@@ -60,14 +60,14 @@ app.directive 'volumeMeter', [
         share: new Metric ->
           volume.accessPreset
 
-      $scope.goto = (step, target, message) ->
+      $scope.goto = (step, target, message...) ->
         wizard.activateStep(step)
         display.scrollTo(target) if target
-        if message
+        if message.length
           messages.add
-            type: 'neutral'
+            type: 'tutorial'
             persist: true
-            body: message
+            body: message.map($sce.trustAsHtml)
         return
 
       calculate = () ->
