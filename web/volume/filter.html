@@ -1,5 +1,5 @@
 <div class="volume-filters">
-  <b>Filter by</b>
+  <b>Filter by </b>
   <div class="volume-filter" ng-repeat="filt in filter.list">
     <span class="volume-filter-label">{{::filt.category.name}} {{::filt.metric.name}}</span>
     <select class="volume-filter-part select-clear-style" ng-model="filt.op" ng-change="filter.change()">
