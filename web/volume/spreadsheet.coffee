@@ -1324,6 +1324,15 @@ app.directive 'spreadsheet', [
             $scope.pivot.load(state.pivot)
             return
 
+        volume.state['NIH Inclusion Enrollment Report'] ?=
+          key: "slot"
+          pivot:
+            cols: ["participant ethnicity", "participant gender"]
+            rows: ["participant race"]
+            rendererName: "Table"
+            aggregatorName: "Count"
+          filter: [{c: "slot", m: "top", op: "false"}]
+
         return
     ]
     link: ($scope, $element, $attrs) ->
