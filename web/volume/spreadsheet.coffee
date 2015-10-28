@@ -1252,7 +1252,7 @@ app.directive 'spreadsheet', [
         $scope.state =
           name: 'default'
           save: ->
-            return unless @name
+            return unless name = @name
             state =
               key: Key.id
               sort: currentSort && {
@@ -1274,8 +1274,11 @@ app.directive 'spreadsheet', [
             delete state.pivot unless state.pivot
             delete state.public unless state.public
 
-            router.http(router.controllers.postVolumeState, volume.id, encodeURIComponent(@name), state).then =>
-                volume.state[@name] = state
+            router.http(router.controllers.postVolumeState, volume.id, encodeURIComponent(name), state).then ->
+                volume.state[name] = state
+                messages.add
+                  type: 'green'
+                  body: 'Display mode "' + name + '" saved successfully.'
                 return
               , (res) ->
                 messages.addError
