@@ -284,8 +284,8 @@ app.directive 'spreadsheet', [
             asset: ->
               @d?.asset
             v: ->
-              if d = @d
-                d[@metric.id]
+              if (d = @d) && (m = @metric)
+                d[m.id]
 
           property = (v, f) ->
             get: f
