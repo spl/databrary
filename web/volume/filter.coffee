@@ -25,7 +25,7 @@ app.directive 'slotFilter', [
         contains: (o,x) -> join(o, '||', '!(v&&v.includes('+JSON.stringify(x)+'))')
       indicator = constants.metricName.indicator.id
 
-      makeFilter = () ->
+      makeFilter = (key) ->
         exp = ['var v']
         cats = {slot:{}}
         ci = 0
@@ -54,23 +54,23 @@ app.directive 'slotFilter', [
           mets[indicator] = ops[if any then 'two' else 'any'](mets[indicator])
           any
 
-        if filter.key && filter.key != 'slot'
-          if mets = cats[filter.key]
-            exp.push('if(s){')
-            exp.push('v='+(if record(mets, 's', 'undefined', 'return') then 2 else 1))
+        if key && key != 'slot'
+          if mets = cats[key]
+            exp.push('if(x){')
+            exp.push('v='+(if record(mets, 'x', 'undefined', 'return') then 2 else 1))
             exp.push('}else v=0',
               'if('+mets[indicator]+')return')
         else
           for m, e of cats.slot when e
-            exp.push('v=s.'+m,
+            exp.push('v=x.'+m,
               'if('+e+')return')
           if ci
             exp.push('var c,i,r')
             exp.push('c=new Uint8Array(new ArrayBuffer('+ci+'))',
-              'for(i=0;i<s.records.length;i++){if(!(r=s.records[i].record)){continue')
+              'for(i=0;i<x.records.length;i++){if(!(r=x.records[i].record)){continue')
             for c, mets of cats when c != 'slot'
               exp.push('}else if(r.category==='+c+'){c['+mets.$index+']=1')
-              if record(mets, 'r', 's.records[i].age', 'continue')
+              if record(mets, 'r', 'x.records[i].age', 'continue')
                 exp.push('c['+mets.$index+']=2')
             exp.push('}}')
             for c, mets of cats when c != 'slot'
@@ -82,14 +82,14 @@ app.directive 'slotFilter', [
         exp
 
       make = (f) ->
-        f && new Function('s', makeFilter())
+        f && new Function('x', f)
 
-      filter.make = () ->
-        make(makeFilter())
+      filter.make = (key) ->
+        make(makeFilter(key || @key))
 
       old = undefined
       filter.change = () ->
-        f = makeFilter()
+        f = makeFilter(@key)
         return if f == old
         old = f
         filter.update(make(f))

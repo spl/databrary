@@ -13,7 +13,10 @@ app.directive 'volumePivot', [
         cols = $scope.groups
         head = []
         for g in cols when g.category.id != 'asset'
-          n = g.category.name + ' '
+          if g.category.id == 'slot'
+            n = ''
+          else
+            n = g.category.name + ' '
           for m in g.metrics when m.id != 'summary'
             if m.id == 'age'
               agemode = display.ageMode($scope.volume.summary.agemean)
@@ -37,7 +40,7 @@ app.directive 'volumePivot', [
             else
               $sanitize(v)
 
-        for row in rows when row.filt
+        for row in rows when row.filt && row.key
           data.push(d = [])
           for g in cols when g.category.id != 'asset'
             l = row.list(g.category.id)

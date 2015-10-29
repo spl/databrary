@@ -1,8 +1,8 @@
 'use strict'
 
 app.directive 'spreadsheet', [
-  'constantService', 'displayService', 'messageService', 'tooltipService', 'styleService', '$compile', '$templateCache', '$timeout', '$document', '$location', 'routerService',
-  (constants, display, messages, tooltips, styles, $compile, $templateCache, $timeout, $document, $location, router) ->
+  'constantService', 'displayService', 'messageService', 'tooltipService', 'styleService', '$compile', '$templateCache', '$timeout', '$document', '$location', '$filter', 'routerService',
+  (constants, display, messages, tooltips, styles, $compile, $templateCache, $timeout, $document, $location, $filter, router) ->
     restrict: 'E'
     scope: true
     templateUrl: 'volume/spreadsheet.html'
@@ -326,14 +326,15 @@ app.directive 'spreadsheet', [
             cats = [Key, pseudoCategory.slot]
 
           $scope.groups = Groups = cats.map (category) ->
-            metrics = (category.metrics || volume.metrics[category.id]).map(getMetric)
+            metrics = (category.metrics || volume.metrics[category.id] || []).map(getMetric)
+            metrics.push(constants.metricName.ID) unless metrics.length
             if !Editing && constants.metricName.birthdate in metrics
               (slot || metrics).push(pseudoMetric.age)
             if slot && category.id == 'slot'
               metrics.push.apply metrics, slot
             metrics.sort(bySortId)
             si = Cols.length
-            Cols.push.apply Cols, _.map metrics, (m) ->
+            Cols.push.apply Cols, metrics.map (m) ->
               category: category
               metric: m
             l = metrics.length
@@ -442,7 +443,7 @@ app.directive 'spreadsheet', [
               icon.className = 'icon release ' + constants.release[asset.release] + ' hint-release-' + constants.release[asset.release]
             else
               if Editing && Key.id == info.c
-                cell.classList.add('folder-type')
+                cell.classList.add('folder-type') # XXX not necessarily!?
                 cell.classList.add('clickable')
                 del = cell.appendChild(document.createElement('a'))
                 del.className = 'clickable trash icon'
@@ -606,11 +607,22 @@ app.directive 'spreadsheet', [
         fill = ->
           collapse()
           n = 0
+          next = TBody.firstChild
           for i in Order
+            tr = Rows[i].tr
             if Rows[i].filt && n++ < Limit
-              TBody.appendChild(Rows[i].tr)
+              if next == tr
+                next = next.nextSibling
+              else if next
+                TBody.insertBefore(tr, next)
+              else
+                TBody.appendChild(tr)
             else
-              TBody.removeChild(Rows[i].tr) if Rows[i].tr.parentNode
+              if next == tr
+                next = next.nextSibling
+                TBody.removeChild(tr)
+              else if tr.parentNode
+                TBody.removeChild(tr)
           if n > Limit
             $scope.more = n
           else
@@ -645,7 +657,6 @@ app.directive 'spreadsheet', [
               Order.reverse()
             else
               currentSortDirection = false
-          fill()
           return
 
         $scope.colClasses = (col) ->
@@ -1136,6 +1147,8 @@ app.directive 'spreadsheet', [
             $scope.filter.add(col)
           if col.metric
             sortBy(col)
+            fill()
+          return
 
         clickRemove = (event) ->
           return unless info = parseId(event.target.parentNode)
@@ -1212,7 +1225,7 @@ app.directive 'spreadsheet', [
               row.filt = f(row.slot.slot)
           else
             for row in Rows
-              row.filt = f(row.key?.record)
+              row.filt = f(row.key?.record) # TODO: , row.slot
           if $scope.pivot.active
             $scope.pivot.show()
           return
@@ -1238,7 +1251,7 @@ app.directive 'spreadsheet', [
           tooltips.clear()
           return
 
-        $scope.setKey = (key) ->
+        setKey = (key) ->
           unedit()
           Key = $scope.key = key? && getCategory(key) || pseudoCategory.slot
           $location.replace().search('key', if Key != pseudoCategory.slot then Key.id)
@@ -1246,8 +1259,13 @@ app.directive 'spreadsheet', [
             $scope.filter.list = $scope.filter.list.filter((f) -> f.category == Key && f.metric.type != 'void')
           populate()
           setFilter($scope.filter.make?())
-          fill()
           $scope.tabOptionsClick = undefined
+          return
+
+        $scope.setKey = (key) ->
+          setKey(key)
+          fill()
+          return
 
         $scope.state =
           name: 'default'
@@ -1264,7 +1282,7 @@ app.directive 'spreadsheet', [
                 c: f.category.id
                 m: f.metric.id
                 op: f.op
-                value: f.value
+                v: f.value
               pivot: $scope.pivot.get()
               public: @public
             delete state.sort unless state.sort
@@ -1310,7 +1328,7 @@ app.directive 'spreadsheet', [
                   category: getCategory(f.c)
                   metric: getMetric(f.m)
                   op: f.op
-                  value: f.value
+                  value: f.v
                 l.push r if r.category && r.metric
               $scope.filter.list = l
             else
@@ -1318,20 +1336,25 @@ app.directive 'spreadsheet', [
                 category: pseudoCategory.slot
                 metric: pseudoMetric.top
               ]
-            $scope.setKey(key || state.key)
+            setKey(key || state.key)
+            sortBy(Cols.find((c) -> c.category.id == 'slot' && c.metric.id == 'date'))
             if state.sort && col = Cols.find((c) -> c.category.id == state.sort.c && c.metric.id == state.sort.m)
               sortBy(col, state.sort.currentSortDirection)
+            fill()
             $scope.pivot.load(state.pivot)
             return
 
         volume.state['NIH Inclusion Enrollment Report'] ?=
-          key: "slot"
+          key: constants.categoryName.participant.id
           pivot:
             cols: ["participant ethnicity", "participant gender"]
             rows: ["participant race"]
             rendererName: "Table"
             aggregatorName: "Count"
-          filter: [{c: "slot", m: "top", op: "false"}]
+          filter: [ # these aren't actually used (yet)
+            {c: "slot", m: "top", op: "false"},
+            {c: "slot", m: "date", op: "ge"},
+            {c: "slot", m: "date", op: "le", v: $filter('date')(new Date(), 'yyyy-MM-dd')}]
 
         return
     ]
