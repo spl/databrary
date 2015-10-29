@@ -50,6 +50,7 @@ import {-# SOURCE #-} Databrary.Controller.Zip
 htmlVolumeDescription :: Bool -> Container -> [Citation] -> [Funding] -> [[AssetSlot]] -> [[AssetSlot]] -> RequestContext -> H.Html
 htmlVolumeDescription inzip top@Container{ containerVolume = Volume{..} } cite fund atl abl req = H.docTypeHtml $ do
   H.head $ do
+    H.meta H.! HA.httpEquiv "Content-Type" H.! HA.content "text/html; charset=utf-8"
     H.title $ do
       void "Databrary Volume "
       H.toMarkup (unId volumeId)
