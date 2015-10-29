@@ -1092,11 +1092,12 @@ app.factory('modelService', [
       var a = this;
       return router.http(release != null ? router.controllers.postExcerpt : router.controllers.deleteExcerpt, this.container.id, this.segment.format(), this.id, {release:release})
         .then(function (res) {
-          a.asset.clear('excerpts');
+          if (a instanceof Excerpt && 'excerpt' in res.data)
+            return a.update(res.data);
           a.volume.clear('excerpts');
-          return a instanceof Excerpt ?
-            a.update(res.data) :
-            new Excerpt(a.asset, res.data);
+          if (a.asset.excerpts)
+            a.asset.excerpts.remove(a);
+          return ('excerpt' in res.data) ? excerptMake(a.asset, res.data) : new AssetSegment(a.asset, res.data);
         });
     };
 

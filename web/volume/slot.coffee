@@ -757,7 +757,7 @@ app.controller('volume/slot', [
 
       excerptOptions: () ->
         l = {}
-        r = @asset.release || 0
+        r = (@asset.classification ? @asset.container.release) || 0
         l[0] = constants.message('release.DEFAULT.select') + ' (' + constants.message('release.' + constants.release[r] + '.title') + ')'
         for c, i in constants.release when i > r
           l[i] = constants.message('release.' + c + '.title') + ': ' + constants.message('release.' + c + '.select')
