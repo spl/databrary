@@ -1205,11 +1205,19 @@ app.directive 'spreadsheet', [
             setFilter(f)
             fill()
             return
+          accept: (f) ->
+            if f.category == pseudoCategory.slot
+              if Key == pseudoCategory.slot
+                f.metric
+              else
+                f.metric != pseudoMetric.summary
+            else
+              f.category != pseudoCategory.asset && (Key == pseudoCategory.slot || Key == f.category)
           add: (info) ->
+            return unless @accept(info)
             last = @list.pop()
             if last?.op
               @list.push(last)
-            return if info.category != Key && Key != pseudoCategory.slot || info.category == pseudoCategory.asset || info.category == pseudoCategory.slot && !info.metric
             @list.push
               category: info.category
               metric: info.metric || constants.metricName.indicator
@@ -1222,10 +1230,11 @@ app.directive 'spreadsheet', [
               row.filt = true
           else if Key.id == 'slot'
             for row in Rows
-              row.filt = f(row.slot.slot)
+              s = row.slot.slot
+              row.filt = f(s, s.records)
           else
             for row in Rows
-              row.filt = f(row.key?.record) # TODO: , row.slot
+              row.filt = f(row.key?.record, row.list('slot'))
           if $scope.pivot.active
             $scope.pivot.show()
           return
@@ -1254,11 +1263,11 @@ app.directive 'spreadsheet', [
         setKey = (key) ->
           unedit()
           Key = $scope.key = key? && getCategory(key) || pseudoCategory.slot
-          $location.replace().search('key', if Key != pseudoCategory.slot then Key.id)
-          if ($scope.filter.key = Key.id) != 'slot'
-            $scope.filter.list = $scope.filter.list.filter((f) -> f.category == Key && f.metric.type != 'void')
           populate()
+          $scope.filter.key = Key.id
+          $scope.filter.list = $scope.filter.list.filter($scope.filter.accept)
           setFilter($scope.filter.make?())
+          $location.replace().search('key', if Key != pseudoCategory.slot then Key.id)
           $scope.tabOptionsClick = undefined
           return
 
