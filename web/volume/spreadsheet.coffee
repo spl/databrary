@@ -1353,17 +1353,18 @@ app.directive 'spreadsheet', [
             $scope.pivot.load(state.pivot)
             return
 
-        volume.state['NIH Inclusion Enrollment Report'] ?=
-          key: constants.categoryName.participant.id
-          pivot:
-            cols: ["participant ethnicity", "participant gender"]
-            rows: ["participant race"]
-            rendererName: "Table"
-            aggregatorName: "Count"
-          filter: [ # these aren't actually used (yet)
-            {c: "slot", m: "top", op: "false"},
-            {c: "slot", m: "date", op: "ge"},
-            {c: "slot", m: "date", op: "le", v: $filter('date')(new Date(), 'yyyy-MM-dd')}]
+        if volume.state
+          volume.state['NIH Inclusion Enrollment Report'] ?=
+            key: constants.categoryName.participant.id
+            pivot:
+              cols: ["participant ethnicity", "participant gender"]
+              rows: ["participant race"]
+              rendererName: "Table"
+              aggregatorName: "Count"
+            filter: [ # these aren't actually used (yet)
+              {c: "slot", m: "top", op: "false"},
+              {c: "slot", m: "date", op: "ge"},
+              {c: "slot", m: "date", op: "le", v: $filter('date')(new Date(), 'yyyy-MM-dd')}]
 
         return
     ]
