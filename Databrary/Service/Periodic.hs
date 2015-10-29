@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell, DeriveDataTypeable, TupleSections, Rank2Types #-}
+{-# LANGUAGE TemplateHaskell, DeriveDataTypeable, TupleSections, Rank2Types, ScopedTypeVariables #-}
 module Databrary.Service.Periodic
   ( forkPeriodic
   , Period(..)
