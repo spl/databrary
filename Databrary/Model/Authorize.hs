@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell, RecordWildCards, OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell, RecordWildCards, OverloadedStrings, ScopedTypeVariables #-}
 module Databrary.Model.Authorize
   ( module Databrary.Model.Authorize.Types
   , selfAuthorize

@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, RecordWildCards, GeneralizedNewtypeDeriving, TemplateHaskell #-}
+{-# LANGUAGE OverloadedStrings, RecordWildCards, GeneralizedNewtypeDeriving, ScopedTypeVariables, TemplateHaskell #-}
 module Databrary.Solr.Index
   ( updateIndex
   ) where

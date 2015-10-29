@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell, QuasiQuotes, RecordWildCards, OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell, QuasiQuotes, RecordWildCards, OverloadedStrings, ScopedTypeVariables #-}
 module Databrary.Model.AssetSegment
   ( module Databrary.Model.AssetSegment.Types
   , lookupAssetSegment
