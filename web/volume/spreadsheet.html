@@ -28,15 +28,15 @@
 </div>
 
 <div ng-if="::!editing">
-  <slot-filter></slot-filter>
-  <div class="spreadsheet-options">
+  <div class="spreadsheet-dynamic-section" >
     <a ng-if="!pivot.active" ng-click="pivot.show()">Show summary</a>
     <a ng-if="pivot.active" ng-click="pivot.hide()">Hide summary</a>
+    <div ng-hide="!pivot.active">
+      <div class="small reminder">Summarize by dragging fields of interest between the shaded boxes</div>
+      <volume-pivot></volume-pivot>
+    </div>
   </div>
-  <div class="spreadsheet-dynamic-section" ng-hide="!pivot.active">
-    <div class="small reminder">Summarize by dragging fields of interest between the shaded boxes</div>
-    <volume-pivot></volume-pivot>
-  </div>
+  <slot-filter></slot-filter>  
 </div>
 
 <div class="spreadsheet" ng-class="::{'edit': editing, 'view': !editing}">
