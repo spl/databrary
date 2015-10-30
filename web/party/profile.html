@@ -3,7 +3,7 @@
   <panel id="panel_browser" panel-title="profile.title" fold ng-if="::party.volumes || page.models.Login.isAuthorized()" class="profile">
 
     <section id="profile-volumes" class="profile-volumes col-desktop-9 col-tablet-5 col-mobile-6">
-      <legend class="hide-desktop hide-tablet" message="volumes.title"></legend>
+      <legend class="hide-desktop hide-tablet foot-2" message="volumes.title"></legend>
       <div ng-repeat="vl in ::volumes" ng-if="::vl.length">
         <div class="profile-section-header">
           <strong ng-bind="::'profile.volumes.'+vl.type+'.title' | message:vl.parent.party.name"></strong> 
@@ -34,9 +34,9 @@
     </section>
 
     <section id="profile-parties" class="profile-parties col-desktop-6 col-tablet-4 col-mobile-6">
-      <legend class="hide-desktop hide-tablet" message="network.title"></legend>
+      <legend class="hide-desktop hide-tablet foot-2" message="network.title"></legend>
 
-      <div class="profile-section" ng-if="::parties.parents.length">
+      <div class="profile-section foot-2" ng-if="::parties.parents.length">
         <div class="profile-section-header">
           <strong ng-bind="::'profile.parties.'+parties.parents.type+'.title' | message"></strong>
           <a ng-href="{{::party.editRoute('apply')}}" class="button icon edit neutral"></a>
@@ -62,7 +62,7 @@
           </li>
         </ul>
       </div>
-      <div class="profile-section" ng-if="::parties.children.length">
+      <div class="profile-section foot-2" ng-if="::parties.children.length">
         <div class="profile-section-header">
           <strong>Affiliates</strong>
           <a ng-href="{{::party.editRoute('grant')}}" class="button icon edit neutral"></a>
@@ -92,7 +92,7 @@
           </ul>
         </div>
       </div>
-      <div class="profile-section hide-mobile" ng-if="::parties.collaborators.length">
+      <div class="profile-section foot-2 hide-mobile" ng-if="::parties.collaborators.length">
         <div class="profile-section-header">
           <strong ng-bind="::'profile.parties.'+parties.collaborators.type+'.title' | message"></strong>
           <div class="profile-additional small" ng-bind="::'profile.parties.'+parties.collaborators.type+'.definition' | message"></div>
