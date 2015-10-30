@@ -29,10 +29,10 @@
 
 <div ng-if="::!editing">
   <div class="spreadsheet-dynamic-section" >
-    <a ng-if="!pivot.active" ng-click="pivot.show()">Show summary</a>
-    <a ng-if="pivot.active" ng-click="pivot.hide()">Hide summary</a>
+    <a ng-if="!pivot.active" ng-click="pivot.show()"><b>Show summary</b></a>
+    <a ng-if="pivot.active" ng-click="pivot.hide()"><b>Hide summary</b></a>
     <div ng-hide="!pivot.active">
-      <div class="small reminder">Summarize by dragging fields of interest between the shaded boxes</div>
+      <div class="small reminder foot-2">Summarize by dragging fields of interest between the shaded boxes</div>
       <volume-pivot></volume-pivot>
     </div>
   </div>
@@ -71,10 +71,12 @@
   </table>
 </div>
 
-<div ng-if="::volume.checkPermission(page.permission.EDIT) && !editing" class="spreadsheet-report-manage">
-  <h3 class="frame-header">Save current display mode</h3>
-  <br>
-  <input type="text" name="state" ng-model="state.name" ng-maxlength="64" class="width-auto spreadsheet-pivot-part" placeholder="Name display mode..." /><wbr>
+<div ng-if="::volume.checkPermission(page.permission.EDIT) && !editing" class="spreadsheet-dynamic-section">
+  <div class="foot-2">
+  <b>Save current display mode </b>
+  <span class="small reminder">This will replace any previously saved versions with the same name</span>
+  </div>
+  <input type="text" name="state" ng-model="state.name" ng-maxlength="64" class="width-auto" placeholder="Name display mode..." /><wbr>
   <span class="spreadsheet-pivot-part" tooltip="'Make this display mode available to anyone with access to the volume, rather than only to other editors'">
     <input type="checkbox" name="public" ng-model="state.public" class="width-auto"/>
     <label for="public" class="option">Make public</label>
