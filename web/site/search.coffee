@@ -136,16 +136,19 @@ app.controller 'site/search', [
 
     $scope.formats = _.filter(constants.format, (f) -> !f.transcodable || f.id < 0)
 
-    limits =
-      year: Math.ceil(constants.age.limit)
-      month: Math.floor(5*constants.age.year)
-      day: Math.floor(3*constants.age.month)
-    $scope.ageMax = () ->
-      m = fields.record_age?[1]
-      limits[display.age] ||
-        if m < limits.day then limits.day
-        else if m < limits.month then limits.month
-        else limits.year
+    ageSliderValue = [0,0]
+    ageLogOffset = 16
+    $scope.ageSlider = (value) ->
+      if value?
+        fields.record_age[0] = Math.round(Math.exp(value[0])-ageLogOffset)
+        fields.record_age[1] = Math.round(Math.exp(value[1])-ageLogOffset)
+      else
+        x = Math.log(ageLogOffset+Math.max(0,fields.record_age[0]))
+        y = Math.log(ageLogOffset+Math.min(constants.age.limit,fields.record_age[1]))
+        if x != ageSliderValue[0] || y != ageSliderValue[1]
+          ageSliderValue = [x, y]
+        ageSliderValue
+    $scope.ageRange = [Math.log(ageLogOffset), Math.log(ageLogOffset+constants.age.limit)]
     $scope.clearAge = () ->
       fields.record_age = [-Infinity,Infinity]
 

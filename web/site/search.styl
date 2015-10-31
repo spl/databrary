@@ -15,7 +15,6 @@
   border-radius b3
   font-size b2
   padding b3
-  margin-bottom b2
   background-color neutral51
   ul
     padding 0
@@ -43,6 +42,12 @@
     border-top-right-radius 0
     border-bottom-right-radius 0
     max-width 2.2
+  input[type=number]
+    -moz-appearance textfield 
+  input[type=number]::-webkit-inner-spin-button
+  input[type=number]::-webkit-outer-spin-button
+    -webkit-appearance none
+    appearance none
   .input-age-select
     border-top-left-radius 0
     border-bottom-left-radius 0       
@@ -106,7 +111,6 @@
     
 .search-volume-results
   padding b2 b2 0 b2
-  margin-bottom b2
   ul
     padding-left 0
     
@@ -136,9 +140,11 @@
     width auto
     padding-top 1px
     border-radius 0
+    -moz-appearance textfield
   input[type=number]::-webkit-inner-spin-button, 
   input[type=number]::-webkit-outer-spin-button 
     -webkit-appearance none
+    appearance none
     margin 0 
   .icon
     top b8

@@ -13,7 +13,7 @@
 
   <div class="col-desktop-9 col-tablet-6 col-mobile-6">
     <div>
-      <div ng-if="::volume.accessPreset === 0" class="overview-access">
+      <div ng-if="::volume.accessPreset === 0" class="overview-access foot-2">
         <span class="attention">
           <span>ACCESS: </span>
           <span class="icon" ng-class="::'access'+volume.accessPreset"></span>
@@ -85,7 +85,7 @@
 
   <div class="col-desktop-6 col-tablet-3 col-mobile-6">
     <img class="panel-overview-volume-thumb" ng-src="{{::volume.thumbRoute()}}">
-    <div ng-if="::volume.accessPreset != null" class="panel-overview-volume-access">
+    <div ng-if="::volume.accessPreset != null" class="panel-overview-volume-access foot">
       <span class="icon" ng-class="::'access'+{{::volume.accessPreset}}"></span>
       <span message="access.preset.title{{::volume.accessPreset}}"></span> 
       <span>volume</span>

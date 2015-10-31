@@ -10,7 +10,7 @@
       </div>
     </div>
     <div class="col-desktop-3 col-tablet-3 col-mobile-6">
-      <div class="search-left-section" ng-if="::!!volumes">
+      <div class="search-left-section foot-2" ng-if="::!!volumes">
         <legend>Volume filters</legend>
         <div class="search-volume-types search-filter">
           <div>
@@ -47,7 +47,7 @@
 
         <div class="search-filter">
           <span>Participants' age</span><br>
-          <div ui-slider="{range:true}" min="0" max="{{ageMax()}}" step="1" ng-model="fields.record_age"></div>
+          <div ui-slider="{range:true}" min="{{::ageRange[0]}}" max="{{::ageRange[1]}}" use-decimals step="0.01" ng-model="ageSlider" ng-model-options="{getterSetter:true}"></div>
           <input-age ng-model="fields.record_age[0]" class="inline-block"></input-age> - 
           <input-age ng-model="fields.record_age[1]" class="inline-block"></input-age>
         </div>
@@ -71,7 +71,7 @@
         </div>
       </div>
 
-      <div class="search-left-section" ng-if="::!!parties">
+      <div class="search-left-section foot-2" ng-if="::!!parties">
         <legend>User filters</legend>
         <ul class="search-party-types flat">
           <li class="clickable" ng-click="searchParties(page.constants.permission.EDIT, 'false')" ng-class="::{selected:fields.party_authorization == page.constants.permission.EDIT && fields.party_is_institution == 'false'}">Authorized investigators</li>
@@ -98,7 +98,7 @@
           </small>
         </h3>
 
-        <ul class="row search-volume-results flat">
+        <ul class="row search-volume-results foot-2 flat">
           <li ng-repeat="volume in ::volumes">
             <h1 class="search-volume-result-title">
               <span ng-click="expandVolume(volume)">
