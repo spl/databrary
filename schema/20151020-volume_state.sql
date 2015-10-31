@@ -1,7 +1,7 @@
 CREATE TABLE "volume_state" (
 	"volume" integer NOT NULL References "volume" ON DELETE CASCADE ON UPDATE CASCADE,
 	"key" varchar(64) NOT NULL,
-	"value" jsonb NOT NULL,
+	"value" json NOT NULL,
 	"public" boolean NOT NULL,
 	Primary Key ("volume", "key")
 );
