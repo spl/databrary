@@ -13,13 +13,11 @@ Build-type:          Custom
 Cabal-version:       >=1.22
 
 data-files:
-  databrary.conf,
   messages.conf,
   schema/*.sql,
   transctl.sh,
   transcode,
   volume.json,
-  web/constants.json,
   web/all.min.css,
   web/all.min.css.gz,
   web/all.min.js,
