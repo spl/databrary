@@ -9,17 +9,17 @@
   <fieldset>
     <legend>Login Information</legend>
     <validator name="email" label="email">
-      <input type="email" name="email" ng-model="partyEditAccountForm.data.email">
+      <input type="email" name="email" ng-model="partyEditAccountForm.data.email" autocomplete="email">
     </validator>
 
     <p message="password.advice" message-html></p>
 
     <validator name="password" label="party.edit.password.title">
-      <input type="password" name="password" ng-model="partyEditAccountForm.data.password.once">
+      <input type="password" name="password" ng-model="partyEditAccountForm.data.password.once" autocomplete="new-password">
     </validator>
 
     <validator name="password.again" label="party.edit.password.again.title">
-      <input type="password" name="password.again" ng-model="partyEditAccountForm.data.password.again">
+      <input type="password" name="password.again" ng-model="partyEditAccountForm.data.password.again" autocomplete="new-password">
     </validator>
   </fieldset>
 
@@ -27,7 +27,7 @@
     <legend>Confirm Access</legend>
     <p message="party.edit.auth.help" message-html></p>
     <validator name="auth" label="party.edit.auth.title">
-      <input type="password" name="auth" ng-model="partyEditAccountForm.data.auth" ng-required="partyEditAccountForm.$dirty" key-enter="partyEditAccountForm.save()">
+      <input type="password" name="auth" ng-model="partyEditAccountForm.data.auth" autcomplete="current-password" ng-required="partyEditAccountForm.$dirty" key-enter="partyEditAccountForm.save()">
     </validator>
   </fieldset>
 </ng-form>

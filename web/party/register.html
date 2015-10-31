@@ -11,19 +11,19 @@
           <wizard-step name="create">
             <ng-form name="registerForm">
               <validator name="prename" label="prename" class="grid-clear-left col-desktop-7 col-tablet-4 col-mobile-6">
-                <input id="field-prename" name="prename" type="text" ng-model="registerForm.data.prename" placeholder="First">
+                <input id="field-prename" name="prename" type="text" ng-model="registerForm.data.prename" autocomplete="given-name" placeholder="First">
               </validator>
 
               <validator name="sortname" label="sortname" class="grid-clear-right col-desktop-8 col-tablet-5 col-mobile-6">
-                <input id="field-sortname" name="sortname" type="text" ng-model="registerForm.data.sortname" ng-minlength="2" placeholder="Last" required>
+                <input id="field-sortname" name="sortname" type="text" ng-model="registerForm.data.sortname" ng-minlength="2" autocomplete="family-name" placeholder="Last" required>
               </validator>
 
               <validator name="email" label="email">
-                <input id="field-email" name="email" type="email" ng-model="registerForm.data.email" required>
+                <input id="field-email" name="email" type="email" ng-model="registerForm.data.email" autocomplete="email" required>
               </validator>
 
               <validator name="affiliation" label="affiliation">
-                <input id="field-affiliation" name="affiliation" type="text" ng-model="registerForm.data.affiliation" placeholder="University" key-enter="proceed()">
+                <input id="field-affiliation" name="affiliation" type="text" ng-model="registerForm.data.affiliation" autocomplete="organization" placeholder="University" key-enter="proceed()">
               </validator>
 
               <button class="green" type="submit" ng-disabled="registerForm.$pristine || registerForm.$invalid" ng-click="proceed()">Continue</button>
@@ -59,11 +59,11 @@
               <p message="password.advice" message-html></p>
 
               <validator name="once" label="password.once">
-                <input id="fieldPassword" name="once" type="password" ng-model="passwordForm.data.once">
+                <input id="fieldPassword" name="once" type="password" ng-model="passwordForm.data.once" autocomplete="new-password">
               </validator>
 
               <validator name="again" label="password.again">
-                <input id="fieldPasswordAgain" name="again" type="password" ng-model="passwordForm.data.again" key-enter="passwordForm.save()">
+                <input id="fieldPasswordAgain" name="again" type="password" ng-model="passwordForm.data.again" autocomplete="new-password" key-enter="passwordForm.save()">
               </validator>
 
               <button class="green" type="submit" ng-disabled="passwordForm.$pristine || passwordForm.$invalid || passwordForm.data.once !== passwordForm.data.again || passwordForm.$submitted" ng-click="passwordForm.save()">Continue</button>
