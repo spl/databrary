@@ -143,7 +143,8 @@ Executable databrary
     hjsonschema,
     aeson-better-errors > 0.9.0,
     xml,
-    zlib
+    zlib,
+    range-set-list
 
   default-language: Haskell2010
   default-extensions: MultiParamTypeClasses, FlexibleContexts, FlexibleInstances, ScopedTypeVariables, ConstraintKinds, PatternGuards
