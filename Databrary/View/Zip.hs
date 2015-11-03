@@ -47,8 +47,8 @@ import Databrary.View.Html
 
 import {-# SOURCE #-} Databrary.Controller.Zip
 
-htmlVolumeDescription :: Bool -> Volume -> [Citation] -> [Funding] -> [[AssetSlot]] -> [[AssetSlot]] -> RequestContext -> H.Html
-htmlVolumeDescription inzip Volume{..} cite fund atl abl req = H.docTypeHtml $ do
+htmlVolumeDescription :: Bool -> Volume -> [Citation] -> [Funding] -> Bool -> [[AssetSlot]] -> [[AssetSlot]] -> RequestContext -> H.Html
+htmlVolumeDescription inzip Volume{..} cite fund full atl abl req = H.docTypeHtml $ do
   H.head $ do
     H.meta H.! HA.httpEquiv "content-type" H.! HA.content "text/html;charset=utf-8"
     H.title $ do
@@ -98,6 +98,7 @@ htmlVolumeDescription inzip Volume{..} cite fund atl abl req = H.docTypeHtml $ d
       else do
         H.dt $ H.a H.! HA.href (link zipVolume volumeId) $
           void "Download"
+    unless full $ H.p $ "This is a partial download containing only selected sessions and materials."
     H.p $ do
       H.text $ msg "download.warning"
       void " For more information and terms of use see the "

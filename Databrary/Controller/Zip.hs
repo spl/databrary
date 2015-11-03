@@ -75,26 +75,26 @@ containerZipEntry c l = do
     , zipEntryContent = ZipDirectory a
     }
 
-volumeDescription :: Bool -> Volume -> [AssetSlot] -> ActionM (Html.Html, [[AssetSlot]], [[AssetSlot]])
-volumeDescription inzip v al = do
+volumeDescription :: Bool -> Volume -> Bool -> [AssetSlot] -> ActionM (Html.Html, [[AssetSlot]], [[AssetSlot]])
+volumeDescription inzip v full al = do
   cite <- lookupVolumeCitation v
   links <- lookupVolumeLinks v
   fund <- lookupVolumeFunding v
-  desc <- peeks $ htmlVolumeDescription inzip v (maybeToList cite ++ links) fund at ab
+  desc <- peeks $ htmlVolumeDescription inzip v (maybeToList cite ++ links) fund full at ab
   return (desc, at, ab)
   where
   (at, ab) = partition (Fold.any (containerTop . slotContainer) . assetSlot . head) $ groupBy (me `on` fmap (containerId . slotContainer) . assetSlot) al
   me (Just x) (Just y) = x == y
   me _ _ = False
 
-volumeZipEntry :: Volume -> Maybe BSB.Builder -> [AssetSlot] -> ActionM ZipEntry
-volumeZipEntry v csv al = do
+volumeZipEntry :: Volume -> Bool -> Maybe BSB.Builder -> [AssetSlot] -> ActionM ZipEntry
+volumeZipEntry v full csv al = do
   req <- peek
-  (desc, at, ab) <- volumeDescription True v al
+  (desc, at, ab) <- volumeDescription True v full al
   zt <- mapM ent at
   zb <- mapM ent ab
   return blankZipEntry
-    { zipEntryName = makeFilename (volumeDownloadName v)
+    { zipEntryName = makeFilename $ volumeDownloadName v ++ if full then [] else ["PARTIAL"]
     , zipEntryComment = BSL.toStrict $ BSB.toLazyByteString $ actionURL (Just req) viewVolume (HTML, volumeId v) []
     , zipEntryContent = ZipDirectory
       $ blankZipEntry
@@ -148,20 +148,21 @@ zipVolume = action GET (pathId </< "zip") $ \vi -> withAuth $ do
   excl <- peeks $ catMaybes . lookupQueryParameters "excl"
   s <- maybe (result $ response badRequest400 [] ("Invalid incl or excl list" :: String)) return $
     RS.parseRangeSets (map BSC.unpack incl) (map BSC.unpack excl)
+  let full = RS.null $ RS.complement s
   v <- getVolume PermissionPUBLIC vi
   _:cr <- lookupVolumeContainersRecords v
   let cr' = filter ((`RS.member` s) . containerId . fst) cr
   csv <- null cr' ?!$> volumeCSV v cr'
   a <- filter (\a@AssetSlot{ assetSlot = Just c } -> checkAsset a && RS.member (containerId (slotContainer c)) s) <$>
     lookupVolumeAssetSlots v False
-  z <- volumeZipEntry v csv a
-  auditVolumeDownload (not $ zipEmpty z) v
-  zipResponse ("databrary-" <> BSC.pack (show (volumeId v))) [z]
+  z <- volumeZipEntry v full csv a
+  auditVolumeDownload (not $ null a) v
+  zipResponse (BSC.pack $ "databrary-" ++ show (volumeId v) ++ if full then "" else "-partial") [z]
 
 viewVolumeDescription :: ActionRoute (Id Volume)
 viewVolumeDescription = action GET (pathId </< "description") $ \vi -> withAuth $ do
   angular
   v <- getVolume PermissionPUBLIC vi
   al <- filter checkAsset <$> lookupVolumeAssetSlots v False
-  (desc, _, _) <- volumeDescription False v al
+  (desc, _, _) <- volumeDescription False v True al
   return $ okResponse [] desc
