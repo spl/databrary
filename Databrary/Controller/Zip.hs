@@ -12,10 +12,12 @@ import qualified Data.ByteString.Lazy as BSL
 import qualified Data.Foldable as Fold
 import Data.Function (on)
 import Data.List (groupBy, partition)
-import Data.Maybe (fromJust, maybeToList)
+import Data.Maybe (fromJust, maybeToList, catMaybes)
 import Data.Monoid ((<>))
+import qualified Data.RangeSet.List as RS
+import qualified Data.RangeSet.Parse as RS
 import qualified Data.Text.Encoding as TE
-import Network.HTTP.Types (hContentType, hCacheControl, hContentLength)
+import Network.HTTP.Types (hContentType, hCacheControl, hContentLength, badRequest400)
 import System.Posix.FilePath ((<.>))
 import qualified Text.Blaze.Html5 as Html
 import qualified Text.Blaze.Html.Renderer.Utf8 as Html
@@ -38,6 +40,7 @@ import Databrary.Model.Party
 import Databrary.Model.Citation
 import Databrary.Model.Funding
 import Databrary.HTTP
+import Databrary.HTTP.Request
 import Databrary.HTTP.Path.Parser
 import Databrary.Action
 import Databrary.Controller.Paths
@@ -62,32 +65,32 @@ assetZipEntry AssetSlot{ slotAsset = a } = do
     , zipEntryContent = ZipEntryFile (fromIntegral $ fromJust $ assetSize a) f
     }
 
-containerZipEntry :: Maybe (Id Container) -> Container -> [AssetSlot] -> ActionM ZipEntry
-containerZipEntry top c l = do
+containerZipEntry :: Container -> [AssetSlot] -> ActionM ZipEntry
+containerZipEntry c l = do
   req <- peek
   a <- mapM assetZipEntry l
   return blankZipEntry
-    { zipEntryName = makeFilename (containerDownloadName top c)
+    { zipEntryName = makeFilename (containerDownloadName c)
     , zipEntryComment = BSL.toStrict $ BSB.toLazyByteString $ actionURL (Just req) viewContainer (HTML, (Nothing, containerId c)) []
     , zipEntryContent = ZipDirectory a
     }
 
-volumeDescription :: Bool -> Container -> [AssetSlot] -> ActionM (Html.Html, [[AssetSlot]], [[AssetSlot]])
-volumeDescription inzip top@Container{ containerVolume = v } al = do
+volumeDescription :: Bool -> Volume -> [AssetSlot] -> ActionM (Html.Html, [[AssetSlot]], [[AssetSlot]])
+volumeDescription inzip v al = do
   cite <- lookupVolumeCitation v
   links <- lookupVolumeLinks v
   fund <- lookupVolumeFunding v
-  desc <- peeks $ htmlVolumeDescription inzip top (maybeToList cite ++ links) fund at ab
+  desc <- peeks $ htmlVolumeDescription inzip v (maybeToList cite ++ links) fund at ab
   return (desc, at, ab)
   where
   (at, ab) = partition (Fold.any (containerTop . slotContainer) . assetSlot . head) $ groupBy (me `on` fmap (containerId . slotContainer) . assetSlot) al
   me (Just x) (Just y) = x == y
   me _ _ = False
 
-volumeZipEntry :: Container -> Maybe BSB.Builder -> [AssetSlot] -> ActionM ZipEntry
-volumeZipEntry top@Container{ containerVolume = v } csv al = do
+volumeZipEntry :: Volume -> Maybe BSB.Builder -> [AssetSlot] -> ActionM ZipEntry
+volumeZipEntry v csv al = do
   req <- peek
-  (desc, at, ab) <- volumeDescription True top al
+  (desc, at, ab) <- volumeDescription True v al
   zt <- mapM ent at
   zb <- mapM ent ab
   return blankZipEntry
@@ -109,7 +112,7 @@ volumeZipEntry top@Container{ containerVolume = v } csv al = do
     }
   where
   ent [a@AssetSlot{ assetSlot = Nothing }] = assetZipEntry a
-  ent l@(AssetSlot{ assetSlot = Just s } : _) = containerZipEntry (Just $ containerId top) (slotContainer s) l
+  ent l@(AssetSlot{ assetSlot = Just s } : _) = containerZipEntry (slotContainer s) l
   ent _ = fail "volumeZipEntry"
 
 zipResponse :: BS.ByteString -> [ZipEntry] -> ActionM Response
@@ -135,17 +138,23 @@ checkAsset a = dataPermission a > PermissionNONE && assetBacked (view a)
 zipContainer :: ActionRoute (Maybe (Id Volume), Id Slot)
 zipContainer = action GET (pathMaybe pathId </> pathSlotId </< "zip") $ \(vi, ci) -> withAuth $ do
   c <- getContainer PermissionPUBLIC vi ci True
-  z <- containerZipEntry Nothing c . filter checkAsset =<< lookupContainerAssets c
+  z <- containerZipEntry c . filter checkAsset =<< lookupContainerAssets c
   auditSlotDownload (not $ zipEmpty z) (containerSlot c)
   zipResponse ("databrary-" <> BSC.pack (show (volumeId (containerVolume c))) <> "-" <> BSC.pack (show (containerId c))) [z]
 
 zipVolume :: ActionRoute (Id Volume)
 zipVolume = action GET (pathId </< "zip") $ \vi -> withAuth $ do
+  incl <- peeks $ catMaybes . lookupQueryParameters "incl"
+  excl <- peeks $ catMaybes . lookupQueryParameters "excl"
+  s <- maybe (result $ response badRequest400 [] ("Invalid incl or excl list" :: String)) return $
+    RS.parseRangeSets (map BSC.unpack incl) (map BSC.unpack excl)
   v <- getVolume PermissionPUBLIC vi
-  cr@((top,tr):cr') <- lookupVolumeContainersRecords v
-  csv <- null tr && null cr' ?!$> volumeCSV v cr
-  a <- filter checkAsset <$> lookupVolumeAssetSlots v False
-  z <- volumeZipEntry top csv a
+  _:cr <- lookupVolumeContainersRecords v
+  let cr' = filter ((`RS.member` s) . containerId . fst) cr
+  csv <- null cr' ?!$> volumeCSV v cr'
+  a <- filter (\a@AssetSlot{ assetSlot = Just c } -> checkAsset a && RS.member (containerId (slotContainer c)) s) <$>
+    lookupVolumeAssetSlots v False
+  z <- volumeZipEntry v csv a
   auditVolumeDownload (not $ zipEmpty z) v
   zipResponse ("databrary-" <> BSC.pack (show (volumeId v))) [z]
 
@@ -153,7 +162,6 @@ viewVolumeDescription :: ActionRoute (Id Volume)
 viewVolumeDescription = action GET (pathId </< "description") $ \vi -> withAuth $ do
   angular
   v <- getVolume PermissionPUBLIC vi
-  top <- lookupVolumeTopContainer v
   al <- filter checkAsset <$> lookupVolumeAssetSlots v False
-  (desc, _, _) <- volumeDescription False top al
+  (desc, _, _) <- volumeDescription False v al
   return $ okResponse [] desc

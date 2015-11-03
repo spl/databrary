@@ -105,7 +105,7 @@ volumeCSV vol crsl = do
 csvVolume :: ActionRoute (Id Volume)
 csvVolume = action GET (pathId </< "csv") $ \vi -> withAuth $ do
   vol <- getVolume PermissionPUBLIC vi
-  r <- lookupVolumeContainersRecords vol
+  _:r <- lookupVolumeContainersRecords vol
   csv <- volumeCSV vol r
   return $ okResponse 
     [ (hContentType, "text/csv;charset=utf-8")
