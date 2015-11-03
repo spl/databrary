@@ -116,7 +116,7 @@ cacheVolumeTopContainer vol = do
 leftJoin :: (a -> b -> Bool) -> [a] -> [b] -> [(a, [b])]
 leftJoin _ [] [] = []
 leftJoin _ [] _ = error "leftJoin: leftovers"
-leftJoin p (a:al) b = uncurry (:) $ ((a, ) *** leftJoin p al) $ span (p a) b
+leftJoin p (a:al) b = uncurry (:) $ (,) a *** leftJoin p al $ span (p a) b
 
 volumeJSONField :: Volume -> BS.ByteString -> Maybe BS.ByteString -> VolumeCacheActionM (Maybe JSON.Value)
 volumeJSONField vol "access" ma = do

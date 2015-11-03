@@ -57,11 +57,11 @@ lookupVolumeContainer vol ci =
 
 lookupVolumeContainers :: MonadDB c m => Volume -> m [Container]
 lookupVolumeContainers vol =
-  dbQuery $ fmap ($ vol) $(selectQuery selectVolumeContainer "$WHERE container.volume = ${volumeId vol} ORDER BY container.top DESC, container.id")
+  dbQuery $ fmap ($ vol) $(selectQuery selectVolumeContainer "$WHERE container.volume = ${volumeId vol} ORDER BY container.id")
 
 lookupVolumeTopContainer :: MonadDB c m => Volume -> m Container
 lookupVolumeTopContainer vol =
-  dbQuery1' $ fmap ($ vol) $(selectQuery selectVolumeContainer "$WHERE container.volume = ${volumeId vol} AND container.top ORDER BY container.id LIMIT 1")
+  dbQuery1' $ fmap ($ vol) $(selectQuery selectVolumeContainer "$WHERE container.volume = ${volumeId vol} ORDER BY container.id LIMIT 1")
 
 addContainer :: MonadAudit c m => Container -> m Container
 addContainer bc = do
@@ -76,7 +76,7 @@ changeContainer c = do
 removeContainer :: MonadAudit c m => Container -> m Bool
 removeContainer c = do
   ident <- getAuditIdentity
-  top <- dbQuery1' [pgSQL|SELECT id FROM container WHERE volume = ${volumeId $ containerVolume c} AND top ORDER BY id LIMIT 1|]
+  top <- dbQuery1' [pgSQL|SELECT id FROM container WHERE volume = ${volumeId $ containerVolume c} ORDER BY id LIMIT 1|]
   if top == containerId c
     then return False
     else isRight <$> dbTryJust (guard . isForeignKeyViolation) (dbExecute1 $(deleteContainer 'ident 'c))
