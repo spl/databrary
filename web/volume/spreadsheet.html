@@ -90,10 +90,10 @@
   </span>
 </div>
 
-<div ng-if="::!editing" class="spreadsheet-options">
+<div ng-if="::!editing" ng-show="key.id === 'slot'" class="spreadsheet-options">
   <span class="icon download"></span>
-  <a ng-href="{{::volume.csvRoute()}}">Export as CSV</a> | 
-  <a ng-if="::!editing" ng-href="{{::page.router.volumeDescription([volume.id])}}" class="download" message="download.zip.title"></a>
+  <a ng-href="{{::volume.csvRoute()}}">Export all as CSV</a> | 
+  <a ng-show="filter.count < count" ng-href="{{::volume.zipRoute()}}" ng-click="zip($event)" class="download">Download <ng-pluralize count="filter.count" when="{0:'all folders',one:'selected folders (one omitted)',other:'selected folders ({} omitted)'}"></ng-pluralize> as zip</a>
 </div>
 
 </ng-form>

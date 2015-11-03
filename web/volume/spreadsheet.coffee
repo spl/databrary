@@ -1223,18 +1223,21 @@ app.directive 'spreadsheet', [
               metric: info.metric || constants.metricName.indicator
               value: if info.metric?.type == 'numeric' then parseFloat(info.v) else info.v
             return
+          count: 0
 
         setFilter = (f) ->
+          c = 0
           if !f
             for row in Rows
               row.filt = true
           else if Key.id == 'slot'
             for row in Rows
               s = row.slot.slot
-              row.filt = f(s, s.records)
+              c++ unless row.filt = f(s, s.records)
           else
             for row in Rows
-              row.filt = f(row.key?.record, row.list('slot'))
+              c++ unless row.filt = f(row.key?.record, row.list('slot'))
+          $scope.filter.count = c
           if $scope.pivot.active
             $scope.pivot.show()
           return
@@ -1249,6 +1252,7 @@ app.directive 'spreadsheet', [
             populateRecords()
           if Order.length != Rows.length
             Order = if Rows.length then [0..Rows.length-1] else []
+          $scope.count = Rows.length
           $(TBody).empty()
           Expanded = undefined
           Rows[-1] = foot if foot
@@ -1365,6 +1369,35 @@ app.directive 'spreadsheet', [
               {c: "slot", m: "top", op: "false"},
               {c: "slot", m: "date", op: "ge"},
               {c: "slot", m: "date", op: "le", v: $filter('date')(new Date(), 'yyyy-MM-dd')}]
+
+        $scope.zip = (event) ->
+          event.preventDefault()
+          cs = []
+          for row in Rows
+            cs.push
+              i: row.slot.id
+              f: !!row.filt
+          cs.sort (a, b) -> a.i-b.i
+          f = $scope.filter.count < cs.length/2
+          l = []
+          b = undefined
+          add = ->
+            if b
+              l.push(b.join('-'))
+              b = undefined
+          for c in cs
+            if c.f == f
+              add()
+            else if b
+              b[1] = c.i
+            else
+              b = [c.i]
+          add()
+          params = {}
+          if l.length
+            params[if f then 'exclude' else 'include'] = l.join(',')
+          $location.url(router.volumeDescription([volume.id], params))
+          return
 
         return
     ]

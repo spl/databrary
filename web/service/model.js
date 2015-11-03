@@ -542,8 +542,8 @@ app.factory('modelService', [
       return router.volumeThumb([this.id, size]);
     };
 
-    Volume.prototype.zipRoute = function () {
-      return router.volumeZip([this.id]);
+    Volume.prototype.zipRoute = function (params) {
+      return router.volumeZip([this.id], params);
     };
 
     Volume.prototype.csvRoute = function () {

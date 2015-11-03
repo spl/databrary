@@ -339,7 +339,7 @@ app.provider('routerService', [
       resolve: {
         volume: [
           'pageService', function (page) {
-            return page.models.Volume.get(page.$route.current.params.id, {containers:'assets'});
+            return page.models.Volume.get(page.$route.current.params.id, {containers:'assets',top:true});
           }
         ],
         slot: function() {

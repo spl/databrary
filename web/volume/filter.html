@@ -26,5 +26,6 @@
     </span>
     <button ng-click="filter.remove($index)" class="volume-filter-remove icon trash neutral" ></button>
   </div>
-  <small ng-if="filter.list.length <= 1" class="reminder">Click anywhere in the spreadsheet to add filters</small>
+  <small ng-show="filter.count" class="reminder"><ng-pluralize count="filter.count" when="{one:'One row',other:'{} rows'}"></ng-pluralize> hidden. </small>
+  <small ng-hide="filter.list.length > 1" class="reminder">Click anywhere in the spreadsheet to add filters</small>
 </div>

@@ -99,9 +99,9 @@ htmlVolumeDescription inzip Volume{..} cite fund cs atl abl req = H.docTypeHtml 
       else do
         H.dt $ H.a H.! actionLink zipVolume volumeId (idSetQuery cs) $
           void "Download"
-    unless (idSetIsFull cs) $ H.p $ "This is a partial download containing only selected sessions and materials."
+    unless (idSetIsFull cs) $ H.p $ msg "download.zip.partial"
     H.p $ do
-      H.text $ msg "download.warning"
+      msg "download.warning"
       void " For more information and terms of use see the "
       H.a H.! HA.href "http://databrary.org/access/policies/agreement.html"
         $ "Databrary Access Agreement"
@@ -112,16 +112,16 @@ htmlVolumeDescription inzip Volume{..} cite fund cs atl abl req = H.docTypeHtml 
       H.dt $ H.string n
       H.dd $ do
         H.img H.! HA.src (link webFile (Just $ staticPath ["icons", "release", BSC.pack $ map toLower n <.> "svg"]))
-        H.text $ msg (fromString $ "release." ++ n ++ ".title")
+        msg (fromString $ "release." ++ n ++ ".title")
         void ": "
-        H.text $ msg (fromString $ "release." ++ n ++ ".description")
+        msg (fromString $ "release." ++ n ++ ".description")
     H.h3 "Materials"
     atable atl
     H.h3 "Sessions"
     atable abl
   where
   link r a = builderValue $ actionURL (inzip ?> view req) r a []
-  msg m = getMessage m $ view req
+  msg m = H.text $ getMessage m $ view req
   atable acl = H.table H.! H4A.border "1" $ do
     H.thead $ H.tr $ do
       H.th "directory"
