@@ -43,12 +43,13 @@ import Databrary.Controller.Party
 import Databrary.Controller.Container
 import Databrary.Controller.Asset
 import Databrary.Controller.Web
+import Databrary.Controller.IdSet
 import Databrary.View.Html
 
 import {-# SOURCE #-} Databrary.Controller.Zip
 
-htmlVolumeDescription :: Bool -> Volume -> [Citation] -> [Funding] -> Bool -> [[AssetSlot]] -> [[AssetSlot]] -> RequestContext -> H.Html
-htmlVolumeDescription inzip Volume{..} cite fund full atl abl req = H.docTypeHtml $ do
+htmlVolumeDescription :: Bool -> Volume -> [Citation] -> [Funding] -> IdSet Container -> [[AssetSlot]] -> [[AssetSlot]] -> RequestContext -> H.Html
+htmlVolumeDescription inzip Volume{..} cite fund cs atl abl req = H.docTypeHtml $ do
   H.head $ do
     H.meta H.! HA.httpEquiv "content-type" H.! HA.content "text/html;charset=utf-8"
     H.title $ do
@@ -96,9 +97,9 @@ htmlVolumeDescription inzip Volume{..} cite fund full atl abl req = H.docTypeHtm
           H.a H.! HA.href (link viewParty (HTML, TargetParty $ view req)) $
             H.text $ partyName (view req)
       else do
-        H.dt $ H.a H.! HA.href (link zipVolume volumeId) $
+        H.dt $ H.a H.! actionLink zipVolume volumeId (idSetQuery cs) $
           void "Download"
-    unless full $ H.p $ "This is a partial download containing only selected sessions and materials."
+    unless (idSetIsFull cs) $ H.p $ "This is a partial download containing only selected sessions and materials."
     H.p $ do
       H.text $ msg "download.warning"
       void " For more information and terms of use see the "
