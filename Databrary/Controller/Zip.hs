@@ -11,13 +11,14 @@ import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy as BSL
 import qualified Data.Foldable as Fold
 import Data.Function (on)
-import Data.List (groupBy, partition)
-import Data.Maybe (fromJust, maybeToList, catMaybes)
+import Data.List (groupBy, partition, foldl')
+import Data.Maybe (fromJust, maybeToList, mapMaybe)
 import Data.Monoid ((<>))
 import qualified Data.RangeSet.List as RS
 import qualified Data.RangeSet.Parse as RS
 import qualified Data.Text.Encoding as TE
-import Network.HTTP.Types (hContentType, hCacheControl, hContentLength, badRequest400)
+import Network.HTTP.Types (hContentType, hCacheControl, hContentLength)
+import qualified Network.Wai as Wai
 import System.Posix.FilePath ((<.>))
 import qualified Text.Blaze.Html5 as Html
 import qualified Text.Blaze.Html.Renderer.Utf8 as Html
@@ -40,7 +41,6 @@ import Databrary.Model.Party
 import Databrary.Model.Citation
 import Databrary.Model.Funding
 import Databrary.HTTP
-import Databrary.HTTP.Request
 import Databrary.HTTP.Path.Parser
 import Databrary.Action
 import Databrary.Controller.Paths
@@ -142,13 +142,23 @@ zipContainer = action GET (pathMaybe pathId </> pathSlotId </< "zip") $ \(vi, ci
   auditSlotDownload (not $ zipEmpty z) (containerSlot c)
   zipResponse ("databrary-" <> BSC.pack (show (volumeId (containerVolume c))) <> "-" <> BSC.pack (show (containerId c))) [z]
 
+inclExcl :: Wai.Request -> RS.RSet (Id Container)
+inclExcl = pe . mapMaybe ie . Wai.queryString where
+  pe [] = RS.full
+  pe (h:l) = foldl' ae (either RS.complement id h) l
+  ae s (Right i) = s `RS.union` i
+  ae s (Left e) = s `RS.difference` e
+  ie (k, Nothing) = Right <$> ps k
+  ie (k, Just v)
+    | k `BSC.isPrefixOf` "include" = Right <$> ps v
+    | k `BSC.isPrefixOf` "exclude" = Left <$> ps v
+  ie _ = Nothing
+  ps = RS.parseRangeSet . BSC.unpack
+
 zipVolume :: ActionRoute (Id Volume)
 zipVolume = action GET (pathId </< "zip") $ \vi -> withAuth $ do
-  incl <- peeks $ catMaybes . lookupQueryParameters "incl"
-  excl <- peeks $ catMaybes . lookupQueryParameters "excl"
-  s <- maybe (result $ response badRequest400 [] ("Invalid incl or excl list" :: String)) return $
-    RS.parseRangeSets (map BSC.unpack incl) (map BSC.unpack excl)
-  let full = RS.null $ RS.complement s
+  s <- peeks inclExcl
+  let full = s == RS.full
   v <- getVolume PermissionPUBLIC vi
   _:cr <- lookupVolumeContainersRecords v
   let cr' = filter ((`RS.member` s) . containerId . fst) cr

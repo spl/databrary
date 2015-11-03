@@ -1,10 +1,9 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module Data.RangeSet.Parse
-  ( parseRangeSets
+  ( parseRangeSet
   ) where
 
 import Control.Applicative ((<$>), optional)
-import Control.Monad (liftM2)
 import Data.Maybe (fromMaybe)
 import Data.Monoid (Monoid(..))
 import qualified Data.RangeSet.List as R
@@ -31,6 +30,5 @@ instance (Read a, Bounded a) => Read (RangeList a) where
 rangeListSet :: (Ord a, Enum a) => RangeList a -> R.RSet a
 rangeListSet (RangeList l) = R.fromRangeList l
 
-parseRangeSets :: (Ord a, Enum a, Bounded a, Read a) => [String] -> [String] -> Maybe (R.RSet a)
-parseRangeSets incl excl = liftM2 R.difference (if null incl then Just R.full else prl incl) (prl excl) where
-  prl = fmap (rangeListSet . mconcat) . mapM readMaybe
+parseRangeSet :: (Ord a, Enum a, Bounded a, Read a) => String -> Maybe (R.RSet a)
+parseRangeSet = fmap rangeListSet . readMaybe
