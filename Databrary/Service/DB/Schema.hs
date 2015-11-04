@@ -91,7 +91,11 @@ updateDBSchema dir = do
   where
   file = (dir </>) . (<.> ".sql")
   base = file "0"
+  transact "0" = False
+  transact _ = True
   apply n = do
     confirm $ "Apply schema " ++ show n ++ "?"
+    if transact n then dbTransaction (run n) else run n
+  run n = do
     dbExecute_ $ BSL.fromChunks ["INSERT INTO schema (name) VALUES (", pgLiteralRep n, ")"]
     sqlFile (file n)
