@@ -1090,7 +1090,9 @@ app.factory('modelService', [
 
     AssetSlot.prototype.setExcerpt = function (release) {
       var a = this;
-      return router.http(release != null ? router.controllers.postExcerpt : router.controllers.deleteExcerpt, this.container.id, this.segment.format(), this.id, {release:release})
+      if (release === true)
+        release = undefined;
+      return router.http(release !== null ? router.controllers.postExcerpt : router.controllers.deleteExcerpt, this.container.id, this.segment.format(), this.id, {release:release})
         .then(function (res) {
           if (a instanceof Excerpt && 'excerpt' in res.data)
             return a.update(res.data);

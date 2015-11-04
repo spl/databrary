@@ -134,7 +134,7 @@
               <button ng-if="!!current.asset" ng-click="current.rePosition()" class="mini">Position file</button>
               &#32;
               <button ng-if="current.excerpt.on === false" ng-click="current.editExcerpt()" class="mini">Highlight on volume</button>
-              <button ng-if="current.excerpt.on === true" ng-click="current.editExcerpt()" class="mini">Edit highlight</button>
+              <button ng-if="current.excerpt.on === true" ng-click="current.editExcerpt()" class="mini"><span ng-if="::current.excerpt.full">Remove</span><span ng-if="::!current.excerpt.full">Edit</span> highlight</button>
             </div>
             <ng-form ng-switch-when="addrecord" name="form.record">
               <button ng-click="addRecord(null)" class="mini">Cancel</button>&#32;

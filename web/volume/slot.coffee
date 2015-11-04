@@ -739,6 +739,7 @@ app.controller('volume/slot', [
               target: @asset.inSegment(seg)
               on: false
               release: ''
+              full: seg.contains(@)
             else
               undefined
           else if e.equals(seg)
@@ -746,19 +747,23 @@ app.controller('volume/slot', [
             target: e.excerpt
             on: true
             release: e.excerpt.excerpt+''
+            full: e.contains(@)
           else
             null
         return
 
       editExcerpt: () ->
         @updateExcerpt() # should be unnecessary
-        $scope.editing = 'excerpt'
+        if @excerpt.full
+          @saveExcerpt(if @excerpt.on then null else true)
+        else
+          $scope.editing = 'excerpt'
         return
 
       excerptOptions: () ->
-        l = {}
         r = (@asset.classification ? @asset.container.release) || 0
-        l[0] = constants.message('release.DEFAULT.select') + ' (' + constants.message('release.' + constants.release[r] + '.title') + ')'
+        l =
+          true: constants.message('release.DEFAULT.select') + ' (' + constants.message('release.' + constants.release[r] + '.title') + ')'
         for c, i in constants.release when i > r
           l[i] = constants.message('release.' + c + '.title') + ': ' + constants.message('release.' + c + '.select')
         l[@excerpt.release] = constants.message('release.prompt') unless @excerpt.release of l
@@ -766,10 +771,10 @@ app.controller('volume/slot', [
 
       saveExcerpt: (value) ->
         $scope.editing = true
-        if value == undefined || value == ''
-          return
         messages.clear(this)
-        if !@asset.classification? && value > (slot.release || 0) && !confirm(constants.message('release.excerpt.warning'))
+        return if value == undefined || value == ''
+        value = true if value == 'true'
+        if !@asset.classification? && value != true && value > (slot.release || 0) && !confirm(constants.message('release.excerpt.warning'))
           return
         @excerpt.target.setExcerpt(value)
           .then (excerpt) =>
@@ -777,12 +782,15 @@ app.controller('volume/slot', [
               if 'excerpt' of excerpt
                 @excerpts.push(new Excerpt(excerpt))
               @updateExcerpt()
+              return
             , (res) =>
               messages.addError
                 type: 'red'
                 body: constants.message('asset.update.error', @name)
                 report: res
                 owner: this
+              return
+        return
 
       canRestore: () ->
         uploads.removedAsset? if editing && this == blank && uploads.removedAsset?.volume.id == slot.volume.id
