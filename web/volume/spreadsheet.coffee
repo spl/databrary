@@ -1,8 +1,8 @@
 'use strict'
 
 app.directive 'spreadsheet', [
-  'constantService', 'displayService', 'messageService', 'tooltipService', 'styleService', '$compile', '$templateCache', '$timeout', '$document', '$location', '$filter', 'routerService',
-  (constants, display, messages, tooltips, styles, $compile, $templateCache, $timeout, $document, $location, $filter, router) ->
+  'constantService', 'displayService', 'messageService', 'tooltipService', 'styleService', '$compile', '$templateCache', '$timeout', '$document', '$location', '$filter', 'routerService', 'storageService',
+  (constants, display, messages, tooltips, styles, $compile, $templateCache, $timeout, $document, $location, $filter, router, storage) ->
     restrict: 'E'
     scope: true
     templateUrl: 'volume/spreadsheet.html'
@@ -421,7 +421,7 @@ app.directive 'spreadsheet', [
               d = populateSlotData(slot)
               d.summary = (rrr.record.displayName for rrr in recs).join(', ')
               nor.add('slot', d)
-              
+
         ################################# Generate HTML
 
         # Add or replace the text contents of cell c for measure/type m with value v
@@ -1281,9 +1281,7 @@ app.directive 'spreadsheet', [
           return
 
         $scope.state =
-          name: 'default'
-          save: ->
-            return unless name = @name
+          get: ->
             state =
               key: Key.id
               sort: currentSort && {
@@ -1296,7 +1294,7 @@ app.directive 'spreadsheet', [
                 m: f.metric.id
                 op: f.op
                 v: f.value
-              pivot: $scope.pivot.get()
+              pivot: $scope.pivot.get?()
               public: @public
             delete state.sort unless state.sort
             l = state.filter.pop()
@@ -1304,7 +1302,36 @@ app.directive 'spreadsheet', [
               state.filter.push(l)
             delete state.pivot unless state.pivot
             delete state.public unless state.public
+            state
 
+          put: (state, key) ->
+            if state.filter
+              l = []
+              for f in state.filter
+                r =
+                  category: getCategory(f.c)
+                  metric: getMetric(f.m)
+                  op: f.op
+                  value: f.v
+                l.push r if r.category && r.metric
+              $scope.filter.list = l
+            else
+              $scope.filter.list = [
+                category: pseudoCategory.slot
+                metric: pseudoMetric.top
+              ]
+            setKey(key || state.key)
+            sortBy(Cols.find((c) -> c.category.id == 'slot' && c.metric.id == 'date'))
+            if state.sort && col = Cols.find((c) -> c.category.id == state.sort.c && c.metric.id == state.sort.m)
+              sortBy(col, state.sort.currentSortDirection)
+            fill()
+            $scope.pivot.load(state.pivot)
+            return
+
+          name: 'default'
+          save: ->
+            return unless name = @name
+            state = @get()
             router.http(router.controllers.postVolumeState, volume.id, encodeURIComponent(name), state).then ->
                 volume.state[name] = state
                 messages.add
@@ -1330,31 +1357,11 @@ app.directive 'spreadsheet', [
                   report: res
                 return
             return
-          
-          restore: (key) ->
-            state = volume.state?[@name] || {}
+
+          restore: (key, state) ->
+            state = state || volume.state?[@name] || {}
             state.public = !!state.public
-            if state.filter
-              l = []
-              for f in state.filter
-                r =
-                  category: getCategory(f.c)
-                  metric: getMetric(f.m)
-                  op: f.op
-                  value: f.v
-                l.push r if r.category && r.metric
-              $scope.filter.list = l
-            else
-              $scope.filter.list = [
-                category: pseudoCategory.slot
-                metric: pseudoMetric.top
-              ]
-            setKey(key || state.key)
-            sortBy(Cols.find((c) -> c.category.id == 'slot' && c.metric.id == 'date'))
-            if state.sort && col = Cols.find((c) -> c.category.id == state.sort.c && c.metric.id == state.sort.m)
-              sortBy(col, state.sort.currentSortDirection)
-            fill()
-            $scope.pivot.load(state.pivot)
+            @put(state, key)
             return
 
         if volume.state
@@ -1402,6 +1409,13 @@ app.directive 'spreadsheet', [
         return
     ]
     link: ($scope, $element, $attrs) ->
-      $scope.state.restore($attrs.key || $location.search().key)
+      state = storage.getValue('spreadsheet-state')
+      state = undefined unless state?.volume == $scope.volume.id
+      $scope.state.restore($attrs.key || $location.search().key, state)
+      $scope.$on '$destroy', ->
+        state = $scope.state.get()
+        state.volume = $scope.volume.id
+        storage.setValue('spreadsheet-state', state)
+        return
       return
 ]

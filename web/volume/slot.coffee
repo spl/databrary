@@ -329,7 +329,7 @@ app.controller('volume/slot', [
 
     playerMinHeight = 200
     viewportMinHeight = 120
-    playerHeight = parseInt(storage.get('player-height'), 10) || 400
+    playerHeight = parseInt(storage.getString('player-height'), 10) || 400
     unless playerHeight >= playerMinHeight
       playerHeight = playerMinHeight
 
@@ -350,7 +350,7 @@ app.controller('volume/slot', [
         return
       return
     setPlayerHeight = () ->
-      storage.set('player-height', playerHeight)
+      storage.setString('player-height', playerHeight)
       $scope.playerHeight = playerHeight
       updatePlayerHeight()
       return
@@ -1048,7 +1048,7 @@ app.controller('volume/slot', [
     $scope.vote = (name, vote) ->
       new TagName(name).save(vote)
 
-    tagToggle = storage.get('tag-toggle')?.split("\n") ? []
+    tagToggle = storage.getString('tag-toggle')?.split("\n") ? []
 
     class Tag extends TagName
       constructor: (t) ->
@@ -1079,7 +1079,7 @@ app.controller('volume/slot', [
           tagToggle.push(@id)
         else
           tagToggle.remove(@id)
-        storage.set('tag-toggle', tagToggle.join("\n"))
+        storage.setString('tag-toggle', tagToggle.join("\n"))
 
       update: ->
         state = false
