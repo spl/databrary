@@ -18,6 +18,7 @@ import Databrary.Action
 import Databrary.Model.Permission
 import Databrary.Model.Volume
 import Databrary.Model.Citation
+import Databrary.Model.Tag
 import Databrary.HTTP.Form.View
 import Databrary.Controller.Paths
 import Databrary.View.Html
@@ -29,8 +30,8 @@ import {-# SOURCE #-} Databrary.Controller.Angular
 import {-# SOURCE #-} Databrary.Controller.Party
 import {-# SOURCE #-} Databrary.Controller.Volume
 
-htmlVolumeView :: Volume -> RequestContext -> H.Html
-htmlVolumeView v req = htmlTemplate req Nothing $ \js -> do
+htmlVolumeView :: Volume -> [Tag] -> RequestContext -> H.Html
+htmlVolumeView v t req = htmlTemplate req Nothing $ \js -> do
   H.div H.! H.customAttribute "typeof" "dataset" $ do
     H.h1 H.! H.customAttribute "property" "name" $ H.text $ volumeName v
     when (view v >= PermissionEDIT) $
@@ -51,6 +52,10 @@ htmlVolumeView v req = htmlTemplate req Nothing $ \js -> do
       Fold.forM_ (volumeDOI v) $ \d -> do
         H.dt "doi"
         H.dd H.! H.customAttribute "property" "alternateName" $ byteStringHtml d
+      H.dt "keywords" 
+      H.dd $ H.ul H.! HA.class_ "comma" H.! H.customAttribute "property" "keywords" $ do
+        forM_ t $ \n  -> do
+          H.li $ byteStringHtml $ tagNameBS $ tagName n
 
 htmlVolumeForm :: Maybe Volume -> Maybe Citation -> FormHtml f
 htmlVolumeForm vol cite = do
