@@ -1,6 +1,8 @@
 <div class="row">
-  <a ng-if="::!volume.excerpts.length" ng-href="{{::volume.checkPermission(page.permission.EDIT)? volume.editRoute('data') : ''}}"><div class="foot-2" ng-click="tutorial('<p class=\'message-title\'>Selecting highlights from your data: </p><p>(1/3) Select the file you wish to highlight from the \'file\' tab. The \'file\' tab is on the right end of the spreadsheet. Click next once you are done.</p>','<p>(2/3) Quick tip: You can highlight an entire video or a specific segment by clicking and dragging over the desired section of the timeline.</p>','<p>(3/3) Click the \'Highlight on volume\' button and choose your sharing level in the dropdown that appears.</p><p>You now have a highlight!</p>')">Highlighting video or files makes it easier for others to understand what your volume contains.<br>Click to select files to highlight.
-  </div></a>
+  <div ng-if="::!volume.excerpts.length">
+    <span class="foot-2 block">Highlighting video or files from your data makes it easier for others to understand what your volume contains. </span>
+    <a ng-href="{{::volume.checkPermission(page.permission.EDIT)? volume.editRoute('data') : ''}}" ng-click="tutorial('<p class=\'message-title\'>Selecting highlights from your data: </p><p>(1/3) Select the file you wish to highlight from the \'file\' column on the right end of the spreadsheet. Click next once you are done.</p>','<p>(2/3) You may choose to highlight an entire video or only specific segments. Skip this step if you are highlighting the entire file. Otherwise, press down and drag over the portion of the timeline you wish to highlight.</p>','<p>(3/3) Click the \'Highlight on volume\' button. If you are highlighting a segment, you have the option of changing the sharing level of that segment in the dropdown that appears.</p><p>You now have a highlight!</p>')" class="button neutral">Select files to highlight.</a>
+  </div>
   <div class="panel-excerpts-player col-desktop-7 col-tablet-5 col-mobile-6">
     <section ng-if="!!current" class="panel-excerpts-player-frame">
       <div ng-repeat="current in [current]">
