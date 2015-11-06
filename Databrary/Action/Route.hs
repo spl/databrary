@@ -22,7 +22,7 @@ import qualified Databrary.Iso as I
 import Databrary.HTTP.Request
 import Databrary.HTTP.Path.Parser
 import Databrary.HTTP.Route
-import Databrary.Action.Types
+import Databrary.Action.Run
 
 type ActionRoute a = Route Action a
 

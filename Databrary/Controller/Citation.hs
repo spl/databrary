@@ -9,7 +9,6 @@ import Databrary.Has (focusIO)
 import Databrary.HTTP.Form.Deform
 import Databrary.HTTP.Path.Parser
 import Databrary.Action
-import Databrary.Action.Types
 import Databrary.Controller.Form
 import Databrary.Model.Citation.CrossRef
 

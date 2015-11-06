@@ -12,7 +12,7 @@ import System.Posix.FilePath (splitFileName, splitExtension)
 import Databrary.Iso.Types (invMap)
 import Databrary.Model.Format
 import Databrary.HTTP.Path.Parser
-import Databrary.Action.Types
+import Databrary.Action.Run
 import Databrary.Action
 import Databrary.Controller.Web
 import Databrary.Controller.Angular

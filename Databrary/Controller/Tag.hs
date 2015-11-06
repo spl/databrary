@@ -19,7 +19,7 @@ import Databrary.Model.Tag
 import Databrary.Solr.Tag
 import Databrary.HTTP.Form.Deform
 import Databrary.HTTP.Path.Parser
-import Databrary.Action.Types
+import Databrary.Action.Run
 import Databrary.Action
 import Databrary.Controller.Paths
 import Databrary.Controller.Form

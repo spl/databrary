@@ -13,7 +13,6 @@ import qualified Data.Text as T
 import Databrary.Has
 import Databrary.Service.Types
 import Databrary.HTTP.Path.Parser
-import Databrary.Action.Types
 import Databrary.Action
 import Databrary.Controller.Angular
 import Databrary.View.Root
