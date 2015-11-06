@@ -24,6 +24,8 @@
   border-bottom 1px dotted neutral53
   padding-top b3
   padding-bottom b3
+  input-no-spin()
+  
   &:last-of-type
     border-bottom 0
   .icon
@@ -42,12 +44,6 @@
     border-top-right-radius 0
     border-bottom-right-radius 0
     max-width 2.2
-  input[type=number]
-    -moz-appearance textfield 
-  input[type=number]::-webkit-inner-spin-button
-  input[type=number]::-webkit-outer-spin-button
-    -webkit-appearance none
-    appearance none
   .input-age-select
     border-top-left-radius 0
     border-bottom-left-radius 0       
@@ -135,17 +131,14 @@
     width 36px
 
 .search-pages
+  input-no-spin()
   input[type=number]
     max-width 2
     width auto
     padding-top 1px
     border-radius 0
     -moz-appearance textfield
-  input[type=number]::-webkit-inner-spin-button, 
-  input[type=number]::-webkit-outer-spin-button 
-    -webkit-appearance none
-    appearance none
-    margin 0 
+    line-height 31px
   .icon
     top b8
     margin 0 b8
