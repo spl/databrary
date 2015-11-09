@@ -7,8 +7,6 @@ module Databrary.Model.Asset
   , lookupVolumeAsset
   , addAsset
   , changeAsset
-  , supersedeAsset
-  , assetIsSuperseded
   , assetCreation
   , assetJSON
   ) where
@@ -72,14 +70,6 @@ changeAsset a fp = do
   a2 <- maybe (return a) (storeAssetFile a) fp
   dbExecute1' $(updateAsset 'ident 'a2)
   return a2
-
-supersedeAsset :: MonadDB c m => Asset -> Asset -> m ()
-supersedeAsset old new =
-  dbExecute1' [pgSQL|SELECT asset_supersede(${assetId old}, ${assetId new})|]
-
-assetIsSuperseded :: MonadDB c m => Asset -> m Bool
-assetIsSuperseded a =
-  dbExecute1 [pgSQL|SELECT ''::void FROM asset_revision WHERE orig = ${assetId a} LIMIT 1|]
 
 assetCreation :: MonadDB c m => Asset -> m (Maybe Timestamp, Maybe T.Text)
 assetCreation a = maybe (Nothing, Nothing) (first Just) <$>

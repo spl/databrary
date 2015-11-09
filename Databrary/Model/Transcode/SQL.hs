@@ -19,11 +19,12 @@ import Databrary.Model.Volume.SQL
 import Databrary.Model.Asset.Types
 import Databrary.Model.Asset.SQL
 import Databrary.Model.Segment
+import Databrary.Model.AssetRevision.Types
 import Databrary.Model.Transcode.Types
 
 makeOrigTranscode :: Segment -> [Maybe String] -> Maybe Timestamp -> Maybe Int32 -> Maybe BS.ByteString -> SiteAuth -> (Volume -> Asset) -> Asset -> Transcode
 makeOrigTranscode s f t p l u a o =
-  Transcode (a $ assetVolume o) u o s (map (fromMaybe (error "NULL transcode options")) f) t p l
+  Transcode (AssetRevision (a $ assetVolume o) o True) u s (map (fromMaybe (error "NULL transcode options")) f) t p l
 
 selectOrigTranscode :: Selector -- ^ @'Asset' -> 'Transcode'@
 selectOrigTranscode = selectJoin 'id

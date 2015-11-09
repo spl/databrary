@@ -35,6 +35,7 @@ import Databrary.Model.Segment
 import Databrary.Model.Volume.Types
 import Databrary.Model.Format
 import Databrary.Model.Asset
+import Databrary.Model.AssetRevision.Types
 import Databrary.Model.Transcode.Types
 import Databrary.Model.Transcode.SQL
 
@@ -71,9 +72,12 @@ addTranscode orig seg@(Segment rng) opts (ProbeAV _ fmt av) = do
   dbExecute1' [pgSQL|INSERT INTO transcode (asset, owner, orig, segment, options) VALUES (${assetId a}, ${partyId $ accountParty $ siteAccount own}, ${assetId orig}, ${seg}, ${map Just opts})|]
   _ <- dbExecute1 [pgSQL|UPDATE slot_asset SET asset = ${assetId a}, segment = segment(lower(segment) + ${fromMaybe 0 $ lowerBound rng}, COALESCE(lower(segment) + ${upperBound rng}, upper(segment))) WHERE asset = ${assetId orig}|]
   return Transcode
-    { transcodeAsset = a
+    { transcodeRevision = AssetRevision
+      { revisionAsset = a
+      , revisionOrig = orig
+      , revisionTranscode = True
+      }
     , transcodeOwner = own
-    , transcodeOrig = orig
     , transcodeSegment = seg
     , transcodeOptions = opts
     , transcodeStart = Nothing -- actually now, whatever
@@ -98,8 +102,8 @@ findTranscode orig seg opts =
   dbQuery1 $ ($ orig) <$> $(selectQuery selectOrigTranscode "WHERE transcode.orig = ${assetId orig} AND transcode.segment = ${seg} AND transcode.options = ${map Just opts} AND asset.volume = ${volumeId $ assetVolume orig} LIMIT 1")
 
 findMatchingTranscode :: MonadDB c m => Transcode -> m (Maybe Transcode)
-findMatchingTranscode Transcode{..} =
-  dbQuery1 $(selectQuery selectTranscode "WHERE orig.sha1 = ${assetSHA1 transcodeOrig} AND transcode.segment = ${transcodeSegment} AND transcode.options = ${map Just transcodeOptions} AND asset.id < ${assetId transcodeAsset} ORDER BY asset.id LIMIT 1")
+findMatchingTranscode t@Transcode{..} =
+  dbQuery1 $(selectQuery selectTranscode "WHERE orig.sha1 = ${assetSHA1 $ transcodeOrig t} AND transcode.segment = ${transcodeSegment} AND transcode.options = ${map Just transcodeOptions} AND asset.id < ${assetId $ transcodeAsset t} ORDER BY asset.id LIMIT 1")
 
 checkAlreadyTranscoded :: MonadDB c m => Asset -> Probe -> m Bool
 checkAlreadyTranscoded Asset{ assetFormat = fmt, assetSHA1 = Just sha1 } ProbeAV{ probeTranscode = tfmt, probeAV = av }

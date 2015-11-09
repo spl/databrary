@@ -505,12 +505,6 @@ CREATE TABLE "asset_revision" (
 );
 COMMENT ON TABLE "asset_revision" IS 'Assets that reflect different versions of the same content, either generated automatically from reformatting or a replacement provided by the user.';
 
-CREATE RECURSIVE VIEW "asset_revisions" ("orig", "asset") AS
-	SELECT * FROM asset_revision
-	UNION
-	SELECT o.orig, a.asset FROM asset_revision o JOIN asset_revisions a ON o.asset = a.orig;
-COMMENT ON VIEW "asset_revisions" IS 'Transitive closure of asset_revision.';
-
 CREATE FUNCTION "asset_supersede" ("asset_old" integer, "asset_new" integer) RETURNS void STRICT LANGUAGE plpgsql AS $$
 BEGIN
 	PERFORM asset FROM asset_revision WHERE orig = asset_new;
