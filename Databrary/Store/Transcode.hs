@@ -1,4 +1,4 @@
-{-# LANGUAGE RecordWildCards, OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards, OverloadedStrings, ViewPatterns #-}
 module Databrary.Store.Transcode
   ( startTranscode
   , forkTranscode
@@ -54,7 +54,7 @@ ctlTranscode tc args = do
 
 transcodeArgs :: Transcode -> ActionM TranscodeArgs
 transcodeArgs t@Transcode{..} = do
-  Just f <- getAssetFile transcodeOrig
+  Just f <- getAssetFile (transcodeOrig t)
   req <- peek
   auth <- peeks $ transcodeAuth t
   return $
@@ -79,7 +79,7 @@ startTranscode tc = do
       let pid = guard (r == ExitSuccess) >> readMaybe out
       _ <- updateTranscode tc' pid $ (isNothing pid ?> out) <> (null err ?!> err)
       return pid)
-    (\Transcode{ transcodeAsset = match } -> do
+    (\(transcodeAsset -> match) -> do
       a <- changeAsset (transcodeAsset tc)
         { assetSHA1 = assetSHA1 match
         , assetDuration = assetDuration match

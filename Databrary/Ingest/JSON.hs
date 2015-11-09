@@ -49,6 +49,7 @@ import Databrary.Model.Measure
 import Databrary.Model.RecordSlot
 import Databrary.Model.Asset
 import Databrary.Model.AssetSlot
+import Databrary.Model.AssetRevision
 import Databrary.Model.Transcode
 import Databrary.Model.Ingest
 import Databrary.Action.Types

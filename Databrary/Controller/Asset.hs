@@ -43,6 +43,7 @@ import Databrary.Model.Slot
 import Databrary.Model.AssetSlot
 import Databrary.Model.AssetSegment
 import Databrary.Model.Excerpt
+import Databrary.Model.AssetRevision
 import Databrary.Model.Transcode
 import Databrary.Files hiding ((</>))
 import Databrary.Store.Types
