@@ -78,7 +78,7 @@ Executable schemabrary
     parsec >= 3,
     resource-pool,
     network,
-    postgresql-typed == 0.4.2
+    postgresql-typed == 0.4.2.1
 
 Executable databrary
   main-is: Databrary/Main.hs
@@ -89,6 +89,7 @@ Executable databrary
     base == 4.7.*,
     bytestring >= 0.10,
     containers,
+    array,
     transformers == 0.4.*,
     transformers-base,
     mtl >= 2.2.1,
@@ -125,7 +126,7 @@ Executable databrary
     cookie,
     resource-pool,
     scientific,
-    postgresql-typed == 0.4.2,
+    postgresql-typed == 0.4.2.1,
     memory >= 0.8,
     cryptonite,
     resourcet,
