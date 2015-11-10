@@ -7,6 +7,7 @@ module Databrary.Service.DB
   , withDB
   , MonadDB
   , DBM
+  , runDBM
   , liftDBM
   , dbTryJust
   , dbRunQuery
@@ -92,8 +93,11 @@ liftDB = focusIO
 
 type DBM a = ReaderT PGConnection IO a
 
+runDBM :: DBPool -> DBM a -> IO a
+runDBM p = withDB p . runReaderT
+
 liftDBM :: MonadDB c m => DBM a -> m a
-liftDBM q = liftDB $ runReaderT q
+liftDBM = liftDB . runReaderT
 
 -- |Combination of 'liftDBM' and lifted 'tryJust'
 dbTryJust :: MonadDB c m => (PGError -> Maybe e) -> DBM a -> m (Either e a)

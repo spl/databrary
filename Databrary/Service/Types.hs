@@ -7,6 +7,7 @@ module Databrary.Service.Types
 
 import Control.Concurrent (ThreadId)
 import qualified Data.ByteString as BS
+import Data.IORef (IORef)
 import qualified Data.Text as T
 
 import Databrary.Has (makeHasRec)
@@ -24,6 +25,7 @@ import Databrary.Solr.Service (Solr)
 import Databrary.Ingest.Service (Ingest)
 import Databrary.EZID.Service (EZID)
 import Databrary.Model.Time
+import Databrary.Model.Stats.Types
 
 newtype Secret = Secret BS.ByteString
 
@@ -40,6 +42,7 @@ data Service = Service
   , serviceWeb :: !Web
   , serviceHTTPClient :: !HTTPClient
   , serviceStatic :: !Static
+  , serviceStats :: !(IORef SiteStats)
   , serviceIngest :: !Ingest
   , serviceSolr :: !Solr
   , serviceEZID :: !(Maybe EZID)
