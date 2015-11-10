@@ -147,7 +147,7 @@ jsRoutes = mconcat
   , jsRoute "deleteTag" deleteTag (JSON, slot, TagId False tag)
   , jsRoute "deleteKeyword" deleteTag (JSON, slot, TagId True tag)
   , jsRoute "getTopTags" queryTags Nothing
-  , jsRoute "getActivity" viewActivity ()
+  , jsRoute "getSiteAudit" viewSiteAudit (JSON)
   ] where
   token = Id ""
   party = Id 0

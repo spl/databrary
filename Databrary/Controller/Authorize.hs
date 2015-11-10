@@ -139,7 +139,7 @@ deleteAuthorize = action DELETE (pathAPI </>> pathPartyTarget </> pathAuthorizeT
     HTML -> peeks $ otherRouteResponse [] viewAuthorize arg
 
 postAuthorizeNotFound :: ActionRoute (API, PartyTarget)
-postAuthorizeNotFound = action POST (pathAPI </> pathPartyTarget </< "notfound") $ \(api, i) -> withAuth $ do
+postAuthorizeNotFound = action POST (pathAPI </> pathPartyTarget </< "notfound") $ \(_, i) -> withAuth $ do
   p <- getParty (Just PermissionADMIN) i
   agent <- peeks $ fmap accountEmail . partyAccount
   (name, info) <- runForm Nothing $ liftM2 (,)

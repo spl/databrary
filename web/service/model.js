@@ -1414,16 +1414,18 @@ app.factory('modelService', [
       analytic: function () {
         return router.http(router.controllers.get, {}, {cache:false});
       },
-      activity: function () {
-        return router.http(router.controllers.getActivity)
+      siteAudit: function () {
+        return router.http(router.controllers.getSiteAudit)
           .then(function (res) {
-            for (var i = 0; i < res.data.length; i ++) {
-              if ('volume' in res.data[i])
-                res.data[i].volume = volumeMake(res.data[i].volume);
-              if ('party' in res.data[i])
-                res.data[i].party = partyMake(res.data[i].party);
+            var r = res.data;
+            var a = r.activity;
+            for (var i = 0; i < a.length; i ++) {
+              if ('volume' in a[i])
+                a[i].volume = volumeMake(a[i].volume);
+              if ('party' in a[i])
+                a[i].party = partyMake(a[i].party);
             }
-            return res.data;
+            return r;
           });
       }
     };

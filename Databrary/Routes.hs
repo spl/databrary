@@ -34,7 +34,6 @@ import Databrary.Controller.Transcode
 import Databrary.Controller.Ingest
 import Databrary.Controller.Web
 import Databrary.Controller.Search
-import Databrary.Controller.Stats
 import Databrary.Controller.Periodic
 import Databrary.Controller.API
 
@@ -141,8 +140,7 @@ routeMap = fromRouteList
   , route getCitation
   , route queryFunder
   , route remoteTranscode
-  , route viewActivity
-  , route viewStats
+  , route viewSiteAudit
 
   , route viewTranscodes
   , route postTranscode

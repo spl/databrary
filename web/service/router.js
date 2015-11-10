@@ -130,10 +130,10 @@ app.provider('routerService', [
             return models.Tag.top();
           }
         ],
-        activity: [
+        audit: [
           'modelService',
           function (models) {
-            return models.activity();
+            return models.siteAudit();
           }
         ]
       },
