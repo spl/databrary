@@ -15,6 +15,7 @@ import Databrary.Controller.Paths
 import Databrary.Controller.Login
 import Databrary.Controller.Volume
 import Databrary.Controller.Party
+import Databrary.Controller.Audit
 import Databrary.View.Template
 import Databrary.View.Html
 
@@ -25,6 +26,7 @@ htmlRoot req = htmlTemplate req Nothing $ \js -> do
       (H.a H.! actionLink viewLogin () js $ "login")
       (\_ -> H.a H.! actionLink viewParty (HTML, TargetProfile) js $ "profile")
       (view req)
+    H.li $ H.a H.! actionLink viewSiteAudit HTML js $ "activity"
     H.li $ H.a H.! actionLink queryVolumes HTML js $ "volumes"
     H.li $ H.a H.! actionLink queryParties HTML js $ "parties"
   return ()
