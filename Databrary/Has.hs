@@ -13,13 +13,12 @@ module Databrary.Has
   , makeHasRec
   ) where
 
-import Control.Applicative (Applicative)
+import Control.Applicative (Applicative, (<$>))
 import Control.Monad (unless, liftM, liftM2)
 import Control.Monad.Base (MonadBase(..))
 import Control.Monad.IO.Class (MonadIO(..))
 import Control.Monad.Reader (MonadReader, ReaderT(..), reader, withReaderT)
 import Control.Monad.Trans.Class (MonadTrans(..))
-import Data.List (foldl')
 import qualified Language.Haskell.TH as TH
 
 class Has a c where
@@ -69,33 +68,18 @@ getFieldType tn fn = do
   return ft
 
 makeHasFor :: TH.Name -> [(TH.Name, TH.Type, [TH.Type])] -> TH.DecsQ
-makeHasFor tn fs = concatM
-  (return
-    [ TH.TySynD ht [TH.PlainTV cv] $ tupleT $
-        map (\t -> TH.ConT ''Has `TH.AppT` t `TH.AppT` TH.VarT cv) (tt : concatMap (\(_, ft, ts) -> ft : ts) fs)
-    , TH.TySynD (TH.mkName ("MonadHas" ++ TH.nameBase tn)) [TH.PlainTV cv, TH.PlainTV mv] $ tupleT $
-        [ TH.ConT ''Functor `TH.AppT` TH.VarT mv
-        , TH.ConT ''Applicative `TH.AppT` TH.VarT mv
-        , TH.ConT ''MonadReader `TH.AppT` TH.VarT cv `TH.AppT` TH.VarT mv
-        , TH.ConT ht `TH.AppT` TH.VarT cv
-        ]
-    ])
-  (\(fn, ft, ts) -> do
-    concatM
-      [d| instance Has $(return ft) $(return tt) where
-            view = $(TH.varE fn) |]
-      (\st ->
-        [d| instance Has $(return st) $(return tt) where
-              view = view . $(TH.varE fn) |])
-      ts)
+makeHasFor tn fs = concat <$> mapM
+  (\(fn, ft, ts) -> concatM
+    [d| instance Has $(return ft) $(return tt) where
+          view = $(TH.varE fn) |]
+    (\st ->
+      [d| instance Has $(return st) $(return tt) where
+            view = view . $(TH.varE fn) |])
+    ts)
   fs
   where
   tt = TH.ConT tn
-  ht = TH.mkName ("Has" ++ TH.nameBase tn)
-  cv = TH.mkName "c"
-  mv = TH.mkName "m"
   concatM i f l = liftM2 (++) i (liftM concat $ mapM f l)
-  tupleT l = foldl' TH.AppT (TH.TupleT (length l)) l
 
 makeHasRec :: TH.Name -> [TH.Name] -> TH.DecsQ
 makeHasRec tn fs = do

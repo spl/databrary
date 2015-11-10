@@ -2,7 +2,6 @@
 module Databrary.Service.Types
   ( Secret(..)
   , Service(..)
-  , MonadHasService
   ) where
 
 import Control.Concurrent (ThreadId)

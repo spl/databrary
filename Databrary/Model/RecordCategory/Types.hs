@@ -1,7 +1,6 @@
 {-# LANGUAGE TemplateHaskell, TypeFamilies, OverloadedStrings #-}
 module Databrary.Model.RecordCategory.Types
   ( RecordCategory(..)
-  , MonadHasRecordCategory
   ) where
 
 import Data.Function (on)

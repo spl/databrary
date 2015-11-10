@@ -3,14 +3,10 @@ module Databrary.Model.Tag.Types
   ( TagName(..)
   , validateTag
   , Tag(..)
-  , MonadHasTag
   , TagUse(..)
-  , MonadHasTagUse
   , TagUseRow(..)
   , TagCoverage(..)
-  , MonadHasTagCoverage
   , TagWeight(..)
-  , MonadHasTagWeight
   ) where
 
 import Control.Monad ((<=<))

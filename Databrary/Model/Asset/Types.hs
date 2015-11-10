@@ -1,7 +1,6 @@
 {-# LANGUAGE OverloadedStrings, TemplateHaskell, TypeFamilies #-}
 module Databrary.Model.Asset.Types
   ( Asset(..)
-  , MonadHasAsset
   ) where
 
 import qualified Data.ByteString as BS

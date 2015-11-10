@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Databrary.Service.Crypto
   ( signature
+  , MonadSign
   , sign
   , unSign
   ) where
@@ -16,7 +17,7 @@ import Data.Monoid ((<>))
 import qualified Data.Traversable as Trav
 
 import Databrary.Ops
-import Databrary.Has (peeks, focusIO)
+import Databrary.Has
 import Databrary.Service.Types
 import Databrary.Service.Entropy
 
@@ -36,13 +37,15 @@ nonceLength = BA.length $ encodeNonce $ BA.zero nonceBytes -- 8
 encodeNonce :: BS.ByteString -> BS.ByteString
 encodeNonce = convertToBase Base64URLUnpadded
 
-sign :: (MonadHasService c m, MonadIO m) => BS.ByteString -> m BS.ByteString
+type MonadSign c m = (MonadIO m, MonadHas Entropy c m, MonadHas Secret c m)
+
+sign :: MonadSign c m => BS.ByteString -> m BS.ByteString
 sign msg = do
   nonce <- focusIO $ entropyBytes nonceBytes
   sig <- peeks $ signature (msg <> nonce)
   return $ sig <> encodeNonce nonce <> msg
 
-unSign :: MonadHasService c m => BS.ByteString -> m (Maybe BS.ByteString)
+unSign :: (MonadHas Secret c m) => BS.ByteString -> m (Maybe BS.ByteString)
 unSign sigmsg = do
   sig' <- Trav.mapM (peeks . signature . (msg <>)) nonce
   return $ msg <$ mfilter (BA.constEq sig) sig'

@@ -4,7 +4,6 @@ module Databrary.Model.Metric.Types
   ( MeasureDatum
   , MeasureType(..)
   , Metric(..)
-  , MonadHasMetric
   ) where
 
 import qualified Data.ByteString as BS

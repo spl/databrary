@@ -1,15 +1,10 @@
 {-# LANGUAGE TemplateHaskell, TypeFamilies, OverloadedStrings #-}
 module Databrary.Model.Token.Types
   ( Token(..)
-  , MonadHasToken
   , AccountToken(..)
-  , MonadHasAccountToken
   , LoginToken(..)
-  , MonadHasLoginToken
   , Session(..)
-  , MonadHasSession
   , Upload(..)
-  , MonadHasUpload
   ) where
 
 import qualified Data.ByteString as BS

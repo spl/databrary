@@ -5,8 +5,6 @@ module Databrary.Model.Slot.Types
   , slotId
   , containerSlotId
   , containerSlot
-  , MonadHasSlotId
-  , MonadHasSlot
   ) where
 
 import Databrary.Has (makeHasRec)

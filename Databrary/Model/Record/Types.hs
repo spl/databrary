@@ -1,7 +1,6 @@
 {-# LANGUAGE TemplateHaskell, TypeFamilies, OverloadedStrings #-}
 module Databrary.Model.Record.Types
   ( Record(..)
-  , MonadHasRecord
   , Measure(..)
   , Measures
   ) where

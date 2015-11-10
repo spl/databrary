@@ -1,9 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 module Databrary.Model.Authorize.Types
   ( Authorization(..)
-  , MonadHasAuthorization
   , Authorize(..)
-  , MonadHasAuthorize
   ) where
 
 import Databrary.Has (makeHasRec)

@@ -1,11 +1,8 @@
 {-# LANGUAGE OverloadedStrings, TemplateHaskell, TypeFamilies #-}
 module Databrary.Model.Party.Types 
   ( Party(..)
-  , MonadHasParty
   , Account(..)
-  , MonadHasAccount
   , SiteAuth(..)
-  , MonadHasSiteAuth
   , nobodySiteAuth
   , blankParty
   ) where

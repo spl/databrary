@@ -2,7 +2,6 @@
 module Databrary.Model.Volume.Types
   ( Volume(..)
   , VolumeOwner
-  , MonadHasVolume
   , blankVolume
   ) where
 

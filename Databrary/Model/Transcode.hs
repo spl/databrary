@@ -20,7 +20,7 @@ import Data.Monoid ((<>))
 import Database.PostgreSQL.Typed.Query (pgSQL)
 
 import Databrary.Ops
-import Databrary.Has (peek)
+import Databrary.Has
 import Databrary.Service.DB
 import Databrary.Service.Types
 import Databrary.Service.Crypto
@@ -60,7 +60,7 @@ minAppend (Just x) (Just y) = Just $ min x y
 minAppend Nothing x = x
 minAppend x Nothing = x
 
-addTranscode :: (MonadHasSiteAuth c m, MonadAudit c m, MonadStorage c m) => Asset -> Segment -> TranscodeArgs -> Probe -> m Transcode
+addTranscode :: (MonadHas SiteAuth c m, MonadAudit c m, MonadStorage c m) => Asset -> Segment -> TranscodeArgs -> Probe -> m Transcode
 addTranscode orig seg@(Segment rng) opts (ProbeAV _ fmt av) = do
   own <- peek
   a <- addAsset orig

@@ -1,7 +1,6 @@
 {-# LANGUAGE OverloadedStrings, TemplateHaskell, TypeFamilies #-}
 module Databrary.Model.Container.Types
   ( Container(..)
-  , MonadHasContainer
   ) where
 
 import qualified Data.Text as T

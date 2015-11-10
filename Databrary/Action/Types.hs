@@ -1,7 +1,6 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving, TypeFamilies, TemplateHaskell #-}
 module Databrary.Action.Types
   ( RequestContext(..)
-  , MonadHasRequestContext
   , ActionM(..)
   , runActionM
   ) where
