@@ -11,11 +11,11 @@
       <p>Databrary is a video data library for developmental science.
         <br>Share videos, audio files, and related metadata. Discover more, faster.
       </p>
-      <ul class="flat col">
-        <li class="col-desktop-7 col-tablet-4 col-mobile-3">{{::stats.authorized[page.permission.EDIT] | number:0}} authorized PIs</li>
-        <li class="col-desktop-7 col-tablet-4 col-mobile-3">{{::stats.authorized[page.permission.READ] | number:0}} affiliates with access to shared data</li>
-        <li class="col-desktop-7 col-tablet-4 col-mobile-3">{{::stats.authorized[page.permission.ADMIN] | number:0}} universities</li>
-        <li class="col-desktop-7 col-tablet-4 col-mobile-3">{{::stats.volumes | number:0}} volumes, {{::stats.shared | number:0}} opened for sharing</li>
+      <ul class="flat col hide-mobile">
+        <li class="col-desktop-7 col-tablet-4">{{::stats.authorized[page.permission.EDIT] | number:0}} authorized PIs</li>
+        <li class="col-desktop-7 col-tablet-4">{{::stats.authorized[page.permission.READ] | number:0}} affiliates with access to shared data</li>
+        <li class="col-desktop-7 col-tablet-4">{{::stats.authorized[page.permission.ADMIN] | number:0}} universities</li>
+        <li class="col-desktop-7 col-tablet-4">{{::stats.volumes | number:0}} volumes, {{::stats.shared | number:0}} opened for sharing</li>
         <li class="col">{{::stats.duration/(1000*60*60) | number:0}} hours of recordings and {{::stats.assets | number:0}} files from {{::stats.records[page.constants.categoryName.participant.id] | number:0}} participants</li>
       </ul>       
     </div>   
