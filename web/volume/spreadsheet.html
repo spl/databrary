@@ -56,6 +56,9 @@
             </li>
           </ul>
         </th>
+        <th class="spreadsheet-col-manage" ng-if="::editing" ng-click="">
+          <span class="icon settings clickable" tooltip="'spreadsheet.manage' | message"></span>
+        </th>
       </tr>
       <tr class="spreadsheet-head-metrics">
         <th class="clickable" ng-repeat="col in cols" id="{{::id}}-metric_{{::$index}}" ng-click="clickHeader(col)" ng-class="colClasses(col)" ng-bind="col.metric.name" tooltip="col.metric.description"></th>
