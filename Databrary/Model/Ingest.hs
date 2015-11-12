@@ -31,7 +31,7 @@ lookupIngestContainer vol k =
 
 addIngestContainer :: MonadDB c m => Container -> IngestKey -> m ()
 addIngestContainer c k =
-  dbExecute1' [pgSQL|INSERT INTO ingest.container (id, volume, key) VALUES (${containerId c}, ${volumeId $ containerVolume c}, ${k})|]
+  dbExecute1' [pgSQL|INSERT INTO ingest.container (id, volume, key) VALUES (${containerId $ containerRow c}, ${volumeId $ containerVolume c}, ${k})|]
 
 lookupIngestRecord :: MonadDB c m => Volume -> IngestKey -> m (Maybe Record)
 lookupIngestRecord vol k =

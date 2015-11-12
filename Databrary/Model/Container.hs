@@ -38,10 +38,12 @@ import Databrary.Model.Container.SQL
 
 blankContainer :: Volume -> Container
 blankContainer vol = Container
-  { containerId = error "blankContainer"
-  , containerTop = False
-  , containerName = Nothing
-  , containerDate = Nothing
+  { containerRow = ContainerRow
+    { containerId = error "blankContainer"
+    , containerTop = False
+    , containerName = Nothing
+    , containerDate = Nothing
+    }
   , containerRelease = Nothing
   , containerVolume = vol
   }
@@ -77,18 +79,18 @@ removeContainer :: MonadAudit c m => Container -> m Bool
 removeContainer c = do
   ident <- getAuditIdentity
   top <- dbQuery1' [pgSQL|SELECT id FROM container WHERE volume = ${volumeId $ containerVolume c} ORDER BY id LIMIT 1|]
-  if top == containerId c
+  if top == containerId (containerRow c)
     then return False
     else isRight <$> dbTryJust (guard . isForeignKeyViolation) (dbExecute1 $(deleteContainer 'ident 'c))
 
 getContainerDate :: Container -> Maybe MaskedDate
-getContainerDate c = maskDateIf (dataPermission c == PermissionNONE) <$> containerDate c
+getContainerDate c = maskDateIf (dataPermission c == PermissionNONE) <$> containerDate (containerRow c)
 
 formatContainerDate :: Container -> Maybe String
 formatContainerDate c = formatTime defaultTimeLocale "%Y-%m-%d" <$> getContainerDate c
 
 containerJSON :: Container -> JSON.Object
-containerJSON c@Container{..} = JSON.record containerId $ catMaybes
+containerJSON c@Container{ containerRow = ContainerRow{..}, ..} = JSON.record containerId $ catMaybes
   [ "top" JSON..= containerTop <? containerTop
   , ("name" JSON..=) <$> containerName
   , ("date" JSON..=) <$> formatContainerDate c

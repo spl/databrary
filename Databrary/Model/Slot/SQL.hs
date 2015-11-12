@@ -5,6 +5,6 @@ module Databrary.Model.Slot.SQL
 slotKeys :: String -- ^ @'Slot'@
   -> [(String, String)]
 slotKeys o =
-  [ ("container", "${containerId (slotContainer " ++ o ++ ")}")
+  [ ("container", "${containerId $ containerRow $ slotContainer " ++ o ++ "}")
   , ("segment", "${slotSegment " ++ o ++ "}")
   ]

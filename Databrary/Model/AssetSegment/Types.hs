@@ -71,7 +71,7 @@ instance Has Slot AssetSegment where
 instance Has Container AssetSegment where
   view = slotContainer . view
 instance Has (Id Container) AssetSegment where
-  view = containerId . slotContainer . view
+  view = containerId . containerRow . slotContainer . view
 instance Has Segment AssetSegment where
   view AssetSegment{ segmentAsset = AssetSlot{ assetSlot = Just s }, assetSegment = seg } = seg `segmentIntersect` slotSegment s
   view _ = emptySegment

@@ -116,7 +116,7 @@ slotRecordVals :: String -- ^ @'RecordSlot'@
   -> [(String, String)]
 slotRecordVals o =
   [ ("record", "${recordId $ slotRecord " ++ o ++ "}")
-  , ("container", "${containerId $ slotContainer $ recordSlot " ++ o ++ "}")
+  , ("container", "${containerId $ containerRow $ slotContainer $ recordSlot " ++ o ++ "}")
   , ("segment", "${slotSegment $ recordSlot " ++ o ++ "}")
   ]
 
@@ -141,6 +141,6 @@ deleteSlotRecord :: TH.Name -- ^ @'AuditIdentity'@
   -> TH.Name -- ^ @'RecordSlot'@
   -> TH.ExpQ
 deleteSlotRecord ident o = auditDelete ident "slot_record"
-  ("record = ${recordId $ slotRecord " ++ os ++ "} AND container = ${containerId $ slotContainer $ recordSlot " ++ os ++ "} AND segment <@ ${slotSegment $ recordSlot " ++ os ++ "}")
+  ("record = ${recordId $ slotRecord " ++ os ++ "} AND container = ${containerId $ containerRow $ slotContainer $ recordSlot " ++ os ++ "} AND segment <@ ${slotSegment $ recordSlot " ++ os ++ "}")
   Nothing
   where os = nameRef o

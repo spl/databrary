@@ -70,7 +70,7 @@ containerZipEntry c l = do
   a <- mapM assetZipEntry l
   return blankZipEntry
     { zipEntryName = makeFilename (containerDownloadName c)
-    , zipEntryComment = BSL.toStrict $ BSB.toLazyByteString $ actionURL (Just req) viewContainer (HTML, (Nothing, containerId c)) []
+    , zipEntryComment = BSL.toStrict $ BSB.toLazyByteString $ actionURL (Just req) viewContainer (HTML, (Nothing, containerId $ containerRow c)) []
     , zipEntryContent = ZipDirectory a
     }
 
@@ -82,7 +82,7 @@ volumeDescription inzip v cs al = do
   desc <- peeks $ htmlVolumeDescription inzip v (maybeToList cite ++ links) fund cs at ab
   return (desc, at, ab)
   where
-  (at, ab) = partition (Fold.any (containerTop . slotContainer) . assetSlot . head) $ groupBy (me `on` fmap (containerId . slotContainer) . assetSlot) al
+  (at, ab) = partition (Fold.any (containerTop . containerRow . slotContainer) . assetSlot . head) $ groupBy (me `on` fmap (containerId . containerRow . slotContainer) . assetSlot) al
   me (Just x) (Just y) = x == y
   me _ _ = False
 
@@ -139,13 +139,13 @@ zipContainer = action GET (pathMaybe pathId </> pathSlotId </< "zip") $ \(vi, ci
   c <- getContainer PermissionPUBLIC vi ci True
   z <- containerZipEntry c . filter checkAsset =<< lookupContainerAssets c
   auditSlotDownload (not $ zipEmpty z) (containerSlot c)
-  zipResponse ("databrary-" <> BSC.pack (show (volumeId (containerVolume c))) <> "-" <> BSC.pack (show (containerId c))) [z]
+  zipResponse ("databrary-" <> BSC.pack (show (volumeId (containerVolume c))) <> "-" <> BSC.pack (show $ containerId $ containerRow c)) [z]
 
 getVolumeInfo :: Id Volume -> ActionM (Volume, IdSet Container, [AssetSlot])
 getVolumeInfo vi = do
   v <- getVolume PermissionPUBLIC vi
   s <- peeks requestIdSet
-  a <- filter (\a@AssetSlot{ assetSlot = Just c } -> checkAsset a && RS.member (containerId (slotContainer c)) s) <$>
+  a <- filter (\a@AssetSlot{ assetSlot = Just c } -> checkAsset a && RS.member (containerId $ containerRow $ slotContainer c) s) <$>
     lookupVolumeAssetSlots v False
   return (v, s, a)
 
@@ -153,7 +153,7 @@ zipVolume :: ActionRoute (Id Volume)
 zipVolume = action GET (pathId </< "zip") $ \vi -> withAuth $ do
   (v, s, a) <- getVolumeInfo vi
   _:cr <- lookupVolumeContainersRecords v
-  let cr' = filter ((`RS.member` s) . containerId . fst) cr
+  let cr' = filter ((`RS.member` s) . containerId . containerRow . fst) cr
   csv <- null cr' ?!$> volumeCSV v cr'
   z <- volumeZipEntry v s csv a
   auditVolumeDownload (not $ null a) v

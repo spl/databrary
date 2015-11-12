@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, RecordWildCards #-}
 module Databrary.Controller.Container
   ( getContainer
   , viewContainer
@@ -42,13 +42,14 @@ getContainer p mv (Id (SlotId i s)) top
     c <- checkPermission p =<< maybeAction . maybe id (\v -> mfilter $ (v ==) . view) mv =<< lookupContainer i
     unless top $ do
       t <- lookupVolumeTopContainer (containerVolume c)
-      when (containerId c == containerId t) $ result =<< peeks notFoundResponse
+      when (containerId (containerRow c) == containerId (containerRow t)) $ result =<< peeks notFoundResponse
     return c
   | otherwise = result =<< peeks notFoundResponse
 
 containerDownloadName :: Container -> [T.Text]
-containerDownloadName c = (if containerTop c then ("materials" :) else id) $
-  T.pack (show (containerId c)) : maybeToList (containerName c)
+containerDownloadName Container{ containerRow = ContainerRow{..} } =
+  (if containerTop then ("materials" :) else id) $
+    T.pack (show containerId) : maybeToList containerName
 
 viewContainer :: ActionRoute (API, (Maybe (Id Volume), Id Container))
 viewContainer = I.second (I.second $ slotContainerId . unId I.:<->: containerSlotId) I.<$> viewSlot
@@ -61,9 +62,11 @@ containerForm c = do
   date <- "date" .:> deformOptional (deformNonEmpty deform)
   release <- "release" .:> deformOptional (deformNonEmpty deform)
   return c
-    { containerName = fromMaybe (containerName c) name
-    , containerTop = fromMaybe (containerTop c) top
-    , containerDate = fromMaybe (containerDate c) date
+    { containerRow = (containerRow c)
+      { containerName = fromMaybe (containerName $ containerRow c) name
+      , containerTop = fromMaybe (containerTop $ containerRow c) top
+      , containerDate = fromMaybe (containerDate $ containerRow c) date
+      }
     , containerRelease = fromMaybe (containerRelease c) release
     }
 
@@ -82,7 +85,7 @@ createContainer = action POST (pathAPI </> pathId </< "slot") $ \(api, vi) -> wi
   c <- addContainer bc
   case api of
     JSON -> return $ okResponse [] $ containerJSON c
-    HTML -> peeks $ otherRouteResponse [] viewContainer (api, (Just vi, containerId c))
+    HTML -> peeks $ otherRouteResponse [] viewContainer (api, (Just vi, containerId $ containerRow c))
 
 postContainer :: ActionRoute (API, Id Slot)
 postContainer = action POST (pathAPI </> pathSlotId) $ \(api, ci) -> withAuth $ do

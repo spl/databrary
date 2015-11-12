@@ -114,7 +114,7 @@ slotAssetKeys as =
 slotAssetSets :: String -- ^ @'AssetSlot'@
   -> [(String, String)]
 slotAssetSets as =
-  [ ("container", "${containerId . slotContainer <$> assetSlot " ++ as ++ "}")
+  [ ("container", "${containerId . containerRow . slotContainer <$> assetSlot " ++ as ++ "}")
   , ("segment", "${slotSegment <$> assetSlot " ++ as ++ "}")
   ]
 

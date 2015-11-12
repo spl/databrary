@@ -133,7 +133,7 @@ volumeJSONField vol "containers" o = do
     then lookupVolumeContainersRecordIds vol
     else nope <$> lookupVolumeContainers vol
   cl' <- if assets
-    then leftJoin (\(c, _) (_, SlotId a _) -> containerId c == a) cl <$> lookupVolumeAssetSlotIds vol
+    then leftJoin (\(c, _) (_, SlotId a _) -> containerId (containerRow c) == a) cl <$> lookupVolumeAssetSlotIds vol
     else return $ nope cl
   rm <- if records then snd <$> cacheVolumeRecords vol else return HM.empty
   let rjs c (s, r) = recordSlotJSON $ RecordSlot (HML.lookupDefault (blankRecord vol){ recordId = r } r rm) (Slot c s)

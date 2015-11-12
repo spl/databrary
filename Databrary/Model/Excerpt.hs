@@ -33,7 +33,7 @@ lookupAssetExcerpts a =
 
 lookupSlotExcerpts :: MonadDB c m => Slot -> m [Excerpt]
 lookupSlotExcerpts (Slot c s) =
-  dbQuery $ ($ c) <$> $(selectQuery selectContainerExcerpt "$WHERE slot_asset.container = ${containerId c} AND excerpt.segment && ${s}")
+  dbQuery $ ($ c) <$> $(selectQuery selectContainerExcerpt "$WHERE slot_asset.container = ${containerId $ containerRow c} AND excerpt.segment && ${s}")
 
 lookupVolumeExcerpts :: MonadDB c m => Volume -> m [Excerpt]
 lookupVolumeExcerpts v =
@@ -43,7 +43,7 @@ lookupSlotThumb :: MonadDB c m => Slot -> m (Maybe AssetSegment)
 lookupSlotThumb (Slot c s) = do
   dbQuery1 $ assetSegmentInterp 0 . excerptAsset . ($ c) <$> $(selectQuery selectContainerExcerpt "$\
     \JOIN format ON asset.format = format.id \
-    \WHERE slot_asset.container = ${containerId c} AND excerpt.segment && ${s} \
+    \WHERE slot_asset.container = ${containerId $ containerRow c} AND excerpt.segment && ${s} \
       \AND COALESCE(GREATEST(excerpt.release, asset.release), ${containerRelease c}) >= ${readRelease (view c)}::release \
       \AND (asset.duration IS NOT NULL AND format.mimetype LIKE 'video/%' OR format.mimetype LIKE 'image/%') \
     \LIMIT 1")

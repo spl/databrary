@@ -74,7 +74,7 @@ viewSlot = action GET (pathAPI </> pathMaybe pathId </> pathSlotId) $ \(api, (vi
   case api of
     JSON -> okResponse [] <$> (slotJSONQuery c =<< peeks Wai.queryString)
     HTML
-      | isJust vi -> return $ okResponse [] $ BSC.pack $ show $ containerId $ slotContainer c -- TODO
+      | isJust vi -> return $ okResponse [] $ BSC.pack $ show $ containerId $ containerRow $ slotContainer c -- TODO
       | otherwise -> peeks $ redirectRouteResponse movedPermanently301 [] viewSlot (api, (Just (view c), slotId c))
 
 thumbSlot :: ActionRoute (Maybe (Id Volume), Id Slot)

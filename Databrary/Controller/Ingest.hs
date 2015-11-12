@@ -53,7 +53,7 @@ postIngest = multipartAction $ action POST (pathId </< "ingest") $ \vi -> withAu
         =<< deform))
   r <- maybe
     (True <$ focusIO abortIngest)
-    (\(r,o,j) -> runIngest $ right (map (unId . containerId)) <$> ingestJSON v (fileContent j) r o)
+    (\(r,o,j) -> runIngest $ right (map (unId . containerId . containerRow)) <$> ingestJSON v (fileContent j) r o)
     a
   unless r $ result $ response badRequest400 [] ("failed" :: String)
   peeks $ otherRouteResponse [] viewIngest (volumeId v)

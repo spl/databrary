@@ -46,7 +46,7 @@ lookupComment i = do
 lookupSlotComments :: (MonadDB c m, MonadHasIdentity c m) => Slot -> Int -> m [Comment]
 lookupSlotComments (Slot c s) n = do
   ident <- peek
-  dbQuery $ ($ c) <$> $(selectQuery (selectContainerComment 'ident) "$!WHERE comment.container = ${containerId c} AND comment.segment && ${s} ORDER BY comment.thread LIMIT ${fromIntegral n :: Int64}")
+  dbQuery $ ($ c) <$> $(selectQuery (selectContainerComment 'ident) "$!WHERE comment.container = ${containerId $ containerRow c} AND comment.segment && ${s} ORDER BY comment.thread LIMIT ${fromIntegral n :: Int64}")
 
 lookupVolumeCommentRows :: MonadDB c m => Volume -> m [CommentRow]
 lookupVolumeCommentRows v =
@@ -54,7 +54,7 @@ lookupVolumeCommentRows v =
 
 addComment :: MonadDB c m => Comment -> m Comment
 addComment c@Comment{..} = do
-  (i, t) <- dbQuery1' [pgSQL|INSERT INTO comment (who, container, segment, text, parent) VALUES (${partyId $ accountParty commentWho}, ${containerId $ slotContainer commentSlot}, ${slotSegment commentSlot}, ${commentText}, ${listToMaybe commentParents}) RETURNING id, time|]
+  (i, t) <- dbQuery1' [pgSQL|INSERT INTO comment (who, container, segment, text, parent) VALUES (${partyId $ accountParty commentWho}, ${containerId $ containerRow $ slotContainer commentSlot}, ${slotSegment commentSlot}, ${commentText}, ${listToMaybe commentParents}) RETURNING id, time|]
   return c
     { commentId = i
     , commentTime = t

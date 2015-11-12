@@ -77,7 +77,7 @@ solrVolume Volume{..} cite = SolrVolume
   (ownerIds, ownerNames) = unzip volumeOwners
 
 solrContainer :: Container -> SolrDocument
-solrContainer c@Container{..} = SolrContainer
+solrContainer c@Container{ containerRow = ContainerRow{..}, ..} = SolrContainer
   { solrId = solrDocId containerId
   , solrContainerId = containerId
   , solrVolumeId = volumeId containerVolume
@@ -92,7 +92,7 @@ solrAsset as@AssetSlot{ slotAsset = Asset{..}, assetSlot = ~(Just Slot{..}) } = 
   { solrId = solrDocId assetId
   , solrAssetId = assetId
   , solrVolumeId = volumeId assetVolume
-  , solrContainerId = containerId slotContainer
+  , solrContainerId = containerId $ containerRow slotContainer
   , solrSegment = SolrSegment slotSegment
   , solrSegmentDuration = segmentLength slotSegment
   , solrName = assetSlotName as
@@ -106,7 +106,7 @@ solrExcerpt Excerpt{ excerptAsset = AssetSegment{ segmentAsset = AssetSlot{ slot
     <> maybe "" (('_':) . show) (lowerBound $ segmentRange seg)
   , solrAssetId = assetId
   , solrVolumeId = volumeId assetVolume
-  , solrContainerId = containerId container
+  , solrContainerId = containerId $ containerRow container
   , solrSegment = SolrSegment seg
   , solrSegmentDuration = segmentLength seg
   , solrRelease = assetRelease
@@ -115,10 +115,10 @@ solrExcerpt Excerpt{ excerptAsset = AssetSegment{ segmentAsset = AssetSlot{ slot
 solrRecord :: RecordSlot -> SolrDocument
 solrRecord rs@RecordSlot{ slotRecord = r@Record{..}, recordSlot = Slot{..} } = SolrRecord
   { solrId = solrDocId recordId
-    <> BSC.pack ('_' : show (containerId slotContainer))
+    <> BSC.pack ('_' : show (containerId $ containerRow slotContainer))
   , solrRecordId = recordId
   , solrVolumeId = volumeId recordVolume
-  , solrContainerId = containerId slotContainer
+  , solrContainerId = containerId $ containerRow slotContainer
   , solrSegment = SolrSegment slotSegment
   , solrSegmentDuration = segmentLength slotSegment
   , solrRecordCategoryId = recordCategoryId recordCategory
@@ -181,7 +181,7 @@ joinContainers :: (a -> Slot -> b) -> [Container] -> [(a, SlotId)] -> [b]
 joinContainers _ _ [] = []
 joinContainers _ [] _ = error "joinContainers"
 joinContainers f cl@(c:cr) al@((a, SlotId ci s):ar)
-  | containerId c == ci = f a (Slot c s) : joinContainers f cl ar
+  | containerId (containerRow c) == ci = f a (Slot c s) : joinContainers f cl ar
   | otherwise = joinContainers f cr al
 
 writeVolume :: (Volume, Maybe Citation) -> SolrM ()

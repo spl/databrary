@@ -53,7 +53,7 @@ lookupAssetAssetSlot a = fromMaybe assetNoSlot
 
 lookupSlotAssets :: (MonadDB c m) => Slot -> m [AssetSlot]
 lookupSlotAssets (Slot c s) =
-  dbQuery $ ($ c) <$> $(selectQuery selectContainerSlotAsset "$WHERE slot_asset.container = ${containerId c} AND slot_asset.segment && ${s} AND asset.volume = ${volumeId $ containerVolume c}")
+  dbQuery $ ($ c) <$> $(selectQuery selectContainerSlotAsset "$WHERE slot_asset.container = ${containerId $ containerRow c} AND slot_asset.segment && ${s} AND asset.volume = ${volumeId $ containerVolume c}")
 
 lookupContainerAssets :: (MonadDB c m) => Container -> m [AssetSlot]
 lookupContainerAssets = lookupSlotAssets . containerSlot
@@ -91,10 +91,10 @@ fixAssetSlotDuration as
 
 findAssetContainerEnd :: MonadDB c m => Container -> m Offset
 findAssetContainerEnd c = fromMaybe 0 <$>
-  dbQuery1' [pgSQL|SELECT max(upper(segment))+'1s' FROM slot_asset WHERE container = ${containerId c}|]
+  dbQuery1' [pgSQL|SELECT max(upper(segment))+'1s' FROM slot_asset WHERE container = ${containerId $ containerRow c}|]
 
 assetSlotName :: AssetSlot -> Maybe T.Text
-assetSlotName a = guard (Fold.any (containerTop . slotContainer) (assetSlot a) || dataPermission a > PermissionNONE) >> assetName (slotAsset a)
+assetSlotName a = guard (Fold.any (containerTop . containerRow . slotContainer) (assetSlot a) || dataPermission a > PermissionNONE) >> assetName (slotAsset a)
 
 assetSlotJSON :: AssetSlot -> JSON.Object
 assetSlotJSON as@AssetSlot{..} = assetJSON slotAsset JSON..++ catMaybes

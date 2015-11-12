@@ -136,10 +136,13 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
             top <- JE.keyOrDefault "top" False JE.asBool
             name <- JE.keyMay "name" JE.asText
             date <- JE.keyMay "date" asDate
-            lift $ addContainer (blankContainer vol)
-              { containerTop = top
-              , containerName = name
-              , containerDate = date
+            let c = blankContainer vol
+            lift $ addContainer c
+              { containerRow = (containerRow c)
+                { containerTop = top
+                , containerName = name
+                , containerDate = date
+                }
               })
           (\i -> fromMaybeM (throwPE $ "container " <> T.pack (show i) <> "/" <> key <> " not found")
             =<< lift (lookupVolumeContainer vol i))
@@ -147,15 +150,17 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
         inObj c $ lift $ addIngestContainer c key
         return c)
       (\c -> inObj c $ do
-        unless (Fold.all (containerId c ==) cid) $ do
+        unless (Fold.all (containerId (containerRow c) ==) cid) $ do
           throwPE "id mismatch"
-        top <- fmap join . JE.keyMay "top" $ check (containerTop c) =<< JE.asBool
-        name <- fmap join . JE.keyMay "name" $ check (containerName c) =<< JE.perhaps JE.asText
-        date <- fmap join . JE.keyMay "date" $ check (containerDate c) =<< JE.perhaps asDate
+        top <- fmap join . JE.keyMay "top" $ check (containerTop $ containerRow c) =<< JE.asBool
+        name <- fmap join . JE.keyMay "name" $ check (containerName $ containerRow c) =<< JE.perhaps JE.asText
+        date <- fmap join . JE.keyMay "date" $ check (containerDate $ containerRow c) =<< JE.perhaps asDate
         when (isJust top || isJust name || isJust date) $ lift $ changeContainer c
-          { containerTop = fromMaybe (containerTop c) top
-          , containerName = fromMaybe (containerName c) name
-          , containerDate = fromMaybe (containerDate c) date
+          { containerRow = (containerRow c)
+            { containerTop = fromMaybe (containerTop $ containerRow c) top
+            , containerName = fromMaybe (containerName $ containerRow c) name
+            , containerDate = fromMaybe (containerDate $ containerRow c) date
+            }
           }
         return c)
       c'
@@ -180,7 +185,7 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
           as' <- lift $ lookupAssetAssetSlot a
           seg <- JE.keyOrDefault "position" (maybe fullSegment slotSegment $ assetSlot as') $
             JE.withTextM (\t -> if t == "auto"
-              then maybe (Right . Segment . Range.point <$> probeAutoPosition c probe) (return . Right . slotSegment) $ mfilter (on (==) containerId c . slotContainer) (assetSlot as')
+              then maybe (Right . Segment . Range.point <$> probeAutoPosition c probe) (return . Right . slotSegment) $ mfilter (((==) `on` containerId . containerRow) c . slotContainer) (assetSlot as')
               else return $ Left "invalid asset position")
               `catchError` \_ -> asSegment
           let seg'

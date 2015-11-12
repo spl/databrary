@@ -42,6 +42,6 @@ deleteRelease :: TH.Name -- ^ @'AuditIdentity'@
   -> TH.Name -- ^ @'Slot'@
   -> TH.ExpQ -- ^ @()@
 deleteRelease ident o = auditDelete ident "slot_release"
-  ("container = ${containerId $ slotContainer " ++ os ++ "} AND segment <@ ${slotSegment " ++ os ++ "}")
+  ("container = ${containerId $ containerRow $ slotContainer " ++ os ++ "} AND segment <@ ${slotSegment " ++ os ++ "}")
   Nothing
   where os = nameRef o

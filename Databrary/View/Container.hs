@@ -17,10 +17,10 @@ import {-# SOURCE #-} Databrary.Controller.Container
 
 htmlContainerForm :: Maybe Container -> FormHtml f
 htmlContainerForm cont = do
-  field "name" $ inputText (containerName =<< cont)
-  field "date" $ inputDate (containerDate =<< cont)
+  field "name" $ inputText (containerName . containerRow =<< cont)
+  field "date" $ inputDate (containerDate . containerRow =<< cont)
   field "release" $ inputEnum False (containerRelease =<< cont)
 
 htmlContainerEdit :: Either Volume Container -> RequestContext -> FormHtml f
 htmlContainerEdit (Left v)  = htmlForm "Create container" createContainer (HTML, volumeId v) (htmlContainerForm Nothing) (const mempty)
-htmlContainerEdit (Right c) = htmlForm ("Edit container " <> fold (containerName c)) postContainer (HTML, containerSlotId $ containerId c) (htmlContainerForm $ Just c) (const mempty)
+htmlContainerEdit (Right c) = htmlForm ("Edit container " <> fold (containerName $ containerRow c)) postContainer (HTML, containerSlotId $ containerId $ containerRow c) (htmlContainerForm $ Just c) (const mempty)

@@ -16,12 +16,12 @@ import Databrary.Model.Volume.SQL
 import Databrary.Model.Release.SQL
 import Databrary.Model.Container.Types
 
-containerRow :: Selector -- ^ @Maybe 'Release' -> 'Permission' -> 'Container'@
-containerRow = selectColumns 'Container "container" ["id", "top", "name", "date"]
+selectContainerRow :: Selector -- ^ @'ContainerRow'@
+selectContainerRow = selectColumns 'ContainerRow "container" ["id", "top", "name", "date"]
 
 selectVolumeContainer :: Selector -- ^ @'Volume' -> 'Container'@
-selectVolumeContainer = selectJoin '($)
-  [ containerRow
+selectVolumeContainer = selectJoin 'Container
+  [ selectContainerRow
   , maybeJoinOn "container.id = slot_release.container AND slot_release.segment = '(,)'"
     releaseRow
   ]
@@ -36,19 +36,19 @@ selectContainer ident = selectJoin '($)
 containerKeys :: String -- ^ @'Container'@
   -> [(String, String)]
 containerKeys o =
-  [ ("id", "${containerId " ++ o ++ "}") ]
+  [ ("id", "${containerId $ containerRow " ++ o ++ "}") ]
 
 containerSets :: String -- ^ @'Container'@
   -> [(String, String)]
 containerSets o =
   [ ("volume", "${volumeId (containerVolume " ++ o ++ ")}")
-  , ("top", "${containerTop " ++ o ++ "}")
-  , ("name", "${containerName " ++ o ++ "}")
-  , ("date", "${containerDate " ++ o ++ "}")
+  , ("top", "${containerTop $ containerRow " ++ o ++ "}")
+  , ("name", "${containerName $ containerRow " ++ o ++ "}")
+  , ("date", "${containerDate $ containerRow " ++ o ++ "}")
   ]
 
 setContainerId :: Container -> Id Container -> Container
-setContainerId o i = o{ containerId = i }
+setContainerId o i = o{ containerRow = (containerRow o) { containerId = i } }
 
 insertContainer :: TH.Name -- ^ @'AuditIdentity'@
   -> TH.Name -- ^ @'Container'@
