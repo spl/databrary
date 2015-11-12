@@ -11,34 +11,38 @@
       <p>Databrary is a video data library for developmental science.
         <br>Share videos, audio files, and related metadata. Discover more, faster.
       </p>
-      <ul class="view-center-block flat hide-mobile comma">
-        <li>
-          <span class="home-stats-num">{{::stats.authorized[page.permission.EDIT] | number:0}} </span>
-          <small class="inline-block">authorized<br>investigators</small>
-        </li>
-        <li>
-          <span class="home-stats-num">{{::stats.authorized[page.permission.READ] | number:0}} </span>
-          <small class="inline-block">affiliates with <br>access to shared data</small>
-        </li>
-        <li>
-          <span class="home-stats-num">{{::stats.authorized[page.permission.ADMIN] | number:0}} </span>
-          <small class="inline-block">universities</small>
-        </li>       
-        <li>
-          <span class="home-stats-num">{{::stats.volumes | number:0}} </span>
-          <small class="inline-block">volumes (</small>
-          <span class="home-stats-num">{{::stats.shared | number:0}} </span>
-          <small class="inline-block">opened for sharing )</small>
-        </li>        
-        <li>
-          <span class="home-stats-num">{{::stats.duration/(1000*60*60) | number:0}} </span>
-          <small class="inline-block">hours of <br>recordings </small>
-          <span class="home-stats-num">{{::stats.assets | number:0}} </span>
-          <small class="inline-block">files </small> 
-          <span class="home-stats-num">{{::stats.records[page.constants.categoryName.participant.id] | number:0}} </span>
-          <small class="inline-block">participants</small>
-        </li>
-      </ul>       
+      <div class="view-center-block">
+        <ul class="hide-mobile inline-block">
+          <li>
+            <span class="home-stats-num">{{::stats.authorized[page.permission.EDIT] | number:0}} </span>
+            <small class="inline-block">authorized<br>investigators</small>
+          </li>
+          <li>
+            <span class="home-stats-num">{{::stats.authorized[page.permission.READ] | number:0}} </span>
+            <small class="inline-block">affiliates with <br>access to shared data</small>
+          </li>
+          <li>
+            <span class="home-stats-num">{{::stats.authorized[page.permission.ADMIN] | number:0}} </span>
+            <small class="inline-block">universities</small>
+          </li>  
+          <hr>    
+          <li>
+            <span class="home-stats-num">{{::stats.volumes | number:0}} </span>
+            <small class="inline-block">volumes (</small>
+            <span class="home-stats-num">{{::stats.shared | number:0}} </span>
+            <small class="inline-block">opened for sharing )</small>
+          </li>        
+          <li>
+            <span class="home-stats-num">{{::stats.duration/(1000*60*60) | number:0}} </span>
+            <small class="inline-block">hours of <br>recordings </small>
+            <span class="home-stats-num">{{::stats.assets | number:0}} </span>
+            <small class="inline-block">files </small> 
+            <span class="home-stats-num">{{::stats.records[page.constants.categoryName.participant.id] | number:0}} </span>
+            <small class="inline-block">participants</small>
+          </li>
+          <hr>
+        </ul>
+      </div>       
     </div>   
     <div class="bigbuttons-container">
       <div class="bigbutton" ng-if="::!page.models.Login.isLoggedIn()">

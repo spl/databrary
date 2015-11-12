@@ -123,13 +123,30 @@
       color green53
     a:hover
       color green52
-    ul > li
+    li
       margin-width b2
-    ul > li > *
+    li > *
       vertical-align middle
       text-align initial
-    ul > li > small
+    li > small
       color blue
+    @media screen and (min-width: 1300px)
+      hr
+        display none
+      li:before
+        content none
+        display none
+      
+    @media screen and (max-width: 1299px)
+      li:before
+        content ""
+        background-color neutral52
+        border-radius b1
+        size b4
+        top b4 + b6
+        left -b6
+        margin-left -b3
+
   .bigbuttons-container
     position relative
     margin-right auto
@@ -189,6 +206,7 @@
 .home-stats-num
   margin-left b8
   color orange53
+  text-align right
 
 .home-activity
   dl.home-section-text
