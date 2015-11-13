@@ -8,11 +8,11 @@
   </div>
   <div class="home-bigbuttons">
     <div class="bigbuttons-text">
-      <p>Databrary is a video data library for developmental science.
+      <p>Databrary is a video data library for developmental science. 
         <br>Share videos, audio files, and related metadata. Discover more, faster.
       </p>
       <div class="view-center-block">
-        <ul class="hide-mobile inline-block">
+        <ul class="flat hide-mobile inline-block">
           <li>
             <span class="home-stats-num">{{::stats.authorized[page.permission.EDIT] | number:0}} </span>
             <small class="inline-block">authorized<br>investigators</small>
@@ -23,9 +23,9 @@
           </li>
           <li>
             <span class="home-stats-num">{{::stats.authorized[page.permission.ADMIN] | number:0}} </span>
-            <small class="inline-block">universities</small>
+            <small class="inline-block">authorized<br>universities</small>
           </li>  
-          <hr>    
+          <hr class="home-stats-split">    
           <li>
             <span class="home-stats-num">{{::stats.volumes | number:0}} </span>
             <small class="inline-block">volumes (</small>
