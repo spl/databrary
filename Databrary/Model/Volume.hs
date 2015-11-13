@@ -56,16 +56,16 @@ addVolume bv = do
   dbQuery1' $ fmap (\v -> v [] PermissionADMIN) $(insertVolume 'ident 'bv)
 
 getVolumeAlias :: Volume -> Maybe T.Text
-getVolumeAlias v = guard (volumePermission v >= PermissionREAD) >> volumeAlias v
+getVolumeAlias v = guard (volumePermission v >= PermissionREAD) >> volumeAlias (volumeRow v)
 
 auditVolumeDownload :: MonadAudit c m => Bool -> Volume -> m ()
 auditVolumeDownload success vol = do
   ai <- getAuditIdentity
   dbExecute1' [pgSQL|$INSERT INTO audit.volume (audit_action, audit_user, audit_ip, id) VALUES
-    (${if success then AuditActionOpen else AuditActionAttempt}, ${auditWho ai}, ${auditIp ai}, ${volumeId vol})|]
+    (${if success then AuditActionOpen else AuditActionAttempt}, ${auditWho ai}, ${auditIp ai}, ${volumeId $ volumeRow vol})|]
 
 volumeJSON :: Volume -> JSON.Object
-volumeJSON v@Volume{..} = JSON.record volumeId $ catMaybes
+volumeJSON v@Volume{ volumeRow = VolumeRow{..}, ..} = JSON.record volumeId $ catMaybes
   [ Just $ "name" JSON..= volumeName
   , ("alias" JSON..=) <$> getVolumeAlias v
   , Just $ "body" JSON..= volumeBody

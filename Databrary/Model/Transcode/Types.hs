@@ -40,7 +40,7 @@ transcodeOrig :: Transcode -> Asset
 transcodeOrig = revisionOrig . transcodeRevision
 
 transcodeId :: Transcode -> Id Transcode
-transcodeId = Id . unId . assetId . transcodeAsset
+transcodeId = Id . unId . assetId . assetRow . transcodeAsset
 
 instance Kinded Transcode where
   kindOf _ = "transcode"

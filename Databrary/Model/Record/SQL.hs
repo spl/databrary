@@ -51,8 +51,8 @@ recordKeys r =
 recordSets :: String -- ^ @'Record'@
   -> [(String, String)]
 recordSets r =
-  [ ("volume", "${volumeId (recordVolume " ++ r ++ ")}")
-  , ("category", "${recordCategoryId (recordCategory " ++ r ++ ")}")
+  [ ("volume", "${volumeId $ volumeRow $ recordVolume " ++ r ++ "}")
+  , ("category", "${recordCategoryId $ recordCategory " ++ r ++ "}")
   ]
 
 setRecordId :: Record -> Id Record -> Record

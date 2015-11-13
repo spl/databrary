@@ -32,7 +32,7 @@ data AssetSlot = AssetSlot
   }
 
 assetSlotId :: AssetSlot -> Id AssetSlot
-assetSlotId (AssetSlot a s) = Id $ AssetSlotId (assetId a) (slotId <$> s)
+assetSlotId (AssetSlot a s) = Id $ AssetSlotId (assetId $ assetRow a) (slotId <$> s)
 
 assetNoSlot :: Asset -> AssetSlot
 assetNoSlot a = AssetSlot a Nothing
@@ -66,7 +66,7 @@ instance Has Segment AssetSlot where
 instance Has (Maybe Release) AssetSlot where
   view (AssetSlot a (Just s)) = view a <|> view s
   view (AssetSlot a Nothing)
-    | volumeId (assetVolume a) == Id 0 = view a
+    | volumeId (volumeRow $ assetVolume a) == Id 0 = view a
     | otherwise = Nothing -- "deleted" assets are always unreleased (private?), not view a
 instance Has Release AssetSlot where
   view = view . (view :: AssetSlot -> Maybe Release)

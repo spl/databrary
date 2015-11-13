@@ -64,7 +64,7 @@ solrParty Party{..} auth = SolrParty
   }
 
 solrVolume :: Volume -> Maybe Citation -> SolrDocument
-solrVolume Volume{..} cite = SolrVolume
+solrVolume Volume{ volumeRow = VolumeRow{..}, ..} cite = SolrVolume
   { solrId = solrDocId volumeId
   , solrVolumeId = volumeId
   , solrName = Just volumeName
@@ -80,7 +80,7 @@ solrContainer :: Container -> SolrDocument
 solrContainer c@Container{ containerRow = ContainerRow{..}, ..} = SolrContainer
   { solrId = solrDocId containerId
   , solrContainerId = containerId
-  , solrVolumeId = volumeId containerVolume
+  , solrVolumeId = volumeId $ volumeRow containerVolume
   , solrName = containerName
   , solrContainerTop = containerTop
   , solrContainerDate = getContainerDate c
@@ -88,10 +88,10 @@ solrContainer c@Container{ containerRow = ContainerRow{..}, ..} = SolrContainer
   }
 
 solrAsset :: AssetSlot -> SolrDocument
-solrAsset as@AssetSlot{ slotAsset = Asset{..}, assetSlot = ~(Just Slot{..}) } = SolrAsset
+solrAsset as@AssetSlot{ slotAsset = Asset{ assetRow = AssetRow{..}, ..}, assetSlot = ~(Just Slot{..}) } = SolrAsset
   { solrId = solrDocId assetId
   , solrAssetId = assetId
-  , solrVolumeId = volumeId assetVolume
+  , solrVolumeId = volumeId $ volumeRow assetVolume
   , solrContainerId = containerId $ containerRow slotContainer
   , solrSegment = SolrSegment slotSegment
   , solrSegmentDuration = segmentLength slotSegment
@@ -101,11 +101,11 @@ solrAsset as@AssetSlot{ slotAsset = Asset{..}, assetSlot = ~(Just Slot{..}) } = 
   }
 
 solrExcerpt :: Excerpt -> SolrDocument
-solrExcerpt Excerpt{ excerptAsset = AssetSegment{ segmentAsset = AssetSlot{ slotAsset = Asset{..}, assetSlot = ~(Just Slot{ slotContainer = container }) }, assetSegment = seg }, ..} = SolrExcerpt
+solrExcerpt Excerpt{ excerptAsset = AssetSegment{ segmentAsset = AssetSlot{ slotAsset = Asset{ assetRow = AssetRow{..}, ..}, assetSlot = ~(Just Slot{ slotContainer = container }) }, assetSegment = seg }, ..} = SolrExcerpt
   { solrId = BSC.pack $ "excerpt_" <> show assetId
     <> maybe "" (('_':) . show) (lowerBound $ segmentRange seg)
   , solrAssetId = assetId
-  , solrVolumeId = volumeId assetVolume
+  , solrVolumeId = volumeId $ volumeRow assetVolume
   , solrContainerId = containerId $ containerRow container
   , solrSegment = SolrSegment seg
   , solrSegmentDuration = segmentLength seg
@@ -117,7 +117,7 @@ solrRecord rs@RecordSlot{ slotRecord = r@Record{..}, recordSlot = Slot{..} } = S
   { solrId = solrDocId recordId
     <> BSC.pack ('_' : show (containerId $ containerRow slotContainer))
   , solrRecordId = recordId
-  , solrVolumeId = volumeId recordVolume
+  , solrVolumeId = volumeId $ volumeRow recordVolume
   , solrContainerId = containerId $ containerRow slotContainer
   , solrSegment = SolrSegment slotSegment
   , solrSegmentDuration = segmentLength slotSegment
@@ -193,8 +193,8 @@ writeVolume (v, vc) = do
   -- this could be more efficient, but there usually aren't many:
   writeDocuments . map solrExcerpt =<< lookupVolumeExcerpts v
   writeDocuments . map solrRecord . joinContainers RecordSlot cl =<< lookupVolumeRecordSlotIds v
-  writeDocuments . map (solrTagUse (volumeId v)) =<< lookupVolumeTagUseRows v
-  writeDocuments . map (solrComment (volumeId v)) =<< lookupVolumeCommentRows v
+  writeDocuments . map (solrTagUse (volumeId $ volumeRow v)) =<< lookupVolumeTagUseRows v
+  writeDocuments . map (solrComment (volumeId $ volumeRow v)) =<< lookupVolumeCommentRows v
 
 writeAllDocuments :: SolrM ()
 writeAllDocuments = do

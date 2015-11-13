@@ -48,15 +48,15 @@ selectAssetContainerAssetSegment seg = selectJoin 'makeAssetSegment
     excerptRow
   ]
 
-makeContainerAssetSegment :: (Asset -> Container -> AssetSegment) -> (Volume -> Asset) -> Container -> AssetSegment
-makeContainerAssetSegment f af c = f (af (containerVolume c)) c
+makeContainerAssetSegment :: (Asset -> Container -> AssetSegment) -> AssetRow -> Container -> AssetSegment
+makeContainerAssetSegment f ar c = f (Asset ar $ containerVolume c) c
 
 selectContainerAssetSegment :: TH.Name -- ^ @'Segment'@
   -> Selector -- ^ @'Container' -> 'AssetSegment'@
 selectContainerAssetSegment seg = selectJoin 'makeContainerAssetSegment
   [ selectAssetContainerAssetSegment seg
   , joinOn "slot_asset.asset = asset.id"
-    selectVolumeAsset -- XXX volumes match?
+    selectAssetRow -- XXX volumes match?
   ]
 
 makeAssetAssetSegment :: (Asset -> Container -> AssetSegment) -> (Volume -> Container) -> Asset -> AssetSegment
@@ -70,15 +70,15 @@ selectAssetAssetSegment seg = selectJoin 'makeAssetAssetSegment
     selectVolumeContainer -- XXX volumes match?
   ]
 
-makeVolumeAssetSegment :: (Asset -> Container -> AssetSegment) -> (Volume -> Asset) -> (Volume -> Container) -> Volume -> AssetSegment
-makeVolumeAssetSegment f af cf v = f (af v) (cf v)
+makeVolumeAssetSegment :: (Asset -> Container -> AssetSegment) -> AssetRow -> (Volume -> Container) -> Volume -> AssetSegment
+makeVolumeAssetSegment f ar cf v = f (Asset ar v) (cf v)
 
 selectVolumeAssetSegment :: TH.Name -- ^ @'Segment'@
   -> Selector -- ^ @'Volume' -> 'AssetSegment'@
 selectVolumeAssetSegment seg = selectJoin 'makeVolumeAssetSegment
   [ selectAssetContainerAssetSegment seg
   , joinOn "slot_asset.asset = asset.id"
-    selectVolumeAsset
+    selectAssetRow
   , joinOn "slot_asset.container = container.id AND asset.volume = container.volume"
     selectVolumeContainer
   ]

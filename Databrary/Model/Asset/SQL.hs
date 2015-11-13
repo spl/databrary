@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell, OverloadedStrings #-}
 module Databrary.Model.Asset.SQL
-  ( selectVolumeAsset
+  ( selectAssetRow
   , selectAsset
   , insertAsset
   , updateAsset
@@ -17,45 +17,41 @@ import Databrary.Model.Id.Types
 import Databrary.Model.Release.Types
 import Databrary.Model.SQL.Select
 import Databrary.Model.Audit.SQL
-import Databrary.Model.Volume.Types
 import Databrary.Model.Volume.SQL
 import Databrary.Model.Asset.Types
 
-makeAsset :: Id Asset -> Id Format -> Maybe Release -> Maybe T.Text -> Maybe Offset -> Maybe BS.ByteString -> Maybe Int64 -> Volume -> Asset
-makeAsset i = Asset i . getFormat'
+makeAssetRow :: Id Asset -> Id Format -> Maybe Release -> Maybe Offset -> Maybe T.Text -> Maybe BS.ByteString -> Maybe Int64 -> AssetRow
+makeAssetRow i = AssetRow i . getFormat'
 
-assetRow :: Selector -- ^ @'Volume' -> 'Asset'@
-assetRow = selectColumns 'makeAsset "asset" ["id", "format", "release", "name", "duration", "sha1", "size"]
-
-selectVolumeAsset :: Selector -- ^ @'Volume' -> 'Asset'@
-selectVolumeAsset = assetRow
+selectAssetRow :: Selector -- ^ @'AssetRow'@
+selectAssetRow = selectColumns 'makeAssetRow "asset" ["id", "format", "release", "duration", "name", "sha1", "size"]
 
 selectAsset :: TH.Name -- ^ @'Identity'@
   -> Selector -- ^ @'Asset'@
-selectAsset ident = selectJoin '($)
-  [ selectVolumeAsset
+selectAsset ident = selectJoin 'Asset
+  [ selectAssetRow
   , joinOn "asset.volume = volume.id" $ selectVolume ident
   ]
 
 assetKeys :: String -- ^ @'Asset'@
   -> [(String, String)]
 assetKeys r =
-  [ ("id", "${assetId " ++ r ++ "}") ]
+  [ ("id", "${assetId $ assetRow " ++ r ++ "}") ]
 
 assetSets :: String -- ^ @'Asset'@
   -> [(String, String)]
 assetSets a =
-  [ ("volume", "${volumeId (assetVolume " ++ a ++ ")}")
-  , ("format", "${formatId (assetFormat " ++ a ++ ")}")
-  , ("release", "${assetRelease " ++ a ++ "}")
-  , ("duration", "${assetDuration " ++ a ++ "}")
-  , ("name", "${assetName " ++ a ++ "}")
-  , ("sha1", "${assetSHA1 " ++ a ++ "}")
-  , ("size", "${assetSize " ++ a ++ "}")
+  [ ("volume", "${volumeId $ volumeRow $ assetVolume " ++ a ++ "}")
+  , ("format", "${formatId $ assetFormat $ assetRow " ++ a ++ "}")
+  , ("release", "${assetRelease $ assetRow " ++ a ++ "}")
+  , ("duration", "${assetDuration $ assetRow " ++ a ++ "}")
+  , ("name", "${assetName $ assetRow " ++ a ++ "}")
+  , ("sha1", "${assetSHA1 $ assetRow " ++ a ++ "}")
+  , ("size", "${assetSize $ assetRow " ++ a ++ "}")
   ]
 
 setAssetId :: Asset -> Id Asset -> Asset
-setAssetId a i = a{ assetId = i }
+setAssetId a i = a{ assetRow = (assetRow a){ assetId = i } }
 
 insertAsset :: TH.Name -- ^ @'AuditIdentity'@
   -> TH.Name -- ^ @'Asset'@

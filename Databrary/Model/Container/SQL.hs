@@ -41,7 +41,7 @@ containerKeys o =
 containerSets :: String -- ^ @'Container'@
   -> [(String, String)]
 containerSets o =
-  [ ("volume", "${volumeId (containerVolume " ++ o ++ ")}")
+  [ ("volume", "${volumeId $ volumeRow $ containerVolume " ++ o ++ "}")
   , ("top", "${containerTop $ containerRow " ++ o ++ "}")
   , ("name", "${containerName $ containerRow " ++ o ++ "}")
   , ("date", "${containerDate $ containerRow " ++ o ++ "}")

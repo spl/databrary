@@ -18,7 +18,7 @@ import {-# SOURCE #-} Databrary.Controller.Record
 
 htmlRecordForm :: Volume -> RequestContext -> FormHtml f
 htmlRecordForm vol = htmlForm "Create record"
-  createRecord (HTML, volumeId vol)
+  createRecord (HTML, volumeId $ volumeRow vol)
   (field "category" $ inputSelect Nothing $ ("", "<record>") : map (\c -> (BSC.pack $ show $ recordCategoryId c, recordCategoryName c)) allRecordCategories)
   (const mempty)
 

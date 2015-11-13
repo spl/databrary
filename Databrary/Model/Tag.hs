@@ -52,7 +52,7 @@ addTag n =
 
 lookupVolumeTagUseRows :: MonadDB c m => Volume -> m [TagUseRow]
 lookupVolumeTagUseRows v =
-  dbQuery $(selectQuery selectTagUseRow "JOIN container ON tag_use.container = container.id WHERE container.volume = ${volumeId v} ORDER BY container.id")
+  dbQuery $(selectQuery selectTagUseRow "JOIN container ON tag_use.container = container.id WHERE container.volume = ${volumeId $ volumeRow v} ORDER BY container.id")
 
 addTagUse :: MonadDB c m => TagUse -> m Bool
 addTagUse t = either (const False) id <$> do

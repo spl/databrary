@@ -45,11 +45,11 @@ lookupRecord ri = do
 
 lookupVolumeRecord :: MonadDB c m => Volume -> Id Record -> m (Maybe Record)
 lookupVolumeRecord vol ri =
-  dbQuery1 $ fmap ($ vol) $(selectQuery selectVolumeRecord "$WHERE record.id = ${ri} AND record.volume = ${volumeId vol}")
+  dbQuery1 $ fmap ($ vol) $(selectQuery selectVolumeRecord "$WHERE record.id = ${ri} AND record.volume = ${volumeId $ volumeRow vol}")
 
 lookupVolumeRecords :: MonadDB c m => Volume -> m [Record]
 lookupVolumeRecords vol =
-  dbQuery $ fmap ($ vol) $(selectQuery selectVolumeRecord "$WHERE record.volume = ${volumeId vol}")
+  dbQuery $ fmap ($ vol) $(selectQuery selectVolumeRecord "$WHERE record.volume = ${volumeId $ volumeRow vol}")
 
 addRecord :: MonadAudit c m => Record -> m Record
 addRecord br = do

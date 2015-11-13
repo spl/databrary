@@ -37,18 +37,18 @@ addFunder f =
 
 lookupVolumeFunding :: (MonadDB c m) => Volume -> m [Funding]
 lookupVolumeFunding vol =
-  dbQuery $(selectQuery selectVolumeFunding "$WHERE volume_funding.volume = ${volumeId vol}")
+  dbQuery $(selectQuery selectVolumeFunding "$WHERE volume_funding.volume = ${volumeId $ volumeRow vol}")
 
 changeVolumeFunding :: MonadDB c m => Volume -> Funding -> m Bool
 changeVolumeFunding v Funding{..} =
   (0 <) . fst <$> updateOrInsert
-    [pgSQL|UPDATE volume_funding SET awards = ${a} WHERE volume = ${volumeId v} AND funder = ${funderId fundingFunder}|]
-    [pgSQL|INSERT INTO volume_funding (volume, funder, awards) VALUES (${volumeId v}, ${funderId fundingFunder}, ${a})|]
+    [pgSQL|UPDATE volume_funding SET awards = ${a} WHERE volume = ${volumeId $ volumeRow v} AND funder = ${funderId fundingFunder}|]
+    [pgSQL|INSERT INTO volume_funding (volume, funder, awards) VALUES (${volumeId $ volumeRow v}, ${funderId fundingFunder}, ${a})|]
   where a = map Just fundingAwards
 
 removeVolumeFunder :: MonadDB c m => Volume -> Id Funder -> m Bool
 removeVolumeFunder v f =
-  dbExecute1 [pgSQL|DELETE FROM volume_funding WHERE volume = ${volumeId v} AND funder = ${f}|]
+  dbExecute1 [pgSQL|DELETE FROM volume_funding WHERE volume = ${volumeId $ volumeRow v} AND funder = ${f}|]
 
 funderJSON :: Funder -> JSON.Object
 funderJSON Funder{..} = JSON.object

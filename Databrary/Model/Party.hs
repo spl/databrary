@@ -182,7 +182,7 @@ partyFilter PartyFilter{..} ident = BS.concat
   , withq partyFilterAuthorization (\a -> " AND site = " <> pgSafeLiteral a)
   , withq partyFilterInstitution (\i -> if i then " AND account.id IS NULL" else " AND account.password IS NOT NULL")
   , withq partyFilterAuthorize (\a -> let i = pgSafeLiteral a in " AND party.id <> " <> i <> " AND id NOT IN (SELECT child FROM authorize WHERE parent = " <> i <> " UNION SELECT parent FROM authorize WHERE child = " <> i <> ")")
-  , withq partyFilterVolume (\v -> " AND id NOT IN (SELECT party FROM volume_access WHERE volume = " <> pgSafeLiteral (volumeId v) <> ")")
+  , withq partyFilterVolume (\v -> " AND id NOT IN (SELECT party FROM volume_access WHERE volume = " <> pgSafeLiteral (volumeId $ volumeRow v) <> ")")
   , " ORDER BY name, prename "
   , paginateSQL partyFilterPaginate
   ]
@@ -201,7 +201,7 @@ findParties pf = do
 
 lookupAvatar :: MonadDB c m => Id Party -> m (Maybe Asset)
 lookupAvatar p =
-  dbQuery1 $ ($ coreVolume) <$> $(selectQuery selectVolumeAsset $ "$JOIN avatar ON asset.id = avatar.asset WHERE avatar.party = ${p} AND asset.volume = " ++ pgLiteralString (volumeId coreVolume))
+  dbQuery1 $ (`Asset` coreVolume) <$> $(selectQuery selectAssetRow $ "$JOIN avatar ON asset.id = avatar.asset WHERE avatar.party = ${p} AND asset.volume = " ++ pgLiteralString (volumeId $ volumeRow coreVolume))
 
 changeAvatar :: MonadAudit c m => Party -> Maybe Asset -> m Bool
 changeAvatar p Nothing = do
@@ -210,5 +210,5 @@ changeAvatar p Nothing = do
 changeAvatar p (Just a) = do
   ident <- getAuditIdentity
   (0 <) . fst <$> updateOrInsert
-    $(auditUpdate 'ident "avatar" [("asset", "${assetId a}")] "party = ${partyId p}" Nothing)
-    $(auditInsert 'ident "avatar" [("asset", "${assetId a}"), ("party", "${partyId p}")] Nothing)
+    $(auditUpdate 'ident "avatar" [("asset", "${assetId $ assetRow a}")] "party = ${partyId p}" Nothing)
+    $(auditInsert 'ident "avatar" [("asset", "${assetId $ assetRow a}"), ("party", "${partyId p}")] Nothing)

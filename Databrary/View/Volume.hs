@@ -33,12 +33,12 @@ import {-# SOURCE #-} Databrary.Controller.Volume
 htmlVolumeView :: Volume -> [Tag] -> RequestContext -> H.Html
 htmlVolumeView v t req = htmlTemplate req Nothing $ \js -> do
   H.div H.! H.customAttribute "typeof" "dataset" $ do
-    H.h1 H.! H.customAttribute "property" "name" $ H.text $ volumeName v
+    H.h1 H.! H.customAttribute "property" "name" $ H.text $ volumeName $ volumeRow v
     when (view v >= PermissionEDIT) $
       H.p $
-        H.a H.! actionLink viewVolumeEdit (volumeId v) js $ "edit"
+        H.a H.! actionLink viewVolumeEdit (volumeId $ volumeRow v) js $ "edit"
     H.img
-      H.! HA.src (builderValue $ actionURL Nothing thumbVolume (volumeId v) [])
+      H.! HA.src (builderValue $ actionURL Nothing thumbVolume (volumeId $ volumeRow v) [])
     H.dl $ do
       Fold.forM_ (getVolumeAlias v) $ \a -> do
         H.dt "alias"
@@ -46,10 +46,10 @@ htmlVolumeView v t req = htmlTemplate req Nothing $ \js -> do
       forM_ (volumeOwners v) $ \(p, n) -> do
         H.dt "owner"
         H.dd H.! H.customAttribute "property" "creator" $ H.a H.! actionLink viewParty (HTML, TargetParty p) js $ H.text n
-      Fold.forM_ (volumeBody v) $ \b -> do
+      Fold.forM_ (volumeBody $ volumeRow v) $ \b -> do
         H.dt "body"
         H.dd H.! H.customAttribute "property" "description" $ H.text b -- format
-      Fold.forM_ (volumeDOI v) $ \d -> do
+      Fold.forM_ (volumeDOI $ volumeRow v) $ \d -> do
         H.dt "doi"
         H.dd H.! H.customAttribute "property" "alternateName" $ byteStringHtml d
       H.dt "keywords" 
@@ -59,9 +59,9 @@ htmlVolumeView v t req = htmlTemplate req Nothing $ \js -> do
 
 htmlVolumeForm :: Maybe Volume -> Maybe Citation -> FormHtml f
 htmlVolumeForm vol cite = do
-  field "name" $ inputText $ volumeName <$> vol
-  field "alias" $ inputText $ volumeAlias =<< vol
-  field "body" $ inputTextarea $ volumeBody =<< vol
+  field "name" $ inputText $ volumeName . volumeRow <$> vol
+  field "alias" $ inputText $ volumeAlias . volumeRow =<< vol
+  field "body" $ inputTextarea $ volumeBody . volumeRow =<< vol
   "citation" .:> do
     field "head" $ inputText $ citationHead <$> cite
     field "url" $ inputText $ fmap show $ citationURL =<< cite
@@ -69,10 +69,10 @@ htmlVolumeForm vol cite = do
 
 htmlVolumeEdit :: Maybe (Volume, Maybe Citation) -> RequestContext -> FormHtml f
 htmlVolumeEdit Nothing = htmlForm "Create volume" createVolume HTML (htmlVolumeForm Nothing Nothing) (const mempty)
-htmlVolumeEdit (Just (v, cite)) = htmlForm ("Edit " <> volumeName v) postVolume (HTML, volumeId v) (htmlVolumeForm (Just v) cite) (const mempty)
+htmlVolumeEdit (Just (v, cite)) = htmlForm ("Edit " <> volumeName (volumeRow v)) postVolume (HTML, volumeId $ volumeRow v) (htmlVolumeForm (Just v) cite) (const mempty)
 
 htmlVolumeLinksEdit :: Volume -> [Citation] -> RequestContext -> FormHtml f
-htmlVolumeLinksEdit vol links = htmlForm "Edit volume links" postVolumeLinks (HTML, volumeId vol)
+htmlVolumeLinksEdit vol links = htmlForm "Edit volume links" postVolumeLinks (HTML, volumeId $ volumeRow vol)
   (withSubFormsViews links $ \link -> do
     field "head" $ inputText $ citationHead <$> link
     field "url" $ inputText $ fmap show $ citationURL =<< link)
@@ -86,14 +86,14 @@ htmlVolumeList js vl = H.ul
       H.! HA.class_ "volume-list-result cf"
       $ do
         H.h1
-          $ H.a H.! actionLink viewVolume (HTML, volumeId v) js
-          $ H.text $ volumeName v
+          $ H.a H.! actionLink viewVolume (HTML, volumeId $ volumeRow v) js
+          $ H.text $ volumeName $ volumeRow v
         H.ul 
           H.! HA.class_ "flat semicolon"
           $ forM_ (volumeOwners v) $ \(p, o) -> H.li $ do
             H.a H.! actionLink viewParty (HTML, TargetParty p) js
               $ H.text o
-        Fold.mapM_ (H.p . H.text) $ volumeBody v
+        Fold.mapM_ (H.p . H.text) $ volumeBody $ volumeRow v
 
 htmlVolumeSearch :: VolumeFilter -> [Volume] -> RequestContext -> FormHtml f
 htmlVolumeSearch VolumeFilter{..} vl req = htmlForm "Volume search" queryVolumes HTML

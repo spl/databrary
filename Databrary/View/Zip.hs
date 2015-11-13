@@ -49,7 +49,7 @@ import Databrary.View.Html
 import {-# SOURCE #-} Databrary.Controller.Zip
 
 htmlVolumeDescription :: Bool -> Volume -> [Citation] -> [Funding] -> IdSet Container -> [[AssetSlot]] -> [[AssetSlot]] -> RequestContext -> H.Html
-htmlVolumeDescription inzip Volume{..} cite fund cs atl abl req = H.docTypeHtml $ do
+htmlVolumeDescription inzip Volume{ volumeRow = VolumeRow{..}, ..} cite fund cs atl abl req = H.docTypeHtml $ do
   H.head $ do
     H.meta H.! HA.httpEquiv "content-type" H.! HA.content "text/html;charset=utf-8"
     H.title $ do
@@ -150,11 +150,11 @@ htmlVolumeDescription inzip Volume{..} cite fund cs atl abl req = H.docTypeHtml 
     fn
       | containerTop (containerRow c) = dn
       | otherwise = "sessions" </> dn
-  arow bf as@AssetSlot{ slotAsset = a } = do
+  arow bf as@AssetSlot{ slotAsset = Asset{ assetRow = a } } = do
     H.td $ H.a !? (inzip ?> HA.href (byteStringValue $ bf </> fn)) $
       byteStringHtml fn
     H.td $ H.a H.! HA.href (link viewAsset (HTML, assetId a)) $
-      H.text $ fromMaybe (formatName (assetFormat a)) $ assetName a
+      H.text $ fromMaybe (formatName $ assetFormat a) $ assetName a
     H.td $ H.string $ show (view as :: Release)
     H.td $ maybe mempty H.toMarkup $ assetSize a
     H.td $ maybe mempty (H.string . show) $ assetDuration a

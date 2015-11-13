@@ -42,24 +42,24 @@ selectAssetContainerExcerpt = selectJoin 'makeAssetContainerExcerpt
     excerptRow
   ]
 
-makeContainerExcerpt :: (Asset -> Container -> Excerpt) -> (Volume -> Asset) -> Container -> Excerpt
-makeContainerExcerpt f af c = f (af (containerVolume c)) c
+makeContainerExcerpt :: (Asset -> Container -> Excerpt) -> AssetRow -> Container -> Excerpt
+makeContainerExcerpt f ar c = f (Asset ar (containerVolume c)) c
 
 selectContainerExcerpt :: Selector -- ^ @'Container' -> 'Excerpt'@
 selectContainerExcerpt = selectJoin 'makeContainerExcerpt
   [ selectAssetContainerExcerpt
   , joinOn "slot_asset.asset = asset.id"
-    selectVolumeAsset -- XXX volumes match?
+    selectAssetRow -- XXX volumes match?
   ]
 
-makeVolumeExcerpt :: (Asset -> Container -> Excerpt) -> (Volume -> Asset) -> (Volume -> Container) -> Volume -> Excerpt
-makeVolumeExcerpt f af cf v = f (af v) (cf v)
+makeVolumeExcerpt :: (Asset -> Container -> Excerpt) -> AssetRow -> (Volume -> Container) -> Volume -> Excerpt
+makeVolumeExcerpt f ar cf v = f (Asset ar v) (cf v)
 
 selectVolumeExcerpt :: Selector -- ^ @'Volume' -> 'Excerpt'@
 selectVolumeExcerpt = selectJoin 'makeVolumeExcerpt
   [ selectAssetContainerExcerpt
   , joinOn "slot_asset.asset = asset.id"
-    selectVolumeAsset
+    selectAssetRow
   , joinOn "slot_asset.container = container.id AND asset.volume = container.volume"
     selectVolumeContainer
   ]
@@ -67,7 +67,7 @@ selectVolumeExcerpt = selectJoin 'makeVolumeExcerpt
 excerptKeys :: String -- ^ @'Excerpt'@
   -> [(String, String)]
 excerptKeys o =
-  [ ("asset", "${assetId $ slotAsset $ segmentAsset $ excerptAsset " ++ o ++ "}")
+  [ ("asset", "${assetId $ assetRow $ slotAsset $ segmentAsset $ excerptAsset " ++ o ++ "}")
   , ("segment", "${assetSegment $ excerptAsset " ++ o ++ "}")
   ]
 
@@ -98,6 +98,6 @@ deleteExcerpt :: TH.Name -- ^ @'AuditIdentity'@
   -> TH.Name -- ^ @'AssetSegment'@
   -> TH.ExpQ
 deleteExcerpt ident o = auditDelete ident "excerpt"
-  ("asset = ${assetId $ slotAsset $ segmentAsset " ++ os ++ "} AND segment <@ ${assetSegment " ++ os ++ "}")
+  ("asset = ${assetId $ assetRow $ slotAsset $ segmentAsset " ++ os ++ "} AND segment <@ ${assetSegment " ++ os ++ "}")
   Nothing
   where os = nameRef o

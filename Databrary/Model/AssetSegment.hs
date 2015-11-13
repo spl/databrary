@@ -65,9 +65,9 @@ auditAssetSegmentDownload success AssetSegment{ segmentAsset = AssetSlot{ slotAs
   ai <- getAuditIdentity
   maybe
     (dbExecute1' [pgSQL|INSERT INTO audit.asset (audit_action, audit_user, audit_ip, id, volume, format, release) VALUES
-      (${act}, ${auditWho ai}, ${auditIp ai}, ${assetId a}, ${volumeId $ assetVolume a}, ${formatId $ assetFormat a}, ${assetRelease a})|])
+      (${act}, ${auditWho ai}, ${auditIp ai}, ${assetId $ assetRow a}, ${volumeId $ volumeRow $ assetVolume a}, ${formatId $ assetFormat $ assetRow a}, ${assetRelease $ assetRow a})|])
     (\s -> dbExecute1' [pgSQL|$INSERT INTO audit.slot_asset (audit_action, audit_user, audit_ip, container, segment, asset) VALUES
-      (${act}, ${auditWho ai}, ${auditIp ai}, ${containerId $ containerRow $ slotContainer s}, ${seg}, ${assetId a})|])
+      (${act}, ${auditWho ai}, ${auditIp ai}, ${containerId $ containerRow $ slotContainer s}, ${seg}, ${assetId $ assetRow a})|])
     as
   where act | success = AuditActionOpen 
             | otherwise = AuditActionAttempt

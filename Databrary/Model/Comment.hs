@@ -50,7 +50,7 @@ lookupSlotComments (Slot c s) n = do
 
 lookupVolumeCommentRows :: MonadDB c m => Volume -> m [CommentRow]
 lookupVolumeCommentRows v =
-  dbQuery $(selectQuery selectCommentRow "JOIN container ON comment.container = container.id WHERE container.volume = ${volumeId v} ORDER BY container")
+  dbQuery $(selectQuery selectCommentRow "JOIN container ON comment.container = container.id WHERE container.volume = ${volumeId $ volumeRow v} ORDER BY container")
 
 addComment :: MonadDB c m => Comment -> m Comment
 addComment c@Comment{..} = do

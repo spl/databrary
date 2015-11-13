@@ -23,13 +23,13 @@ useTDB
 
 supersedeAsset :: MonadDB c m => Asset -> Asset -> m ()
 supersedeAsset old new =
-  dbExecute1' [pgSQL|SELECT asset_supersede(${assetId old}, ${assetId new})|]
+  dbExecute1' [pgSQL|SELECT asset_supersede(${assetId $ assetRow old}, ${assetId $ assetRow new})|]
 
 assetIsSuperseded :: MonadDB c m => Asset -> m Bool
 assetIsSuperseded a =
-  dbExecute1 [pgSQL|SELECT ''::void FROM asset_revision WHERE orig = ${assetId a} LIMIT 1|]
+  dbExecute1 [pgSQL|SELECT ''::void FROM asset_revision WHERE orig = ${assetId $ assetRow a} LIMIT 1|]
 
 lookupAssetRevision :: (MonadHasIdentity c m, MonadDB c m) => Asset -> m (Maybe AssetRevision)
 lookupAssetRevision a = do
   ident <- peek
-  dbQuery1 $ ($ a) <$> $(selectQuery (selectAssetRevision 'ident) "$WHERE asset_revision.asset = ${assetId a}")
+  dbQuery1 $ ($ a) <$> $(selectQuery (selectAssetRevision 'ident) "$WHERE asset_revision.asset = ${assetId $ assetRow a}")

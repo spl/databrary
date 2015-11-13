@@ -83,5 +83,5 @@ thumbSlot = action GET (pathMaybe pathId </> pathSlotId </< "thumb") $ \(vi, i) 
   e <- lookupSlotSegmentThumb s
   maybe
     (peeks $ otherRouteResponse [] webFile (Just $ staticPath ["images", "draft.png"]))
-    (\as -> peeks $ otherRouteResponse [] downloadAssetSegment (slotId $ view as, assetId $ view as))
+    (\as -> peeks $ otherRouteResponse [] downloadAssetSegment (slotId $ view as, assetId $ assetRow $ view as))
     e

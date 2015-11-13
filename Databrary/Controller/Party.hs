@@ -133,10 +133,13 @@ processParty api p = do
       , partyURL = url
       }, avatar)
   a' <- Trav.forM a $ Trav.mapM $ \(af, fmt) -> do
-    a' <- addAsset (blankAsset coreVolume)
-      { assetFormat = fmt
-      , assetRelease = Just ReleasePUBLIC
-      , assetName = Just $ TE.decodeUtf8 $ fileName af
+    let ba = blankAsset coreVolume
+    a' <- addAsset ba
+      { assetRow = (assetRow ba)
+        { assetFormat = fmt
+        , assetRelease = Just ReleasePUBLIC
+        , assetName = Just $ TE.decodeUtf8 $ fileName af
+        }
       } $ Just $ tempFilePath (fileContent af)
     focusIO $ releaseTempFile $ fileContent af
     return a'

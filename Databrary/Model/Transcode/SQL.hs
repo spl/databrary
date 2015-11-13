@@ -22,9 +22,9 @@ import Databrary.Model.Segment
 import Databrary.Model.AssetRevision.Types
 import Databrary.Model.Transcode.Types
 
-makeOrigTranscode :: Segment -> [Maybe String] -> Maybe Timestamp -> Maybe Int32 -> Maybe BS.ByteString -> SiteAuth -> (Volume -> Asset) -> Asset -> Transcode
+makeOrigTranscode :: Segment -> [Maybe String] -> Maybe Timestamp -> Maybe Int32 -> Maybe BS.ByteString -> SiteAuth -> AssetRow -> Asset -> Transcode
 makeOrigTranscode s f t p l u a o =
-  Transcode (AssetRevision (a $ assetVolume o) o True) u s (map (fromMaybe (error "NULL transcode options")) f) t p l
+  Transcode (AssetRevision (Asset a $ assetVolume o) o True) u s (map (fromMaybe (error "NULL transcode options")) f) t p l
 
 selectOrigTranscode :: Selector -- ^ @'Asset' -> 'Transcode'@
 selectOrigTranscode = selectJoin 'id
@@ -32,18 +32,18 @@ selectOrigTranscode = selectJoin 'id
   , joinOn "transcode.owner = party.id"
     selectSiteAuth
   , joinOn "transcode.asset = asset.id"
-    selectVolumeAsset
+    selectAssetRow
   ]
 
-makeTranscode :: (Asset -> Transcode) -> (Volume -> Asset) -> (Permission -> Volume) -> Transcode
-makeTranscode t o vp = t $ o $ vp PermissionADMIN
+makeTranscode :: (Asset -> Transcode) -> AssetRow -> (Permission -> Volume) -> Transcode
+makeTranscode t o vp = t $ Asset o $ vp PermissionADMIN
 
 selectTranscode :: Selector -- ^ @'Transcode'@
 selectTranscode = selectJoin 'makeTranscode
   [ selectOrigTranscode
   , joinOn "transcode.orig = orig.id"
-    $ selectVolumeAsset `fromAlias` "orig"
+    $ selectAssetRow `fromAlias` "orig"
   , selectMap (`TH.AppE` TH.ListE [])
     $ joinOn "asset.volume = volume.id AND orig.volume = volume.id"
-      volumeRow
+      selectPermissionVolume
   ]

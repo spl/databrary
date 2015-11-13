@@ -86,8 +86,8 @@ assetJSONField _ _ _ = return Nothing
 assetJSONQuery :: AssetSlot -> JSON.Query -> ActionM JSON.Object
 assetJSONQuery vol = JSON.jsonQuery (assetSlotJSON vol) (assetJSONField vol)
 
-assetDownloadName :: Asset -> [T.Text]
-assetDownloadName a = T.pack (show (assetId a)) : maybeToList (assetName a)
+assetDownloadName :: AssetRow -> [T.Text]
+assetDownloadName a = T.pack (show $ assetId a) : maybeToList (assetName a)
 
 viewAsset :: ActionRoute (API, Id Asset)
 viewAsset = action GET (pathAPI </> pathId) $ \(api, i) -> withAuth $ do
@@ -95,8 +95,8 @@ viewAsset = action GET (pathAPI </> pathId) $ \(api, i) -> withAuth $ do
   case api of
     JSON -> okResponse [] <$> (assetJSONQuery asset =<< peeks Wai.queryString)
     HTML
-      | Just s <- assetSlot asset -> peeks $ otherRouteResponse [] viewAssetSegment (api, Just (view asset), slotId s, assetId (slotAsset asset))
-      | otherwise -> return $ okResponse [] $ T.pack $ show $ assetId $ slotAsset asset -- TODO
+      | Just s <- assetSlot asset -> peeks $ otherRouteResponse [] viewAssetSegment (api, Just (view asset), slotId s, assetId $ assetRow $ slotAsset asset)
+      | otherwise -> return $ okResponse [] $ T.pack $ show $ assetId $ assetRow $ slotAsset asset -- TODO
 
 data AssetTarget
   = AssetTargetVolume Volume
@@ -150,14 +150,14 @@ processAsset api target = do
         | otherwise -> Nothing <$ deformError "File or upload required."
       _ -> Nothing <$ deformError "Conflicting uploaded files found."
     up <- Trav.mapM detectUpload upfile
-    let fmt = maybe (assetFormat a) (probeFormat . fileUploadProbe) up
-    name <- "name" .:> maybe (assetName a) (TE.decodeUtf8 . dropFormatExtension fmt <$>) <$> deformOptional (deformNonEmpty deform)
-    classification <- "classification" .:> fromMaybe (assetRelease a) <$> deformOptional (deformNonEmpty deform)
+    let fmt = maybe (assetFormat $ assetRow a) (probeFormat . fileUploadProbe) up
+    name <- "name" .:> maybe (assetName $ assetRow a) (TE.decodeUtf8 . dropFormatExtension fmt <$>) <$> deformOptional (deformNonEmpty deform)
+    classification <- "classification" .:> fromMaybe (assetRelease $ assetRow a) <$> deformOptional (deformNonEmpty deform)
     slot <-
       "container" .:> (<|> slotContainer <$> s) <$> deformLookup "Container not found." (lookupVolumeContainer (assetVolume a))
       >>= Trav.mapM (\c -> "position" .:> do
         let seg = slotSegment <$> s
-            dur = maybe (assetDuration a) (probeLength . fileUploadProbe) up
+            dur = maybe (assetDuration $ assetRow a) (probeLength . fileUploadProbe) up
         p <- (<|> (lowerBound . segmentRange =<< seg)) <$> deformNonEmpty deform
         Slot c . maybe fullSegment
           (\l -> Segment $ Range.bounded l (l + fromMaybe 0 ((segmentLength =<< seg) <|> dur)))
@@ -165,9 +165,11 @@ processAsset api target = do
     return
       ( as
         { slotAsset = a
-          { assetName = name
-          , assetRelease = classification
-          , assetFormat = fmt
+          { assetRow = (assetRow a)
+            { assetName = name
+            , assetRelease = classification
+            , assetFormat = fmt
+            }
           }
         , assetSlot = slot
         }
@@ -175,10 +177,12 @@ processAsset api target = do
       )
   as'' <- maybe (return as') (\up@FileUpload{ fileUploadFile = upfile } -> do
     a' <- addAsset (slotAsset as')
-      { assetName = Just $ TE.decodeUtf8 $ fileUploadName upfile
-      , assetDuration = Nothing
-      , assetSize = Nothing
-      , assetSHA1 = Nothing
+      { assetRow = (assetRow $ slotAsset as')
+        { assetName = Just $ TE.decodeUtf8 $ fileUploadName upfile
+        , assetDuration = Nothing
+        , assetSize = Nothing
+        , assetSHA1 = Nothing
+        }
       } . Just =<< peeks (fileUploadPath upfile)
     fileUploadRemove upfile
     case target of
@@ -188,7 +192,7 @@ processAsset api target = do
     te <- peeks transcodeEnabled
     t <- case fileUploadProbe up of
       ProbeAV{ probeAV = av } | td ->
-        return a'{ assetDuration = avProbeLength av }
+        return a'{ assetRow = (assetRow a'){ assetDuration = avProbeLength av } }
       probe@ProbeAV{} | te -> do
         t <- addTranscode a' fullSegment defaultTranscodeOptions probe
         _ <- forkTranscode t
@@ -196,7 +200,9 @@ processAsset api target = do
       _ -> return a'
     return $ fixAssetSlotDuration as'
       { slotAsset = t
-        { assetName = assetName (slotAsset as')
+        { assetRow = (assetRow t)
+          { assetName = assetName $ assetRow $ slotAsset as'
+          }
         }
       })
     up'
@@ -204,7 +210,7 @@ processAsset api target = do
   _ <- changeAssetSlot as''
   case api of
     JSON -> return $ okResponse [] $ assetSlotJSON as''
-    HTML -> peeks $ otherRouteResponse [] viewAsset (api, assetId (slotAsset as''))
+    HTML -> peeks $ otherRouteResponse [] viewAsset (api, assetId $ assetRow $ slotAsset as'')
 
 postAsset :: ActionRoute (API, Id Asset)
 postAsset = multipartAction $ action POST (pathAPI </> pathId) $ \(api, ai) -> withAuth $ do
@@ -247,7 +253,7 @@ deleteAsset = action DELETE (pathAPI </> pathId) $ \(api, ai) -> withAuth $ do
   _ <- changeAssetSlot asset'
   case api of
     JSON -> return $ okResponse [] $ assetSlotJSON asset'
-    HTML -> peeks $ otherRouteResponse [] viewAsset (api, assetId (slotAsset asset'))
+    HTML -> peeks $ otherRouteResponse [] viewAsset (api, assetId $ assetRow $ slotAsset asset')
 
 downloadAsset :: ActionRoute (Id Asset)
 downloadAsset = action GET (pathId </< "download") $ \ai -> withAuth $ do

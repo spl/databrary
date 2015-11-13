@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings, TemplateHaskell, TypeFamilies #-}
 module Databrary.Model.Asset.Types
-  ( Asset(..)
+  ( AssetRow(..)
+  , Asset(..)
   ) where
 
 import qualified Data.ByteString as BS
@@ -17,18 +18,23 @@ import Databrary.Model.Format.Types
 
 type instance IdType Asset = Int32
 
-data Asset = Asset
+data AssetRow = AssetRow
   { assetId :: Id Asset
   , assetFormat :: Format
   , assetRelease :: Maybe Release
-  , assetName :: Maybe T.Text
   , assetDuration :: Maybe Offset
+  , assetName :: Maybe T.Text
   , assetSHA1 :: Maybe BS.ByteString
   , assetSize :: Maybe Int64
+  }
+
+data Asset = Asset
+  { assetRow :: !AssetRow
   , assetVolume :: Volume
   }
 
 instance Kinded Asset where
   kindOf _ = "asset"
 
-makeHasRec ''Asset ['assetId, 'assetFormat, 'assetRelease, 'assetVolume]
+makeHasRec ''AssetRow ['assetId, 'assetFormat, 'assetRelease]
+makeHasRec ''Asset ['assetRow, 'assetVolume]

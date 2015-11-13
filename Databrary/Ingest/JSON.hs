@@ -122,8 +122,8 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
   volume = do
     dir <- JE.keyOrDefault "directory" "" $ stageFileRel <$> asStageFile ""
     _ <- JE.keyMay "name" $ do
-      name <- check (volumeName vol) =<< JE.asText
-      Fold.forM_ name $ \n -> lift $ changeVolume vol{ volumeName = n }
+      name <- check (volumeName $ volumeRow vol) =<< JE.asText
+      Fold.forM_ name $ \n -> lift $ changeVolume vol{ volumeRow = (volumeRow vol){ volumeName = n } }
     JE.key "containers" $ JE.eachInArray (container dir)
   container dir = do
     cid <- JE.keyMay "id" $ Id <$> JE.asIntegral
@@ -190,7 +190,7 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
               `catchError` \_ -> asSegment
           let seg'
                 | Just p <- Range.getPoint (segmentRange seg)
-                , Just d <- assetDuration a = Segment $ Range.bounded p (p + d)
+                , Just d <- assetDuration (assetRow a) = Segment $ Range.bounded p (p + d)
                 | otherwise = seg
               ss = Slot c seg'
           u <- maybe (return True) (\s' -> isJust <$> on check slotId s' ss) $ assetSlot as'
@@ -245,10 +245,13 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
       (do
         release <- JE.key "release" asRelease
         name <- JE.keyMay "name" JE.asText
-        a <- lift $ addAsset (blankAsset vol)
-          { assetFormat = probeFormat probe
-          , assetRelease = release
-          , assetName = name
+        let ba = blankAsset vol
+        a <- lift $ addAsset ba
+          { assetRow = (assetRow ba)
+            { assetFormat = probeFormat probe
+            , assetRelease = release
+            , assetName = name
+            }
           } (Just $ toRawFilePath $ stageFileAbs file)
         lift $ addIngestAsset a (stageFileRel file)
         Fold.forM_ orig $ \o -> lift $ supersedeAsset o a
@@ -256,12 +259,14 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
       (\a -> inObj a $ do
         unless (assetBacked a) $ throwPE "ingested asset incomplete"
         -- compareFiles file =<< getAssetFile -- assume correct
-        release <- fmap join . JE.keyMay "release" $ check (assetRelease a) =<< asRelease
-        name <- fmap join . JE.keyMay "name" $ check (assetName a) =<< JE.perhaps JE.asText
+        release <- fmap join . JE.keyMay "release" $ check (assetRelease $ assetRow a) =<< asRelease
+        name <- fmap join . JE.keyMay "name" $ check (assetName $ assetRow a) =<< JE.perhaps JE.asText
         a' <- if isJust release || isJust name
           then lift $ changeAsset a
-            { assetRelease = fromMaybe (assetRelease a) release
-            , assetName = fromMaybe (assetName a) name
+            { assetRow = (assetRow a)
+              { assetRelease = fromMaybe (assetRelease $ assetRow a) release
+              , assetName = fromMaybe (assetName $ assetRow a) name
+              }
             } Nothing
           else return a
         Fold.forM_ orig $ \o -> lift $ replaceSlotAsset o a'

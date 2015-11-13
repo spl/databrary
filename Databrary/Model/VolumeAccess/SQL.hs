@@ -28,7 +28,7 @@ selectVolumeAccess :: TH.Name -- ^ 'Volume'
   -> Selector -- ^ 'VolumeAccess'
 selectVolumeAccess vol ident = selectMap (`TH.AppE` TH.VarE vol) $ selectJoin '($)
   [ volumeAccessRow
-  , joinOn ("volume_access.party = party.id AND volume_access.volume = ${volumeId " ++ nameRef vol ++ "}")
+  , joinOn ("volume_access.party = party.id AND volume_access.volume = ${volumeId $ volumeRow " ++ nameRef vol ++ "}")
     $ selectAuthParty ident
   ]
 
@@ -41,7 +41,7 @@ selectVolumeAccessParty :: TH.Name -- ^ 'Volume'
   -> Selector -- ^ 'VolumeAccess'
 selectVolumeAccessParty vol ident = selectMap (`TH.AppE` TH.VarE vol) $ selectJoin 'makeVolumeAccessParty
   [ selectAuthParty ident
-  , maybeJoinOn ("party.id = volume_access.party AND volume_access.volume = ${volumeId " ++ nameRef vol ++ "}")
+  , maybeJoinOn ("party.id = volume_access.party AND volume_access.volume = ${volumeId $ volumeRow " ++ nameRef vol ++ "}")
     volumeAccessRow
   ]
 
@@ -57,8 +57,8 @@ selectPartyVolumeAccess p ident = selectJoin '($)
 volumeAccessKeys :: String -- ^ @'VolumeAccess'@
   -> [(String, String)]
 volumeAccessKeys a =
-  [ ("volume", "${volumeId (volumeAccessVolume " ++ a ++ ")}")
-  , ("party", "${partyId (volumeAccessParty " ++ a ++ ")}")
+  [ ("volume", "${volumeId $ volumeRow $ volumeAccessVolume " ++ a ++ "}")
+  , ("party", "${partyId $ volumeAccessParty " ++ a ++ "}")
   ]
 
 volumeAccessSets :: String -- ^ @'VolumeAccess'@
