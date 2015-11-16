@@ -53,7 +53,7 @@ solrDocId :: forall a . (Kinded a, Show (Id a)) => Id a -> BS.ByteString
 solrDocId i = kindOf (undefined :: a) <> BSC.pack ('_' : show i)
 
 solrParty :: Party -> Maybe Permission -> SolrDocument
-solrParty Party{..} auth = SolrParty
+solrParty Party{ partyRow = PartyRow{..}, ..} auth = SolrParty
   { solrId = solrDocId partyId
   , solrPartyId = partyId
   , solrPartySortName = partySortName

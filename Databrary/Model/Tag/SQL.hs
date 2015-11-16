@@ -51,7 +51,7 @@ insertTagUse :: Bool -- ^ keyword
   -> TH.Name -- ^ @'TagUse'@
   -> TH.ExpQ
 insertTagUse keyword o = makePGQuery simpleQueryFlags $
-  "INSERT INTO " ++ tagUseTable keyword ++ " (tag, container, segment, who) VALUES (${tagId $ useTag " ++ os ++ "}, ${containerId $ containerRow $ slotContainer $ tagSlot  " ++ os ++ "}, ${slotSegment $ tagSlot  " ++ os ++ "}, ${partyId $ accountParty $ tagWho  " ++ os ++ "})"
+  "INSERT INTO " ++ tagUseTable keyword ++ " (tag, container, segment, who) VALUES (${tagId $ useTag " ++ os ++ "}, ${containerId $ containerRow $ slotContainer $ tagSlot  " ++ os ++ "}, ${slotSegment $ tagSlot  " ++ os ++ "}, ${partyId $ partyRow $ accountParty $ tagWho  " ++ os ++ "})"
   where os = nameRef o
 
 deleteTagUse :: Bool -- ^ keyword
@@ -59,7 +59,7 @@ deleteTagUse :: Bool -- ^ keyword
   -> TH.ExpQ
 deleteTagUse keyword o = makePGQuery simpleQueryFlags $
   "DELETE FROM ONLY " ++ tagUseTable keyword ++ " WHERE tag = ${tagId $ useTag " ++ os ++ "} AND container = ${containerId $ containerRow $ slotContainer $ tagSlot " ++ os ++ "} AND segment <@ ${slotSegment $ tagSlot " ++ os ++ "}"
-  ++ (if keyword then "" else " AND who = ${partyId $ accountParty $ tagWho " ++ os ++ "}")
+  ++ (if keyword then "" else " AND who = ${partyId $ partyRow $ accountParty $ tagWho " ++ os ++ "}")
   where os = nameRef o
 
 selectTagGroup :: String -- ^ table name
@@ -95,7 +95,7 @@ tagCoverageColumns :: TH.Name -- ^ @'Party'@
 tagCoverageColumns acct = tagWeightColumns ++
   [ ("coverage", "segments_union(segment)")
   , ("keywords", "segments_union(CASE WHEN tableoid = 'keyword_use'::regclass THEN segment ELSE 'empty' END)")
-  , ("votes", "segments_union(CASE WHEN tableoid = 'tag_use'::regclass AND who = ${partyId " ++ nameRef acct ++ "} THEN segment ELSE 'empty' END)")
+  , ("votes", "segments_union(CASE WHEN tableoid = 'tag_use'::regclass AND who = ${partyId $ partyRow " ++ nameRef acct ++ "} THEN segment ELSE 'empty' END)")
   ]
 
 selectTagCoverage :: TH.Name -- ^ @'Party'@

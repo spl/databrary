@@ -25,7 +25,7 @@ viewSiteAudit :: ActionRoute API
 viewSiteAudit = action GET (pathAPI </< "audit") $ \api -> withAuth $ do
   ss <- focusIO $ readIORef . serviceStats
   vl <- map (second $ ("volume" JSON..=) . volumeJSON) . nubBy ((==) `on` volumeId . volumeRow . snd) <$> lookupVolumeActivity 8
-  al <- map (second $ ("party"  JSON..=) . partyJSON)  . nubBy ((==) `on` partyId  . snd) <$> lookupAuthorizeActivity 8
+  al <- map (second $ ("party"  JSON..=) . partyJSON)  . nubBy ((==) `on` partyId  . partyRow  . snd) <$> lookupAuthorizeActivity 8
   case api of 
     JSON -> return $ okResponse [] $ JSON.object
       [ "stats" JSON..= ss

@@ -50,7 +50,7 @@ selectPartyVolumeAccess :: TH.Name -- ^ 'Party'
   -> Selector -- ^ 'VolumeAccess'
 selectPartyVolumeAccess p ident = selectJoin '($)
   [ selectMap (`TH.AppE` TH.VarE p) $ volumeAccessRow
-  , joinOn ("volume_access.volume = volume.id AND volume_access.party = ${partyId " ++ nameRef p ++ "}")
+  , joinOn ("volume_access.volume = volume.id AND volume_access.party = ${partyId $ partyRow " ++ nameRef p ++ "}")
     $ selectVolume ident
   ]
 
@@ -58,7 +58,7 @@ volumeAccessKeys :: String -- ^ @'VolumeAccess'@
   -> [(String, String)]
 volumeAccessKeys a =
   [ ("volume", "${volumeId $ volumeRow $ volumeAccessVolume " ++ a ++ "}")
-  , ("party", "${partyId $ volumeAccessParty " ++ a ++ "}")
+  , ("party", "${partyId $ partyRow $ volumeAccessParty " ++ a ++ "}")
   ]
 
 volumeAccessSets :: String -- ^ @'VolumeAccess'@

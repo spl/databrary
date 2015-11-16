@@ -58,9 +58,11 @@ postRegister = action POST (pathAPI </< "user" </< "register") $ \api -> without
     affiliation <- "affiliation" .:> deformNonEmpty deform
     _ <- "agreement" .:> (deformCheck "You must consent to the user agreement." id =<< deform)
     let p = blankParty
-          { partySortName = name
-          , partyPreName = prename
-          , partyAffiliation = affiliation
+          { partyRow = (partyRow blankParty)
+            { partySortName = name
+            , partyPreName = prename
+            , partyAffiliation = affiliation
+            }
           , partyAccount = Just a
           }
         a = Account

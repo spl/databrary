@@ -95,7 +95,7 @@ htmlVolumeDescription inzip Volume{ volumeRow = VolumeRow{..}, ..} cite fund cs 
           H.string $ formatTime defaultTimeLocale "%a, %d %b %Y %H:%M:%S %Z" (view req :: Timestamp)
           void " by "
           H.a H.! HA.href (link viewParty (HTML, TargetParty $ view req)) $
-            H.text $ partyName (view req)
+            H.text $ partyName $ partyRow $ view req
       else do
         H.dt $ H.a H.! actionLink zipVolume volumeId (idSetQuery cs) $
           void "Download"

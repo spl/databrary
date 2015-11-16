@@ -91,7 +91,7 @@ passwordForm acct = do
   p <- "once" .:> do
     p <- deform
     deformGuard "Password too short. Must be 7 characters." (7 <= BS.length p)
-    c <- lift $ focusIO $ passwdCheck p (accountEmail acct) (TE.encodeUtf8 $ partyName $ accountParty acct)
+    c <- lift $ focusIO $ passwdCheck p (accountEmail acct) (TE.encodeUtf8 $ partyName $ partyRow $ accountParty acct)
     Fold.mapM_ (deformError . ("Insecure password: " <>) . TE.decodeLatin1) c
     return p
   "again" .:> do

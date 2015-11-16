@@ -119,7 +119,7 @@ zipResponse n z = do
   req <- peek
   u <- peek
   let comment = BSL.toStrict $ BSB.toLazyByteString
-        $ BSB.string8 "Downloaded by " <> TE.encodeUtf8Builder (partyName u) <> BSB.string8 " <" <> actionURL (Just req) viewParty (HTML, TargetParty $ partyId u) [] <> BSB.char8 '>'
+        $ BSB.string8 "Downloaded by " <> TE.encodeUtf8Builder (partyName $ partyRow u) <> BSB.string8 " <" <> actionURL (Just req) viewParty (HTML, TargetParty $ partyId $ partyRow u) [] <> BSB.char8 '>'
   return $ okResponse
     [ (hContentType, "application/zip")
     , ("content-disposition", "attachment; filename=" <> quoteHTTP (n <.> "zip"))

@@ -54,7 +54,7 @@ lookupVolumeCommentRows v =
 
 addComment :: MonadDB c m => Comment -> m Comment
 addComment c@Comment{..} = do
-  (i, t) <- dbQuery1' [pgSQL|INSERT INTO comment (who, container, segment, text, parent) VALUES (${partyId $ accountParty commentWho}, ${containerId $ containerRow $ slotContainer commentSlot}, ${slotSegment commentSlot}, ${commentText}, ${listToMaybe commentParents}) RETURNING id, time|]
+  (i, t) <- dbQuery1' [pgSQL|INSERT INTO comment (who, container, segment, text, parent) VALUES (${partyId $ partyRow $ accountParty commentWho}, ${containerId $ containerRow $ slotContainer commentSlot}, ${slotSegment commentSlot}, ${commentText}, ${listToMaybe commentParents}) RETURNING id, time|]
   return c
     { commentId = i
     , commentTime = t

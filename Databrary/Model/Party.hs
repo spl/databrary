@@ -59,9 +59,9 @@ nobodyParty, rootParty :: Party
 nobodyParty = $(loadParty (Id (-1)) PermissionREAD)
 rootParty = $(loadParty (Id 0) PermissionSHARED)
 
-partyName :: Party -> T.Text
-partyName Party{ partyPreName = Just p, partySortName = n } = p <> T.cons ' ' n
-partyName Party{ partySortName = n } = n
+partyName :: PartyRow -> T.Text
+partyName PartyRow{ partyPreName = Just p, partySortName = n } = p <> T.cons ' ' n
+partyName PartyRow{ partySortName = n } = n
 
 emailPermission :: Permission
 emailPermission = PermissionSHARED
@@ -74,7 +74,7 @@ partyEmail p =
   guard (partyPermission p >= emailPermission) >> accountEmail <$> partyAccount p
 
 partyJSON :: Party -> JSON.Object
-partyJSON p@Party{..} = JSON.record partyId $ catMaybes
+partyJSON p@Party{ partyRow = PartyRow{..}, ..} = JSON.record partyId $ catMaybes
   [ Just $ "sortname" JSON..= partySortName
   , ("prename" JSON..=) <$> partyPreName
   , ("orcid" JSON..=) . show <$> partyORCID
@@ -98,12 +98,12 @@ changeAccount a = do
 addParty :: MonadAudit c m => Party -> m Party
 addParty bp = do
   ident <- getAuditIdentity
-  dbQuery1' $ fmap (\p -> p PermissionREAD Nothing) $(insertParty 'ident 'bp)
+  dbQuery1' $ fmap (\p -> Party p Nothing PermissionREAD Nothing) $(insertParty 'ident 'bp)
 
 addAccount :: MonadAudit c m => Account -> m Account
 addAccount ba@Account{ accountParty = bp } = do
   ident <- getAuditIdentity
-  p <- dbQuery1' $ fmap (\p -> p PermissionREAD Nothing) $(insertParty 'ident 'bp)
+  p <- dbQuery1' $ fmap (\p -> Party p Nothing PermissionREAD Nothing) $(insertParty 'ident 'bp)
   let pa = p{ partyAccount = Just a }
       a = ba{ accountParty = pa }
   dbExecute1' $(insertAccount 'ident 'a)
@@ -154,11 +154,11 @@ auditAccountLogin :: (MonadHasRequest c m, MonadDB c m) => Bool -> Party -> BS.B
 auditAccountLogin success who email = do
   ip <- getRemoteIp
   dbExecute1' [pgSQL|INSERT INTO audit.account (audit_action, audit_user, audit_ip, id, email) VALUES
-    (${if success then AuditActionOpen else AuditActionAttempt}, -1, ${ip}, ${partyId who}, ${email})|]
+    (${if success then AuditActionOpen else AuditActionAttempt}, -1, ${ip}, ${partyId $ partyRow who}, ${email})|]
 
 recentAccountLogins :: MonadDB c m => Party -> m Int64
 recentAccountLogins who = fromMaybe 0 <$>
-  dbQuery1 [pgSQL|!SELECT count(*) FROM audit.account WHERE audit_action = 'attempt' AND id = ${partyId who} AND audit_time > CURRENT_TIMESTAMP - interval '1 hour'|]
+  dbQuery1 [pgSQL|!SELECT count(*) FROM audit.account WHERE audit_action = 'attempt' AND id = ${partyId $ partyRow who} AND audit_time > CURRENT_TIMESTAMP - interval '1 hour'|]
 
 data PartyFilter = PartyFilter
   { partyFilterQuery :: Maybe String
@@ -206,9 +206,9 @@ lookupAvatar p =
 changeAvatar :: MonadAudit c m => Party -> Maybe Asset -> m Bool
 changeAvatar p Nothing = do
   ident <- getAuditIdentity
-  dbExecute1 $(auditDelete 'ident "avatar" "party = ${partyId p}" Nothing)
+  dbExecute1 $(auditDelete 'ident "avatar" "party = ${partyId $ partyRow p}" Nothing)
 changeAvatar p (Just a) = do
   ident <- getAuditIdentity
   (0 <) . fst <$> updateOrInsert
-    $(auditUpdate 'ident "avatar" [("asset", "${assetId $ assetRow a}")] "party = ${partyId p}" Nothing)
-    $(auditInsert 'ident "avatar" [("asset", "${assetId $ assetRow a}"), ("party", "${partyId p}")] Nothing)
+    $(auditUpdate 'ident "avatar" [("asset", "${assetId $ assetRow a}")] "party = ${partyId $ partyRow p}" Nothing)
+    $(auditInsert 'ident "avatar" [("asset", "${assetId $ assetRow a}"), ("party", "${partyId $ partyRow p}")] Nothing)

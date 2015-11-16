@@ -51,7 +51,7 @@ lookupPartyVolumeAccess p perm = do
 lookupPartyVolumes :: (MonadDB c m, MonadHasIdentity c m) => Party -> Permission -> m [Volume]
 lookupPartyVolumes p perm = do
   ident <- peek
-  dbQuery $(selectDistinctQuery (Just ["volume.id"]) (selectVolume 'ident) "$JOIN volume_access_view ON volume.id = volume_access_view.volume WHERE party = ${partyId p} AND access >= ${perm}")
+  dbQuery $(selectDistinctQuery (Just ["volume.id"]) (selectVolume 'ident) "$JOIN volume_access_view ON volume.id = volume_access_view.volume WHERE party = ${partyId $ partyRow p} AND access >= ${perm}")
 
 changeVolumeAccess :: (MonadAudit c m) => VolumeAccess -> m Bool
 changeVolumeAccess va = do
