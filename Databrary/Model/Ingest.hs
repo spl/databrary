@@ -39,7 +39,7 @@ lookupIngestRecord vol k =
 
 addIngestRecord :: MonadDB c m => Record -> IngestKey -> m ()
 addIngestRecord r k =
-  dbExecute1' [pgSQL|INSERT INTO ingest.record (id, volume, key) VALUES (${recordId r}, ${volumeId $ volumeRow $ recordVolume r}, ${k})|]
+  dbExecute1' [pgSQL|INSERT INTO ingest.record (id, volume, key) VALUES (${recordId $ recordRow r}, ${volumeId $ volumeRow $ recordVolume r}, ${k})|]
 
 lookupIngestAsset :: MonadDB c m => Volume -> FilePath -> m (Maybe Asset)
 lookupIngestAsset vol k =

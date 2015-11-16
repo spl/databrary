@@ -115,7 +115,7 @@ selectSlotRecord ident = selectJoin '($)
 slotRecordVals :: String -- ^ @'RecordSlot'@
   -> [(String, String)]
 slotRecordVals o =
-  [ ("record", "${recordId $ slotRecord " ++ o ++ "}")
+  [ ("record", "${recordId $ recordRow $ slotRecord " ++ o ++ "}")
   , ("container", "${containerId $ containerRow $ slotContainer $ recordSlot " ++ o ++ "}")
   , ("segment", "${slotSegment $ recordSlot " ++ o ++ "}")
   ]
@@ -141,6 +141,6 @@ deleteSlotRecord :: TH.Name -- ^ @'AuditIdentity'@
   -> TH.Name -- ^ @'RecordSlot'@
   -> TH.ExpQ
 deleteSlotRecord ident o = auditDelete ident "slot_record"
-  ("record = ${recordId $ slotRecord " ++ os ++ "} AND container = ${containerId $ containerRow $ slotContainer $ recordSlot " ++ os ++ "} AND segment <@ ${slotSegment $ recordSlot " ++ os ++ "}")
+  ("record = ${recordId $ recordRow $ slotRecord " ++ os ++ "} AND container = ${containerId $ containerRow $ slotContainer $ recordSlot " ++ os ++ "} AND segment <@ ${slotSegment $ recordSlot " ++ os ++ "}")
   Nothing
   where os = nameRef o

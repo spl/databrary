@@ -29,11 +29,13 @@ import Databrary.Model.Measure
 import Databrary.Model.Record.Types
 import Databrary.Model.Record.SQL
 
-blankRecord :: Volume -> Record
-blankRecord vol = Record
-  { recordId = error "blankRecord"
+blankRecord :: RecordCategory -> Volume -> Record
+blankRecord cat vol = Record
+  { recordRow = RecordRow
+    { recordId = error "blankRecord"
+    , recordCategory = cat
+    }
   , recordVolume = vol
-  , recordCategory = head allRecordCategories
   , recordRelease = Nothing
   , recordMeasures = []
   }
@@ -67,7 +69,7 @@ removeRecord r = do
   isRight <$> dbTryJust (guard . isForeignKeyViolation) (dbExecute1 $(deleteRecord 'ident 'r))
 
 recordJSON :: Record -> JSON.Object
-recordJSON r@Record{..} = JSON.record recordId
+recordJSON r@Record{ recordRow = RecordRow{..}, ..} = JSON.record recordId
   [ -- "volume" JSON..= volumeId recordVolume
     "category" JSON..= recordCategoryId recordCategory
   , "measures" JSON..= JSON.Object (measuresJSON $ getRecordMeasures r)

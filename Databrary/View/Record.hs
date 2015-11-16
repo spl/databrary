@@ -24,6 +24,6 @@ htmlRecordForm vol = htmlForm "Create record"
 
 htmlRecordMeasureForm :: Record -> Metric -> RequestContext -> FormHtml f
 htmlRecordMeasureForm rec met = htmlForm "Set measure"
-  postRecordMeasure (HTML, recordId rec, metricId met)
+  postRecordMeasure (HTML, recordId $ recordRow rec, metricId met)
   (field "datum" $ inputText (Nothing :: Maybe String))
   (const mempty)

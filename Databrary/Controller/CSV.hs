@@ -49,12 +49,12 @@ tenc = TE.encodeUtf8
 
 updateHeaders :: [(RecordCategory, Int)] -> Records -> [(RecordCategory, Int)]
 updateHeaders h [] = h
-updateHeaders [] l = map (\rl@(r:_) -> (recordCategory r, length rl)) l
+updateHeaders [] l = map (\rl@(r:_) -> (recordCategory $ recordRow r, length rl)) l
 updateHeaders hl@(cm@(c,m):hl') rll@(~rl@(r:_):rll') = case compare c rc of
   LT -> cm                     : updateHeaders hl' rll
   EQ -> (c, m `max` length rl) : updateHeaders hl' rll'
   GT -> (rc, length rl)        : updateHeaders hl rll'
-  where rc = recordCategory r
+  where rc = recordCategory $ recordRow r
 
 metricHeader :: [Metric] -> [BS.ByteString]
 metricHeader = map (tenc . metricName)
@@ -87,7 +87,7 @@ dataRow hl@((c,m):hl') rll@(~rl@(r:_):rll') = case compare c rc of
   LT -> recordsRow m [] ++ dataRow hl' rll
   EQ -> recordsRow m rl ++ dataRow hl' rll'
   GT -> dataRow hl rll'
-  where rc = recordCategory r
+  where rc = recordCategory $ recordRow r
 dataRow _ _ = []
 
 volumeCSV :: Volume -> [(Container, [RecordSlot])] -> ActionM BSB.Builder
@@ -95,7 +95,7 @@ volumeCSV vol crsl = do
   cols <- lookupVolumeMetrics vol
   -- FIXME if volume metrics can be reordered
   let grm r = r{ recordMeasures = getRecordMeasures r }
-      crl = map (second $ map (nubBy ((==) `on` recordId)) . groupBy ((==) `on` recordCategory) . map (grm . slotRecord)) crsl
+      crl = map (second $ map (nubBy ((==) `on` recordId . recordRow)) . groupBy ((==) `on` recordCategory . recordRow) . map (grm . slotRecord)) crsl
       hl = map (\(c, n) -> (c, replicate n $ maybe [] (map getMetric') $ lookup (recordCategoryId c) cols)) $
         foldl' updateHeaders [] $ map snd crl
       cr c r = tshow (containerId $ containerRow c) : tmaybe tenc (containerName $ containerRow c) : maybe (if containerTop (containerRow c) then "materials" else BS.empty) BSC.pack (formatContainerDate c) : tmaybe tshow (containerRelease c) : dataRow hl r

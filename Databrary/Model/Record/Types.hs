@@ -1,6 +1,7 @@
 {-# LANGUAGE TemplateHaskell, TypeFamilies, OverloadedStrings #-}
 module Databrary.Model.Record.Types
-  ( Record(..)
+  ( RecordRow(..)
+  , Record(..)
   , Measure(..)
   , Measures
   ) where
@@ -18,12 +19,16 @@ import Databrary.Model.RecordCategory.Types
 
 type instance IdType Record = Int32
 
-data Record = Record
+data RecordRow = RecordRow
   { recordId :: Id Record
-  , recordVolume :: Volume
   , recordCategory :: RecordCategory
-  , recordRelease :: Maybe Release
+  }
+
+data Record = Record
+  { recordRow :: !RecordRow
   , recordMeasures :: Measures
+  , recordRelease :: Maybe Release
+  , recordVolume :: Volume
   }
 
 instance Kinded Record where
@@ -40,7 +45,8 @@ instance Kinded Measure where
 
 type Measures = [Measure]
 
-makeHasRec ''Record ['recordId, 'recordVolume, 'recordCategory, 'recordRelease]
+makeHasRec ''RecordRow ['recordId, 'recordCategory]
+makeHasRec ''Record ['recordRow, 'recordVolume, 'recordRelease]
 
 instance Has Record Measure where
   view = measureRecord

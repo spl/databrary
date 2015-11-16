@@ -206,22 +206,22 @@ ingestJSON vol jdata' run overwrite = runExceptT $ do
         r <- maybe
           (do
             category <- JE.key "category" asCategory
-            lift $ addRecord (blankRecord vol)
-              { recordCategory = category
-              })
+            lift $ addRecord $ blankRecord category vol)
           (\i -> fromMaybeM (throwPE $ "record " <> T.pack (show i) <> "/" <> key <> " not found")
             =<< lift (lookupVolumeRecord vol i))
           rid
         inObj r $ lift $ addIngestRecord r key
         return r)
       (\r -> inObj r $ do
-        unless (Fold.all (recordId r ==) rid) $ do
+        unless (Fold.all (recordId (recordRow r) ==) rid) $ do
           throwPE "id mismatch"
         _ <- JE.key "category" $ do
           category <- asCategory
-          category' <- (category <$) <$> on check recordCategoryName (recordCategory r) category
+          category' <- (category <$) <$> on check recordCategoryName (recordCategory $ recordRow r) category
           Fold.forM_ category' $ \c -> lift $ changeRecord r
-            { recordCategory = c
+            { recordRow = (recordRow r)
+              { recordCategory = c
+              }
             }
         return r)
       =<< lift (lookupIngestRecord vol key)

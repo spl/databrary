@@ -113,7 +113,7 @@ solrExcerpt Excerpt{ excerptAsset = AssetSegment{ segmentAsset = AssetSlot{ slot
   }
 
 solrRecord :: RecordSlot -> SolrDocument
-solrRecord rs@RecordSlot{ slotRecord = r@Record{..}, recordSlot = Slot{..} } = SolrRecord
+solrRecord rs@RecordSlot{ slotRecord = r@Record{ recordRow = RecordRow{..}, ..}, recordSlot = Slot{..} } = SolrRecord
   { solrId = solrDocId recordId
     <> BSC.pack ('_' : show (containerId $ containerRow slotContainer))
   , solrRecordId = recordId

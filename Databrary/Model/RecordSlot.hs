@@ -40,7 +40,7 @@ import Databrary.Model.RecordSlot.SQL
 
 lookupRecordSlots :: (MonadDB c m) => Record -> m [RecordSlot]
 lookupRecordSlots r =
-  dbQuery $ ($ r) <$> $(selectQuery selectRecordSlotRecord "$WHERE slot_record.record = ${recordId r}")
+  dbQuery $ ($ r) <$> $(selectQuery selectRecordSlotRecord "$WHERE slot_record.record = ${recordId $ recordRow r}")
 
 lookupSlotRecords :: (MonadDB c m) => Slot -> m [RecordSlot]
 lookupSlotRecords (Slot c s) =
@@ -51,7 +51,7 @@ lookupContainerRecords = lookupSlotRecords . containerSlot
 
 lookupRecordSlotRecords :: (MonadDB c m) => Record -> Slot -> m [RecordSlot]
 lookupRecordSlotRecords r (Slot c s) =
-  dbQuery $ ($ c) . ($ r) <$> $(selectQuery selectRecordContainerSlotRecord "WHERE slot_record.record = ${recordId r} AND slot_record.container = ${containerId $ containerRow c} AND slot_record.segment && ${s}")
+  dbQuery $ ($ c) . ($ r) <$> $(selectQuery selectRecordContainerSlotRecord "WHERE slot_record.record = ${recordId $ recordRow r} AND slot_record.container = ${containerId $ containerRow c} AND slot_record.segment && ${s}")
 
 lookupVolumeContainersRecords :: (MonadDB c m) => Volume -> m [(Container, [RecordSlot])]
 lookupVolumeContainersRecords v =
@@ -89,7 +89,7 @@ recordSlotAge rs@RecordSlot{..} =
     | otherwise = a
 
 recordSlotJSON :: RecordSlot -> JSON.Object
-recordSlotJSON rs@RecordSlot{..} = JSON.record (recordId slotRecord) $ catMaybes
+recordSlotJSON rs@RecordSlot{..} = JSON.record (recordId $ recordRow slotRecord) $ catMaybes
   [ segmentJSON (slotSegment recordSlot)
   , ("age" JSON..=) <$> recordSlotAge rs
   ]

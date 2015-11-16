@@ -21,8 +21,8 @@ measureDatumRow = selector "measure" $ SelectColumn "measure" "datum"
 measureKeys :: String -- ^ @'Measure'@
   -> [(String, String)]
 measureKeys m =
-  [ ("record", "${recordId (measureRecord " ++ m ++ ")}")
-  , ("metric", "${metricId (measureMetric " ++ m ++ ")}")
+  [ ("record", "${recordId $ recordRow $ measureRecord " ++ m ++ "}")
+  , ("metric", "${metricId $ measureMetric " ++ m ++ "}")
   ]
 
 measureSets :: String -- ^ @'Record'@

@@ -98,7 +98,7 @@ cacheVolumeRecords vol = do
   vc <- get
   maybe (do
     l <- lookupVolumeRecords vol
-    let m = HML.fromList [ (recordId r, r) | r <- l ]
+    let m = HML.fromList [ (recordId $ recordRow r, r) | r <- l ]
     put vc{ volumeCacheRecords = Just m }
     return (l, m))
     (return . (HML.elems &&& id))
@@ -136,7 +136,8 @@ volumeJSONField vol "containers" o = do
     then leftJoin (\(c, _) (_, SlotId a _) -> containerId (containerRow c) == a) cl <$> lookupVolumeAssetSlotIds vol
     else return $ nope cl
   rm <- if records then snd <$> cacheVolumeRecords vol else return HM.empty
-  let rjs c (s, r) = recordSlotJSON $ RecordSlot (HML.lookupDefault (blankRecord vol){ recordId = r } r rm) (Slot c s)
+  let br = blankRecord undefined vol
+      rjs c (s, r) = recordSlotJSON $ RecordSlot (HML.lookupDefault br{ recordRow = (recordRow br){ recordId = r } } r rm) (Slot c s)
       ajs c (a, SlotId _ s) = assetSlotJSON $ AssetSlot a (Just (Slot c s))
   return $ Just $ JSON.toJSON $ map (\((c, rl), al) -> containerJSON c
     JSON..+? (records ?> "records" JSON..= map (rjs c) rl)
