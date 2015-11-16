@@ -28,9 +28,9 @@
           <hr class="home-stats-split">    
           <li>
             <span class="home-stats-num">{{::stats.volumes | number:0}} </span>
-            <small class="inline-block">volumes (</small>
+            <small class="inline-block">total<br>volumes </small>
             <span class="home-stats-num">{{::stats.shared | number:0}} </span>
-            <small class="inline-block">opened for sharing )</small>
+            <small class="inline-block">shared<br>volumes</small>
           </li>        
           <li>
             <span class="home-stats-num">{{::stats.duration/(1000*60*60) | number:0}} </span>
