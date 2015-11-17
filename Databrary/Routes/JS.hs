@@ -37,7 +37,7 @@ import Databrary.Controller.Comment
 import Databrary.Controller.CSV
 import Databrary.Controller.VolumeState
 import Databrary.Controller.Search
-import Databrary.Controller.Audit
+import Databrary.Controller.Activity
 import Databrary.Web.Routes
 
 jsRoutes :: B.Builder
@@ -60,6 +60,7 @@ jsRoutes = mconcat
   , jsRoute "viewVolumeSearch" queryVolumes (HTML)
   , jsRoute "thumbVolume" thumbVolume (volume)
   , jsRoute "csvVolume" csvVolume (volume)
+  , jsRoute "viewVolumeActivity" viewVolumeActivity (HTML, volume)
 
   , jsRoute "viewSlot" viewSlot (HTML, (Just volume, slot))
   , jsRoute "viewSlotEdit" viewContainerEdit (Just volume, container)
@@ -107,6 +108,7 @@ jsRoutes = mconcat
   , jsRoute "postVolumeFunding" postVolumeFunding (volume, funder)
   , jsRoute "postVolumeLinks" postVolumeLinks (JSON, volume)
   , jsRoute "deleteVolumeFunder" deleteVolumeFunder (volume, funder)
+  , jsRoute "getVolumeActivity" viewVolumeActivity (JSON, volume)
 
   , jsRoute "postSearch" postSearch (JSON)
   , jsRoute "getFunders" queryFunder ()
@@ -147,7 +149,7 @@ jsRoutes = mconcat
   , jsRoute "deleteTag" deleteTag (JSON, slot, TagId False tag)
   , jsRoute "deleteKeyword" deleteTag (JSON, slot, TagId True tag)
   , jsRoute "getTopTags" queryTags Nothing
-  , jsRoute "getSiteAudit" viewSiteAudit (JSON)
+  , jsRoute "getSiteActivity" viewSiteActivity (JSON)
   ] where
   token = Id ""
   party = Id 0

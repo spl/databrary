@@ -9,6 +9,7 @@ module Databrary.Model.Volume
   , VolumeFilter(..)
   , findVolumes
   , getVolumeAlias
+  , volumeRowJSON
   , volumeJSON
   , updateVolumeIndex
   ) where
@@ -64,12 +65,16 @@ auditVolumeDownload success vol = do
   dbExecute1' [pgSQL|$INSERT INTO audit.volume (audit_action, audit_user, audit_ip, id) VALUES
     (${if success then AuditActionOpen else AuditActionAttempt}, ${auditWho ai}, ${auditIp ai}, ${volumeId $ volumeRow vol})|]
 
+volumeRowJSON :: VolumeRow -> JSON.Object
+volumeRowJSON VolumeRow{..} = JSON.record volumeId $
+  [ "name" JSON..= volumeName
+  , "body" JSON..= volumeBody
+  ]
+
 volumeJSON :: Volume -> JSON.Object
-volumeJSON v@Volume{ volumeRow = VolumeRow{..}, ..} = JSON.record volumeId $ catMaybes
-  [ Just $ "name" JSON..= volumeName
+volumeJSON v@Volume{..} = volumeRowJSON volumeRow JSON..++ catMaybes
+  [ ("doi" JSON..=) <$> volumeDOI volumeRow
   , ("alias" JSON..=) <$> getVolumeAlias v
-  , Just $ "body" JSON..= volumeBody
-  , ("doi" JSON..=) <$> volumeDOI
   , Just $ "creation" JSON..= volumeCreation
   , Just $ "owners" JSON..= map (\(i, n) -> JSON.object ["id" JSON..= i, "name" JSON..= n]) volumeOwners
   , Just $ "permission" JSON..= volumePermission

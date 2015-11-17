@@ -133,7 +133,7 @@ app.provider('routerService', [
         audit: [
           'modelService',
           function (models) {
-            return models.siteAudit();
+            return models.siteActivity();
           }
         ]
       },

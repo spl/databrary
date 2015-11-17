@@ -1414,8 +1414,8 @@ app.factory('modelService', [
       analytic: function () {
         return router.http(router.controllers.get, {}, {cache:false});
       },
-      siteAudit: function () {
-        return router.http(router.controllers.getSiteAudit)
+      siteActivity: function () {
+        return router.http(router.controllers.getSiteActivity)
           .then(function (res) {
             var r = res.data;
             var a = r.activity;

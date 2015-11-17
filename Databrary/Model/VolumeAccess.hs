@@ -10,7 +10,7 @@ module Databrary.Model.VolumeAccess
   , volumeAccessJSON
   , volumeAccessPartyJSON
   , volumeAccessVolumeJSON
-  , lookupVolumeActivity
+  , lookupVolumeShareActivity
   ) where
 
 import Data.Int (Int64)
@@ -80,7 +80,7 @@ volumeAccessPartyJSON va@VolumeAccess{..} = volumeAccessJSON va JSON..+ ("party"
 volumeAccessVolumeJSON :: VolumeAccess -> JSON.Object
 volumeAccessVolumeJSON va@VolumeAccess{..} = volumeAccessJSON va JSON..+ ("volume" JSON..= volumeJSON volumeAccessVolume)
 
-lookupVolumeActivity :: (MonadDB c m, MonadHasIdentity c m) => Int -> m [(Timestamp, Volume)]
-lookupVolumeActivity limit = do
+lookupVolumeShareActivity :: (MonadDB c m, MonadHasIdentity c m) => Int -> m [(Timestamp, Volume)]
+lookupVolumeShareActivity limit = do
   ident :: Identity <- peek
   dbQuery $(selectQuery (selectVolumeActivity 'ident) "$WHERE audit.audit_action = 'add' AND audit.party = 0 AND audit.children > 'NONE' ORDER BY audit.audit_time DESC LIMIT ${fromIntegral limit :: Int64}")
