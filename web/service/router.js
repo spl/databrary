@@ -130,7 +130,7 @@ app.provider('routerService', [
             return models.Tag.top();
           }
         ],
-        audit: [
+        activity: [
           'modelService',
           function (models) {
             return models.siteActivity();
@@ -352,8 +352,25 @@ app.provider('routerService', [
       templateUrl: 'volume/csv.html',
       resolve: {
         volume: [
-          'pageService', function(page) {
+          'pageService', function (page) {
             return page.models.Volume.get(page.$route.current.params.id);
+          }
+        ],
+      }
+    });
+
+    routes.volumeActivity = makeRoute(controllers.viewVolumeActivity, ['id'], {
+      controller: 'volume/activity',
+      templateUrl: 'volume/activity.html',
+      resolve: {
+        volume: [
+          'pageService', function (page) {
+            return page.models.Volume.get(page.$route.current.params.id).then(function (v) {
+              return v.activity().then(function (a) {
+                v.activity = a;
+                return v;
+              });
+            });
           }
         ],
       }

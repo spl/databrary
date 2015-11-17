@@ -1,0 +1,51 @@
+<ol>
+  <li ng-repeat="act in ::activity" ng-init="party=act.user">
+    {{act.time | date}}
+    <portrait></portrait>
+    {{act.action}}
+
+    <dl ng-if="::!!act.volume">
+      <dt ng-if="::act.volume.name || act.old.name" message="volume.name"></dt>
+      <dd ng-if="::act.volume.name || act.old.name">
+        {{::act.old.name}} &rarr; 
+        {{::act.volume.name}}
+      </dd>
+      <dt ng-if="::act.volume.alias || act.old.alias" message="volume.alias"></dt>
+      <dd ng-if="::act.volume.alias || act.old.alias">
+        {{::act.old.alias}} &rarr; 
+        {{::act.volume.alias}}
+      </dd>
+      <dt ng-if="::act.volume.body || act.old.body" message="volume.body"></dt>
+      <dd ng-if="::act.volume.body || act.old.body">
+        <div ng-bind-html="::act.old.body | format"></div>
+        &darr; 
+        <div ng-bind-html="::act.volume.body | format"></div>
+      </dd>
+    </dl>
+
+    <dl ng-if="::!!act.access">
+      <dt>Access</dt>
+      <dd>
+        <a ng-href="{{::act.access.party.route()}}" class="permission-auth-username" ng-bind="::act.access.party.name"></a><wbr>
+        <span class="permission-auth-email" ng-if="::act.access.party.email" ng-bind="::act.access.party.email"></span>
+      </dd>
+      <dt ng-if="::act.access.individual || act.old.individual">Level</dt>
+      <dd>
+        <span ng-init="name=page.constants.permission[act.old.individual]" ng-if="::act.old.individual">
+          <span class="icon user-access" ng-class="::name"></span> 
+          <span ng-bind="::'access.edit.'+name+'.title' | message:act.access.party.name"></span>
+        </span> &rarr;
+        <span ng-init="name=page.constants.permission[act.access.individual]" ng-if="::act.access.individual">
+          <span class="icon user-access" ng-class="::name"></span> 
+          <span ng-bind="::'access.edit.'+name+'.title' | message:act.access.party.name"></span>
+        </span>
+      </dd>
+      <dt ng-if="::act.access.children || act.old.children">Extend</dt>
+      <dd ng-if="::act.access.children || act.old.children">
+        <span class="icon" ng-class="::act.old.children ? 'network' : ''"></span> &rarr;
+        <span class="icon" ng-class="::act.access.children ? 'network' : ''"></span>
+      </dd>
+    </dl>
+
+  </li>
+</ol>

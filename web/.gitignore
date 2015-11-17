@@ -33,6 +33,7 @@
 /service/styles.js
 /service/tooltip.js
 /service/upload.js
+/site/activity.js
 /site/errors.js
 /site/inputAge.js
 /site/inputCompleter.js
@@ -42,6 +43,7 @@
 /site/tags.js
 /site/tooltip.js
 /volume/accessSearch.js
+/volume/activity.js
 /volume/comments.js
 /volume/csv.js
 /volume/design.js

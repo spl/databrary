@@ -646,6 +646,13 @@ app.factory('modelService', [
         });
     };
 
+    Volume.prototype.activity = function () {
+      return router.http(router.controllers.getVolumeActivity, this.id)
+        .then(function (res) {
+          return makeActivity(res.data);
+        });
+    };
+
     ///////////////////////////////// Container/Slot
     // This does not handle cross-volume inclusions
 
@@ -1391,6 +1398,17 @@ app.factory('modelService', [
     };
 
     /////////////////////////////////
+    
+    function makeActivity (a) {
+      for (var i = 0; i < a.length; i++) {
+        a[i].user = partyMake(a[i].user);
+        if ('authorize' in a[i])
+          a[i].authorize.party = partyMake(a[i].authorize.party);
+        if ('access' in a[i])
+          a[i].access.party = partyMake(a[i].access.party);
+      }
+      return a;
+    }
 
     return {
       Party: Party,
