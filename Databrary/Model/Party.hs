@@ -16,6 +16,7 @@ module Databrary.Model.Party
   , removeParty
   , auditAccountLogin
   , recentAccountLogins
+  , partyRowJSON
   , partyJSON
   , PartyFilter(..)
   , findParties
@@ -73,14 +74,18 @@ partyEmail :: Party -> Maybe BS.ByteString
 partyEmail p =
   guard (partyPermission p >= emailPermission) >> accountEmail <$> partyAccount p
 
-partyJSON :: Party -> JSON.Object
-partyJSON p@Party{ partyRow = PartyRow{..}, ..} = JSON.record partyId $ catMaybes
+partyRowJSON :: PartyRow -> JSON.Object
+partyRowJSON PartyRow{..} = JSON.record partyId $ catMaybes
   [ Just $ "sortname" JSON..= partySortName
   , ("prename" JSON..=) <$> partyPreName
   , ("orcid" JSON..=) . show <$> partyORCID
   , ("affiliation" JSON..=) <$> partyAffiliation
   , ("url" JSON..=) <$> partyURL
-  , "institution" JSON..= True <? isNothing partyAccount
+  ]
+
+partyJSON :: Party -> JSON.Object
+partyJSON p@Party{..} = partyRowJSON partyRow JSON..++ catMaybes
+  [ "institution" JSON..= True <? isNothing partyAccount
   , ("email" JSON..=) <$> partyEmail p
   , "permission" JSON..= partyPermission <? (partyPermission > PermissionREAD)
   ]

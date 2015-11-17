@@ -49,7 +49,7 @@ selectPartyVolumeAccess :: TH.Name -- ^ 'Party'
   -> TH.Name -- ^ 'Identity'
   -> Selector -- ^ 'VolumeAccess'
 selectPartyVolumeAccess p ident = selectJoin '($)
-  [ selectMap (`TH.AppE` TH.VarE p) $ volumeAccessRow
+  [ selectMap (`TH.AppE` TH.VarE p) volumeAccessRow
   , joinOn ("volume_access.volume = volume.id AND volume_access.party = ${partyId $ partyRow " ++ nameRef p ++ "}")
     $ selectVolume ident
   ]

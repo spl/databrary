@@ -204,6 +204,7 @@ SELECT audit.CREATE_TABLE ('volume');
 ALTER TABLE audit."volume" ALTER "name" DROP NOT NULL;
 CREATE INDEX "volume_creation_idx" ON audit."volume" ("id") WHERE "audit_action" = 'add';
 COMMENT ON INDEX audit."volume_creation_idx" IS 'Allow efficient retrieval of volume creation information, specifically date.';
+CREATE INDEX "volume_activity_idx" ON audit."volume" ("id") WHERE "audit_action" >= 'add';
 
 CREATE FUNCTION "volume_creation" ("volume" integer) RETURNS timestamptz LANGUAGE sql STABLE STRICT AS
 	$$ SELECT max("audit_time") FROM audit."volume" WHERE "id" = $1 AND "audit_action" = 'add' $$;
@@ -221,6 +222,7 @@ COMMENT ON TABLE "volume_access" IS 'Permissions over volumes assigned to users.
 
 SELECT audit.CREATE_TABLE ('volume_access');
 CREATE INDEX "volume_share_activity_idx" ON audit."volume_access" ("audit_time" DESC) WHERE "audit_action" = 'add' AND "party" = 0 AND "children" > 'NONE';
+CREATE INDEX "volume_access_activity_idx" ON audit."volume_access" ("volume") WHERE "audit_action" >= 'add';
 
 CREATE VIEW "volume_access_view" ("volume", "party", "access") AS
 	SELECT volume, party, individual FROM volume_access
