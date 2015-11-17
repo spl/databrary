@@ -275,6 +275,23 @@ app.provider('routerService', [
       reloadOnSearch: false,
     });
 
+    routes.partyActivity = makeRoute(controllers.viewPartyActivity, ['id'], {
+      controller: 'party/activity',
+      templateUrl: 'party/activity.html',
+      resolve: {
+        party: [
+          'pageService', function (page) {
+            return page.models.Party.get(page.$route.current.params.id).then(function (p) {
+              return p.activity().then(function (a) {
+                p.activity = a;
+                return p;
+              });
+            });
+          }
+        ],
+      }
+    });
+
     routes.partySearch = makeRoute(controllers.viewPartySearch, [], {
       controller: 'party/search',
       templateUrl: 'party/search.html',

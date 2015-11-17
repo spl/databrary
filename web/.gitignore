@@ -21,6 +21,7 @@
 /directive/setContents.js
 /directive/tooltip.js
 /filter/message.js
+/party/activity.js
 /party/authSearch.js
 /party/comments.js
 /party/data.js

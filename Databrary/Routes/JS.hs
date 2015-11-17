@@ -4,7 +4,6 @@ module Databrary.Routes.JS
   ) where
 
 import qualified Data.ByteString.Builder as B
-import Data.Monoid (mconcat)
 
 import Databrary.Model.Id.Types
 import Databrary.Model.Segment
@@ -40,8 +39,8 @@ import Databrary.Controller.Search
 import Databrary.Controller.Activity
 import Databrary.Web.Routes
 
-jsRoutes :: B.Builder
-jsRoutes = mconcat
+jsRoutes :: [B.Builder] -- should be mconcat, but BSB bug causes hangs
+jsRoutes =
   [ jsRoute "viewRoot" viewRoot (HTML)
   , jsRoute "viewLogin" viewLogin ()
   , jsRoute "viewRegister" viewRegister ()
@@ -53,6 +52,7 @@ jsRoutes = mconcat
   , jsRoute "viewPartyEdit" viewPartyEdit (TargetParty party)
   , jsRoute "viewPartySearch" queryParties (HTML)
   , jsRoute "partyAvatar" viewAvatar (party)
+  , jsRoute "viewPartyActivity" viewPartyActivity (HTML, TargetParty party)
 
   , jsRoute "viewVolume" viewVolume (HTML, volume)
   , jsRoute "viewVolumeCreate" viewVolumeCreate ()
@@ -93,6 +93,7 @@ jsRoutes = mconcat
   , jsRoute "getProfile" viewParty (JSON, TargetProfile)
   , jsRoute "postParty" postParty (JSON, TargetParty party)
   , jsRoute "getParties" queryParties (JSON)
+  , jsRoute "getPartyActivity" viewPartyActivity (JSON, TargetParty party)
 
   , jsRoute "postAuthorizeApply" postAuthorize (JSON, TargetParty party, AuthorizeTarget True party)
   , jsRoute "postAuthorize" postAuthorize (JSON, TargetParty party, AuthorizeTarget False party)

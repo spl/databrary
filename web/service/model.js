@@ -302,6 +302,13 @@ app.factory('modelService', [
         });
     };
 
+    Party.prototype.activity = function () {
+      return router.http(router.controllers.getPartyActivity, this.id)
+        .then(function (res) {
+          return makeActivity(res.data);
+        });
+    };
+
     ///////////////////////////////// Login
 
     function Login(init) {

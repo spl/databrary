@@ -1,6 +1,9 @@
 {-# LANGUAGE TemplateHaskell #-}
 module Databrary.Model.Activity.SQL
-  ( selectActivityVolume
+  ( selectActivityParty
+  , selectActivityAccount
+  , selectActivityAuthorize
+  , selectActivityVolume
   , selectActivityAccess
   , activityQual
   ) where
@@ -11,8 +14,10 @@ import qualified Language.Haskell.TH as TH
 import Databrary.Model.SQL.Select
 import Databrary.Model.Time
 import Databrary.Model.Audit.Types
+import Databrary.Model.Audit.SQL
 import Databrary.Model.Party.Types
 import Databrary.Model.Party.SQL
+import Databrary.Model.Authorize.SQL
 import Databrary.Model.Volume.SQL
 import Databrary.Model.VolumeAccess.SQL
 import Databrary.Model.Activity.Types
@@ -34,6 +39,18 @@ targetActivitySelector t Selector{ selectOutput = o, selectSource = ts, selectJo
       (selectPartyRow `fromAlias` "audit_party")
     ]
 targetActivitySelector t Selector{ selectSource = ts } = error $ "targetActivitySelector " ++ t ++ ": " ++ ts
+
+selectActivityParty :: Selector
+selectActivityParty = targetActivitySelector "party" $
+  selectMap (TH.ConE 'ActivityParty `TH.AppE`) selectPartyRow
+
+selectActivityAccount :: Selector
+selectActivityAccount = targetActivitySelector "account" $
+  selectColumns 'ActivityAccount "account" ["id", "email", "password"]
+
+selectActivityAuthorize :: TH.Name -> TH.Name -> Selector
+selectActivityAuthorize p ident = targetActivitySelector "authorize" $
+  selectMap (TH.ConE 'ActivityAuthorize `TH.AppE`) (selectAuthorizeChild p ident)
 
 selectActivityVolume :: Selector
 selectActivityVolume = targetActivitySelector "volume" $

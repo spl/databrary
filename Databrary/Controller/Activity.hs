@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Databrary.Controller.Activity
   ( viewSiteActivity
+  , viewPartyActivity
   , viewVolumeActivity
   ) where
 
@@ -26,6 +27,7 @@ import Databrary.HTTP.Path.Parser
 import Databrary.Action
 import Databrary.Controller.Paths
 import Databrary.Controller.Angular
+import Databrary.Controller.Party
 import Databrary.Controller.Volume
 import Databrary.View.Activity
 
@@ -44,6 +46,14 @@ viewSiteActivity = action GET (pathAPI </< "activity") $ \api -> withAuth $ do
   ent (t, j) = JSON.object ["time" JSON..= t, j]
   fo GT = LT
   fo _ = GT
+
+viewPartyActivity :: ActionRoute (API, PartyTarget)
+viewPartyActivity = action GET (pathAPI </> pathPartyTarget </< "activity") $ \(api, p) -> withAuth $ do
+  when (api == HTML) angular
+  v <- getParty (Just PermissionADMIN) p
+  a <- lookupPartyActivity v
+  return $ case api of
+    JSON -> okResponse [] $ JSON.toJSON $ map activityJSON a
 
 viewVolumeActivity :: ActionRoute (API, Id Volume)
 viewVolumeActivity = action GET (pathAPI </> pathId </< "activity") $ \(api, vi) -> withAuth $ do

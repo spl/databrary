@@ -4,6 +4,63 @@
     <portrait></portrait>
     {{act.action}}
 
+    <dl ng-if="::!!act.party">
+      <dt ng-if="::act.party.prename || act.old.prename" message="prename"></dt>
+      <dd ng-if="::act.party.prename || act.old.prename">
+        {{::act.old.prename}} &rarr; 
+        {{::act.party.prename}}
+      </dd>
+      <dt ng-if="::act.party.sortname || act.old.sortname" message="sortname"></dt>
+      <dd ng-if="::act.party.sortname || act.old.sortname">
+        {{::act.old.sortname}} &rarr; 
+        {{::act.party.sortname}}
+      </dd>
+      <dt ng-if="::act.party.orcid || act.old.orcid" message="orcid"></dt>
+      <dd ng-if="::act.party.orcid || act.old.orcid">
+        {{::act.old.orcid}} &rarr; 
+        {{::act.party.orcid}}
+      </dd>
+      <dt ng-if="::act.party.affiliation || act.old.affiliation" message="affiliation"></dt>
+      <dd ng-if="::act.party.affiliation || act.old.affiliation">
+        {{::act.old.affiliation}} &rarr; 
+        {{::act.party.affiliation}}
+      </dd>
+      <dt ng-if="::act.party.url || act.old.url" message="party.edit.url.title"></dt>
+      <dd ng-if="::act.party.url || act.old.url">
+        {{::act.old.url}} &rarr; 
+        {{::act.party.url}}
+      </dd>
+    </dl>
+
+    <dl ng-if="::!!act.account">
+      <dt>Login</dt>
+      <dd ng-bind="::act.ip"></dd>
+      <dt ng-if="::act.account.email || act.old.email" message="email"></dt>
+      <dd ng-if="::act.account.email || act.old.email">
+        {{::act.old.email}} &rarr; 
+        {{::act.account.email}}
+      </dd>
+      <dt ng-if="::act.account.password !== act.old.password">Password</dt>
+    </dl>
+
+    <dl ng-if="::!!act.authorize">
+      <dt>Authorization</dt>
+      <dd>
+        <a ng-href="{{::act.authorize.party.route()}}" class="permission-auth-username" ng-bind="::act.authorize.party.name"></a><wbr>
+        <span class="permission-auth-email" ng-if="::act.authorize.party.email" ng-bind="::act.authorize.party.email"></span>
+      </dd>
+      <dt ng-if="::act.authorize.site || act.old.site" message="auth.site.edit"></dt>
+      <dd ng-if="::act.authorize.site || act.old.site">
+        <span ng-init="name=page.constants.permission[act.old.site]" ng-if="::act.old.site" message="auth.site.{{::name}}.title"></span> &rarr; 
+        <span ng-init="name=page.constants.permission[act.authorize.site]" ng-if="::act.authorize.site" message="auth.site.{{::name}}.title"></span>
+      </dd>
+      <dt ng-if="::act.authorize.member || act.old.member" message="auth.member.edit"></dt>
+      <dd ng-if="::act.authorize.member || act.old.member">
+        <span ng-init="name=page.constants.permission[act.old.member]" ng-if="::act.old.member" message="auth.member.{{::name}}.title"></span> &rarr; 
+        <span ng-init="name=page.constants.permission[act.authorize.member]" ng-if="::act.authorize.member" message="auth.member.{{::name}}.title"></span>
+      </dd>
+    </dl>
+
     <dl ng-if="::!!act.volume">
       <dt ng-if="::act.volume.name || act.old.name" message="volume.name"></dt>
       <dd ng-if="::act.volume.name || act.old.name">
@@ -30,7 +87,7 @@
         <span class="permission-auth-email" ng-if="::act.access.party.email" ng-bind="::act.access.party.email"></span>
       </dd>
       <dt ng-if="::act.access.individual || act.old.individual">Level</dt>
-      <dd>
+      <dd ng-if="::act.access.individual || act.old.individual">
         <span ng-init="name=page.constants.permission[act.old.individual]" ng-if="::act.old.individual">
           <span class="icon user-access" ng-class="::name"></span> 
           <span ng-bind="::'access.edit.'+name+'.title' | message:act.access.party.name"></span>

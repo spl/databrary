@@ -73,6 +73,7 @@ INSERT INTO "party" VALUES (-1, 'Everybody'); -- NOBODY
 INSERT INTO "party" VALUES (0, 'Databrary'); -- ROOT
 
 SELECT audit.CREATE_TABLE ('party');
+CREATE INDEX "party_activity_idx" ON audit."party" ("id") WHERE "audit_action" >= 'add';
 
 
 CREATE TABLE "account" (
@@ -88,6 +89,7 @@ COMMENT ON TABLE "account" IS 'Login information for parties associated with reg
 SELECT audit.CREATE_TABLE ('account');
 CREATE INDEX "audit_login_idx" ON audit."account" ("id", "audit_time") WHERE "audit_action" IN ('attempt', 'open');
 COMMENT ON INDEX audit."audit_login_idx" IS 'Allow efficient determination of recent login attempts for security.';
+CREATE INDEX "account_activity_idx" ON audit."account" ("id");
 
 ----------------------------------------------------------- permissions
 
@@ -148,6 +150,7 @@ COMMENT ON COLUMN "authorize"."member" IS 'Level of permission granted to the ch
 
 SELECT audit.CREATE_TABLE ('authorize');
 CREATE INDEX "authorize_activity_idx" ON audit."authorize" ("audit_time" DESC) WHERE "audit_action" IN ('add', 'change') AND "site" > 'NONE';
+CREATE INDEX "authorize_parent_activity_idx" ON audit."authorize" ("parent") WHERE "audit_action" >= 'add';
 
 CREATE MATERIALIZED VIEW "authorize_inherit" AS
 	WITH RECURSIVE aa AS (

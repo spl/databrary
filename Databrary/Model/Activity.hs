@@ -1,9 +1,11 @@
 {-# LANGUAGE OverloadedStrings, TemplateHaskell, RecordWildCards #-}
 module Databrary.Model.Activity
-  ( lookupVolumeActivity
+  ( lookupPartyActivity
+  , lookupVolumeActivity
   , activityJSON
   ) where
 
+import qualified Data.ByteString.Char8 as BSC
 import Data.Function (on)
 import qualified Data.HashMap.Strict as HM
 import qualified Data.Map as Map
@@ -45,6 +47,27 @@ chainPrev f = scan Map.empty where
       _ -> (activityPrev a, m)
   scan _ [] = []
 
+maskPasswords :: [Activity] -> [Activity]
+maskPasswords = mp HM.empty (0 :: Integer) where
+  -- this could be done much more simply since passwords are never going to repeat in practice
+  mp m c (a@Activity{ activityTarget = at@ActivityAccount{ activityAccountPassword = Just p } }:l)
+    | Just i <- HM.lookup p m = f i : mp m c l
+    | otherwise = f c : mp (HM.insert p c m) (succ c) l
+    where f i = a{ activityTarget = at{ activityAccountPassword = Just $ BSC.pack $ show i } }
+  mp m c (a:l) = a : mp m c l
+  mp _ _ [] = []
+
+lookupPartyActivity :: (MonadDB c m, MonadHasIdentity c m) => Party -> m [Activity]
+lookupPartyActivity p = do
+  ident <- peek
+  pa <- chainPrev (const ())
+    <$> dbQuery $(selectQuery selectActivityParty $ "!WHERE party.id = ${partyId $ partyRow p} AND " ++ activityQual)
+  ca <- chainPrev (const ()) . maskPasswords
+    <$> dbQuery $(selectQuery selectActivityAccount $ "!WHERE account.id = ${partyId $ partyRow p}")
+  aa <- chainPrev (partyId . partyRow . authorizeChild . authorization . activityAuthorize)
+    <$> dbQuery $(selectQuery (selectActivityAuthorize 'p 'ident) $ "WHERE " ++ activityQual)
+  return $ mergeActivities [pa, ca, aa]
+
 lookupVolumeActivity :: (MonadDB c m, MonadHasIdentity c m) => Volume -> m [Activity]
 lookupVolumeActivity vol = do
   ident <- peek
@@ -59,6 +82,11 @@ activityTargetJSON :: ActivityTarget -> (T.Text, [JSON.Pair], JSON.Object)
 activityTargetJSON (ActivityParty p) =
   ("party", [],
     partyRowJSON p)
+activityTargetJSON ActivityAccount{..} =
+  ("account", [], JSON.object
+    [ "email" JSON..= activityAccountEmail
+    , "password" JSON..= activityAccountPassword
+    ])
 activityTargetJSON (ActivityAuthorize a) =
   ("authorize", ["party" JSON..= partyJSON (authorizeChild $ authorization a)],
     authorizeJSON a)

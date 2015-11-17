@@ -65,6 +65,7 @@ routeMap = fromRouteList
   , route deleteAuthorize
   , route postAuthorizeNotFound
   , route viewAvatar
+  , route viewPartyActivity
   , route createParty
   , route deleteParty
   , route queryParties
