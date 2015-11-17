@@ -4,7 +4,6 @@ module Databrary.Model.Activity
   , activityJSON
   ) where
 
-import qualified Data.Foldable as Fold
 import Data.Function (on)
 import qualified Data.HashMap.Strict as HM
 import qualified Data.Map as Map
@@ -76,11 +75,16 @@ activityJSON Activity{..} = JSON.object $ catMaybes
   [ Just $ "time" JSON..= activityWhen
   , Just $ "action" JSON..= show activityAction
   , Just $ "user" JSON..= partyRowJSON activityUser
-  , Just $ t JSON..= new'
-  , HM.null old' ?!> "old" JSON..= old'
+  , Just $ typ JSON..= (new JSON..++ key)
+  , HM.null old ?!> "old" JSON..= old
   ] where
-  (t, key, new) = activityTargetJSON activityTarget
-  new' = HM.difference new int JSON..++ key
-  old' = HM.difference old int
-  (_, _, old) = Fold.foldMap activityTargetJSON activityPrev
-  int = HM.filter id $ HM.intersectionWith (==) new old
+  (new, old)
+    | activityAction == AuditActionRemove
+      = (HM.empty, targ)
+    | Just p <- activityPrev
+    , (_, _, prev) <- activityTargetJSON p
+    , int <- HM.filter id $ HM.intersectionWith (==) targ prev
+      = (HM.difference targ int, HM.difference prev int)
+    | otherwise
+      = (targ, HM.empty)
+  (typ, key, targ) = activityTargetJSON activityTarget
