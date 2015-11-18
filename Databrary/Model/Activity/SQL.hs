@@ -5,6 +5,7 @@ module Databrary.Model.Activity.SQL
   , selectActivityAuthorize
   , selectActivityVolume
   , selectActivityAccess
+  , selectActivityContainer
   , activityQual
   ) where
 
@@ -19,6 +20,7 @@ import Databrary.Model.Party.SQL
 import Databrary.Model.Authorize.SQL
 import Databrary.Model.Volume.SQL
 import Databrary.Model.VolumeAccess.SQL
+import Databrary.Model.Container.SQL
 import Databrary.Model.Activity.Types
 
 delim :: String -> Bool
@@ -58,6 +60,10 @@ selectActivityVolume = targetActivitySelector "volume" $
 selectActivityAccess :: TH.Name -> TH.Name -> Selector
 selectActivityAccess vol ident = targetActivitySelector "volume_access" $
   selectMap (TH.ConE 'ActivityAccess `TH.AppE`) (selectVolumeAccess vol ident)
+
+selectActivityContainer :: Selector
+selectActivityContainer = targetActivitySelector "container" $
+  selectMap (TH.ConE 'ActivityContainer `TH.AppE`) selectContainerRow
 
 activityQual :: String
 activityQual = "audit_action >= 'add' ORDER BY audit_time"

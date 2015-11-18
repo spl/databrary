@@ -104,5 +104,18 @@
       </dd>
     </dl>
 
+    <dl ng-if="::!!act.container">
+      <dt ng-if="::act.container.name || act.old.name">Name</dt>
+      <dd ng-if="::act.container.name || act.old.name">
+        {{::act.old.name}} &rarr; 
+        {{::act.container.name}}
+      </dd>
+      <dt ng-if="::act.container.date || act.old.date">Test date</dt>
+      <dd ng-if="::act.container.date || act.old.date">
+        {{::act.old.date}} &rarr; 
+        {{::act.container.date}}
+      </dd>
+    </dl>
+
   </li>
 </ol>

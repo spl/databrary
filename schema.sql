@@ -89,7 +89,7 @@ COMMENT ON TABLE "account" IS 'Login information for parties associated with reg
 SELECT audit.CREATE_TABLE ('account');
 CREATE INDEX "audit_login_idx" ON audit."account" ("id", "audit_time") WHERE "audit_action" IN ('attempt', 'open');
 COMMENT ON INDEX audit."audit_login_idx" IS 'Allow efficient determination of recent login attempts for security.';
-CREATE INDEX "account_activity_idx" ON audit."account" ("id");
+CREATE INDEX "account_id_idx" ON audit."account" ("id");
 
 ----------------------------------------------------------- permissions
 
@@ -376,6 +376,7 @@ CREATE INDEX "container_top_idx" ON "container" ("volume") WHERE "top";
 COMMENT ON TABLE "container" IS 'Organizational unit within volume containing related files (with common annotations), often corresponding to an individual data session (single visit/acquisition/participant/group/day).';
 
 SELECT audit.CREATE_TABLE ('container');
+CREATE INDEX "container_activity_idx" ON audit."container" ("id") WHERE "audit_action" >= 'add';
 
 CREATE FUNCTION "container_top_create" () RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN
 	INSERT INTO container (volume, top) VALUES (NEW.id, true);

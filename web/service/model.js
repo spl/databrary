@@ -922,6 +922,13 @@ app.factory('modelService', [
       return router.slotThumb([this.volume.id, this.container.id, this.segment.format(), size]);
     };
 
+    Container.prototype.activity = function () {
+      return router.http(router.controllers.getContainerActivity, this.id)
+        .then(function (res) {
+          return makeActivity(res.data);
+        });
+    };
+
     ///////////////////////////////// Record
 
     function Record(volume, init) {

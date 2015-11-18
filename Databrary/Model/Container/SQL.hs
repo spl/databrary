@@ -1,6 +1,7 @@
 {-# LANGUAGE TemplateHaskell, OverloadedStrings #-}
 module Databrary.Model.Container.SQL
-  ( selectVolumeContainer
+  ( selectContainerRow
+  , selectVolumeContainer
   , selectContainer
   , insertContainer
   , updateContainer

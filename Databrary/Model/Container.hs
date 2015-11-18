@@ -11,6 +11,7 @@ module Databrary.Model.Container
   , removeContainer
   , getContainerDate
   , formatContainerDate
+  , containerRowJSON
   , containerJSON
   ) where
 
@@ -89,11 +90,15 @@ getContainerDate c = maskDateIf (dataPermission c == PermissionNONE) <$> contain
 formatContainerDate :: Container -> Maybe String
 formatContainerDate c = formatTime defaultTimeLocale "%Y-%m-%d" <$> getContainerDate c
 
-containerJSON :: Container -> JSON.Object
-containerJSON c@Container{ containerRow = ContainerRow{..}, ..} = JSON.record containerId $ catMaybes
+containerRowJSON :: ContainerRow -> JSON.Object
+containerRowJSON ContainerRow{..} = JSON.record containerId $ catMaybes
   [ "top" JSON..= containerTop <? containerTop
   , ("name" JSON..=) <$> containerName
-  , ("date" JSON..=) <$> formatContainerDate c
+  ]
+
+containerJSON :: Container -> JSON.Object
+containerJSON c@Container{..} = containerRowJSON containerRow JSON..++ catMaybes
+  [ ("date" JSON..=) <$> formatContainerDate c
   , ("release" JSON..=) <$> containerRelease
   ]
 

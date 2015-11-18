@@ -2,6 +2,7 @@
 module Databrary.Model.Activity
   ( lookupPartyActivity
   , lookupVolumeActivity
+  , lookupContainerActivity
   , activityJSON
   ) where
 
@@ -25,6 +26,7 @@ import Databrary.Model.Volume
 import Databrary.Model.VolumeAccess
 import Databrary.Model.Party
 import Databrary.Model.Authorize
+import Databrary.Model.Container
 import Databrary.Model.Activity.Types
 import Databrary.Model.Activity.SQL
 
@@ -63,7 +65,7 @@ lookupPartyActivity p = do
   pa <- chainPrev (const ())
     <$> dbQuery $(selectQuery selectActivityParty $ "!WHERE party.id = ${partyId $ partyRow p} AND " ++ activityQual)
   ca <- chainPrev (const ()) . maskPasswords
-    <$> dbQuery $(selectQuery selectActivityAccount $ "!WHERE account.id = ${partyId $ partyRow p}")
+    <$> dbQuery $(selectQuery selectActivityAccount $ "!WHERE account.id = ${partyId $ partyRow p}") -- unqual: include logins
   aa <- chainPrev (partyId . partyRow . authorizeChild . authorization . activityAuthorize)
     <$> dbQuery $(selectQuery (selectActivityAuthorize 'p 'ident) $ "WHERE " ++ activityQual)
   return $ mergeActivities [pa, ca, aa]
@@ -76,6 +78,12 @@ lookupVolumeActivity vol = do
   aa <- chainPrev (partyId . partyRow . volumeAccessParty . activityAccess)
     <$> dbQuery $(selectQuery (selectActivityAccess 'vol 'ident) $ "WHERE " ++ activityQual)
   return $ mergeActivities [va, aa]
+
+lookupContainerActivity :: (MonadDB c m) => Container -> m [Activity]
+lookupContainerActivity cont = do
+  ca <- chainPrev (const ())
+    <$> dbQuery $(selectQuery selectActivityContainer $ "!WHERE container.id = ${containerId $ containerRow cont} AND " ++ activityQual)
+  return $ mergeActivities [ca]
 
 -- EDIT permission assumed for all
 activityTargetJSON :: ActivityTarget -> (T.Text, [JSON.Pair], JSON.Object)
@@ -97,6 +105,10 @@ activityTargetJSON (ActivityVolume v) =
 activityTargetJSON (ActivityAccess a) =
   ("access", ["party" JSON..= partyJSON (volumeAccessParty a)],
     volumeAccessJSON a)
+activityTargetJSON (ActivityContainer c) =
+  ("container", [],
+    containerRowJSON c JSON..+?
+      (("date" JSON..=) <$> containerDate c))
 
 activityJSON :: Activity -> JSON.Object
 activityJSON Activity{..} = JSON.object $ catMaybes

@@ -409,6 +409,25 @@ app.provider('routerService', [
       }
     });
 
+    routes.slotActivity = makeRoute(controllers.viewSlotActivity, ['vid', 'id'], {
+      controller: 'volume/slotActivity',
+      templateUrl: 'volume/slotActivity.html',
+      resolve: {
+        slot: [
+          'pageService', function (page) {
+            return page.models.Volume.get(page.$route.current.params.vid).then(function (v) {
+              return v.getSlot(page.$route.current.params.id).then(function (s) {
+                return s.activity().then(function (a) {
+                  s.activity = a;
+                  return s;
+                });
+              });
+            });
+          }
+        ],
+      }
+    });
+
     function slotRoute(edit) { return {
       controller: 'volume/slot',
       templateUrl: 'volume/slot.html',

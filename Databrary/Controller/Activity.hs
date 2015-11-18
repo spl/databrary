@@ -3,6 +3,7 @@ module Databrary.Controller.Activity
   ( viewSiteActivity
   , viewPartyActivity
   , viewVolumeActivity
+  , viewContainerActivity
   ) where
 
 import Control.Arrow (second)
@@ -10,6 +11,7 @@ import Control.Monad (when)
 import Data.Function (on)
 import Data.IORef (readIORef)
 import Data.List (nubBy)
+import Data.Maybe (isJust)
 import Data.Ord (comparing)
 
 import Databrary.Ops
@@ -22,6 +24,7 @@ import Databrary.Model.Party
 import Databrary.Model.Authorize
 import Databrary.Model.Volume
 import Databrary.Model.VolumeAccess
+import Databrary.Model.Slot
 import Databrary.Model.Activity
 import Databrary.HTTP.Path.Parser
 import Databrary.Action
@@ -29,6 +32,7 @@ import Databrary.Controller.Paths
 import Databrary.Controller.Angular
 import Databrary.Controller.Party
 import Databrary.Controller.Volume
+import Databrary.Controller.Container
 import Databrary.View.Activity
 
 viewSiteActivity :: ActionRoute API
@@ -60,5 +64,13 @@ viewVolumeActivity = action GET (pathAPI </> pathId </< "activity") $ \(api, vi)
   when (api == HTML) angular
   v <- getVolume PermissionEDIT vi
   a <- lookupVolumeActivity v
+  return $ case api of
+    JSON -> okResponse [] $ JSON.toJSON $ map activityJSON a
+
+viewContainerActivity :: ActionRoute (API, (Maybe (Id Volume), Id Slot))
+viewContainerActivity = action GET (pathAPI </> pathMaybe pathId </> pathSlotId </< "activity") $ \(api, (vi, ci)) -> withAuth $ do
+  when (api == HTML && isJust vi) angular
+  v <- getContainer PermissionEDIT vi ci True
+  a <- lookupContainerActivity v
   return $ case api of
     JSON -> okResponse [] $ JSON.toJSON $ map activityJSON a

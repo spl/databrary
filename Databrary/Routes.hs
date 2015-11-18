@@ -94,6 +94,7 @@ routeMap = fromRouteList
   , route viewContainerEdit
   , route postContainer
   , route deleteContainer
+  , route viewContainerActivity
   , route zipContainer
   , route thumbSlot
 

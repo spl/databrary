@@ -64,6 +64,7 @@ jsRoutes =
 
   , jsRoute "viewSlot" viewSlot (HTML, (Just volume, slot))
   , jsRoute "viewSlotEdit" viewContainerEdit (Just volume, container)
+  , jsRoute "viewSlotActivity" viewContainerActivity (HTML, (Just volume, container))
   , jsRoute "thumbSlot" thumbSlot (Just volume, slot)
 
   , jsRoute "viewRecord" viewRecord (HTML, record)
@@ -119,6 +120,7 @@ jsRoutes =
   , jsRoute "postContainer" postContainer (JSON, container)
   , jsRoute "deleteContainer" deleteContainer (JSON, container)
   , jsRoute "createContainer" createContainer (JSON, volume)
+  , jsRoute "getContainerActivity" viewContainerActivity (JSON, (Nothing, container))
 
   , jsRoute "getRecord" viewRecord (JSON, record)
   , jsRoute "createRecord" createRecord (JSON, volume)
