@@ -5,7 +5,6 @@ module Databrary.Model.Activity.Types
 
 import qualified Data.ByteString as BS
 
-import Databrary.Model.Time
 import Databrary.Model.Audit.Types
 import Databrary.Model.Id.Types
 import Databrary.Model.Release.Types
@@ -45,10 +44,9 @@ data ActivityTarget
     }
 
 data Activity = Activity
-  { activityWhen :: !Timestamp
-  , activityAction :: !AuditAction
+  { activityAudit :: !Audit
   , activityUser :: !PartyRow
   , activityTarget :: !ActivityTarget
-  , activityPrev :: !(Maybe ActivityTarget)
+  , activityPrev :: Maybe ActivityTarget
   }
 

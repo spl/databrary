@@ -12,7 +12,6 @@ import Data.List (stripPrefix)
 import qualified Language.Haskell.TH as TH
 
 import Databrary.Model.SQL.Select
-import Databrary.Model.Time
 import Databrary.Model.Audit.Types
 import Databrary.Model.Audit.SQL
 import Databrary.Model.Party.Types
@@ -28,13 +27,13 @@ delim (' ':_) = True
 delim (',':_) = True
 delim _ = False
 
-makeActivity :: Timestamp -> AuditAction -> ActivityTarget -> PartyRow -> Activity
-makeActivity t a x u = Activity t a u x Nothing
+makeActivity :: Audit -> ActivityTarget -> PartyRow -> Activity
+makeActivity a x u = Activity a u x Nothing
 
 targetActivitySelector :: String -> Selector -> Selector
 targetActivitySelector t Selector{ selectOutput = o, selectSource = ts, selectJoined = (',':tj) }
   | Just s <- stripPrefix t ts, delim s, ts == tj = selectJoin '($)
-    [ selector ("audit." ++ ts) $ OutputJoin False 'makeActivity [SelectColumn t "audit_time", SelectColumn t "audit_action", o]
+    [ selector ("audit." ++ ts) $ OutputJoin False 'makeActivity [selectOutput (selectAudit t), o]
     , joinOn (t ++ ".audit_user = audit_party.id")
       (selectPartyRow `fromAlias` "audit_party")
     ]

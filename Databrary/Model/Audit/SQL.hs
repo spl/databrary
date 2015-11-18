@@ -1,6 +1,7 @@
 {-# LANGUAGE TemplateHaskell, OverloadedStrings #-}
 module Databrary.Model.Audit.SQL
-  ( auditInsert
+  ( selectAudit
+  , auditInsert
   , auditDelete
   , auditUpdate
   , selectAuditActivity
@@ -9,12 +10,22 @@ module Databrary.Model.Audit.SQL
 
 import Data.List (intercalate)
 import Data.Monoid ((<>))
-import Database.PostgreSQL.Typed.Query (makePGQuery, parseQueryFlags)
 import Database.PostgreSQL.Typed.Dynamic (pgSafeLiteralString)
+import Database.PostgreSQL.Typed.Inet (PGInet)
+import Database.PostgreSQL.Typed.Query (makePGQuery, parseQueryFlags)
 import qualified Language.Haskell.TH as TH
 
 import Databrary.Model.SQL.Select
+import Databrary.Model.Time
+import Databrary.Model.Id.Types
+import Databrary.Model.Party.Types
 import Databrary.Model.Audit.Types
+
+makeAudit :: Timestamp -> Id Party -> PGInet -> AuditAction -> Audit
+makeAudit t u = Audit t . AuditIdentity u
+
+selectAudit :: String -> Selector
+selectAudit table = selectColumns 'makeAudit table ["audit_time", "audit_user", "audit_ip", "audit_action"]
 
 actionCmd :: AuditAction -> String
 actionCmd AuditActionAdd = "INSERT INTO"

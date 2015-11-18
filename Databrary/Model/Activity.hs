@@ -29,7 +29,7 @@ import Databrary.Model.Activity.Types
 import Databrary.Model.Activity.SQL
 
 orderActivity :: Activity -> Activity -> Ordering
-orderActivity = compare `on` activityWhen
+orderActivity = compare `on` auditWhen . activityAudit
 
 mergeActivity :: [Activity] -> [Activity] -> [Activity]
 mergeActivity = mergeBy $ \x y -> orderActivity x y <> LT
@@ -39,7 +39,7 @@ mergeActivities = foldr1 mergeActivity
 
 chainPrev :: Ord a => (ActivityTarget -> a) -> [Activity] -> [Activity]
 chainPrev f = scan Map.empty where
-  scan m (a@Activity{ activityAction = act, activityTarget = t }:l) = a{ activityPrev = p } : scan m' l where
+  scan m (a@Activity{ activityAudit = Audit{ auditAction = act }, activityTarget = t }:l) = a{ activityPrev = p } : scan m' l where
     (p, m') = case act of
       AuditActionAdd -> (Nothing, Map.insert (f t) t m)
       AuditActionRemove -> Map.updateLookupWithKey (\_ _ -> Nothing) (f t) m
@@ -100,14 +100,15 @@ activityTargetJSON (ActivityAccess a) =
 
 activityJSON :: Activity -> JSON.Object
 activityJSON Activity{..} = JSON.object $ catMaybes
-  [ Just $ "time" JSON..= activityWhen
-  , Just $ "action" JSON..= show activityAction
+  [ Just $ "time" JSON..= auditWhen activityAudit
+  , Just $ "action" JSON..= show (auditAction activityAudit)
+  , Just $ "ip" JSON..= show (auditIp $ auditIdentity activityAudit)
   , Just $ "user" JSON..= partyRowJSON activityUser
   , Just $ typ JSON..= (new JSON..++ key)
   , HM.null old ?!> "old" JSON..= old
   ] where
   (new, old)
-    | activityAction == AuditActionRemove
+    | auditAction activityAudit == AuditActionRemove
       = (HM.empty, targ)
     | Just p <- activityPrev
     , (_, _, prev) <- activityTargetJSON p
