@@ -1420,6 +1420,8 @@ app.factory('modelService', [
           a[i].authorize.party = partyMake(a[i].authorize.party);
         if ('access' in a[i])
           a[i].access.party = partyMake(a[i].access.party);
+        if ('release' in a[i])
+          a[i].release.segment = new Segment(a[i].release.segment);
       }
       return a;
     }

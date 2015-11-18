@@ -31,7 +31,7 @@ data ActivityTarget
   | ActivityAccess      { activityAccess :: !VolumeAccess }
   | ActivityContainer   { activityContainer :: !ContainerRow }
   | ActivityRelease
-    { activityReleaseSlotId :: !(Id Slot)
+    { activityReleaseSlotId :: !SlotId
     , activityRelease :: !Release
     }
   | ActivityRecord      { activityRecordRow :: !RecordRow }

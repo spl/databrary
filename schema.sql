@@ -409,6 +409,7 @@ CREATE TABLE "slot_release" (
 COMMENT ON TABLE "slot_release" IS 'Sharing/release permissions granted by participants on (portions of) contained data.';
 
 SELECT audit.CREATE_TABLE ('slot_release', 'slot');
+CREATE INDEX "slot_release_activity_idx" ON audit."slot_release" ("container") WHERE "audit_action" >= 'add';
 
 
 ----------------------------------------------------------- studies

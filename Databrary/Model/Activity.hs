@@ -19,14 +19,15 @@ import Databrary.Has
 import qualified Databrary.JSON as JSON
 import Databrary.Service.DB
 import Databrary.Model.SQL
-import Databrary.Model.Identity.Types
-import Databrary.Model.Id.Types
-import Databrary.Model.Audit.Types
+import Databrary.Model.Identity
+import Databrary.Model.Id
+import Databrary.Model.Audit
 import Databrary.Model.Volume
 import Databrary.Model.VolumeAccess
 import Databrary.Model.Party
 import Databrary.Model.Authorize
 import Databrary.Model.Container
+import Databrary.Model.Slot
 import Databrary.Model.Activity.Types
 import Databrary.Model.Activity.SQL
 
@@ -63,9 +64,9 @@ lookupPartyActivity :: (MonadDB c m, MonadHasIdentity c m) => Party -> m [Activi
 lookupPartyActivity p = do
   ident <- peek
   pa <- chainPrev (const ())
-    <$> dbQuery $(selectQuery selectActivityParty $ "!WHERE party.id = ${partyId $ partyRow p} AND " ++ activityQual)
+    <$> dbQuery $(selectQuery selectActivityParty $ "WHERE party.id = ${partyId $ partyRow p} AND " ++ activityQual)
   ca <- chainPrev (const ()) . maskPasswords
-    <$> dbQuery $(selectQuery selectActivityAccount $ "!WHERE account.id = ${partyId $ partyRow p}") -- unqual: include logins
+    <$> dbQuery $(selectQuery selectActivityAccount $ "WHERE account.id = ${partyId $ partyRow p}") -- unqual: include logins
   aa <- chainPrev (partyId . partyRow . authorizeChild . authorization . activityAuthorize)
     <$> dbQuery $(selectQuery (selectActivityAuthorize 'p 'ident) $ "WHERE " ++ activityQual)
   return $ mergeActivities [pa, ca, aa]
@@ -82,8 +83,10 @@ lookupVolumeActivity vol = do
 lookupContainerActivity :: (MonadDB c m) => Container -> m [Activity]
 lookupContainerActivity cont = do
   ca <- chainPrev (const ())
-    <$> dbQuery $(selectQuery selectActivityContainer $ "!WHERE container.id = ${containerId $ containerRow cont} AND " ++ activityQual)
-  return $ mergeActivities [ca]
+    <$> dbQuery $(selectQuery selectActivityContainer $ "WHERE container.id = ${containerId $ containerRow cont} AND " ++ activityQual)
+  ra <- chainPrev (slotSegmentId . activityReleaseSlotId)
+    <$> dbQuery $(selectQuery selectActivityRelease $ "WHERE slot_release.container = ${containerId $ containerRow cont} AND " ++ activityQual)
+  return $ mergeActivities [ca, ra]
 
 -- EDIT permission assumed for all
 activityTargetJSON :: ActivityTarget -> (T.Text, [JSON.Pair], JSON.Object)
@@ -109,6 +112,10 @@ activityTargetJSON (ActivityContainer c) =
   ("container", [],
     containerRowJSON c JSON..+?
       (("date" JSON..=) <$> containerDate c))
+activityTargetJSON ActivityRelease{..} =
+  ("release", ["segment" JSON..= slotSegmentId activityReleaseSlotId], JSON.object
+    [ "release" JSON..= activityRelease
+    ])
 
 activityJSON :: Activity -> JSON.Object
 activityJSON Activity{..} = JSON.object $ catMaybes

@@ -117,5 +117,21 @@
       </dd>
     </dl>
 
+    <dl ng-if="::!!act.release">
+      <dt ng-if="::!act.release.segment.full">Segment</dt>
+      <dd ng-if="::!act.release.segment.full">{{::act.release.segment}}</dd>
+      <dt>Release</dt>
+      <dd>
+        <span ng-if="::act.old.release != undefined" ng-init="release=page.constants.release[act.old.release]">
+          <span class="icon release" ng-class="::release"></span>
+          {{::release}}
+        </span> &rarr; 
+        <span ng-if="::act.release.release != undefined" ng-init="release=page.constants.release[act.release.release]">
+          <span class="icon release" ng-class="::release"></span>
+          {{::release}}
+        </span>
+      </dd>
+    </dl>
+
   </li>
 </ol>
