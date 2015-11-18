@@ -6,4 +6,5 @@ app.controller 'volume/activity', [
     display.title = volume.name + " activity"
     $scope.volume = volume
     $scope.activity = volume.activity
+    return
 ]

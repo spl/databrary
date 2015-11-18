@@ -6,4 +6,5 @@ app.controller 'party/activity', [
     display.title = party.name + " activity"
     $scope.party = party
     $scope.activity = party.activity
+    return
 ]

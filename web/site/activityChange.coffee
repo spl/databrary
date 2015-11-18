@@ -6,7 +6,7 @@ app.directive 'activityChange', [
     restrict: 'A'
     transclude: 'element'
     priority: 500
-    controller: ($scope, $element, $attrs, $transclude) ->
+    link: ($scope, $element, $attrs, ctrl, $transclude) ->
       [act, type, field] = $attrs.activityChange.split('.', 3)
       act = $scope[act]
       val =
@@ -29,4 +29,5 @@ app.directive 'activityChange', [
       add('new')
 
       $element.after(dt, dd)
+      return
 ]

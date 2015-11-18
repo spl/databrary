@@ -6,4 +6,5 @@ app.controller 'volume/slotActivity', [
     display.title = slot.displayName + " activity"
     $scope.slot = slot
     $scope.activity = slot.activity
+    return
 ]
