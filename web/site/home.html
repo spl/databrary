@@ -8,10 +8,42 @@
   </div>
   <div class="home-bigbuttons">
     <div class="bigbuttons-text">
-      <p>Databrary is a video data library for developmental science.
+      <p>Databrary is a video data library for developmental science. 
         <br>Share videos, audio files, and related metadata. Discover more, faster.
       </p>
-    </div>
+      <div class="view-center-block">
+        <ul class="flat hide-mobile inline-block">
+          <li>
+            <span class="home-stats-num">{{::stats.authorized[page.permission.EDIT] | number:0}} </span>
+            <small class="inline-block">authorized<br>investigators</small>
+          </li>
+          <li>
+            <span class="home-stats-num">{{::stats.authorized[page.permission.READ] | number:0}} </span>
+            <small class="inline-block">authorized<br>affiliates</small>
+          </li>
+          <li>
+            <span class="home-stats-num">{{::stats.authorized[page.permission.ADMIN] | number:0}} </span>
+            <small class="inline-block">authorized<br>universities</small>
+          </li>  
+          <hr class="home-stats-split">    
+          <li>
+            <span class="home-stats-num">{{::stats.volumes | number:0}} </span>
+            <small class="inline-block">total<br>volumes </small>
+            <span class="home-stats-num">{{::stats.shared | number:0}} </span>
+            <small class="inline-block">shared<br>volumes</small>
+          </li>        
+          <li>
+            <span class="home-stats-num">{{::stats.duration/(1000*60*60) | number:0}} </span>
+            <small class="inline-block">hours of <br>recordings </small>
+            <span class="home-stats-num">{{::stats.assets | number:0}} </span>
+            <small class="inline-block">files </small> 
+            <span class="home-stats-num">{{::stats.records[page.constants.categoryName.participant.id] | number:0}} </span>
+            <small class="inline-block">participants</small>
+          </li>
+          <hr>
+        </ul>
+      </div>       
+    </div>   
     <div class="bigbuttons-container">
       <div class="bigbutton" ng-if="::!page.models.Login.isLoggedIn()">
         <img src="/web/icons/login.svg"/>
@@ -37,7 +69,7 @@
   <div class="wrap">
     <div class="row">
       <div class="col-desktop-10 col-tablet-6 col-mobile-6">
-        <article class="home-panel home-feature row" ng-if="::volume">
+        <article class="home-panel home-feature row hide-mobile" ng-if="::volume">
           <div class="home-feature-inner">
             <img ng-src="{{::volume.thumbRoute()}}" class="home-feature-thumb clickable" ng-click="page.$location.url(volume.route())">
 
@@ -50,15 +82,6 @@
               </div>
             </div>
           </div>
-        </article>
-        <article>
-          <ul>
-            <li>{{::stats.authorized[page.permission.EDIT] | number:0}} authorized PIs</li>
-            <li>{{::stats.authorized[page.permission.READ] | number:0}} affiliates who have access to the shared data</li>
-            <li>{{::stats.authorized[page.permission.ADMIN] | number:0}} universities</li>
-            <li>{{::stats.volumes | number:0}} volumes, {{::stats.shared | number:0}} have been opened for sharing</li>
-            <li>{{::stats.duration/(1000*60*60) | number:0}} hours of recordings and {{::stats.assets | number:0}} files from {{::stats.records[page.constants.categoryName.participant.id] | number:0}} participants</li>
-          </ul>
         </article>
         <article class="home-panel home-activity row">
           <span class="home-section-text home-sections-title"><span class="icon activity"></span>Recent Activity</span>

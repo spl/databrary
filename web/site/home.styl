@@ -117,15 +117,27 @@
       line-height 30px
     p
       text-align center
-      margin-bottom 0
-      padding-bottom 0
       color neutral52
     a
       font-weight bold
       color green53
     a:hover
       color green52
-  div.bigbuttons-container
+    ul
+      text-align center
+    li
+      margin-width b2
+      text-align center
+    li > *
+      vertical-align middle
+      text-align initial
+    li > small
+      color blue
+    @media screen and (min-width: 1200px)
+      hr
+        display none
+
+  .bigbuttons-container
     position relative
     margin-right auto
     margin-left auto
@@ -180,6 +192,11 @@
       border-color orange53
       @media screen and (max-width: grid-mobile-width)
         background-color neutral51
+
+.home-stats-num
+  margin-left b8
+  color orange53
+  text-align right
 
 .home-activity
   dl.home-section-text
