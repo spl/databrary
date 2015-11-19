@@ -20,7 +20,7 @@
     </dl>
 
     <dl ng-if="::!!act.authorize">
-      <dt>authorization</dt>
+      <dt ng-style="::{'background-color':idColor(act.authorize.party.id)}">authorization</dt>
       <dd>
         <a ng-href="{{::act.authorize.party.route()}}" class="permission-auth-username" ng-bind="::act.authorize.party.name"></a><wbr>
         <span class="permission-auth-email" ng-if="::act.authorize.party.email" ng-bind="::act.authorize.party.email"></span>
@@ -36,7 +36,7 @@
     </dl>
 
     <dl class="activity-access" ng-if="::!!act.access">
-      <dt>access to</dt>
+      <dt ng-style="::{'background-color':idColor(act.access.party.id)}">access to</dt>
       <dd>
         <a ng-href="{{::act.access.party.route()}}" ng-bind="::act.access.party.name"></a><wbr>
         <span class="permission-auth-email" ng-if="::act.access.party.email" ng-bind="::act.access.party.email"></span>
@@ -65,7 +65,7 @@
     </dl>
 
     <dl ng-if="::!!act.assets">
-      <dt>file</dt>
+      <dt ng-style="::{'background-color':idColor(act.assets.id)}">file</dt>
       <dd>
         <!-- img ng-src="{{::page.router.assetThumb([act.old.id, 24])}}" -->
         {{::act.assets.id}}
@@ -73,7 +73,7 @@
       <span activity-change="act.assets.segment" title="Position">
         {{::value[0] | timecode}}
       </span>
-      <dt ng-if="::act.assets.replace">Replacing</dt>
+      <dt ng-if="::act.assets.replace" ng-style="::{'background-color':idColor(act.old.id)}">Replacing</dt>
       <dt ng-if="::act.assets.transcode">Automatically converted from</dt>
       <dd ng-if="::act.assets.replace || act.assets.transcode">
         <!-- img ng-src="{{::act.old.thumbRoute(24)}}" -->
@@ -83,8 +83,10 @@
     </dl>
 
     <dl ng-if="::!!act.asset">
-      <dt>file</dt>
-      <dd>{{::act.asset.id}}</dd>
+      <dt ng-style="::{'background-color':idColor(act.asset.id)}">file</dt>
+      <dd>
+        {{::act.asset.id}}
+      </dd>
       <span activity-change="act.asset.name" title-message="asset.name.title" ng-bind="::value"></span>
       <span activity-change="act.asset.classification" title-message="asset.classification" ng-init="release=page.constants.release[value]">
         <span class="icon release" ng-class="::release"></span>
@@ -93,7 +95,7 @@
     </dl>
 
     <dl ng-if="::!!act.excerpt">
-      <dt>highlight</dt>
+      <dt ng-style="::{'background-color':idColor(act.excerpt.id)}">highlight</dt>
       <dd>
         {{::act.excerpt.id}}: 
         {{::act.excerpt.segment.l | timecode}} &ndash; {{::act.excerpt.segment.u | timecode}}
