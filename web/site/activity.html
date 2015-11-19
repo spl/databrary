@@ -1,7 +1,7 @@
 <ul class="flat activity">
   <li ng-repeat="act in ::activity">
-    <span class="activity-timestamp">{{act.time | date:'medium'}}</span>
-    <span ng-if="::act.user >= 0" load-party="act.user" class="activity-user">{{party.name}} </span>
+    <span class="activity-timestamp">{{::act.time | date:'medium'}}</span>
+    <a ng-if="::act.user >= 0" ng-href="{{::party.route()}}" load-party="act.user" class="activity-user">{{::party.name}} </a>
     <span ng-bind="'activity.action.'+act.action | message"></span><span>&nbsp;</span>
 
     <dl ng-if="::!!act.party">
