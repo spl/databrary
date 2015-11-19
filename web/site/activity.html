@@ -13,10 +13,10 @@
     </dl>
 
     <dl ng-if="::!!act.account">
-      <dt>login</dt>
-      <dd ng-bind="::act.ip"></dd>
-      <span activity-change="act.account.email" title-message="email" ng-bind="::value"></span>
-      <dt ng-if="::act.account.password !== act.old.password">Password</dt>
+      <span ng-if="act.action === 'add' || act.action === 'remove' || act.action === 'change'">login </span>
+      <span ng-bind="::'from ' + act.ip"></span>
+      <span ng-if="act.action === 'add' || act.action === 'remove' || act.action === 'change'" activity-change="act.account.email" title-message="email" ng-bind="::value"></span>
+      <dt ng-if="::act.account.password !== act.old.password && (act.action === 'add' || act.action === 'remove' || act.action === 'change')">Password</dt>
     </dl>
 
     <dl ng-if="::!!act.authorize">
