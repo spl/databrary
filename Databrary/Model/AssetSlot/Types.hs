@@ -1,6 +1,7 @@
 {-# LANGUAGE TypeFamilies #-}
 module Databrary.Model.AssetSlot.Types
-  ( AssetSlot(..)
+  ( AssetSlotId(..)
+  , AssetSlot(..)
   , assetSlotId
   , assetNoSlot
   ) where
@@ -19,7 +20,7 @@ import Databrary.Model.Asset.Types
 import Databrary.Model.Slot.Types
 
 data AssetSlotId = AssetSlotId
-  { _slotAssetId :: !(Id Asset)
+  { slotAssetId :: !(Id Asset)
   , _assetSlotId :: !(Maybe (Id Slot))
   }
 

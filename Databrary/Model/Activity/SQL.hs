@@ -7,6 +7,9 @@ module Databrary.Model.Activity.SQL
   , selectActivityAccess
   , selectActivityContainer
   , selectActivityRelease
+  , selectActivityAsset
+  , selectActivityAssetSlot
+  , selectActivityExcerpt
   , activityQual
   ) where
 
@@ -14,6 +17,7 @@ import Data.List (stripPrefix)
 import qualified Language.Haskell.TH as TH
 
 import Databrary.Model.SQL.Select
+import Databrary.Model.Id.Types
 import Databrary.Model.Audit.Types
 import Databrary.Model.Audit.SQL
 import Databrary.Model.Party.Types
@@ -22,8 +26,12 @@ import Databrary.Model.Authorize.SQL
 import Databrary.Model.Volume.SQL
 import Databrary.Model.VolumeAccess.SQL
 import Databrary.Model.Container.SQL
+import Databrary.Model.Slot.Types
 import Databrary.Model.Slot.SQL
 import Databrary.Model.Release.SQL
+import Databrary.Model.Asset.Types
+import Databrary.Model.Asset.SQL
+import Databrary.Model.AssetSlot.Types
 import Databrary.Model.Activity.Types
 
 delim :: String -> Bool
@@ -71,6 +79,23 @@ selectActivityContainer = targetActivitySelector "container" $
 selectActivityRelease :: Selector
 selectActivityRelease = targetActivitySelector "slot_release" $
   addSelects 'ActivityRelease (selectSlotId "slot_release") [selectOutput releaseRow]
+
+makeActivityAssetSlot :: Id Asset -> SlotId -> ActivityTarget
+makeActivityAssetSlot a = ActivityAssetSlot . AssetSlotId a . Just . Id
+
+selectActivityAsset :: Selector
+selectActivityAsset = targetActivitySelector "asset" $
+  selectMap (TH.ConE 'ActivityAsset `TH.AppE`) selectAssetRow
+
+selectActivityAssetSlot :: Selector
+selectActivityAssetSlot = targetActivitySelector "slot_asset" $
+  addSelects 'makeActivityAssetSlot
+    (selector "slot_asset" $ SelectColumn "slot_asset" "asset")
+    [selectOutput $ selectSlotId "slot_asset"]
+
+selectActivityExcerpt :: Selector
+selectActivityExcerpt = targetActivitySelector "excerpt" $
+  selectColumns 'ActivityExcerpt "excerpt" ["asset", "segment", "release"]
 
 activityQual :: String
 activityQual = "audit_action >= 'add' ORDER BY audit_time"

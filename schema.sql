@@ -491,9 +491,9 @@ COMMENT ON TABLE "asset" IS 'Assets reflecting files in primary storage.';
 
 SELECT audit.CREATE_TABLE ('asset');
 ALTER TABLE audit."asset" ALTER "sha1" DROP NOT NULL;
-
 CREATE INDEX "asset_creation_idx" ON audit."asset" ("id") WHERE "audit_action" = 'add';
 COMMENT ON INDEX audit."asset_creation_idx" IS 'Allow efficient retrieval of asset creation information, specifically date.';
+CREATE INDEX "asset_activity_idx" ON audit."asset" ("id") WHERE "audit_action" >= 'add';
 
 CREATE TABLE "slot_asset" (
 	"asset" integer NOT NULL Primary Key References "asset",
@@ -504,6 +504,7 @@ CREATE INDEX "slot_asset_slot_idx" ON "slot_asset" ("container", "segment");
 COMMENT ON TABLE "slot_asset" IS 'Attachment point of assets, which, in the case of timeseries data, should match asset.duration.';
 
 SELECT audit.CREATE_TABLE ('slot_asset', 'slot');
+CREATE INDEX "slot_asset_activity_idx" ON audit."slot_asset" ("container") WHERE "audit_action" >= 'add';
 
 CREATE TABLE "asset_revision" (
 	"orig" integer NOT NULL References "asset" ON DELETE CASCADE,
@@ -537,6 +538,7 @@ COMMENT ON COLUMN "excerpt"."segment" IS 'Segment within slot_asset.container sp
 COMMENT ON COLUMN "excerpt"."release" IS 'Override (by relaxing only) asset''s original release.';
 
 SELECT audit.CREATE_TABLE ('excerpt');
+CREATE INDEX "excerpt_activity_idx" ON audit."excerpt" ("asset") WHERE "audit_action" >= 'add';
 
 CREATE FUNCTION "excerpt_shift" () RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE

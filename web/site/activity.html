@@ -1,6 +1,6 @@
 <ol>
   <li ng-repeat="act in ::activity" ng-init="party=act.user">
-    {{act.time | date}}
+    {{act.time | date:'medium'}}
     <portrait></portrait>
     {{act.action}}
 

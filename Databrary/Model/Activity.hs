@@ -6,11 +6,14 @@ module Databrary.Model.Activity
   , activityJSON
   ) where
 
+import Control.Arrow ((&&&))
+import Control.Monad (forM)
 import qualified Data.ByteString.Char8 as BSC
 import Data.Function (on)
 import qualified Data.HashMap.Strict as HM
+import Data.List (foldl')
 import qualified Data.Map as Map
-import Data.Maybe (catMaybes)
+import Data.Maybe (maybeToList, catMaybes)
 import Data.Monoid ((<>))
 import qualified Data.Text as T
 
@@ -27,7 +30,11 @@ import Databrary.Model.VolumeAccess
 import Databrary.Model.Party
 import Databrary.Model.Authorize
 import Databrary.Model.Container
+import Databrary.Model.Segment
 import Databrary.Model.Slot
+import Databrary.Model.Asset
+import Databrary.Model.AssetSlot
+import Databrary.Model.AssetRevision
 import Databrary.Model.Activity.Types
 import Databrary.Model.Activity.SQL
 
@@ -66,7 +73,7 @@ lookupPartyActivity p = do
   pa <- chainPrev (const ())
     <$> dbQuery $(selectQuery selectActivityParty $ "WHERE party.id = ${partyId $ partyRow p} AND " ++ activityQual)
   ca <- chainPrev (const ()) . maskPasswords
-    <$> dbQuery $(selectQuery selectActivityAccount $ "WHERE account.id = ${partyId $ partyRow p}") -- unqual: include logins
+    <$> dbQuery $(selectQuery selectActivityAccount $ "WHERE account.id = ${partyId $ partyRow p} ORDER BY audit_time") -- unqual: include logins
   aa <- chainPrev (partyId . partyRow . authorizeChild . authorization . activityAuthorize)
     <$> dbQuery $(selectQuery (selectActivityAuthorize 'p 'ident) $ "WHERE " ++ activityQual)
   return $ mergeActivities [pa, ca, aa]
@@ -80,13 +87,36 @@ lookupVolumeActivity vol = do
     <$> dbQuery $(selectQuery (selectActivityAccess 'vol 'ident) $ "WHERE " ++ activityQual)
   return $ mergeActivities [va, aa]
 
-lookupContainerActivity :: (MonadDB c m) => Container -> m [Activity]
+lookupContainerActivity :: (MonadDB c m, MonadHasIdentity c m) => Container -> m [Activity]
 lookupContainerActivity cont = do
   ca <- chainPrev (const ())
     <$> dbQuery $(selectQuery selectActivityContainer $ "WHERE container.id = ${containerId $ containerRow cont} AND " ++ activityQual)
-  ra <- chainPrev (slotSegmentId . activityReleaseSlotId)
+  ra <- chainPrev (slotSegmentId . activitySlotId)
     <$> dbQuery $(selectQuery selectActivityRelease $ "WHERE slot_release.container = ${containerId $ containerRow cont} AND " ++ activityQual)
-  return $ mergeActivities [ca, ra]
+
+  let lar act@Activity{ activityPrev = Nothing, activityTarget = ActivityAssetSlot AssetSlotId{ slotAssetId = a } } = do
+        ar <- lookupAssetRevision ba{ assetRow = (assetRow ba){ assetId = a } }
+        return act{ activityPrev = ActivityAssetRevision <$> ar }
+        where ba = blankAsset (containerVolume cont)
+      lar a = return a
+  asa <- mapM lar =<< chainPrev (slotAssetId . activityAssetSlot)
+    <$> dbQuery $(selectQuery selectActivityAssetSlot $ "WHERE slot_asset.container = ${containerId $ containerRow cont} AND " ++ activityQual)
+
+  caa <- chainPrev (assetId . activityAssetRow)
+    <$> dbQuery $(selectQuery selectActivityAsset $ "JOIN slot_asset ON asset.id = slot_asset.asset WHERE slot_asset.container = ${containerId $ containerRow cont} AND " ++ activityQual)
+  let uam m Activity{ activityAudit = Audit{ auditAction = AuditActionRemove, auditWhen = t }, activityTarget = ActivityAssetSlot AssetSlotId{ slotAssetId = a } } =
+        Map.insert a t m
+      uam m _ = m
+      dam = flip $ Map.delete . assetId . activityAssetRow . activityTarget
+      oal = Map.toList $ foldl' dam (foldl' uam Map.empty asa) caa
+  oaa <- forM oal $ \(ai, at) ->
+    chainPrev (const ())
+      <$> dbQuery $(selectQuery selectActivityAsset $ "WHERE asset.id = ${ai} AND audit_time <= ${at} AND " ++ activityQual)
+
+  cea <- chainPrev (activityAssetId &&& activitySegment)
+    <$> dbQuery $(selectQuery selectActivityExcerpt $ "JOIN slot_asset ON excerpt.asset = slot_asset.asset WHERE slot_asset.container = ${containerId $ containerRow cont} AND " ++ activityQual)
+
+  return $ mergeActivities (ca:ra:asa:cea:caa:oaa)
 
 -- EDIT permission assumed for all
 activityTargetJSON :: ActivityTarget -> (T.Text, [JSON.Pair], JSON.Object)
@@ -103,8 +133,8 @@ activityTargetJSON (ActivityAuthorize a) =
     authorizeJSON a)
 activityTargetJSON (ActivityVolume v) = 
   ("volume", [],
-    volumeRowJSON v
-      JSON..+? (("alias" JSON..=) <$> volumeAlias v))
+    volumeRowJSON v JSON..+?
+      (("alias" JSON..=) <$> volumeAlias v))
 activityTargetJSON (ActivityAccess a) =
   ("access", ["party" JSON..= partyJSON (volumeAccessParty a)],
     volumeAccessJSON a)
@@ -113,9 +143,22 @@ activityTargetJSON (ActivityContainer c) =
     containerRowJSON c JSON..+?
       (("date" JSON..=) <$> containerDate c))
 activityTargetJSON ActivityRelease{..} =
-  ("release", ["segment" JSON..= slotSegmentId activityReleaseSlotId], JSON.object
+  ("release", maybeToList $ segmentJSON $ slotSegmentId activitySlotId, JSON.object
     [ "release" JSON..= activityRelease
     ])
+activityTargetJSON (ActivityAssetSlot (AssetSlotId a s)) =
+  ("assets", ["id" JSON..= a], JSON.object $ maybeToList
+    (segmentJSON . slotSegmentId . unId =<< s))
+activityTargetJSON (ActivityAsset a) =
+  ("asset", ["id" JSON..= assetId a],
+    assetRowJSON a JSON..+?
+      (("name" JSON..=) <$> assetName a))
+activityTargetJSON (ActivityAssetRevision AssetRevision{..}) =
+  (if revisionTranscode then "transcode" else "replace", ["id" JSON..= assetId (assetRow revisionAsset)],
+    assetJSON revisionOrig)
+activityTargetJSON ActivityExcerpt{..} =
+  ("excerpt", ("id" JSON..= activityAssetId) : maybeToList (segmentJSON activitySegment), JSON.object $ maybeToList
+    (("release" JSON..=) <$> activityExcerptRelease))
 
 activityJSON :: Activity -> JSON.Object
 activityJSON Activity{..} = JSON.object $ catMaybes
@@ -129,6 +172,9 @@ activityJSON Activity{..} = JSON.object $ catMaybes
   (new, old)
     | auditAction activityAudit == AuditActionRemove
       = (HM.empty, targ)
+    | Just p@(ActivityAssetRevision AssetRevision{..}) <- activityPrev
+    , (rtyp, _, orig) <- activityTargetJSON p
+      = (targ JSON..+ (rtyp JSON..= True), orig)
     | Just p <- activityPrev
     , (_, _, prev) <- activityTargetJSON p
     , int <- HM.filter id $ HM.intersectionWith (==) targ prev

@@ -13,33 +13,37 @@ import Databrary.Model.Authorize.Types
 import Databrary.Model.Volume.Types
 import Databrary.Model.VolumeAccess.Types
 import Databrary.Model.Container.Types
+import Databrary.Model.Segment
 import Databrary.Model.Slot.Types
 import Databrary.Model.Record.Types
 import Databrary.Model.RecordSlot.Types
 import Databrary.Model.Asset.Types
 import Databrary.Model.AssetSlot.Types
+import Databrary.Model.AssetRevision.Types
 
 data ActivityTarget
-  = ActivityParty       { activityPartyRow :: !PartyRow }
+  = ActivityParty         { activityPartyRow :: !PartyRow }
   | ActivityAccount
     { activityAccountId :: !(Id Party)
     , activityAccountEmail :: !BS.ByteString
     , activityAccountPassword :: !(Maybe BS.ByteString)
     }
-  | ActivityAuthorize   { activityAuthorize :: !Authorize }
-  | ActivityVolume      { activityVolumeRow :: !VolumeRow }
-  | ActivityAccess      { activityAccess :: !VolumeAccess }
-  | ActivityContainer   { activityContainer :: !ContainerRow }
+  | ActivityAuthorize     { activityAuthorize :: !Authorize }
+  | ActivityVolume        { activityVolumeRow :: !VolumeRow }
+  | ActivityAccess        { activityAccess :: !VolumeAccess }
+  | ActivityContainer     { activityContainer :: !ContainerRow }
   | ActivityRelease
-    { activityReleaseSlotId :: !SlotId
+    { activitySlotId :: !SlotId
     , activityRelease :: !Release
     }
-  | ActivityRecord      { activityRecordRow :: !RecordRow }
-  | ActivityRecordSlot  { activityRecordSlot :: !RecordSlot }
-  | ActivityAsset       { activityAssetRow :: !AssetRow }
-  | ActivityAssetSlot   { activityAssetSlot :: !(Id AssetSlot) }
+  | ActivityRecord        { activityRecordRow :: !RecordRow }
+  | ActivityRecordSlot    { activityRecordSlot :: !RecordSlot }
+  | ActivityAsset         { activityAssetRow :: !AssetRow }
+  | ActivityAssetSlot     { activityAssetSlot :: !AssetSlotId }
+  | ActivityAssetRevision { activityAssetRevision :: !AssetRevision } -- ^Only used in 'activityPrev' with incomplete 'revisionAsset'
   | ActivityExcerpt
-    { activityExcerptId :: !(Id AssetSlot)
+    { activityAssetId :: !(Id Asset)
+    , activitySegment :: !Segment
     , activityExcerptRelease :: !(Maybe Release)
     }
 
