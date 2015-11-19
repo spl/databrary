@@ -92,5 +92,17 @@
       </span>
     </dl>
 
+    <dl ng-if="::!!act.excerpt">
+      <dt>Highlight</dt>
+      <dd>
+        {{::act.excerpt.id}}: 
+        {{::act.excerpt.segment.l | timecode}} &ndash; {{::act.excerpt.segment.u | timecode}}
+      </dd>
+      <span activity-change="act.excerpt.excerpt" title="Release" ng-init="release=page.constants.release[value]">
+        <span class="icon release" ng-class="::release"></span>
+        {{::release}}
+      </span>
+    </dl>
+
   </li>
 </ol>

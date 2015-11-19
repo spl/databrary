@@ -158,7 +158,7 @@ activityTargetJSON (ActivityAssetRevision AssetRevision{..}) =
     assetJSON revisionOrig)
 activityTargetJSON ActivityExcerpt{..} =
   ("excerpt", ("id" JSON..= activityAssetId) : maybeToList (segmentJSON activitySegment), JSON.object $ maybeToList
-    (("release" JSON..=) <$> activityExcerptRelease))
+    (("excerpt" JSON..=) <$> activityExcerptRelease))
 
 activityJSON :: Activity -> JSON.Object
 activityJSON Activity{..} = JSON.object $ catMaybes

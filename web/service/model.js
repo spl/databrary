@@ -1448,6 +1448,8 @@ app.factory('modelService', [
           if (a[i].assets.replace || a[i].assets.transcode)
             a[i].old = assetMake(volume, a[i].old);
         }
+        else if ('excerpt' in a[i])
+          a[i].excerpt.segment = new Segment(a[i].excerpt.segment);
       }
       return a;
     }
