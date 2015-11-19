@@ -4,9 +4,11 @@
   &:nth-child(odd)
     background-color neutral53
   
-  dl
-    dt, dd
-      display inline-block
+  dl > dt, dl > dd
+    display inline-block
+    
+  dl, dt
+    display inline-block
     
 .activity-timestamp
   float right

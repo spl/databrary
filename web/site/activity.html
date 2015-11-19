@@ -2,7 +2,7 @@
   <li ng-repeat="act in ::activity">
     <span class="activity-timestamp">{{act.time | date:'medium'}}</span>
     <span ng-if="::act.user >= 0" load-party="act.user" class="activity-user">{{party.name}} </span>
-    <span ng-bind="'activity.action.'+act.action | message"></span>
+    <span ng-bind="'activity.action.'+act.action | message"></span><span>&nbsp;</span>
 
     <dl ng-if="::!!act.party">
       <span activity-change="act.party.prename" title-message="prename" ng-bind="::value"></span>
@@ -13,14 +13,14 @@
     </dl>
 
     <dl ng-if="::!!act.account">
-      <dt>Login</dt>
+      <dt>login</dt>
       <dd ng-bind="::act.ip"></dd>
       <span activity-change="act.account.email" title-message="email" ng-bind="::value"></span>
       <dt ng-if="::act.account.password !== act.old.password">Password</dt>
     </dl>
 
     <dl ng-if="::!!act.authorize">
-      <dt>Authorization</dt>
+      <dt>authorization</dt>
       <dd>
         <a ng-href="{{::act.authorize.party.route()}}" class="permission-auth-username" ng-bind="::act.authorize.party.name"></a><wbr>
         <span class="permission-auth-email" ng-if="::act.authorize.party.email" ng-bind="::act.authorize.party.email"></span>
@@ -35,8 +35,8 @@
       <div activity-change="act.volume.body" title-message="volume.body" block ng-bind-html="::value | format"></div>
     </dl>
 
-    <dl ng-if="::!!act.access">
-      <dt>Access to</dt>
+    <dl class="activity-access" ng-if="::!!act.access">
+      <dt>access to</dt>
       <dd>
         <a ng-href="{{::act.access.party.route()}}" ng-bind="::act.access.party.name"></a><wbr>
         <span class="permission-auth-email" ng-if="::act.access.party.email" ng-bind="::act.access.party.email"></span>
@@ -65,7 +65,7 @@
     </dl>
 
     <dl ng-if="::!!act.assets">
-      <dt>File</dt>
+      <dt>file</dt>
       <dd>
         <!-- img ng-src="{{::page.router.assetThumb([act.old.id, 24])}}" -->
         {{::act.assets.id}}
@@ -83,7 +83,7 @@
     </dl>
 
     <dl ng-if="::!!act.asset">
-      <dt>File</dt>
+      <dt>file</dt>
       <dd>{{::act.asset.id}}</dd>
       <span activity-change="act.asset.name" title-message="asset.name.title" ng-bind="::value"></span>
       <span activity-change="act.asset.classification" title-message="asset.classification" ng-init="release=page.constants.release[value]">
@@ -93,7 +93,7 @@
     </dl>
 
     <dl ng-if="::!!act.excerpt">
-      <dt>Highlight</dt>
+      <dt>highlight</dt>
       <dd>
         {{::act.excerpt.id}}: 
         {{::act.excerpt.segment.l | timecode}} &ndash; {{::act.excerpt.segment.u | timecode}}
