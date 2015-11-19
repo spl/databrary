@@ -1,7 +1,7 @@
 <ol>
   <li ng-repeat="act in ::activity">
     {{act.time | date:'medium'}}
-    <portrait load-party="act.user"></portrait>
+    <portrait ng-if="act.user >= 0" load-party="act.user"></portrait>
     {{act.action}}
 
     <dl ng-if="::!!act.party">
@@ -59,6 +59,34 @@
       <dt ng-if="::!act.release.segment.full">Segment</dt>
       <dd ng-if="::!act.release.segment.full">{{::act.release.segment}}</dd>
       <span activity-change="act.release.release" title="Release" ng-init="release=page.constants.release[value]">
+        <span class="icon release" ng-class="::release"></span>
+        {{::release}}
+      </span>
+    </dl>
+
+    <dl ng-if="::!!act.assets">
+      <dt>File</dt>
+      <dd>
+        <!-- img ng-src="{{::page.router.assetThumb([act.old.id, 24])}}" -->
+        {{::act.assets.id}}
+      </dd>
+      <span activity-change="act.assets.segment" title="Position">
+        {{::value[0] | timecode}}
+      </span>
+      <dt ng-if="::act.assets.replace">Replacing</dt>
+      <dt ng-if="::act.assets.transcode">Automatically converted from</dt>
+      <dd ng-if="::act.assets.replace || act.assets.transcode">
+        <!-- img ng-src="{{::act.old.thumbRoute(24)}}" -->
+        <!-- a class="icon download button" ng-href="{{::act.old.route()}}" -->
+        {{::act.old.id}}
+      </dd>
+    </dl>
+
+    <dl ng-if="::!!act.asset">
+      <dt>File</dt>
+      <dd>{{::act.asset.id}}</dd>
+      <span activity-change="act.asset.name" title-message="asset.name.title" ng-bind="::value"></span>
+      <span activity-change="act.asset.classification" title-message="asset.classification" ng-init="release=page.constants.release[value]">
         <span class="icon release" ng-class="::release"></span>
         {{::release}}
       </span>
