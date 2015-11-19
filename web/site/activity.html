@@ -1,7 +1,7 @@
 <ul class="flat activity">
   <li ng-repeat="act in ::activity">
     <span class="activity-timestamp">{{act.time | date:'medium'}}</span>
-    <span ng-if="::act.user >= 0" load-party="act.user">{{party.name}} </span>
+    <span ng-if="::act.user >= 0" load-party="act.user" class="activity-user">{{party.name}} </span>
     <span ng-bind="'activity.action.'+act.action | message"></span>
 
     <dl ng-if="::!!act.party">
@@ -36,9 +36,9 @@
     </dl>
 
     <dl ng-if="::!!act.access">
-      <dt>Access</dt>
+      <dt>Access to</dt>
       <dd>
-        <a ng-href="{{::act.access.party.route()}}" class="permission-auth-username" ng-bind="::act.access.party.name"></a><wbr>
+        <a ng-href="{{::act.access.party.route()}}" ng-bind="::act.access.party.name"></a><wbr>
         <span class="permission-auth-email" ng-if="::act.access.party.email" ng-bind="::act.access.party.email"></span>
       </dd>
       <span activity-change="act.access.individual" title="Level" ng-init="perm=page.constants.permission[value]">

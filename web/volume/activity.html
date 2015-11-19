@@ -1,2 +1,8 @@
-<h1 class="view-title">{{::volume.name}} activity</h1>
-<activity></activity>
+<div class="wrap">
+  <div class="row">
+    <h1 class="view-context">Activity</h1>
+    <h2 class="view-title">{{::volume.alias? volume.alias : volume.name}}</h2>
+
+    <activity></activity>
+  </div>
+</div>
