@@ -1,8 +1,8 @@
-<ol>
+<ul class="flat activity">
   <li ng-repeat="act in ::activity">
-    {{act.time | date:'medium'}}
-    <portrait ng-if="act.user >= 0" load-party="act.user"></portrait>
-    {{act.action}}
+    <span class="activity-timestamp">{{act.time | date:'medium'}}</span>
+    <span ng-if="::act.user >= 0" load-party="act.user">{{party.name}} </span>
+    <span ng-bind="'activity.action.'+act.action | message"></span>
 
     <dl ng-if="::!!act.party">
       <span activity-change="act.party.prename" title-message="prename" ng-bind="::value"></span>
