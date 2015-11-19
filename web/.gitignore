@@ -27,6 +27,7 @@
 /party/data.js
 /party/editApply.js
 /party/editGrant.js
+/party/load.js
 /party/profile.js
 /party/search.js
 /service/offset.js

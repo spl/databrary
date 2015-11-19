@@ -49,7 +49,6 @@ data ActivityTarget
 
 data Activity = Activity
   { activityAudit :: !Audit
-  , activityUser :: !PartyRow
   , activityTarget :: !ActivityTarget
   , activityPrev :: Maybe ActivityTarget
   }

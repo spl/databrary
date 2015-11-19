@@ -1,7 +1,7 @@
 <ol>
-  <li ng-repeat="act in ::activity" ng-init="party=act.user">
+  <li ng-repeat="act in ::activity">
     {{act.time | date:'medium'}}
-    <portrait></portrait>
+    <portrait load-party="act.user"></portrait>
     {{act.action}}
 
     <dl ng-if="::!!act.party">

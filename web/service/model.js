@@ -199,7 +199,16 @@ app.factory('modelService', [
     }
 
     Party.get = function (id, options) {
-      return partyGet(id, Party.peek(id), options);
+      var p = Party.peek(id);
+      if (!p)
+        return Party.cache.put(id, partyGet(id, p, options));
+      if (p instanceof Party)
+        return partyGet(id, p, options);
+      if (!options)
+        return p;
+      return p.then(function (p) {
+        return partyGet(id, p, options);
+      });
     };
 
     Party.prototype.get = function (options) {
@@ -475,17 +484,29 @@ app.factory('modelService', [
     }
 
     function volumeGet(id, v, options) {
-      if ((options = checkOptions(v, options)))
-        return router.http(router.controllers.getVolume,
+      if ((options = checkOptions(v, options))) {
+        var q = router.http(router.controllers.getVolume,
           id, options).then(function (res) {
             return v ? v.update(res.data) : Volume.poke(new Volume(res.data));
           });
-      else
+        if (!v)
+          Volume.poke(q);
+        return q;
+      } else
         return $q.successful(v);
     }
 
     Volume.get = function (id, options) {
-      return volumeGet(id, Volume.cache.get(id), options);
+      var p = Volume.cache.get(id);
+      if (!p)
+        return Volume.cache.put(id, volumeGet(id, p, options));
+      if (p instanceof Volume)
+        return volumeGet(id, p, options);
+      if (!options)
+        return p;
+      return p.then(function (p) {
+        return volumeGet(id, p, options);
+      });
     };
 
     Volume.prototype.get = function (options) {
@@ -1415,7 +1436,6 @@ app.factory('modelService', [
     
     function makeActivity (a) {
       for (var i = 0; i < a.length; i++) {
-        a[i].user = partyMake(a[i].user);
         if ('authorize' in a[i])
           a[i].authorize.party = partyMake(a[i].authorize.party);
         if ('access' in a[i])

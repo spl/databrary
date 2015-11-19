@@ -20,7 +20,6 @@ import Databrary.Model.SQL.Select
 import Databrary.Model.Id.Types
 import Databrary.Model.Audit.Types
 import Databrary.Model.Audit.SQL
-import Databrary.Model.Party.Types
 import Databrary.Model.Party.SQL
 import Databrary.Model.Authorize.SQL
 import Databrary.Model.Volume.SQL
@@ -40,16 +39,13 @@ delim (' ':_) = True
 delim (',':_) = True
 delim _ = False
 
-makeActivity :: Audit -> ActivityTarget -> PartyRow -> Activity
-makeActivity a x u = Activity a u x Nothing
+makeActivity :: Audit -> ActivityTarget -> Activity
+makeActivity a x = Activity a x Nothing
 
 targetActivitySelector :: String -> Selector -> Selector
 targetActivitySelector t Selector{ selectOutput = o, selectSource = ts, selectJoined = (',':tj) }
-  | Just s <- stripPrefix t ts, delim s, ts == tj = selectJoin '($)
-    [ selector ("audit." ++ ts) $ OutputJoin False 'makeActivity [selectOutput (selectAudit t), o]
-    , joinOn (t ++ ".audit_user = audit_party.id")
-      (selectPartyRow `fromAlias` "audit_party")
-    ]
+  | Just s <- stripPrefix t ts, delim s, ts == tj =
+    selector ("audit." ++ ts) $ OutputJoin False 'makeActivity [selectOutput (selectAudit t), o]
 targetActivitySelector t Selector{ selectSource = ts } = error $ "targetActivitySelector " ++ t ++ ": " ++ ts
 
 selectActivityParty :: Selector

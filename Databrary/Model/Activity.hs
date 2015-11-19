@@ -165,7 +165,7 @@ activityJSON Activity{..} = JSON.object $ catMaybes
   [ Just $ "time" JSON..= auditWhen activityAudit
   , Just $ "action" JSON..= show (auditAction activityAudit)
   , Just $ "ip" JSON..= show (auditIp $ auditIdentity activityAudit)
-  , Just $ "user" JSON..= partyRowJSON activityUser
+  , Just $ "user" JSON..= auditWho (auditIdentity activityAudit)
   , Just $ typ JSON..= (new JSON..++ key)
   , HM.null old ?!> "old" JSON..= old
   ] where
