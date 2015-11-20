@@ -7,11 +7,13 @@ app.directive 'activityChange', [
     transclude: 'element'
     priority: 500
     link: ($scope, $element, $attrs, ctrl, $transclude) ->
-      [act, type, field] = $attrs.activityChange.split('.', 3)
-      act = $scope[act]
+      af = $attrs.activityChange
+      afi = af.lastIndexOf('.')
+      act = $scope.$eval(af.substring(0, afi))
+      field = af.substring(afi+1)
       val =
+        new: act[field]
         old: act.old?[field]
-        new: act[type][field]
 
       return unless val.old? || val.new?
 

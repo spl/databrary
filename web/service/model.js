@@ -1438,18 +1438,14 @@ app.factory('modelService', [
     
     function makeActivity (a, volume) {
       for (var i = 0; i < a.length; i++) {
-        if ('authorize' in a[i])
-          a[i].authorize.party = partyMake(a[i].authorize.party);
-        else if ('access' in a[i])
-          a[i].access.party = partyMake(a[i].access.party);
-        else if ('release' in a[i])
-          a[i].release.segment = new Segment(a[i].release.segment);
-        else if ('assets' in a[i]) {
-          if (a[i].assets.replace || a[i].assets.transcode)
-            a[i].old = assetMake(volume, a[i].old);
-        }
-        else if ('excerpt' in a[i])
-          a[i].excerpt.segment = new Segment(a[i].excerpt.segment);
+        if (a[i].party)
+          a[i].party = partyMake(a[i].party);
+        if ('segment' in a[i])
+          a[i].segment = new Segment(a[i].segment);
+        if (a[i].revision)
+          a[i].old = assetMake(volume, a[i].old);
+        else if (a[i].old && 'segment' in a[i].old)
+          a[i].old.segment = new Segment(a[i].old.segment);
       }
       return a;
     }

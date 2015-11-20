@@ -1,110 +1,109 @@
 <ul class="flat activity">
   <li ng-repeat="act in ::activity">
-    <span class="activity-timestamp">{{::act.time | date:'medium'}}</span>
-    <a ng-if="::act.user >= 0" ng-href="{{::party.route()}}" load-party="act.user" class="activity-user">{{::party.name}} </a>
-    <span ng-bind="'activity.action.'+act.action | message"></span><span>&nbsp;</span>
+    <span class="activity-timestamp">{{::act.when | date:'medium'}}</span> 
+    <a ng-if="::act.user >= 0" load-party="act.user" ng-href="{{::party.route()}}" class="activity-user" ng-bind="::party.name"></a> 
+    <span message="activity.action.{{::act.action}}"></span> 
+    <span ng-if="::act.type==='account'">from {{::act.ip}} </span>
 
-    <dl ng-if="::!!act.party">
-      <span activity-change="act.party.prename" title-message="prename" ng-bind="::value"></span>
-      <span activity-change="act.party.sortname" title-message="sortname" ng-bind="::value"></span>
-      <span activity-change="act.party.orcid" title-message="orcid" ng-bind="::value"></span>
-      <span activity-change="act.party.affiliation" title-message="affiliation" ng-bind="::value"></span>
-      <span activity-change="act.party.url" title-message="party.edit.url.title" ng-bind="::value"></span>
-    </dl>
+    <ng-switch on="::act.type">
+      <dl ng-switch-when="party">
+        <span activity-change="act.prename" title-message="prename" ng-bind="::value"></span>
+        <span activity-change="act.sortname" title-message="sortname" ng-bind="::value"></span>
+        <span activity-change="act.orcid" title-message="orcid" ng-bind="::value"></span>
+        <span activity-change="act.affiliation" title-message="affiliation" ng-bind="::value"></span>
+        <span activity-change="act.url" title-message="party.edit.url.title" ng-bind="::value"></span>
+      </dl>
 
-    <dl ng-if="::!!act.account">
-      <span ng-if="act.action === 'add' || act.action === 'remove' || act.action === 'change'">login </span>
-      <span ng-bind="::'from ' + act.ip"></span>
-      <span ng-if="act.action === 'add' || act.action === 'remove' || act.action === 'change'" activity-change="act.account.email" title-message="email" ng-bind="::value"></span>
-      <dt ng-if="::act.account.password !== act.old.password && (act.action === 'add' || act.action === 'remove' || act.action === 'change')">Password</dt>
-    </dl>
+      <dl ng-switch-when="account" ng-if="act.action==='add'||act.action==='remove'||act.action==='change'">
+        <span activity-change="act.email" title-message="email" ng-bind="::value"></span>
+        <dt ng-if="::act.password!==act.old.password">Password</dt>
+      </dl>
 
-    <dl ng-if="::!!act.authorize">
-      <dt ng-style="::{'background-color':idColor(act.authorize.party.id)}">authorization</dt>
-      <dd>
-        <a ng-href="{{::act.authorize.party.route()}}" class="permission-auth-username" ng-bind="::act.authorize.party.name"></a><wbr>
-        <span class="permission-auth-email" ng-if="::act.authorize.party.email" ng-bind="::act.authorize.party.email"></span>
-      </dd>
-      <span activity-change="act.authorize.site" title-message="auth.site.edit" message="auth.site.{{::page.constants.permission[value]}}.title"></span>
-      <span activity-change="act.authorize.member" title-message="auth.member.edit" message="auth.member.{{::page.constants.permission[value]}}.title"></span>
-    </dl>
+      <dl ng-switch-when="authorize">
+        <dt ng-style="::{'background-color':idColor(act.party.id)}">authorization</dt>
+        <dd>
+          <a ng-href="{{::act.party.route()}}" class="permission-auth-username" ng-bind="::act.party.name"></a><wbr>
+          <span class="permission-auth-email" ng-if="::act.party.email" ng-bind="::act.party.email"></span>
+        </dd>
+        <span activity-change="act.site" title-message="auth.site.edit" message="auth.site.{{::page.constants.permission[value]}}.title"></span>
+        <span activity-change="act.member" title-message="auth.member.edit" message="auth.member.{{::page.constants.permission[value]}}.title"></span>
+      </dl>
 
-    <dl ng-if="::!!act.volume">
-      <span activity-change="act.volume.name" title-message="volume.name" ng-bind="::value"></span>
-      <span activity-change="act.volume.alias" title-message="volume.alias" ng-bind="::value"></span>
-      <div activity-change="act.volume.body" title-message="volume.body" block ng-bind-html="::value | format"></div>
-    </dl>
+      <dl ng-switch-when="volume">
+        <span activity-change="act.name" title-message="volume.name" ng-bind="::value"></span>
+        <span activity-change="act.alias" title-message="volume.alias" ng-bind="::value"></span>
+        <div activity-change="act.body" title-message="volume.body" block ng-bind-html="::value | format"></div>
+      </dl>
 
-    <dl class="activity-access" ng-if="::!!act.access">
-      <dt ng-style="::{'background-color':idColor(act.access.party.id)}">access to</dt>
-      <dd>
-        <a ng-href="{{::act.access.party.route()}}" ng-bind="::act.access.party.name"></a><wbr>
-        <span class="permission-auth-email" ng-if="::act.access.party.email" ng-bind="::act.access.party.email"></span>
-      </dd>
-      <span activity-change="act.access.individual" title="Level" ng-init="perm=page.constants.permission[value]">
-        <span class="icon user-access" ng-class="::perm"></span> 
-        <span message="access.edit.{{::perm}}.title"></span>
-      </span>
-      <span activity-change="act.access.children" title="Extend">
-        <span ng-if="value" class="icon network"></span>
-      </span>
-    </dl>
+      <dl ng-switch-when="access" class="activity-access">
+        <dt ng-style="::{'background-color':idColor(act.party.id)}">access for</dt>
+        <dd>
+          <a ng-href="{{::act.party.route()}}" ng-bind="::act.party.name"></a><wbr>
+          <span class="permission-auth-email" ng-if="::act.party.email" ng-bind="::act.party.email"></span>
+        </dd>
+        <span activity-change="act.individual" title="Level" ng-init="perm=page.constants.permission[value]">
+          <span class="icon user-access" ng-class="::perm"></span> 
+          <span message="access.edit.{{::perm}}.title"></span>
+        </span>
+        <span activity-change="act.children" title="Extend">
+          <span ng-if="value" class="icon network"></span>
+        </span>
+      </dl>
 
-    <dl ng-if="::!!act.container">
-      <span activity-change="act.container.name" title="Name" ng-bind="::value"></span>
-      <span activity-change="act.container.date" title="Test date" ng-bind="::value"></span>
-    </dl>
+      <dl ng-switch-when="container">
+        <span activity-change="act.name" title="Name" ng-bind="::value"></span>
+        <span activity-change="act.date" title="Test date" ng-bind="::value"></span>
+      </dl>
 
-    <dl ng-if="::!!act.release">
-      <dt ng-if="::!act.release.segment.full">Segment</dt>
-      <dd ng-if="::!act.release.segment.full">{{::act.release.segment}}</dd>
-      <span activity-change="act.release.release" title="Release" ng-init="release=page.constants.release[value]">
-        <span class="icon release" ng-class="::release"></span>
-        {{::release}}
-      </span>
-    </dl>
+      <dl ng-switch-when="release">
+        <dt ng-if="::!act.segment.full">Segment</dt>
+        <dd ng-if="::!act.segment.full">{{::act.segment}}</dd>
+        <span activity-change="act.release" title="Release" ng-init="release=page.constants.release[value]">
+          <span class="icon release" ng-class="::release"></span>
+          {{::release}}
+        </span>
+      </dl>
 
-    <dl ng-if="::!!act.assets">
-      <dt ng-style="::{'background-color':idColor(act.assets.id)}">file</dt>
-      <dd>
-        <!-- img ng-src="{{::page.router.assetThumb([act.old.id, 24])}}" -->
-        {{::act.assets.id}}
-      </dd>
-      <span activity-change="act.assets.segment" title="Position">
-        {{::value[0] | timecode}}
-      </span>
-      <dt ng-if="::act.assets.replace" ng-style="::{'background-color':idColor(act.old.id)}">Replacing</dt>
-      <dt ng-if="::act.assets.transcode">Automatically converted from</dt>
-      <dd ng-if="::act.assets.replace || act.assets.transcode">
-        <!-- img ng-src="{{::act.old.thumbRoute(24)}}" -->
-        <!-- a class="icon download button" ng-href="{{::act.old.route()}}" -->
-        {{::act.old.id}}
-      </dd>
-    </dl>
+      <dl ng-switch-when="asset">
+        <dt ng-style="::{'background-color':idColor(act.id)}">file</dt>
+        <dd>
+          <!-- img ng-src="{{::page.router.assetThumb([act.old.id, 24])}}" -->
+          {{::act.id}}
+        </dd>
+        <span activity-change="act.segment" title="Position">
+          {{::value.l | timecode}}
+        </span>
+        <dt ng-if="::act.revision" ng-style="::{'background-color':idColor(act.old.id)}" ng-switch="::act.revision">
+          <span ng-switch-when="replace">Replacing</span>
+          <span ng-switch-when="transcode">Automatically converted from</span>
+          <span ng-switch-default>Newer version of</span>
+        </dt>
+        <dd ng-if="::act.revision">
+          <!-- img ng-src="{{::act.old.thumbRoute(24)}}" -->
+          <!-- a class="icon download button" ng-href="{{::act.old.route()}}" -->
+          {{::act.old.id}}
+        </dd>
+        <span activity-change="act.name" title-message="asset.name.title" ng-bind="::value"></span>
+        <span activity-change="act.classification" title-message="asset.classification" ng-init="release=page.constants.release[value]">
+          <span class="icon release" ng-class="::release"></span>
+          {{::release}}
+        </span>
+      </dl>
 
-    <dl ng-if="::!!act.asset">
-      <dt ng-style="::{'background-color':idColor(act.asset.id)}">file</dt>
-      <dd>
-        {{::act.asset.id}}
-      </dd>
-      <span activity-change="act.asset.name" title-message="asset.name.title" ng-bind="::value"></span>
-      <span activity-change="act.asset.classification" title-message="asset.classification" ng-init="release=page.constants.release[value]">
-        <span class="icon release" ng-class="::release"></span>
-        {{::release}}
-      </span>
-    </dl>
+      <dl ng-switch-when="excerpt">
+        <dt ng-style="::{'background-color':idColor(act.id)}">highlight</dt>
+        <dd>
+          {{::act.id}}: 
+          {{::act.segment.l | timecode}} &ndash; {{::act.segment.u | timecode}}
+        </dd>
+        <span activity-change="act.excerpt" title="Release" ng-init="release=page.constants.release[value]">
+          <span class="icon release" ng-class="::release"></span>
+          {{::release}}
+        </span>
+      </dl>
 
-    <dl ng-if="::!!act.excerpt">
-      <dt ng-style="::{'background-color':idColor(act.excerpt.id)}">highlight</dt>
-      <dd>
-        {{::act.excerpt.id}}: 
-        {{::act.excerpt.segment.l | timecode}} &ndash; {{::act.excerpt.segment.u | timecode}}
-      </dd>
-      <span activity-change="act.excerpt.excerpt" title="Release" ng-init="release=page.constants.release[value]">
-        <span class="icon release" ng-class="::release"></span>
-        {{::release}}
-      </span>
-    </dl>
+      <span ng-switch-default ng-bind="::act.type"></span>
+    </ng-switch>
 
   </li>
 </ol>

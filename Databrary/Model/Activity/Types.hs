@@ -36,8 +36,8 @@ data ActivityTarget
     { activitySlotId :: !SlotId
     , activityRelease :: !Release
     }
-  | ActivityRecord        { activityRecordRow :: !RecordRow }
-  | ActivityRecordSlot    { activityRecordSlot :: !RecordSlot }
+  -- | ActivityRecord        { activityRecordRow :: !RecordRow }
+  -- | ActivityRecordSlot    { activityRecordSlot :: !RecordSlot }
   | ActivityAsset         { activityAssetRow :: !AssetRow }
   | ActivityAssetSlot     { activityAssetSlot :: !AssetSlotId }
   | ActivityAssetRevision { activityAssetRevision :: !AssetRevision } -- ^Only used in 'activityPrev' with incomplete 'revisionAsset'

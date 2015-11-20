@@ -13,7 +13,7 @@ import Data.Function (on)
 import qualified Data.HashMap.Strict as HM
 import Data.List (foldl')
 import qualified Data.Map as Map
-import Data.Maybe (maybeToList, catMaybes)
+import Data.Maybe (maybeToList)
 import Data.Monoid ((<>))
 import qualified Data.Text as T
 
@@ -147,7 +147,7 @@ activityTargetJSON ActivityRelease{..} =
     [ "release" JSON..= activityRelease
     ])
 activityTargetJSON (ActivityAssetSlot (AssetSlotId a s)) =
-  ("assets", ["id" JSON..= a], JSON.object $ maybeToList
+  ("asset", ["id" JSON..= a], JSON.object $ maybeToList
     (segmentJSON . slotSegmentId . unId =<< s))
 activityTargetJSON (ActivityAsset a) =
   ("asset", ["id" JSON..= assetId a],
@@ -161,20 +161,20 @@ activityTargetJSON ActivityExcerpt{..} =
     (("excerpt" JSON..=) <$> activityExcerptRelease))
 
 activityJSON :: Activity -> JSON.Object
-activityJSON Activity{..} = JSON.object $ catMaybes
-  [ Just $ "time" JSON..= auditWhen activityAudit
-  , Just $ "action" JSON..= show (auditAction activityAudit)
-  , Just $ "ip" JSON..= show (auditIp $ auditIdentity activityAudit)
-  , Just $ "user" JSON..= auditWho (auditIdentity activityAudit)
-  , Just $ typ JSON..= (new JSON..++ key)
-  , HM.null old ?!> "old" JSON..= old
-  ] where
+activityJSON Activity{..} = new JSON..++ key ++
+  [ "when" JSON..= auditWhen activityAudit
+  , "action" JSON..= show (auditAction activityAudit)
+  , "ip" JSON..= show (auditIp $ auditIdentity activityAudit)
+  , "user" JSON..= auditWho (auditIdentity activityAudit)
+  , "type" JSON..= typ
+  ] JSON..+? (HM.null old ?!> "old" JSON..= old)
+  where
   (new, old)
     | auditAction activityAudit == AuditActionRemove
       = (HM.empty, targ)
     | Just p@(ActivityAssetRevision AssetRevision{..}) <- activityPrev
     , (rtyp, _, orig) <- activityTargetJSON p
-      = (targ JSON..+ (rtyp JSON..= True), orig)
+      = (targ JSON..+ ("revision" JSON..= rtyp), orig)
     | Just p <- activityPrev
     , (_, _, prev) <- activityTargetJSON p
     , int <- HM.filter id $ HM.intersectionWith (==) targ prev
