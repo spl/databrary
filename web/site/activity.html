@@ -67,7 +67,7 @@
       <dl ng-switch-when="asset">
         <dt ng-style="::{'background-color':idColor(act.id)}">file</dt>
         <dd>
-          <!-- img ng-src="{{::page.router.assetThumb([act.old.id, 24])}}" -->
+          <img ng-src="{{::page.router.rawAssetThumb([act.id, 24])}}"/>
           {{::act.id}}
         </dd>
         <span activity-change="act.segment" title="Position">
@@ -79,8 +79,8 @@
           <span ng-switch-default>Newer version of</span>
         </dt>
         <dd ng-if="::act.revision">
-          <!-- img ng-src="{{::act.old.thumbRoute(24)}}" -->
-          <!-- a class="icon download button" ng-href="{{::act.old.route()}}" -->
+          <img ng-src="{{::act.old.thumbRoute(24)}}"/>
+          <a class="icon download button" ng-href="{{::act.old.downloadRoute()}}"></a>
           {{::act.old.id}}
         </dd>
         <span activity-change="act.name" title-message="asset.name.title" ng-bind="::value"></span>

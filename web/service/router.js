@@ -478,6 +478,8 @@ app.provider('routerService', [
     routes.assetThumb = makeRoute(controllers.thumbAssetSegment, ['cid', 'segment', 'id', 'size']);
     routes.slotThumb = makeRoute(controllers.thumbSlot, ['id','cid','segment', 'size']);
     routes.assetDownload = makeRoute(controllers.downloadAssetSegment, ['cid', 'segment', 'id', 'inline']);
+    routes.rawAssetDownload = makeRoute(controllers.downloadAsset, ['id', 'inline']);
+    routes.rawAssetThumb = makeRoute(controllers.thumbAsset, ['id', 'size']);
     routes.volumeZip = makeRoute(controllers.zipVolume, ['id']);
 
     $routeProvider.otherwise('/');

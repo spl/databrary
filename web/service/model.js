@@ -1148,11 +1148,15 @@ app.factory('modelService', [
     };
 
     AssetSlot.prototype.thumbRoute = function (size) {
-      return router.assetThumb([this.container.id, this.segment.format(), this.id, size]);
+      return this.container ?
+        router.assetThumb([this.container.id, this.segment.format(), this.id, size]) :
+        router.rawAssetThumb([this.id, size]);
     };
 
     AssetSlot.prototype.downloadRoute = function (inline) {
-      return router.assetDownload([this.container.id, this.segment.format(), this.id, inline]);
+      return this.container ?
+        router.assetDownload([this.container.id, this.segment.format(), this.id, inline]) :
+        router.rawAssetDownload([this.id, inline]);
     };
 
 

@@ -83,6 +83,7 @@ instance Has Segment AssetSegment where
 instance Has Format AssetSegment where
   view AssetSegment{ segmentAsset = a, assetSegment = Segment rng }
     | Just s <- formatSample fmt
+    , Just _ <- assetDuration $ assetRow $ slotAsset a
     , Just _ <- Range.getPoint rng = s
     | otherwise = fmt
     where fmt = view a
