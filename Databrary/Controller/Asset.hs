@@ -12,6 +12,7 @@ module Databrary.Controller.Asset
   , viewSlotAssetCreate
   , deleteAsset
   , downloadAsset
+  , thumbAsset
   , assetDownloadName
   ) where
 
@@ -63,6 +64,7 @@ import Databrary.Controller.Permission
 import Databrary.Controller.Form
 import Databrary.Controller.Volume
 import Databrary.Controller.Slot
+import Databrary.Controller.Format
 import {-# SOURCE #-} Databrary.Controller.AssetSegment
 import Databrary.View.Asset
 
@@ -255,8 +257,16 @@ deleteAsset = action DELETE (pathAPI </> pathId) $ \(api, ai) -> withAuth $ do
     JSON -> return $ okResponse [] $ assetSlotJSON asset'
     HTML -> peeks $ otherRouteResponse [] viewAsset (api, assetId $ assetRow $ slotAsset asset')
 
-downloadAsset :: ActionRoute (Id Asset)
-downloadAsset = action GET (pathId </< "download") $ \ai -> withAuth $ do
-  as <- getAsset PermissionPUBLIC ai
+downloadAsset :: ActionRoute (Id Asset, Segment)
+downloadAsset = action GET (pathId </> pathSegment </< "download") $ \(ai, seg) -> withAuth $ do
+  a <- getAsset PermissionPUBLIC ai
   inline <- peeks $ lookupQueryParameters "inline"
-  serveAssetSegment (null inline) $ assetSlotSegment as
+  serveAssetSegment (null inline) $ newAssetSegment a seg Nothing
+
+thumbAsset :: ActionRoute (Id Asset, Segment)
+thumbAsset = action GET (pathId </> pathSegment </< "thumb") $ \(ai, seg) -> withAuth $ do
+  a <- getAsset PermissionPUBLIC ai
+  let as = assetSegmentInterp 0.25 $ newAssetSegment a seg Nothing
+  if formatIsImage (view as) && assetBacked (view as) && dataPermission as > PermissionNONE
+    then peeks $ otherRouteResponse [] downloadAsset (view as, assetSegment as)
+    else peeks $ otherRouteResponse [] formatIcon (view as)

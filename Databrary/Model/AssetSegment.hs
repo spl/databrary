@@ -82,4 +82,4 @@ assetSegmentJSON as@AssetSegment{..} = JSON.object $ catMaybes $
   ] where fmt = view as
 
 assetSegmentInterp :: Float -> AssetSegment -> AssetSegment
-assetSegmentInterp f as = as{ assetSegment = segmentInterp f (assetSegment as) }
+assetSegmentInterp f as = as{ assetSegment = segmentInterp f $ assetSegment as }

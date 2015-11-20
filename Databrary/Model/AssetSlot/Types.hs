@@ -62,7 +62,7 @@ instance Has (Maybe (Id Container)) AssetSlot where
 instance Has (Maybe Segment) AssetSlot where
   view = fmap view . assetSlot
 instance Has Segment AssetSlot where
-  view = maybe emptySegment slotSegment . assetSlot
+  view = maybe fullSegment slotSegment . assetSlot
 
 instance Has (Maybe Release) AssetSlot where
   view (AssetSlot a (Just s)) = view a <|> view s

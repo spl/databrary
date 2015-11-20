@@ -73,6 +73,8 @@ jsRoutes =
   , jsRoute "viewAssetSegment" viewAssetSegment (HTML, Just volume, slot, asset)
   , jsRoute "downloadAssetSegment" downloadAssetSegment (slot, asset)
   , jsRoute "thumbAssetSegment" thumbAssetSegment (slot, asset)
+  , jsRoute "downloadAsset" downloadAsset (asset, fullSegment)
+  , jsRoute "thumbAsset" thumbAsset (asset, fullSegment)
 
   , jsRoute "viewSearch" postSearch (HTML)
 

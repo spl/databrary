@@ -105,6 +105,7 @@ routeMap = fromRouteList
   , route viewAssetEdit
   , route deleteAsset
   , route downloadAsset
+  , route thumbAsset
   , route viewAssetCreate
   , route createAsset
   , route createSlotAsset

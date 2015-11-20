@@ -13,6 +13,7 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy as BSL
+import Data.Foldable (foldMap)
 import Data.Maybe (isJust, fromJust, listToMaybe)
 import Data.Monoid ((<>))
 import qualified Data.Text as T
@@ -60,7 +61,7 @@ assetSegmentJSONQuery vol = JSON.jsonQuery (assetSegmentJSON vol) (assetSegmentJ
 
 assetSegmentDownloadName :: AssetSegment -> [T.Text]
 assetSegmentDownloadName a =
-  volumeDownloadName (view a) ++ slotDownloadName (view a) ++ assetDownloadName (assetRow $ view a)
+  volumeDownloadName (view a) ++ foldMap slotDownloadName (assetSlot $ segmentAsset a) ++ assetDownloadName (assetRow $ view a)
 
 viewAssetSegment :: ActionRoute (API, Maybe (Id Volume), Id Slot, Id Asset)
 viewAssetSegment = action GET (pathAPI </>>> pathMaybe pathId </>> pathSlotId </> pathId) $ \(api, vi, si, ai) -> withAuth $ do

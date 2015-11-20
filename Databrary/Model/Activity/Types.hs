@@ -15,8 +15,8 @@ import Databrary.Model.VolumeAccess.Types
 import Databrary.Model.Container.Types
 import Databrary.Model.Segment
 import Databrary.Model.Slot.Types
-import Databrary.Model.Record.Types
-import Databrary.Model.RecordSlot.Types
+-- import Databrary.Model.Record.Types
+-- import Databrary.Model.RecordSlot.Types
 import Databrary.Model.Asset.Types
 import Databrary.Model.AssetSlot.Types
 import Databrary.Model.AssetRevision.Types

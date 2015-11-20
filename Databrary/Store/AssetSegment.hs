@@ -88,7 +88,7 @@ getAssetSegmentStore as sz
   rs <- peek
   let cache = storageCache store
       cf = liftM2 (</>) cache $ assetSegmentFile as sz
-      gen = genVideoClip av af (afmt == imageFormat ?!> clip) sz
+      gen = genVideoClip av af (aimg ?!> clip) sz
   liftIO $ maybe
     (return $ Left $ gen . Left)
     (\f -> do
