@@ -54,7 +54,7 @@ enumForm = deformParse minBound fv where
 
 makeDBEnum :: String -> String -> TH.DecsQ
 makeDBEnum name typs = do
-  _ <- useTDB
+  [] <- useTDB
   liftM2 (++)
     (makePGEnum name typs (\(h:r) -> typs ++ toUpper h : r))
     [d| instance Kinded $(return typt) where

@@ -10,7 +10,7 @@
   </scroll-float>
   <fieldset ng-if="::!volume">
     <validator name="owner" label="volume.owner">
-      <select name="owner" ng-model="volumeEditOverviewForm.data.owner" ng-options="p.id as p.name for p in ::owners"/>
+      <select name="owner" ng-model="volumeEditOverviewForm.data.owner" ng-options="p.id as p.name for p in ::owners track by p.id||p"/>
     </validator>
   </fieldset>
   <fieldset>
