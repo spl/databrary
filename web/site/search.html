@@ -30,9 +30,9 @@
         </div>
         <div class="search-filter">
           Contains data released<br/>
-          <input type="radio" ng-model="fields.release" ng-value="::undefined"     ng-change="searchVolumes()" id="anyRelease"><label for="anyRelease">At any level</label><br/>
-          <input type="radio" ng-model="fields.release" value="EXCERPTS OR PUBLIC" ng-change="searchVolumes()" id="excerpt"   ><label for="excerpt"   ><span class="icon release EXCERPTS" hint="release-EXCERPTS"></span>For presentation use</label><br/>
-          <input type="radio" ng-model="fields.release" value="PUBLIC"             ng-change="searchVolumes()" id="public"    ><label for="public"    ><span class="icon release PUBLIC"   hint="release-PUBLIC"  ></span>For public use</label>
+          <input type="radio" ng-model="fields.release" ng-value="::undefined" ng-change="searchVolumes()" id="anyRelease"><label for="anyRelease">At any level</label><br/>
+          <input type="radio" ng-model="fields.release" value="EXCERPTS OR PUBLIC" ng-change="searchVolumes()" id="excerpt"><label for="excerpt"><span class="icon release EXCERPTS" hint="release-EXCERPTS"></span>For presentation use</label><br/>
+          <input type="radio" ng-model="fields.release" value="PUBLIC" ng-change="searchVolumes()" id="public"><label for="public"><span class="icon release PUBLIC" hint="release-PUBLIC"></span>For public use</label>
         </div>
         <div class="search-filter">
           Contains tag
@@ -40,7 +40,7 @@
         </div>
         <div class="search-filter">
           Contains files of type
-          <select ng-model="fields.format_id" ng-options="'\\'+f.id as f.name+' ('+f.extension+')' for f in ::formats | orderBy:'mimetype'" ng-change="searchVolumes()">
+          <select ng-model="fields.format_id" ng-options="'\\'+f.id as f.name+' ('+f.extension+')' for f in ::formats | orderBy:'mimetype' track by f.id||f.substr(1)" ng-change="searchVolumes()">
             <option value="">Any</option>
           </select>
         </div>
@@ -61,7 +61,7 @@
           </span>
         </div>
         <div class="search-filter additional-filters">
-          <select ng-model="addMetric.id" ng-options="m.id as m.name for m in availableMetrics()" ng-change="addMetric()">
+          <select ng-model="addMetric.id" ng-options="m.id as m.name for m in availableMetrics() track by m.id||m" ng-change="addMetric()">
             <option value="">Additional filters by field</option>
           </select>
         </div>
