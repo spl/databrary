@@ -5,7 +5,7 @@ module Databrary.Ingest.JSON
 
 import Control.Arrow (left)
 import Control.Monad (join, when, unless, void, mfilter)
-import Control.Monad.Except (ExceptT(..), runExceptT, mapExceptT, catchError)
+import Control.Monad.Except (ExceptT(..), runExceptT, mapExceptT, catchError, throwError)
 import Control.Monad.IO.Class (MonadIO(liftIO))
 import Control.Monad.Trans.Class (lift)
 import qualified Data.Aeson.BetterErrors as JE
@@ -21,7 +21,6 @@ import Data.Monoid (mempty, (<>))
 import Data.Time.Format (parseTime)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
-import qualified Data.Vector as V
 import qualified Database.PostgreSQL.Typed.Range as Range
 import System.Locale (defaultTimeLocale)
 import System.IO (withBinaryFile, IOMode(ReadMode))
@@ -56,18 +55,15 @@ import Databrary.Action.Types
 
 type IngestM a = JE.ParseT T.Text ActionM a
 
-jsErr :: (Functor m, Monad m) => Either (V.Vector JS.ValErr) a -> ExceptT [T.Text] m a
-jsErr = ExceptT . return . left V.toList
-
-loadSchema :: ExceptT [T.Text] IO JS.Schema
+loadSchema :: ExceptT [T.Text] IO (JS.Schema JS.Draft4Failure)
 loadSchema = do
   schema <- lift $ getDataFileName "volume.json"
   r <- lift $ withBinaryFile schema ReadMode (\h ->
     P.parseWith (BS.hGetSome h defaultChunkSize) J.json' BS.empty)
   js <- ExceptT . return . left (return . T.pack) $ J.eitherJSON =<< P.eitherResult r
-  let rs = JS.RawSchema "" js
-  g <- ExceptT $ left return <$> JS.fetchRefs JS.draft4 rs mempty
-  jsErr $ JS.compileDraft4 g rs
+  let rs = JS.RawSchema mempty js
+  g <- ExceptT $ left return <$> JS.fetchReferencedSchemas JS.draft4 mempty rs
+  ExceptT $ return $ left (map (T.pack . show)) $ JS.compileDraft4 g rs
 
 throwPE :: T.Text -> IngestM a
 throwPE = JE.throwCustomError
@@ -108,9 +104,10 @@ asStageFile b = do
   return $ StageFile r a
 
 ingestJSON :: Volume -> J.Value -> Bool -> Bool -> ActionM (Either [T.Text] [Container])
-ingestJSON vol jdata' run overwrite = runExceptT $ do
+ingestJSON vol jdata run overwrite = runExceptT $ do
   schema <- mapExceptT liftIO loadSchema
-  jdata <- jsErr $ JS.validate schema jdata'
+  let errs = JS.validate schema jdata
+  unless (null errs) $ throwError $ map (T.pack . show) errs
   if run
     then ExceptT $ left (JE.displayError id) <$> JE.parseValueM volume jdata
     else return []
