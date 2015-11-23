@@ -1084,9 +1084,10 @@ INSERT INTO volume_access (volume, party, individual, children) VALUES (1, 3, 'A
 INSERT INTO volume_access (volume, party, individual, children) VALUES (1, -1, 'PUBLIC', 'PUBLIC');
 
 INSERT INTO asset (id, volume, format, release, duration, name, sha1) VALUES (1, 1, -800, 'PUBLIC', interval '40', 'counting', '\x3dda3931202cbe06a9e4bbb5f0873c879121ef0a');
-INSERT INTO slot_asset VALUES (1, '[0,40)'::segment, 1);
 SELECT setval('asset_id_seq', 1);
+INSERT INTO container VALUES (2, 1, 't', 'Top-level materials');
 SELECT setval('container_id_seq', 2);
+INSERT INTO slot_asset VALUES (2, '[0,40)'::segment, 1);
 
 -- special volumes (SERIAL starts at 1), done after container triggers:
 INSERT INTO "volume" (id, name) VALUES (0, 'Core'); -- CORE
