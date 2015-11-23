@@ -94,7 +94,7 @@ lookupContainerActivity cont = do
   ra <- chainPrev (slotSegmentId . activitySlotId)
     <$> dbQuery $(selectQuery selectActivityRelease $ "WHERE slot_release.container = ${containerId $ containerRow cont} AND " ++ activityQual)
 
-  let lar act@Activity{ activityPrev = Nothing, activityTarget = ActivityAssetSlot AssetSlotId{ slotAssetId = a } } = do
+  let lar act@Activity{ activityAudit = Audit{ auditAction = AuditActionChange }, activityPrev = Nothing, activityTarget = ActivityAssetSlot AssetSlotId{ slotAssetId = a } } = do
         ar <- lookupAssetRevision ba{ assetRow = (assetRow ba){ assetId = a } }
         return act{ activityPrev = ActivityAssetRevision <$> ar }
         where ba = blankAsset (containerVolume cont)
@@ -104,8 +104,10 @@ lookupContainerActivity cont = do
 
   caa <- chainPrev (assetId . activityAssetRow)
     <$> dbQuery $(selectQuery selectActivityAsset $ "JOIN slot_asset ON asset.id = slot_asset.asset WHERE slot_asset.container = ${containerId $ containerRow cont} AND " ++ activityQual)
-  let uam m Activity{ activityAudit = Audit{ auditAction = AuditActionRemove, auditWhen = t }, activityTarget = ActivityAssetSlot AssetSlotId{ slotAssetId = a } } =
-        Map.insert a t m
+  let uam m Activity{ activityAudit = Audit{ auditAction = AuditActionRemove, auditWhen = t }, activityTarget = ActivityAssetSlot as } =
+        Map.insert (slotAssetId as) t m
+      uam m Activity{ activityAudit = Audit{ auditAction = AuditActionChange, auditWhen = t }, activityPrev = Just (ActivityAssetRevision ar) } =
+        Map.insert (assetId $ assetRow $ revisionOrig ar) t m
       uam m _ = m
       dam = flip $ Map.delete . assetId . activityAssetRow . activityTarget
       oal = Map.toList $ foldl' dam (foldl' uam Map.empty asa) caa
