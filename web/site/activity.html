@@ -56,8 +56,8 @@
       </dl>
 
       <dl ng-switch-when="release">
-        <dt ng-if="::!act.segment.full">Segment</dt>
-        <dd ng-if="::!act.segment.full">{{::act.segment}}</dd>
+        <dt ng-if="::!!act.segment">Segment</dt>
+        <dd ng-if="::!!act.segment">{{::act.segment}}</dd>
         <span activity-change="act.release" title="Release" ng-init="release=page.constants.release[value]">
           <span class="icon release" ng-class="::release"></span>
           {{::release}}
