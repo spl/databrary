@@ -13,7 +13,7 @@ import Data.Function (on)
 import qualified Data.HashMap.Strict as HM
 import Data.List (foldl')
 import qualified Data.Map as Map
-import Data.Maybe (maybeToList)
+import Data.Maybe (maybeToList, catMaybes)
 import Data.Monoid ((<>))
 import qualified Data.Text as T
 
@@ -150,9 +150,10 @@ activityTargetJSON (ActivityAssetSlot (AssetSlotId a s)) =
   ("asset", ["id" JSON..= a], JSON.object $ maybeToList
     (segmentJSON . slotSegmentId . unId =<< s))
 activityTargetJSON (ActivityAsset a) =
-  ("asset", ["id" JSON..= assetId a],
-    assetRowJSON a JSON..+?
-      (("name" JSON..=) <$> assetName a))
+  ("asset", ["id" JSON..= assetId a], JSON.object $ catMaybes
+    [ ("classification" JSON..=) <$> assetRelease a
+    , ("name" JSON..=) <$> assetName a
+    ])
 activityTargetJSON (ActivityAssetRevision AssetRevision{..}) =
   (if revisionTranscode then "transcode" else "replace", ["id" JSON..= assetId (assetRow revisionAsset)],
     assetJSON revisionOrig)

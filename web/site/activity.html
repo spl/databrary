@@ -70,7 +70,7 @@
           <img ng-src="{{::page.router.rawAssetThumb([act.id, 24])}}"/>
           {{::act.id}}
         </dd>
-        <span activity-change="act.segment" title="Position">
+        <span ng-if="::!act.revision" activity-change="act.segment" title="Position">
           {{::value.l | timecode}}
         </span>
         <dt ng-if="::act.revision" ng-style="::{'background-color':idColor(act.old.id)}" ng-switch="::act.revision">
