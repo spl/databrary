@@ -65,29 +65,35 @@
       </dl>
 
       <dl ng-switch-when="asset">
-        <dt ng-style="::{'background-color':idColor(act.id)}">file</dt>
-        <dd>
+
+        <dt>file</dt>
+        <dd ng-style="::{'background-color':idColor(act.id)}">
           <img ng-src="{{::page.router.rawAssetThumb([act.id, 24])}}"/>
           {{::act.id}}
         </dd>
+
         <span ng-if="::!act.revision" activity-change="act.segment" title="Position">
           {{::value.l | timecode}}
         </span>
-        <dt ng-if="::act.revision" ng-style="::{'background-color':idColor(act.old.id)}" ng-switch="::act.revision">
+        
+        <dt ng-if="::act.revision" ng-switch="::act.revision">
           <span ng-switch-when="replace">Replacing</span>
           <span ng-switch-when="transcode">Automatically converted from</span>
           <span ng-switch-default>Newer version of</span>
         </dt>
-        <dd ng-if="::act.revision">
-          <img ng-src="{{::act.old.thumbRoute(24)}}"/>
+        <dd ng-if="::act.revision" ng-style="::{'background-color':idColor(act.old.id)}">
           <a class="icon download button" ng-href="{{::act.old.downloadRoute()}}"></a>
+          <img ng-src="{{::act.old.thumbRoute(24)}}"/>
           {{::act.old.id}}
         </dd>
+
         <span activity-change="act.name" title-message="asset.name.title" ng-bind="::value"></span>
+
         <span activity-change="act.classification" title-message="asset.classification" ng-init="release=page.constants.release[value]">
           <span class="icon release" ng-class="::release"></span>
           {{::release}}
         </span>
+
       </dl>
 
       <dl ng-switch-when="excerpt">
