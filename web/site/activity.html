@@ -20,9 +20,9 @@
       </dl>
 
       <dl ng-switch-when="authorize">
-        <dt ng-style="::{'background-color':idColor(act.party.id)}">authorization</dt>
-        <dd>
-          <a ng-href="{{::act.party.route()}}" class="permission-auth-username" ng-bind="::act.party.name"></a><wbr>
+        <dt>authorization</dt>
+        <dd ng-style="::{'border-color':idColor(act.party.id)}" class="activity-highlight">
+          <a ng-href="{{::act.party.route()}}" ng-bind="::act.party.name"></a><wbr>
           <span class="permission-auth-email" ng-if="::act.party.email" ng-bind="::act.party.email"></span>
         </dd>
         <span activity-change="act.site" title-message="auth.site.edit" message="auth.site.{{::page.constants.permission[value]}}.title"></span>
@@ -36,7 +36,7 @@
       </dl>
 
       <dl ng-switch-when="access" class="activity-access">
-        <dt ng-style="::{'background-color':idColor(act.party.id)}">access for</dt>
+        <dt ng-style="::{'border-color':idColor(act.party.id)}">access for</dt>
         <dd>
           <a ng-href="{{::act.party.route()}}" ng-bind="::act.party.name"></a><wbr>
           <span class="permission-auth-email" ng-if="::act.party.email" ng-bind="::act.party.email"></span>
@@ -51,11 +51,13 @@
       </dl>
 
       <dl ng-switch-when="container">
+        session 
         <span activity-change="act.name" title="Name" ng-bind="::value"></span>
         <span activity-change="act.date" title="Test date" ng-bind="::value"></span>
       </dl>
 
       <dl ng-switch-when="release">
+        session 
         <dt ng-if="::!!act.segment">Segment</dt>
         <dd ng-if="::!!act.segment">{{::act.segment}}</dd>
         <span activity-change="act.release" title="Release" ng-init="release=page.constants.release[value]">
@@ -67,7 +69,7 @@
       <dl ng-switch-when="asset">
 
         <dt>file</dt>
-        <dd ng-style="::{'background-color':idColor(act.id)}" class="activity-asset-highlight">
+        <dd ng-style="::{'border-color':idColor(act.id)}" class="activity-highlight">
           <img ng-src="{{::page.router.rawAssetThumb([act.id, 24])}}"/>
           {{::act.id}}
         </dd>
@@ -83,7 +85,7 @@
           <span ng-switch-default>Newer version of</span>
         </dt>
         <dd ng-if="::act.revision">
-          <span ng-style="::{'background-color':idColor(act.old.id)}" class="activity-asset-highlight">
+          <span ng-style="::{'border-color':idColor(act.old.id)}" class="activity-highlight">
             <img ng-src="{{::act.old.thumbRoute(24)}}"/>
             {{::act.old.id}}
           </span>
@@ -101,7 +103,7 @@
       </dl>
 
       <dl ng-switch-when="excerpt">
-        <dt ng-style="::{'background-color':idColor(act.id)}" class="activity-asset-highlight">highlight</dt>
+        <dt ng-style="::{'border-color':idColor(act.id)}" class="activity-highlight">highlight</dt>
         <dd>
           {{::act.id}}: 
           {{::act.segment.l | timecode}} &ndash; {{::act.segment.u | timecode}}
