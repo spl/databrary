@@ -160,14 +160,15 @@ activityTargetJSON ActivityExcerpt{..} =
   ("excerpt", ("id" JSON..= activityAssetId) : maybeToList (segmentJSON activitySegment), JSON.object $ maybeToList
     (("excerpt" JSON..=) <$> activityExcerptRelease))
 
-activityJSON :: Activity -> JSON.Object
-activityJSON Activity{..} = new JSON..++ key ++
-  [ "when" JSON..= auditWhen activityAudit
-  , "action" JSON..= show (auditAction activityAudit)
-  , "ip" JSON..= show (auditIp $ auditIdentity activityAudit)
-  , "user" JSON..= auditWho (auditIdentity activityAudit)
-  , "type" JSON..= typ
-  ] JSON..+? (HM.null old ?!> "old" JSON..= old)
+activityJSON :: Activity -> Maybe JSON.Object
+activityJSON Activity{..} = auditAction activityAudit == AuditActionChange && HM.null new && HM.null old ?!>
+  new JSON..++ key ++
+    [ "when" JSON..= auditWhen activityAudit
+    , "action" JSON..= show (auditAction activityAudit)
+    , "ip" JSON..= show (auditIp $ auditIdentity activityAudit)
+    , "user" JSON..= auditWho (auditIdentity activityAudit)
+    , "type" JSON..= typ
+    ] JSON..+? (HM.null old ?!> "old" JSON..= old)
   where
   (new, old)
     | auditAction activityAudit == AuditActionRemove

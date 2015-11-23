@@ -11,7 +11,7 @@ import Control.Monad (when)
 import Data.Function (on)
 import Data.IORef (readIORef)
 import Data.List (nubBy)
-import Data.Maybe (isJust)
+import Data.Maybe (isJust, mapMaybe)
 import Data.Ord (comparing)
 
 import Databrary.Ops
@@ -57,7 +57,7 @@ viewPartyActivity = action GET (pathAPI </> pathPartyTarget </< "activity") $ \(
   v <- getParty (Just PermissionADMIN) p
   a <- lookupPartyActivity v
   return $ case api of
-    JSON -> okResponse [] $ JSON.toJSON $ map activityJSON a
+    JSON -> okResponse [] $ JSON.toJSON $ mapMaybe activityJSON a
 
 viewVolumeActivity :: ActionRoute (API, Id Volume)
 viewVolumeActivity = action GET (pathAPI </> pathId </< "activity") $ \(api, vi) -> withAuth $ do
@@ -65,7 +65,7 @@ viewVolumeActivity = action GET (pathAPI </> pathId </< "activity") $ \(api, vi)
   v <- getVolume PermissionEDIT vi
   a <- lookupVolumeActivity v
   return $ case api of
-    JSON -> okResponse [] $ JSON.toJSON $ map activityJSON a
+    JSON -> okResponse [] $ JSON.toJSON $ mapMaybe activityJSON a
 
 viewContainerActivity :: ActionRoute (API, (Maybe (Id Volume), Id Slot))
 viewContainerActivity = action GET (pathAPI </> pathMaybe pathId </> pathSlotId </< "activity") $ \(api, (vi, ci)) -> withAuth $ do
@@ -73,4 +73,4 @@ viewContainerActivity = action GET (pathAPI </> pathMaybe pathId </> pathSlotId 
   v <- getContainer PermissionEDIT vi ci True
   a <- lookupContainerActivity v
   return $ case api of
-    JSON -> okResponse [] $ JSON.toJSON $ map activityJSON a
+    JSON -> okResponse [] $ JSON.toJSON $ mapMaybe activityJSON a
