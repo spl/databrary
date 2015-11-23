@@ -5,6 +5,7 @@ app.directive 'activity', [
     restrict: 'E'
     templateUrl: 'site/activity.html'
     link: ($scope) ->
+      $scope.activity.reverse()
       $scope.idColor = (i) ->
         hsv = 3733*i
         sv = hsv/360|0
