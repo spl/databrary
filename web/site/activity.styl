@@ -1,7 +1,8 @@
 .activity
   padding-left 0
 .activity > li
-  padding-width b3
+  padding b3
+  vertical-align middle
   &:nth-child(even)
     background-color white
   &:nth-child(odd)
@@ -12,9 +13,16 @@
     
   dl, dt
     display inline-block
+    margin 0
   
   dd
     margin-width b3
+  
+  a.download.button
+    vertical-align text-bottom
+    margin-width b8
+  a.download.button:not(:hover)
+    background-color white
     
 .activity-timestamp
   float right
@@ -23,7 +31,8 @@
   color red
   
 .activity-new
-  color green
+  color blue
 
 .activity-asset-highlight
-  padding-width b8
+  padding b8
+  border-radius b8

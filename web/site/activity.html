@@ -82,9 +82,11 @@
           <span ng-switch-when="transcode">Automatically converted from</span>
           <span ng-switch-default>Newer version of</span>
         </dt>
-        <dd ng-if="::act.revision" ng-style="::{'background-color':idColor(act.old.id)}" class="activity-asset-highlight">
-          <img ng-src="{{::act.old.thumbRoute(24)}}"/>
-          {{::act.old.id}}
+        <dd ng-if="::act.revision">
+          <span ng-style="::{'background-color':idColor(act.old.id)}" class="activity-asset-highlight">
+            <img ng-src="{{::act.old.thumbRoute(24)}}"/>
+            {{::act.old.id}}
+          </span>
           <a class="icon download button neutral" ng-href="{{::act.old.downloadRoute()}}"></a>
           )
         </dd>
