@@ -1,6 +1,6 @@
 <ul class="flat activity">
   <li ng-repeat="act in ::activity">
-    <span class="activity-timestamp">{{::act.when | date:'medium'}}</span> 
+    <small class="activity-timestamp">{{::act.when | date:'medium'}}</small> 
     <a ng-if="::act.user >= 0" load-party="act.user" ng-href="{{::party.route()}}" class="activity-user" ng-bind="::party.name"></a> 
     <span ng-bind="::activityAction(act)"></span> 
 
@@ -66,7 +66,7 @@
       <dl ng-switch-when="asset">
         <dt>file</dt>
         <dd ng-style="::{'border-color':idColor(act.id)}" class="activity-highlight">
-          <img ng-src="{{::page.router.rawAssetThumb([act.id, 24])}}"/>
+          <img ng-src="{{::page.router.rawAssetThumb([act.id, 56])}}"/>
           {{::act.id}}
         </dd>
         <span ng-if="::!act.revision" activity-change="act.segment" title="Position">

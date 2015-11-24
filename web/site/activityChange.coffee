@@ -17,7 +17,9 @@ app.directive 'activityChange', [
 
       return unless val.old? || val.new?
 
-      dt = $('<dt/>').text($attrs.title || constants.message($attrs.titleMessage))
+      dt = $('<dt/>').text(($attrs.title || constants.message($attrs.titleMessage)))
+      dt.append(':')
+      dt.addClass('activity-change-title')
       dd = $('<dd/>')
       add = (which) ->
         return unless val[which]?
@@ -27,7 +29,7 @@ app.directive 'activityChange', [
           clone.addClass('activity-'+which)
           dd.append(clone))
       add('old')
-      dd.append(if 'block' of $attrs then '&darr;' else ' &rarr; ')
+      dd.append(if 'block' of $attrs then '&darr;' else ' ')
       add('new')
 
       $element.after(dt, dd)

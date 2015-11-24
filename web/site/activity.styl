@@ -28,13 +28,22 @@
   float right
   
 .activity-old
-  color red
+  background-color red51
+  padding b8 b3
+  border-radius b8
   
 .activity-new
-  color blue
+  background-color green51
+  padding b8 b3
+  border-radius b8
 
 .activity-highlight
-  padding b8
-  border-radius b8
-  border-width 2px
+  padding-width b8
+  border-width 0
+  border-bottom-width 5px
   border-style solid
+  
+.activity-change-title
+  text-transform lowercase
+  &:before
+    content: '\2022'
