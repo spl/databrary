@@ -1191,8 +1191,6 @@ app.factory('modelService', [
       if (!this.container && 'container' in init)
         this.container = containerPrepare(this.volume, init.container);
       AssetSlot.prototype.init.call(this, init);
-      if ('revisions' in init)
-        this.revisions = assetMakeArray(this.volume, init.revisions);
     };
 
     Object.defineProperty(Asset.prototype, 'asset', {
@@ -1446,8 +1444,6 @@ app.factory('modelService', [
           a[i].party = partyMake(a[i].party);
         if ('segment' in a[i])
           a[i].segment = new Segment(a[i].segment);
-        if (a[i].revision)
-          a[i].old = assetMake(volume, a[i].old);
         else if (a[i].old && 'segment' in a[i].old)
           a[i].old.segment = new Segment(a[i].old.segment);
       }
