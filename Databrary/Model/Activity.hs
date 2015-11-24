@@ -16,6 +16,7 @@ import qualified Data.Map as Map
 import Data.Maybe (maybeToList, catMaybes)
 import Data.Monoid ((<>))
 import qualified Data.Text as T
+import Data.Time.Clock (diffUTCTime)
 
 import Databrary.Ops
 import Databrary.Has
@@ -87,6 +88,24 @@ lookupVolumeActivity vol = do
     <$> dbQuery $(selectQuery (selectActivityAccess 'vol 'ident) $ "WHERE " ++ activityQual)
   return $ mergeActivities [va, aa]
 
+addAssetRevision :: (MonadDB c m, MonadHasIdentity c m) => Volume -> Activity -> m Activity
+addAssetRevision vol
+  act@Activity{ activityAudit = Audit{ auditAction = aa }, activityTarget = ActivityAssetSlot AssetSlotId{ slotAssetId = ai }, activityPrev = Nothing }
+  | aa == AuditActionAdd || aa == AuditActionChange = do
+    ar <- lookupAssetRevision ba{ assetRow = (assetRow ba){ assetId = ai } }
+    return act{ activityPrev = ActivityAssetRevision <$> ar }
+    where ba = blankAsset vol
+addAssetRevision _ a = return a
+
+mergeAssetCreation :: [Activity] -> [Activity]
+mergeAssetCreation
+  ( Activity{ activityAudit = a1@Audit{ auditAction = AuditActionAdd    }, activityTarget = ActivityAsset aa, activityPrev = Nothing }
+  : Activity{ activityAudit = a2@Audit{ auditAction = AuditActionChange }, activityTarget = ActivityAsset ac, activityPrev = Just (ActivityAsset aa') }
+  : al) | assetId aa == assetId aa' && auditIdentity a1 == auditIdentity a2 && auditWhen a2 `diffUTCTime` auditWhen a1 < 1 =
+  Activity{ activityAudit = a1, activityTarget = ActivityAsset ac, activityPrev = Just (ActivityAsset aa) } : mergeAssetCreation al
+mergeAssetCreation (a:al) = a : mergeAssetCreation al
+mergeAssetCreation [] = []
+
 lookupContainerActivity :: (MonadDB c m, MonadHasIdentity c m) => Container -> m [Activity]
 lookupContainerActivity cont = do
   ca <- chainPrev (const ())
@@ -94,15 +113,10 @@ lookupContainerActivity cont = do
   ra <- chainPrev (slotSegmentId . activitySlotId)
     <$> dbQuery $(selectQuery selectActivityRelease $ "WHERE slot_release.container = ${containerId $ containerRow cont} AND " ++ activityQual)
 
-  let lar act@Activity{ activityAudit = Audit{ auditAction = AuditActionChange }, activityPrev = Nothing, activityTarget = ActivityAssetSlot AssetSlotId{ slotAssetId = a } } = do
-        ar <- lookupAssetRevision ba{ assetRow = (assetRow ba){ assetId = a } }
-        return act{ activityPrev = ActivityAssetRevision <$> ar }
-        where ba = blankAsset (containerVolume cont)
-      lar a = return a
-  asa <- mapM lar =<< chainPrev (slotAssetId . activityAssetSlot)
+  asa <- mapM (addAssetRevision (containerVolume cont)) =<< chainPrev (slotAssetId . activityAssetSlot)
     <$> dbQuery $(selectQuery selectActivityAssetSlot $ "WHERE slot_asset.container = ${containerId $ containerRow cont} AND " ++ activityQual)
 
-  caa <- chainPrev (assetId . activityAssetRow)
+  caa <- mergeAssetCreation . chainPrev (assetId . activityAssetRow)
     <$> dbQuery $(selectQuery selectActivityAsset $ "JOIN slot_asset ON asset.id = slot_asset.asset WHERE slot_asset.container = ${containerId $ containerRow cont} AND " ++ activityQual)
   let uam m Activity{ activityAudit = Audit{ auditAction = AuditActionRemove, auditWhen = t }, activityTarget = ActivityAssetSlot as } =
         Map.insert (slotAssetId as) t m
@@ -112,7 +126,7 @@ lookupContainerActivity cont = do
       dam = flip $ Map.delete . assetId . activityAssetRow . activityTarget
       oal = Map.toList $ foldl' dam (foldl' uam Map.empty asa) caa
   oaa <- forM oal $ \(ai, at) ->
-    chainPrev (const ())
+    mergeAssetCreation . chainPrev (const ())
       <$> dbQuery $(selectQuery selectActivityAsset $ "WHERE asset.id = ${ai} AND audit_time <= ${at} AND " ++ activityQual)
 
   cea <- chainPrev (activityAssetId &&& activitySegment)
