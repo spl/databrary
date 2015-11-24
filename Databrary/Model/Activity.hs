@@ -94,8 +94,8 @@ lookupContainerActivity cont = do
   ra <- chainPrev (slotSegmentId . activitySlotId)
     <$> dbQuery $(selectQuery selectActivityRelease $ "WHERE slot_release.container = ${containerId $ containerRow cont} AND " ++ activityQual)
 
-  let lar act@Activity{ activityAudit = Audit{ auditAction = AuditActionChange }, activityPrev = Nothing, activityTarget = ActivityAssetSlot AssetSlotId{ slotAssetId = a } } = do
-        ar <- lookupAssetRevision ba{ assetRow = (assetRow ba){ assetId = a } }
+  let lar act@Activity{ activityAudit = Audit{ auditAction = aa }, activityPrev = Nothing, activityTarget = ActivityAssetSlot AssetSlotId{ slotAssetId = ai } } | aa == AuditActionAdd || aa == AuditActionChange = do
+        ar <- lookupAssetRevision ba{ assetRow = (assetRow ba){ assetId = ai } }
         return act{ activityPrev = ActivityAssetRevision <$> ar }
         where ba = blankAsset (containerVolume cont)
       lar a = return a
