@@ -345,7 +345,8 @@ app.directive 'spreadsheet', [
               start: si
             }
           $scope.cols = Cols
-          $scope.views = (g.category for g in Groups when g.category.id != 'asset')
+          if Key == pseudoCategory.slot || !$scope.views
+            $scope.views = (g.category for g in Groups when g.category.id != 'asset')
           return
 
         populateSlotData = (s) ->
