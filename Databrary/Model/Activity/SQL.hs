@@ -40,7 +40,7 @@ delim (',':_) = True
 delim _ = False
 
 makeActivity :: Audit -> ActivityTarget -> Activity
-makeActivity a x = Activity a x Nothing
+makeActivity a x = Activity a x Nothing Nothing
 
 targetActivitySelector :: String -> Selector -> Selector
 targetActivitySelector t Selector{ selectOutput = o, selectSource = ts, selectJoined = (',':tj) }

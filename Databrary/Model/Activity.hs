@@ -93,16 +93,16 @@ addAssetRevision vol
   act@Activity{ activityAudit = Audit{ auditAction = aa }, activityTarget = ActivityAssetSlot AssetSlotId{ slotAssetId = ai }, activityPrev = Nothing }
   | aa == AuditActionAdd || aa == AuditActionChange = do
     ar <- lookupAssetRevision ba{ assetRow = (assetRow ba){ assetId = ai } }
-    return act{ activityPrev = ActivityAssetRevision <$> ar }
+    return act{ activityRevision = ar }
     where ba = blankAsset vol
 addAssetRevision _ a = return a
 
 mergeAssetCreation :: [Activity] -> [Activity]
 mergeAssetCreation
-  ( Activity{ activityAudit = a1@Audit{ auditAction = AuditActionAdd    }, activityTarget = ActivityAsset aa, activityPrev = Nothing }
+  ( a@Activity{ activityAudit = a1@Audit{ auditAction = AuditActionAdd  }, activityTarget = ActivityAsset aa, activityPrev = Nothing }
   : Activity{ activityAudit = a2@Audit{ auditAction = AuditActionChange }, activityTarget = ActivityAsset ac, activityPrev = Just (ActivityAsset aa') }
   : al) | assetId aa == assetId aa' && auditIdentity a1 == auditIdentity a2 && auditWhen a2 `diffUTCTime` auditWhen a1 < 1 =
-  Activity{ activityAudit = a1, activityTarget = ActivityAsset ac, activityPrev = Just (ActivityAsset aa) } : mergeAssetCreation al
+  a{ activityTarget = ActivityAsset ac, activityPrev = Just (ActivityAsset aa) } : mergeAssetCreation al
 mergeAssetCreation (a:al) = a : mergeAssetCreation al
 mergeAssetCreation [] = []
 
@@ -120,7 +120,7 @@ lookupContainerActivity cont = do
     <$> dbQuery $(selectQuery selectActivityAsset $ "JOIN slot_asset ON asset.id = slot_asset.asset WHERE slot_asset.container = ${containerId $ containerRow cont} AND " ++ activityQual)
   let uam m Activity{ activityAudit = Audit{ auditAction = AuditActionRemove, auditWhen = t }, activityTarget = ActivityAssetSlot as } =
         Map.insert (slotAssetId as) t m
-      uam m Activity{ activityAudit = Audit{ auditAction = AuditActionChange, auditWhen = t }, activityPrev = Just (ActivityAssetRevision ar) } =
+      uam m Activity{ activityAudit = Audit{ auditAction = AuditActionChange, auditWhen = t }, activityRevision = Just ar } =
         Map.insert (assetId $ assetRow $ revisionOrig ar) t m
       uam m _ = m
       dam = flip $ Map.delete . assetId . activityAssetRow . activityTarget
@@ -170,33 +170,33 @@ activityTargetJSON (ActivityAsset a) =
     [ ("classification" JSON..=) <$> assetRelease a
     , ("name" JSON..=) <$> assetName a
     ])
-activityTargetJSON (ActivityAssetRevision AssetRevision{..}) =
-  (if revisionTranscode then "transcode" else "replace", ["id" JSON..= assetId (assetRow revisionAsset)],
-    assetJSON revisionOrig)
 activityTargetJSON ActivityExcerpt{..} =
   ("excerpt", ("id" JSON..= activityAssetId) : maybeToList (segmentJSON activitySegment), JSON.object $ maybeToList
     (("excerpt" JSON..=) <$> activityExcerptRelease))
 
+assetRevisionJSON :: AssetRevision -> JSON.Object
+assetRevisionJSON AssetRevision{..} = assetJSON revisionOrig
+  JSON..+ (if revisionTranscode then "transcode" else "replace") JSON..= True
+
 activityJSON :: Activity -> Maybe JSON.Object
-activityJSON Activity{..} = auditAction activityAudit == AuditActionChange && HM.null new && HM.null old ?!>
-  new JSON..++ key ++
-    [ "when" JSON..= auditWhen activityAudit
-    , "action" JSON..= show (auditAction activityAudit)
-    , "ip" JSON..= show (auditIp $ auditIdentity activityAudit)
-    , "user" JSON..= auditWho (auditIdentity activityAudit)
-    , "type" JSON..= typ
-    ] JSON..+? (HM.null old ?!> "old" JSON..= old)
+activityJSON Activity{ activityAudit = Audit{..}, ..} = auditAction == AuditActionChange && HM.null new && HM.null old ?!>
+  new JSON..++ key ++ catMaybes
+    [ Just $ "when" JSON..= auditWhen
+    , Just $ "action" JSON..= show (auditAction)
+    , Just $ "ip" JSON..= show (auditIp auditIdentity)
+    , Just $ "user" JSON..= auditWho auditIdentity
+    , Just $ "type" JSON..= typ
+    , HM.null old ?!> "old" JSON..= old
+    , ("revision" JSON..=) . assetRevisionJSON <$> activityRevision
+    ]
   where
   (new, old)
-    | auditAction activityAudit == AuditActionRemove
+    | auditAction == AuditActionRemove
       = (HM.empty, targ)
-    | Just p@(ActivityAssetRevision AssetRevision{..}) <- activityPrev
-    , (rtyp, _, orig) <- activityTargetJSON p
-      = (targ JSON..+ ("revision" JSON..= rtyp), orig)
     | Just p <- activityPrev
     , (_, _, prev) <- activityTargetJSON p
     , int <- HM.filter id $ HM.intersectionWith (==) targ prev
-      = (HM.difference targ int, HM.difference prev int)
+      = (if auditAction == AuditActionAdd then targ else HM.difference targ int, HM.difference prev int)
     | otherwise
       = (targ, HM.empty)
   (typ, key, targ) = activityTargetJSON activityTarget

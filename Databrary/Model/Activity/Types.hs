@@ -40,7 +40,6 @@ data ActivityTarget
   -- | ActivityRecordSlot    { activityRecordSlot :: !RecordSlot }
   | ActivityAsset         { activityAssetRow :: !AssetRow }
   | ActivityAssetSlot     { activityAssetSlot :: !AssetSlotId }
-  | ActivityAssetRevision { activityAssetRevision :: !AssetRevision } -- ^Only used in 'activityPrev' with incomplete 'revisionAsset'
   | ActivityExcerpt
     { activityAssetId :: !(Id Asset)
     , activitySegment :: !Segment
@@ -51,5 +50,6 @@ data Activity = Activity
   { activityAudit :: !Audit
   , activityTarget :: !ActivityTarget
   , activityPrev :: Maybe ActivityTarget
+  , activityRevision :: Maybe AssetRevision
   }
 
