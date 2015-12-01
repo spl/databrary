@@ -29,7 +29,6 @@ app.directive 'activityChange', [
           clone.addClass('activity-'+which)
           dd.append(clone))
       add('old')
-      dd.append(if 'block' of $attrs then '&darr;' else ' ')
       add('new')
 
       $element.after(dt, dd)
