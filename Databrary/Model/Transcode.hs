@@ -77,7 +77,6 @@ addTranscode orig seg@(Segment rng) opts (ProbeAV _ fmt av) = do
     { transcodeRevision = AssetRevision
       { revisionAsset = a
       , revisionOrig = orig
-      , revisionTranscode = True
       }
     , transcodeOwner = own
     , transcodeSegment = seg
@@ -110,5 +109,5 @@ findMatchingTranscode t@Transcode{..} =
 checkAlreadyTranscoded :: MonadDB c m => Asset -> Probe -> m Bool
 checkAlreadyTranscoded Asset{ assetRow = AssetRow { assetFormat = fmt, assetSHA1 = Just sha1 } } ProbeAV{ probeTranscode = tfmt, probeAV = av }
   | fmt == tfmt && avProbeCheckFormat fmt av =
-    (Just (Just (1 :: Int32)) ==) <$> dbQuery1 [pgSQL|SELECT 1 FROM asset JOIN transcode ON asset.id = transcode.asset WHERE asset.sha1 = ${sha1} AND asset.format = ${formatId fmt} LIMIT 1|]
+    (Just (Just (1 :: Int32)) ==) <$> dbQuery1 [pgSQL|SELECT 1 FROM asset WHERE asset.sha1 = ${sha1} AND asset.format = ${formatId fmt} AND asset.duration IS NOT NULL LIMIT 1|]
 checkAlreadyTranscoded _ _ = return False

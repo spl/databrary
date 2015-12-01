@@ -251,7 +251,7 @@ ingestJSON vol jdata run overwrite = runExceptT $ do
             }
           } (Just $ toRawFilePath $ stageFileAbs file)
         lift $ addIngestAsset a (stageFileRel file)
-        Fold.forM_ orig $ \o -> lift $ supersedeAsset o a
+        Fold.forM_ orig $ \o -> lift $ replaceAsset o a -- FIXME
         return a)
       (\a -> inObj a $ do
         unless (assetBacked a) $ throwPE "ingested asset incomplete"

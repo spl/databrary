@@ -72,18 +72,25 @@
         <span activity-change="act.segment" title="Position">
           {{::value.l | timecode}}
         </span>
-        <dt ng-if="::act.revision">
-          (
-          <span ng-if="::act.revision.replace">Replacing</span>
-          <span ng-if="::act.revision.transcode">Automatically converted from</span>
+        <dt ng-if="::act.transcode" class="activity-change-title">
+          Automatically converted from
         </dt>
-        <dd ng-if="::act.revision">
-          <span ng-style="::{'border-color':idColor(act.revision.id)}" class="activity-highlight">
-            <img ng-src="{{::page.router.rawAssetThumb([act.revision.id, 56])}}"/>
-            {{::act.revision.id}}
+        <dd ng-if="::act.transcode">
+          <span ng-style="::{'border-color':idColor(act.transcode.id)}" class="activity-highlight">
+            <img ng-src="{{::page.router.rawAssetThumb([act.transcode.id, 56])}}"/>
+            {{::act.transcode.id}}
           </span>
-          <a class="icon download button neutral" ng-href="{{::page.router.rawAssetDownload([act.revision.id])}}"></a>
-          )
+          <a class="icon download button neutral" ng-href="{{::page.router.rawAssetDownload([act.transcode.id])}}"></a>
+        </dd>
+        <dt ng-if="::act.replace" class="activity-change-title">
+          Replaced
+        </dt>
+        <dd ng-if="::act.replace">
+          <span ng-style="::{'border-color':idColor(act.replace.id)}" class="activity-highlight activity-old">
+            <img ng-src="{{::page.router.rawAssetThumb([act.replace.id, 56])}}"/>
+            {{::act.replace.id}}
+          </span>
+          <a class="icon download button neutral" ng-href="{{::page.router.rawAssetDownload([act.replace.id])}}"></a>
         </dd>
         <span activity-change="act.name" title-message="asset.name.title" ng-bind="::value"></span>
         <span activity-change="act.classification" title-message="asset.classification" ng-init="release=page.constants.release[value]">

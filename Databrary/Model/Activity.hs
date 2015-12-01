@@ -34,7 +34,6 @@ import Databrary.Model.Container
 import Databrary.Model.Segment
 import Databrary.Model.Slot
 import Databrary.Model.Asset
-import Databrary.Model.AssetSlot
 import Databrary.Model.AssetRevision
 import Databrary.Model.Activity.Types
 import Databrary.Model.Activity.SQL
@@ -90,11 +89,17 @@ lookupVolumeActivity vol = do
 
 addAssetRevision :: (MonadDB c m, MonadHasIdentity c m) => Volume -> Activity -> m Activity
 addAssetRevision vol
-  act@Activity{ activityAudit = Audit{ auditAction = aa }, activityTarget = ActivityAssetSlot AssetSlotId{ slotAssetId = ai }, activityPrev = Nothing }
+  act@Activity{ activityAudit = Audit{ auditAction = aa }, activityTarget = ActivityAssetSlot{ activityAssetId = ai }, activityPrev = Nothing }
   | aa == AuditActionAdd || aa == AuditActionChange = do
-    ar <- lookupAssetRevision ba{ assetRow = (assetRow ba){ assetId = ai } }
-    return act{ activityRevision = ar }
-    where ba = blankAsset vol
+    ar <- if aa == AuditActionChange then lookupAssetReplace a else return Nothing
+    at <- lookupAssetTranscode a
+    return act
+      { activityReplace = revisionOrig <$> ar
+      , activityTranscode = revisionOrig <$> at
+      }
+    where
+    a = ba{ assetRow = (assetRow ba){ assetId = ai } }
+    ba = blankAsset vol
 addAssetRevision _ a = return a
 
 mergeAssetCreation :: [Activity] -> [Activity]
@@ -113,15 +118,15 @@ lookupContainerActivity cont = do
   ra <- chainPrev (slotSegmentId . activitySlotId)
     <$> dbQuery $(selectQuery selectActivityRelease $ "WHERE slot_release.container = ${containerId $ containerRow cont} AND " ++ activityQual)
 
-  asa <- mapM (addAssetRevision (containerVolume cont)) =<< chainPrev (slotAssetId . activityAssetSlot)
+  asa <- mapM (addAssetRevision (containerVolume cont)) =<< chainPrev activityAssetId
     <$> dbQuery $(selectQuery selectActivityAssetSlot $ "WHERE slot_asset.container = ${containerId $ containerRow cont} AND " ++ activityQual)
 
   caa <- mergeAssetCreation . chainPrev (assetId . activityAssetRow)
     <$> dbQuery $(selectQuery selectActivityAsset $ "JOIN slot_asset ON asset.id = slot_asset.asset WHERE slot_asset.container = ${containerId $ containerRow cont} AND " ++ activityQual)
-  let uam m Activity{ activityAudit = Audit{ auditAction = AuditActionRemove, auditWhen = t }, activityTarget = ActivityAssetSlot as } =
-        Map.insert (slotAssetId as) t m
-      uam m Activity{ activityAudit = Audit{ auditAction = AuditActionChange, auditWhen = t }, activityRevision = Just ar } =
-        Map.insert (assetId $ assetRow $ revisionOrig ar) t m
+  let uam m Activity{ activityAudit = Audit{ auditAction = AuditActionRemove, auditWhen = t }, activityTarget = ActivityAssetSlot{ activityAssetId = a } } =
+        Map.insert a t m
+      uam m Activity{ activityAudit = Audit{ auditAction = AuditActionChange, auditWhen = t }, activityReplace = Just ar } =
+        Map.insert (assetId $ assetRow ar) t m
       uam m _ = m
       dam = flip $ Map.delete . assetId . activityAssetRow . activityTarget
       oal = Map.toList $ foldl' dam (foldl' uam Map.empty asa) caa
@@ -162,21 +167,19 @@ activityTargetJSON ActivityRelease{..} =
   ("release", maybeToList $ segmentJSON $ slotSegmentId activitySlotId, JSON.object
     [ "release" JSON..= activityRelease
     ])
-activityTargetJSON (ActivityAssetSlot (AssetSlotId a s)) =
-  ("asset", ["id" JSON..= a], JSON.object $ maybeToList
-    (segmentJSON . slotSegmentId . unId =<< s))
 activityTargetJSON (ActivityAsset a) =
   ("asset", ["id" JSON..= assetId a], JSON.object $ catMaybes
     [ ("classification" JSON..=) <$> assetRelease a
     , ("name" JSON..=) <$> assetName a
     ])
+activityTargetJSON (ActivityAssetSlot a s) =
+  ("asset", ["id" JSON..= a], JSON.object $ maybeToList
+    (segmentJSON $ slotSegmentId s))
+activityTargetJSON (ActivityAssetAndSlot a s) = (n, i, o JSON..+? segmentJSON (slotSegmentId s)) where
+  (n, i, o) = activityTargetJSON (ActivityAsset a)
 activityTargetJSON ActivityExcerpt{..} =
   ("excerpt", ("id" JSON..= activityAssetId) : maybeToList (segmentJSON activitySegment), JSON.object $ maybeToList
     (("excerpt" JSON..=) <$> activityExcerptRelease))
-
-assetRevisionJSON :: AssetRevision -> JSON.Object
-assetRevisionJSON AssetRevision{..} = assetJSON revisionOrig
-  JSON..+ (if revisionTranscode then "transcode" else "replace") JSON..= True
 
 activityJSON :: Activity -> Maybe JSON.Object
 activityJSON Activity{ activityAudit = Audit{..}, ..} = auditAction == AuditActionChange && HM.null new && HM.null old ?!>
@@ -187,7 +190,8 @@ activityJSON Activity{ activityAudit = Audit{..}, ..} = auditAction == AuditActi
     , Just $ "user" JSON..= auditWho auditIdentity
     , Just $ "type" JSON..= typ
     , HM.null old ?!> "old" JSON..= old
-    , ("revision" JSON..=) . assetRevisionJSON <$> activityRevision
+    , ("replace" JSON..=) . assetJSON <$> activityReplace
+    , ("transcode" JSON..=) . assetJSON <$> activityTranscode
     ]
   where
   (new, old)

@@ -22,15 +22,26 @@ import Databrary.Model.Segment
 import Databrary.Model.AssetRevision.Types
 import Databrary.Model.Transcode.Types
 
-makeOrigTranscode :: Segment -> [Maybe String] -> Maybe Timestamp -> Maybe Int32 -> Maybe BS.ByteString -> SiteAuth -> AssetRow -> Asset -> Transcode
-makeOrigTranscode s f t p l u a o =
-  Transcode (AssetRevision (Asset a $ assetVolume o) o True) u s (map (fromMaybe (error "NULL transcode options")) f) t p l
+makeTranscodeRow :: Segment -> [Maybe String] -> Maybe Timestamp -> Maybe Int32 -> Maybe BS.ByteString -> SiteAuth -> AssetRevision -> Transcode
+makeTranscodeRow s f t p l u a =
+  Transcode a u s (map (fromMaybe (error "NULL transcode options")) f) t p l
 
-selectOrigTranscode :: Selector -- ^ @'Asset' -> 'Transcode'@
-selectOrigTranscode = selectJoin 'id
-  [ selectColumns 'makeOrigTranscode "transcode" ["segment", "options", "start", "process", "log"]
+selectTranscodeRow :: Selector -- ^ @'SiteAuth' -> 'Asset' -> 'Asset' -> 'Transcode'@
+selectTranscodeRow = selectColumns 'makeTranscodeRow "transcode" ["segment", "options", "start", "process", "log"]
+
+selectAssetRevisionTranscode :: Selector -- ^ @'AssetRevision' -> 'Transcode'@
+selectAssetRevisionTranscode = selectJoin '($)
+  [ selectTranscodeRow
   , joinOn "transcode.owner = party.id"
     selectSiteAuth
+  ]
+
+makeOrigTranscode :: (AssetRevision -> Transcode) -> AssetRow -> Asset -> Transcode
+makeOrigTranscode f a o = f $ AssetRevision (Asset a $ assetVolume o) o
+
+selectOrigTranscode :: Selector -- ^ @'Asset' -> 'Transcode'@
+selectOrigTranscode = selectJoin 'makeOrigTranscode
+  [ selectAssetRevisionTranscode
   , joinOn "transcode.asset = asset.id"
     selectAssetRow
   ]

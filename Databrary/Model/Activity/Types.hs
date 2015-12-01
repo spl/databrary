@@ -18,38 +18,37 @@ import Databrary.Model.Slot.Types
 -- import Databrary.Model.Record.Types
 -- import Databrary.Model.RecordSlot.Types
 import Databrary.Model.Asset.Types
-import Databrary.Model.AssetSlot.Types
-import Databrary.Model.AssetRevision.Types
 
 data ActivityTarget
   = ActivityParty         { activityPartyRow :: !PartyRow }
-  | ActivityAccount
-    { activityAccountId :: !(Id Party)
-    , activityAccountEmail :: !BS.ByteString
-    , activityAccountPassword :: !(Maybe BS.ByteString)
-    }
+  | ActivityAccount       { activityAccountId :: !(Id Party)
+                          , activityAccountEmail :: !BS.ByteString
+                          , activityAccountPassword :: !(Maybe BS.ByteString)
+                          }
   | ActivityAuthorize     { activityAuthorize :: !Authorize }
   | ActivityVolume        { activityVolumeRow :: !VolumeRow }
   | ActivityAccess        { activityAccess :: !VolumeAccess }
   | ActivityContainer     { activityContainer :: !ContainerRow }
-  | ActivityRelease
-    { activitySlotId :: !SlotId
-    , activityRelease :: !Release
-    }
-  -- | ActivityRecord        { activityRecordRow :: !RecordRow }
-  -- | ActivityRecordSlot    { activityRecordSlot :: !RecordSlot }
+  | ActivityRelease       { activitySlotId :: !SlotId
+                          , activityRelease :: !Release
+                          }
+  -- | ActivityRecord     { activityRecordRow :: !RecordRow }
+  -- | ActivityRecordSlot { activityRecordSlot :: !RecordSlot }
   | ActivityAsset         { activityAssetRow :: !AssetRow }
-  | ActivityAssetSlot     { activityAssetSlot :: !AssetSlotId }
-  | ActivityExcerpt
-    { activityAssetId :: !(Id Asset)
-    , activitySegment :: !Segment
-    , activityExcerptRelease :: !(Maybe Release)
-    }
+  | ActivityAssetSlot     { activityAssetId :: !(Id Asset)
+                          , activitySlotId :: !SlotId }
+  | ActivityAssetAndSlot  { activityAssetRow :: !AssetRow
+                          , activitySlotId :: !SlotId }
+  | ActivityExcerpt       { activityAssetId :: !(Id Asset)
+                          , activitySegment :: !Segment
+                          , activityExcerptRelease :: !(Maybe Release)
+                          }
 
 data Activity = Activity
   { activityAudit :: !Audit
   , activityTarget :: !ActivityTarget
   , activityPrev :: Maybe ActivityTarget
-  , activityRevision :: Maybe AssetRevision
+  , activityReplace :: Maybe Asset
+  , activityTranscode :: Maybe Asset
   }
 

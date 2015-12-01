@@ -17,7 +17,6 @@ import Data.List (stripPrefix)
 import qualified Language.Haskell.TH as TH
 
 import Databrary.Model.SQL.Select
-import Databrary.Model.Id.Types
 import Databrary.Model.Audit.Types
 import Databrary.Model.Audit.SQL
 import Databrary.Model.Party.SQL
@@ -25,12 +24,9 @@ import Databrary.Model.Authorize.SQL
 import Databrary.Model.Volume.SQL
 import Databrary.Model.VolumeAccess.SQL
 import Databrary.Model.Container.SQL
-import Databrary.Model.Slot.Types
 import Databrary.Model.Slot.SQL
 import Databrary.Model.Release.SQL
-import Databrary.Model.Asset.Types
 import Databrary.Model.Asset.SQL
-import Databrary.Model.AssetSlot.Types
 import Databrary.Model.Activity.Types
 
 delim :: String -> Bool
@@ -40,7 +36,7 @@ delim (',':_) = True
 delim _ = False
 
 makeActivity :: Audit -> ActivityTarget -> Activity
-makeActivity a x = Activity a x Nothing Nothing
+makeActivity a x = Activity a x Nothing Nothing Nothing
 
 targetActivitySelector :: String -> Selector -> Selector
 targetActivitySelector t Selector{ selectOutput = o, selectSource = ts, selectJoined = (',':tj) }
@@ -76,16 +72,13 @@ selectActivityRelease :: Selector
 selectActivityRelease = targetActivitySelector "slot_release" $
   addSelects 'ActivityRelease (selectSlotId "slot_release") [selectOutput releaseRow]
 
-makeActivityAssetSlot :: Id Asset -> SlotId -> ActivityTarget
-makeActivityAssetSlot a = ActivityAssetSlot . AssetSlotId a . Just . Id
-
 selectActivityAsset :: Selector
 selectActivityAsset = targetActivitySelector "asset" $
   selectMap (TH.ConE 'ActivityAsset `TH.AppE`) selectAssetRow
 
 selectActivityAssetSlot :: Selector
 selectActivityAssetSlot = targetActivitySelector "slot_asset" $
-  addSelects 'makeActivityAssetSlot
+  addSelects 'ActivityAssetSlot
     (selector "slot_asset" $ SelectColumn "slot_asset" "asset")
     [selectOutput $ selectSlotId "slot_asset"]
 

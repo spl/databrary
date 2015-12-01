@@ -506,23 +506,6 @@ COMMENT ON TABLE "slot_asset" IS 'Attachment point of assets, which, in the case
 SELECT audit.CREATE_TABLE ('slot_asset', 'slot');
 CREATE INDEX "slot_asset_activity_idx" ON audit."slot_asset" ("container") WHERE "audit_action" >= 'add';
 
-CREATE TABLE "asset_revision" (
-	"orig" integer NOT NULL References "asset" ON DELETE CASCADE,
-	"asset" integer Unique NOT NULL References "asset" ON DELETE CASCADE
-	-- Check ("orig" < "asset") -- this would be nice, but we have some ingests that were done the other way
-);
-COMMENT ON TABLE "asset_revision" IS 'Assets that reflect different versions of the same content, either generated automatically from reformatting or a replacement provided by the user.';
-
-CREATE FUNCTION "asset_supersede" ("asset_old" integer, "asset_new" integer) RETURNS void STRICT LANGUAGE plpgsql AS $$
-BEGIN
-	PERFORM asset FROM asset_revision WHERE orig = asset_new;
-	IF FOUND THEN
-		RAISE 'Asset % already superseded', asset_new;
-	END IF;
-	INSERT INTO asset_revision VALUES (asset_old, asset_new);
-	UPDATE slot_asset SET asset = asset_new WHERE asset = asset_old;
-END; $$;
-
 
 CREATE TABLE "excerpt" (
 	"asset" integer NOT NULL References "slot_asset" ON UPDATE CASCADE ON DELETE CASCADE,
@@ -557,6 +540,28 @@ CREATE TRIGGER "excerpt_shift" AFTER UPDATE OF "segment" ON "slot_asset" FOR EAC
 COMMENT ON TRIGGER "excerpt_shift" ON "slot_asset" IS 'Move or clear excerpts on repositioning of asset, just based on lower bound.';
 
 
+CREATE TABLE "asset_revision" (
+	"orig" integer NOT NULL References "asset" ON DELETE CASCADE,
+	"asset" integer Unique NOT NULL References "asset" ON DELETE CASCADE,
+	-- Check ("orig" < "asset"), -- this would be nice, but we have some ingests that were done the other way
+	Check (false) NO INHERIT
+);
+COMMENT ON TABLE "asset_revision" IS 'Assets that reflect different versions of the same content, either generated automatically from reformatting or a replacement provided by the user.';
+
+CREATE TABLE "asset_replace" (
+) INHERITS ("asset_revision");
+COMMENT ON TABLE "asset_replace" IS 'Replacement assets provided by the user.';
+
+CREATE FUNCTION "asset_replace" ("asset_old" integer, "asset_new" integer) RETURNS void STRICT LANGUAGE plpgsql AS $$
+BEGIN
+	PERFORM asset FROM asset_replace WHERE orig = asset_new;
+	IF FOUND THEN -- avoid cycles
+		RAISE 'Asset % already replaced', asset_new;
+	END IF;
+	INSERT INTO asset_replace (orig, asset) VALUES (asset_old, asset_new);
+	UPDATE slot_asset SET asset = asset_new WHERE asset = asset_old;
+END; $$;
+
 CREATE TABLE "transcode" (
 	"asset" integer NOT NULL Primary Key References "asset" ON DELETE CASCADE,
 	"owner" integer NOT NULL References "account",
@@ -567,7 +572,7 @@ CREATE TABLE "transcode" (
 	"process" integer,
 	"log" text
 ) INHERITS ("asset_revision");
-COMMENT ON TABLE "transcode" IS 'Format conversions that are being or have been applied to transform in input asset.';
+COMMENT ON TABLE "transcode" IS 'Format conversions that are being or have been applied to transform orig asset.';
 
 ----------------------------------------------------------- comments
 

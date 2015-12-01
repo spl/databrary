@@ -187,9 +187,6 @@ processAsset api target = do
         }
       } . Just =<< peeks (fileUploadPath upfile)
     fileUploadRemove upfile
-    case target of
-      AssetTargetAsset _ -> supersedeAsset a a'
-      _ -> return ()
     td <- checkAlreadyTranscoded a' (fileUploadProbe up)
     te <- peeks transcodeEnabled
     t <- case fileUploadProbe up of
@@ -208,6 +205,9 @@ processAsset api target = do
         }
       })
     up'
+  case target of
+    AssetTargetAsset _ -> replaceAsset a (slotAsset as'')
+    _ -> return ()
   _ <- changeAsset (slotAsset as'') Nothing
   _ <- changeAssetSlot as''
   case api of
@@ -217,7 +217,7 @@ processAsset api target = do
 postAsset :: ActionRoute (API, Id Asset)
 postAsset = multipartAction $ action POST (pathAPI </> pathId) $ \(api, ai) -> withAuth $ do
   asset <- getAsset PermissionEDIT ai
-  r <- assetIsSuperseded (slotAsset asset)
+  r <- assetIsReplaced (slotAsset asset)
   when r $ result $
     response conflict409 [] ("This file has already been replaced." :: T.Text)
   processAsset api $ AssetTargetAsset asset
