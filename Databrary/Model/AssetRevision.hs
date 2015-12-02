@@ -1,9 +1,10 @@
 {-# LANGUAGE TemplateHaskell, QuasiQuotes #-}
 module Databrary.Model.AssetRevision
   ( module Databrary.Model.AssetRevision.Types
-  , supersedeAsset
-  , assetIsSuperseded
-  , lookupAssetRevision
+  , replaceAsset
+  , assetIsReplaced
+  , lookupAssetReplace
+  , lookupAssetTranscode
   ) where
 
 import Database.PostgreSQL.Typed.Query (pgSQL)
@@ -21,15 +22,20 @@ import Databrary.Model.AssetRevision.SQL
 
 useTDB
 
-supersedeAsset :: MonadDB c m => Asset -> Asset -> m ()
-supersedeAsset old new =
-  dbExecute1' [pgSQL|SELECT asset_supersede(${assetId old}, ${assetId new})|]
+replaceAsset :: MonadDB c m => Asset -> Asset -> m ()
+replaceAsset old new =
+  dbExecute1' [pgSQL|SELECT asset_replace(${assetId $ assetRow old}, ${assetId $ assetRow new})|]
 
-assetIsSuperseded :: MonadDB c m => Asset -> m Bool
-assetIsSuperseded a =
-  dbExecute1 [pgSQL|SELECT ''::void FROM asset_revision WHERE orig = ${assetId a} LIMIT 1|]
+assetIsReplaced :: MonadDB c m => Asset -> m Bool
+assetIsReplaced a =
+  dbExecute1 [pgSQL|SELECT ''::void FROM asset_replace WHERE orig = ${assetId $ assetRow a} LIMIT 1|]
 
-lookupAssetRevision :: (MonadHasIdentity c m, MonadDB c m) => Asset -> m (Maybe AssetRevision)
-lookupAssetRevision a = do
+lookupAssetReplace :: (MonadHasIdentity c m, MonadDB c m) => Asset -> m (Maybe AssetRevision)
+lookupAssetReplace a = do
   ident <- peek
-  dbQuery1 $ ($ a) <$> $(selectQuery (selectAssetRevision 'ident) "$WHERE asset_revision.asset = ${assetId a}")
+  dbQuery1 $ ($ a) <$> $(selectQuery (selectAssetRevision "asset_replace" 'ident) "$WHERE asset_replace.asset = ${assetId $ assetRow a}")
+
+lookupAssetTranscode :: (MonadHasIdentity c m, MonadDB c m) => Asset -> m (Maybe AssetRevision)
+lookupAssetTranscode a = do
+  ident <- peek
+  dbQuery1 $ ($ a) <$> $(selectQuery (selectAssetRevision "transcode" 'ident) "$WHERE transcode.asset = ${assetId $ assetRow a}")

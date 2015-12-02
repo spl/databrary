@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings, TemplateHaskell, TypeFamilies #-}
 module Databrary.Model.Party.Types 
-  ( Party(..)
+  ( PartyRow(..)
+  , Party(..)
   , Account(..)
   , SiteAuth(..)
   , nobodySiteAuth
@@ -22,13 +23,17 @@ import Databrary.Model.ORCID
 
 type instance IdType Party = Int32
 
-data Party = Party
+data PartyRow = PartyRow
   { partyId :: Id Party
   , partySortName :: T.Text
   , partyPreName :: Maybe T.Text
   , partyORCID :: Maybe ORCID
   , partyAffiliation :: Maybe T.Text
   , partyURL :: Maybe URI
+  }
+
+data Party = Party
+  { partyRow :: !PartyRow
   , partyAccount :: Maybe Account
   -- , partySiteAccess :: Access -- site-level access this party is granted under root (currently SiteAuth only)
   , partyPermission :: Permission -- permission current user has over this party
@@ -40,7 +45,8 @@ data Account = Account
   , accountParty :: Party
   }
 
-makeHasRec ''Party ['partyId]
+makeHasRec ''PartyRow ['partyId]
+makeHasRec ''Party ['partyRow]
 makeHasRec ''Account ['accountParty]
 
 instance Has Access Party where
@@ -61,7 +67,7 @@ data SiteAuth = SiteAuth
 
 makeHasRec ''SiteAuth ['siteAccount, 'siteAccess]
 
-deriveLiftMany [''Party, ''Account]
+deriveLiftMany [''PartyRow, ''Party, ''Account]
 
 -- this is unfortunate, mainly to avoid untangling Party.SQL
 nobodySiteAuth :: SiteAuth
@@ -69,12 +75,14 @@ nobodySiteAuth = SiteAuth
   { siteAccount = Account
     { accountEmail = "nobody@databrary.org"
     , accountParty = Party
-      { partyId = Id (-1)
-      , partySortName = "Nobody"
-      , partyPreName = Nothing
-      , partyORCID = Nothing
-      , partyAffiliation = Nothing
-      , partyURL = Nothing
+      { partyRow = PartyRow
+        { partyId = Id (-1)
+        , partySortName = "Nobody"
+        , partyPreName = Nothing
+        , partyORCID = Nothing
+        , partyAffiliation = Nothing
+        , partyURL = Nothing
+        }
       , partyAccount = Nothing
       , partyPermission = PermissionREAD
       , partyAccess = Just minBound
@@ -86,12 +94,14 @@ nobodySiteAuth = SiteAuth
 
 blankParty :: Party
 blankParty = Party
-  { partyId = error "blankParty"
-  , partySortName = ""
-  , partyPreName = Nothing
-  , partyORCID = Nothing
-  , partyAffiliation = Nothing
-  , partyURL = Nothing
+  { partyRow = PartyRow
+    { partyId = error "blankParty"
+    , partySortName = ""
+    , partyPreName = Nothing
+    , partyORCID = Nothing
+    , partyAffiliation = Nothing
+    , partyURL = Nothing
+    }
   , partyAccount = Nothing
   , partyPermission = PermissionNONE
   , partyAccess = Nothing

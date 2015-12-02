@@ -12,6 +12,7 @@ module Databrary.Controller.Asset
   , viewSlotAssetCreate
   , deleteAsset
   , downloadAsset
+  , thumbAsset
   , assetDownloadName
   ) where
 
@@ -63,6 +64,7 @@ import Databrary.Controller.Permission
 import Databrary.Controller.Form
 import Databrary.Controller.Volume
 import Databrary.Controller.Slot
+import Databrary.Controller.Format
 import {-# SOURCE #-} Databrary.Controller.AssetSegment
 import Databrary.View.Asset
 
@@ -86,8 +88,8 @@ assetJSONField _ _ _ = return Nothing
 assetJSONQuery :: AssetSlot -> JSON.Query -> ActionM JSON.Object
 assetJSONQuery vol = JSON.jsonQuery (assetSlotJSON vol) (assetJSONField vol)
 
-assetDownloadName :: Asset -> [T.Text]
-assetDownloadName a = T.pack (show (assetId a)) : maybeToList (assetName a)
+assetDownloadName :: AssetRow -> [T.Text]
+assetDownloadName a = T.pack (show $ assetId a) : maybeToList (assetName a)
 
 viewAsset :: ActionRoute (API, Id Asset)
 viewAsset = action GET (pathAPI </> pathId) $ \(api, i) -> withAuth $ do
@@ -95,8 +97,8 @@ viewAsset = action GET (pathAPI </> pathId) $ \(api, i) -> withAuth $ do
   case api of
     JSON -> okResponse [] <$> (assetJSONQuery asset =<< peeks Wai.queryString)
     HTML
-      | Just s <- assetSlot asset -> peeks $ otherRouteResponse [] viewAssetSegment (api, Just (view asset), slotId s, assetId (slotAsset asset))
-      | otherwise -> return $ okResponse [] $ T.pack $ show $ assetId $ slotAsset asset -- TODO
+      | Just s <- assetSlot asset -> peeks $ otherRouteResponse [] viewAssetSegment (api, Just (view asset), slotId s, assetId $ assetRow $ slotAsset asset)
+      | otherwise -> return $ okResponse [] $ T.pack $ show $ assetId $ assetRow $ slotAsset asset -- TODO
 
 data AssetTarget
   = AssetTargetVolume Volume
@@ -150,14 +152,14 @@ processAsset api target = do
         | otherwise -> Nothing <$ deformError "File or upload required."
       _ -> Nothing <$ deformError "Conflicting uploaded files found."
     up <- Trav.mapM detectUpload upfile
-    let fmt = maybe (assetFormat a) (probeFormat . fileUploadProbe) up
-    name <- "name" .:> maybe (assetName a) (TE.decodeUtf8 . dropFormatExtension fmt <$>) <$> deformOptional (deformNonEmpty deform)
-    classification <- "classification" .:> fromMaybe (assetRelease a) <$> deformOptional (deformNonEmpty deform)
+    let fmt = maybe (assetFormat $ assetRow a) (probeFormat . fileUploadProbe) up
+    name <- "name" .:> maybe (assetName $ assetRow a) (TE.decodeUtf8 . dropFormatExtension fmt <$>) <$> deformOptional (deformNonEmpty deform)
+    classification <- "classification" .:> fromMaybe (assetRelease $ assetRow a) <$> deformOptional (deformNonEmpty deform)
     slot <-
       "container" .:> (<|> slotContainer <$> s) <$> deformLookup "Container not found." (lookupVolumeContainer (assetVolume a))
       >>= Trav.mapM (\c -> "position" .:> do
         let seg = slotSegment <$> s
-            dur = maybe (assetDuration a) (probeLength . fileUploadProbe) up
+            dur = maybe (assetDuration $ assetRow a) (probeLength . fileUploadProbe) up
         p <- (<|> (lowerBound . segmentRange =<< seg)) <$> deformNonEmpty deform
         Slot c . maybe fullSegment
           (\l -> Segment $ Range.bounded l (l + fromMaybe 0 ((segmentLength =<< seg) <|> dur)))
@@ -165,9 +167,11 @@ processAsset api target = do
     return
       ( as
         { slotAsset = a
-          { assetName = name
-          , assetRelease = classification
-          , assetFormat = fmt
+          { assetRow = (assetRow a)
+            { assetName = name
+            , assetRelease = classification
+            , assetFormat = fmt
+            }
           }
         , assetSlot = slot
         }
@@ -175,20 +179,19 @@ processAsset api target = do
       )
   as'' <- maybe (return as') (\up@FileUpload{ fileUploadFile = upfile } -> do
     a' <- addAsset (slotAsset as')
-      { assetName = Just $ TE.decodeUtf8 $ fileUploadName upfile
-      , assetDuration = Nothing
-      , assetSize = Nothing
-      , assetSHA1 = Nothing
+      { assetRow = (assetRow $ slotAsset as')
+        { assetName = Just $ TE.decodeUtf8 $ fileUploadName upfile
+        , assetDuration = Nothing
+        , assetSize = Nothing
+        , assetSHA1 = Nothing
+        }
       } . Just =<< peeks (fileUploadPath upfile)
     fileUploadRemove upfile
-    case target of
-      AssetTargetAsset _ -> supersedeAsset a a'
-      _ -> return ()
     td <- checkAlreadyTranscoded a' (fileUploadProbe up)
     te <- peeks transcodeEnabled
     t <- case fileUploadProbe up of
       ProbeAV{ probeAV = av } | td ->
-        return a'{ assetDuration = avProbeLength av }
+        return a'{ assetRow = (assetRow a'){ assetDuration = avProbeLength av } }
       probe@ProbeAV{} | te -> do
         t <- addTranscode a' fullSegment defaultTranscodeOptions probe
         _ <- forkTranscode t
@@ -196,20 +199,25 @@ processAsset api target = do
       _ -> return a'
     return $ fixAssetSlotDuration as'
       { slotAsset = t
-        { assetName = assetName (slotAsset as')
+        { assetRow = (assetRow t)
+          { assetName = assetName $ assetRow $ slotAsset as'
+          }
         }
       })
     up'
+  case target of
+    AssetTargetAsset _ -> replaceAsset a (slotAsset as'')
+    _ -> return ()
   _ <- changeAsset (slotAsset as'') Nothing
   _ <- changeAssetSlot as''
   case api of
     JSON -> return $ okResponse [] $ assetSlotJSON as''
-    HTML -> peeks $ otherRouteResponse [] viewAsset (api, assetId (slotAsset as''))
+    HTML -> peeks $ otherRouteResponse [] viewAsset (api, assetId $ assetRow $ slotAsset as'')
 
 postAsset :: ActionRoute (API, Id Asset)
 postAsset = multipartAction $ action POST (pathAPI </> pathId) $ \(api, ai) -> withAuth $ do
   asset <- getAsset PermissionEDIT ai
-  r <- assetIsSuperseded (slotAsset asset)
+  r <- assetIsReplaced (slotAsset asset)
   when r $ result $
     response conflict409 [] ("This file has already been replaced." :: T.Text)
   processAsset api $ AssetTargetAsset asset
@@ -247,10 +255,18 @@ deleteAsset = action DELETE (pathAPI </> pathId) $ \(api, ai) -> withAuth $ do
   _ <- changeAssetSlot asset'
   case api of
     JSON -> return $ okResponse [] $ assetSlotJSON asset'
-    HTML -> peeks $ otherRouteResponse [] viewAsset (api, assetId (slotAsset asset'))
+    HTML -> peeks $ otherRouteResponse [] viewAsset (api, assetId $ assetRow $ slotAsset asset')
 
-downloadAsset :: ActionRoute (Id Asset)
-downloadAsset = action GET (pathId </< "download") $ \ai -> withAuth $ do
-  as <- getAsset PermissionPUBLIC ai
+downloadAsset :: ActionRoute (Id Asset, Segment)
+downloadAsset = action GET (pathId </> pathSegment </< "download") $ \(ai, seg) -> withAuth $ do
+  a <- getAsset PermissionPUBLIC ai
   inline <- peeks $ lookupQueryParameters "inline"
-  serveAssetSegment (null inline) $ assetSlotSegment as
+  serveAssetSegment (null inline) $ newAssetSegment a seg Nothing
+
+thumbAsset :: ActionRoute (Id Asset, Segment)
+thumbAsset = action GET (pathId </> pathSegment </< "thumb") $ \(ai, seg) -> withAuth $ do
+  a <- getAsset PermissionPUBLIC ai
+  let as = assetSegmentInterp 0.25 $ newAssetSegment a seg Nothing
+  if formatIsImage (view as) && assetBacked (view as) && dataPermission as > PermissionNONE
+    then peeks $ otherRouteResponse [] downloadAsset (view as, assetSegment as)
+    else peeks $ otherRouteResponse [] formatIcon (view as)

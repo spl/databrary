@@ -41,7 +41,7 @@ volumeDOISuffix :: Id Volume -> BS.ByteString
 volumeDOISuffix i = BSC.pack $ '.' : show i
 
 volumeEZID :: (MonadDB c m, MonadHasIdentity c m) => Volume -> Maybe Citation -> m EZIDMeta
-volumeEZID v@Volume{..} cite = do
+volumeEZID v@Volume{ volumeRow = VolumeRow{..}, ..} cite = do
   top <- lookupVolumeTopContainer v
   own <- lookupVolumeAccess v PermissionADMIN
   fund <- lookupVolumeFunding v
@@ -69,10 +69,10 @@ addVolumeDOI :: MonadDB c m => Id Volume -> BS.ByteString -> m Bool
 addVolumeDOI v d = dbExecute1 [pgSQL|UPDATE volume SET doi = ${d} WHERE id = ${v} AND doi IS NULL|]
 
 updateVolume :: Volume -> Maybe Citation -> EZIDM Bool
-updateVolume v@Volume{ volumeId = i } = maybe
-  (maybe (return False) (addVolumeDOI i) <=< ezidCreate (volumeDOISuffix i))
+updateVolume v = maybe
+  (maybe (return False) (addVolumeDOI $ volumeId $ volumeRow v) <=< ezidCreate (volumeDOISuffix $ volumeId $ volumeRow v))
   ezidModify
-  (volumeDOI v)
+  (volumeDOI $ volumeRow v)
   <=< volumeEZID v
 
 removeVolume :: Id Volume -> BS.ByteString -> EZIDM Bool
@@ -87,7 +87,7 @@ updateEZID = runEZIDM $ do
       mapM_ (uncurry updateVolume) vl
       dl <- lookupVolumeDOIs
       mapM_ (uncurry removeVolume) $
-        deleteFirstsBy (on (==) fst) dl (map ((volumeId &&& fromMaybe BS.empty . volumeDOI) . fst) vl)
+        deleteFirstsBy (on (==) fst) dl (map ((volumeId &&& fromMaybe BS.empty . volumeDOI) . volumeRow . fst) vl)
     else do
       t <- liftIO getCurrentTime
       focusIO $ logMsg t "ezid is down"

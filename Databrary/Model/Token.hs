@@ -111,7 +111,7 @@ createUpload :: (MonadHas Entropy c m, MonadDB c m, MonadHasIdentity c m) => Vol
 createUpload vol name size = do
   auth <- peek
   (tok, ex) <- createToken $ \tok ->
-    dbQuery1' [pgSQL|INSERT INTO upload (token, account, volume, filename, size) VALUES (${tok}, ${view auth :: Id Party}, ${volumeId vol}, ${name}, ${size}) RETURNING token, expires|]
+    dbQuery1' [pgSQL|INSERT INTO upload (token, account, volume, filename, size) VALUES (${tok}, ${view auth :: Id Party}, ${volumeId $ volumeRow vol}, ${name}, ${size}) RETURNING token, expires|]
   return $ Upload
     { uploadAccountToken = AccountToken
       { accountToken = Token tok ex

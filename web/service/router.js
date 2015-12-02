@@ -130,10 +130,10 @@ app.provider('routerService', [
             return models.Tag.top();
           }
         ],
-        audit: [
+        activity: [
           'modelService',
           function (models) {
-            return models.siteAudit();
+            return models.siteActivity();
           }
         ]
       },
@@ -275,6 +275,23 @@ app.provider('routerService', [
       reloadOnSearch: false,
     });
 
+    routes.partyActivity = makeRoute(controllers.viewPartyActivity, ['id'], {
+      controller: 'party/activity',
+      templateUrl: 'party/activity.html',
+      resolve: {
+        party: [
+          'pageService', function (page) {
+            return page.models.Party.get(page.$route.current.params.id).then(function (p) {
+              return p.activity().then(function (a) {
+                p.activity = a;
+                return p;
+              });
+            });
+          }
+        ],
+      }
+    });
+
     routes.partySearch = makeRoute(controllers.viewPartySearch, [], {
       controller: 'party/search',
       templateUrl: 'party/search.html',
@@ -352,8 +369,25 @@ app.provider('routerService', [
       templateUrl: 'volume/csv.html',
       resolve: {
         volume: [
-          'pageService', function(page) {
+          'pageService', function (page) {
             return page.models.Volume.get(page.$route.current.params.id);
+          }
+        ],
+      }
+    });
+
+    routes.volumeActivity = makeRoute(controllers.viewVolumeActivity, ['id'], {
+      controller: 'volume/activity',
+      templateUrl: 'volume/activity.html',
+      resolve: {
+        volume: [
+          'pageService', function (page) {
+            return page.models.Volume.get(page.$route.current.params.id).then(function (v) {
+              return v.activity().then(function (a) {
+                v.activity = a;
+                return v;
+              });
+            });
           }
         ],
       }
@@ -372,6 +406,25 @@ app.provider('routerService', [
         ],
         volume: function () {
         },
+      }
+    });
+
+    routes.slotActivity = makeRoute(controllers.viewSlotActivity, ['vid', 'id'], {
+      controller: 'volume/slotActivity',
+      templateUrl: 'volume/slotActivity.html',
+      resolve: {
+        slot: [
+          'pageService', function (page) {
+            return page.models.Volume.get(page.$route.current.params.vid).then(function (v) {
+              return v.getSlot(page.$route.current.params.id).then(function (s) {
+                return s.activity().then(function (a) {
+                  s.activity = a;
+                  return s;
+                });
+              });
+            });
+          }
+        ],
       }
     });
 
@@ -425,6 +478,8 @@ app.provider('routerService', [
     routes.assetThumb = makeRoute(controllers.thumbAssetSegment, ['cid', 'segment', 'id', 'size']);
     routes.slotThumb = makeRoute(controllers.thumbSlot, ['id','cid','segment', 'size']);
     routes.assetDownload = makeRoute(controllers.downloadAssetSegment, ['cid', 'segment', 'id', 'inline']);
+    routes.rawAssetDownload = makeRoute(controllers.downloadAsset, ['id', 'inline']);
+    routes.rawAssetThumb = makeRoute(controllers.thumbAsset, ['id', 'size']);
     routes.volumeZip = makeRoute(controllers.zipVolume, ['id']);
 
     $routeProvider.otherwise('/');

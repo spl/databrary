@@ -92,6 +92,6 @@ postTranscode = action POST (pathHTML >/> "admin" >/> pathId) $ \ti -> withAuth 
   case act of
     TranscodeStart | isNothing (transcodeProcess t) -> void $ startTranscode t
     TranscodeStop -> void $ stopTranscode t
-    TranscodeFail | isNothing (assetSize (transcodeAsset t)) -> void $ changeAsset (transcodeAsset t){ assetSize = Just (-1) } Nothing
+    TranscodeFail | isNothing (assetSize $ assetRow $ transcodeAsset t) -> void $ changeAsset (transcodeAsset t){ assetRow = (assetRow $ transcodeAsset t){ assetSize = Just (-1) } } Nothing
     _ -> fail "Invalid action"
   peeks $ otherRouteResponse [] viewTranscodes ()

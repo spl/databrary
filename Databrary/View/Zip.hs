@@ -49,7 +49,7 @@ import Databrary.View.Html
 import {-# SOURCE #-} Databrary.Controller.Zip
 
 htmlVolumeDescription :: Bool -> Volume -> [Citation] -> [Funding] -> IdSet Container -> [[AssetSlot]] -> [[AssetSlot]] -> RequestContext -> H.Html
-htmlVolumeDescription inzip Volume{..} cite fund cs atl abl req = H.docTypeHtml $ do
+htmlVolumeDescription inzip Volume{ volumeRow = VolumeRow{..}, ..} cite fund cs atl abl req = H.docTypeHtml $ do
   H.head $ do
     H.meta H.! HA.httpEquiv "content-type" H.! HA.content "text/html;charset=utf-8"
     H.title $ do
@@ -95,7 +95,7 @@ htmlVolumeDescription inzip Volume{..} cite fund cs atl abl req = H.docTypeHtml 
           H.string $ formatTime defaultTimeLocale "%a, %d %b %Y %H:%M:%S %Z" (view req :: Timestamp)
           void " by "
           H.a H.! HA.href (link viewParty (HTML, TargetParty $ view req)) $
-            H.text $ partyName (view req)
+            H.text $ partyName $ partyRow $ view req
       else do
         H.dt $ H.a H.! actionLink zipVolume volumeId (idSetQuery cs) $
           void "Download"
@@ -138,9 +138,9 @@ htmlVolumeDescription inzip Volume{..} cite fund cs atl abl req = H.docTypeHtml 
     H.tr $ do
       H.td H.! rs $ H.a !? (inzip ?> HA.href (byteStringValue fn)) $
         byteStringHtml dn
-      H.td H.! rs $ H.a H.! HA.href (link viewContainer (HTML, (Just volumeId, containerId c))) $ do
+      H.td H.! rs $ H.a H.! HA.href (link viewContainer (HTML, (Just volumeId, containerId $ containerRow c))) $ do
         Fold.mapM_ H.string $ formatContainerDate c
-        Fold.mapM_ H.text $ containerName c
+        Fold.mapM_ H.text $ containerName $ containerRow c
       arow fn a
       mapM_ (H.tr . arow fn) l
     abody al
@@ -148,13 +148,13 @@ htmlVolumeDescription inzip Volume{..} cite fund cs atl abl req = H.docTypeHtml 
     rs = HA.rowspan $ H.toValue $ succ $ length l
     dn = makeFilename $ containerDownloadName c
     fn
-      | containerTop c = dn
+      | containerTop (containerRow c) = dn
       | otherwise = "sessions" </> dn
-  arow bf as@AssetSlot{ slotAsset = a } = do
+  arow bf as@AssetSlot{ slotAsset = Asset{ assetRow = a } } = do
     H.td $ H.a !? (inzip ?> HA.href (byteStringValue $ bf </> fn)) $
       byteStringHtml fn
     H.td $ H.a H.! HA.href (link viewAsset (HTML, assetId a)) $
-      H.text $ fromMaybe (formatName (assetFormat a)) $ assetName a
+      H.text $ fromMaybe (formatName $ assetFormat a) $ assetName a
     H.td $ H.string $ show (view as :: Release)
     H.td $ maybe mempty H.toMarkup $ assetSize a
     H.td $ maybe mempty (H.string . show) $ assetDuration a

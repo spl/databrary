@@ -43,7 +43,7 @@ selectAuthorizeParent :: TH.Name -- ^ child 'Party'
   -> Selector -- ^ 'Authorize'
 selectAuthorizeParent child ident = selectJoin '($)
   [ selectMap (`TH.AppE` TH.VarE child) authorizeRow
-  , joinOn ("authorize.parent = party.id AND authorize.child = ${partyId " ++ nameRef child ++ "}") 
+  , joinOn ("authorize.parent = party.id AND authorize.child = ${partyId $ partyRow " ++ nameRef child ++ "}") 
     $ selectParty ident
   ]
 
@@ -52,7 +52,7 @@ selectAuthorizeChild :: TH.Name -- ^ parent 'Party'
   -> Selector -- ^ 'Authorize'
 selectAuthorizeChild parent ident = selectMap (`TH.AppE` TH.VarE parent) $ selectJoin '($)
   [ authorizeRow
-  , joinOn ("authorize.child = party.id AND authorize.parent = ${partyId " ++ nameRef parent ++ "}") 
+  , joinOn ("authorize.child = party.id AND authorize.parent = ${partyId $ partyRow " ++ nameRef parent ++ "}") 
     $ selectParty ident
   ]
 
@@ -65,8 +65,8 @@ authorizeSets a = accessSets a ++
 authorizeKeys :: String -- ^ @'Authorize'@
   -> [(String, String)]
 authorizeKeys a =
-  [ ("child", "${partyId (authorizeChild (authorization " ++ a ++ "))}")
-  , ("parent", "${partyId (authorizeParent (authorization " ++ a ++ "))}")
+  [ ("child", "${partyId $ partyRow $ authorizeChild $ authorization " ++ a ++ "}")
+  , ("parent", "${partyId $ partyRow $ authorizeParent $ authorization " ++ a ++ "}")
   ]
 
 updateAuthorize :: TH.Name -- ^ @'AuditIdentity'@

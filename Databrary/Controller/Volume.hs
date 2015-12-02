@@ -98,7 +98,7 @@ cacheVolumeRecords vol = do
   vc <- get
   maybe (do
     l <- lookupVolumeRecords vol
-    let m = HML.fromList [ (recordId r, r) | r <- l ]
+    let m = HML.fromList [ (recordId $ recordRow r, r) | r <- l ]
     put vc{ volumeCacheRecords = Just m }
     return (l, m))
     (return . (HML.elems &&& id))
@@ -133,10 +133,11 @@ volumeJSONField vol "containers" o = do
     then lookupVolumeContainersRecordIds vol
     else nope <$> lookupVolumeContainers vol
   cl' <- if assets
-    then leftJoin (\(c, _) (_, SlotId a _) -> containerId c == a) cl <$> lookupVolumeAssetSlotIds vol
+    then leftJoin (\(c, _) (_, SlotId a _) -> containerId (containerRow c) == a) cl <$> lookupVolumeAssetSlotIds vol
     else return $ nope cl
   rm <- if records then snd <$> cacheVolumeRecords vol else return HM.empty
-  let rjs c (s, r) = recordSlotJSON $ RecordSlot (HML.lookupDefault (blankRecord vol){ recordId = r } r rm) (Slot c s)
+  let br = blankRecord undefined vol
+      rjs c (s, r) = recordSlotJSON $ RecordSlot (HML.lookupDefault br{ recordRow = (recordRow br){ recordId = r } } r rm) (Slot c s)
       ajs c (a, SlotId _ s) = assetSlotJSON $ AssetSlot a (Just (Slot c s))
   return $ Just $ JSON.toJSON $ map (\((c, rl), al) -> containerJSON c
     JSON..+? (records ?> "records" JSON..= map (rjs c) rl)
@@ -177,9 +178,9 @@ volumeJSONQuery vol = runVolumeCache . JSON.jsonQuery (volumeJSON vol) (volumeJS
 
 volumeDownloadName :: Volume -> [T.Text]
 volumeDownloadName v =
-  (T.pack $ "databrary" ++ show (volumeId v))
+  (T.pack $ "databrary" ++ show (volumeId $ volumeRow v))
     : map (T.takeWhile (',' /=) . snd) (volumeOwners v)
-    ++ [fromMaybe (volumeName v) (getVolumeAlias v)]
+    ++ [fromMaybe (volumeName $ volumeRow v) (getVolumeAlias v)]
 
 viewVolume :: ActionRoute (API, Id Volume)
 viewVolume = action GET (pathAPI </> pathId) $ \(api, vi) -> withAuth $ do
@@ -198,9 +199,11 @@ volumeForm v = do
   alias <- "alias" .:> deformNonEmpty deform
   body <- "body" .:> deformNonEmpty deform
   return v
-    { volumeName = name
-    , volumeAlias = alias
-    , volumeBody = body
+    { volumeRow = (volumeRow v)
+      { volumeName = name
+      , volumeAlias = alias
+      , volumeBody = body
+      }
     }
 
 volumeCitationForm :: Volume -> DeformActionM f (Volume, Maybe Citation)
@@ -213,17 +216,17 @@ volumeCitationForm v = do
     <*> ("year" .:> deformNonEmpty deform)
     <$- Nothing
   look <- flatMapM (lift . focusIO . lookupCitation) $
-    guard (T.null (volumeName vol) || T.null (citationHead cite) || isNothing (citationYear cite)) >> citationURL cite
+    guard (T.null (volumeName $ volumeRow vol) || T.null (citationHead cite) || isNothing (citationYear cite)) >> citationURL cite
   let fill = maybe cite (cite <>) look
       empty = T.null (citationHead fill) && isNothing (citationURL fill) && isNothing (citationYear fill)
       name 
         | Just title <- citationTitle fill
-        , T.null (volumeName vol) = title
-        | otherwise = volumeName vol
+        , T.null (volumeName $ volumeRow vol) = title
+        | otherwise = volumeName $ volumeRow vol
   _ <- "name" .:> deformRequired name
   when (not empty) $ void $
     "citation" .:> "name" .:> deformRequired (citationHead fill)
-  return (vol{ volumeName = name }, empty ?!> fill)
+  return (vol{ volumeRow = (volumeRow vol){ volumeName = name } }, empty ?!> fill)
 
 viewVolumeEdit :: ActionRoute (Id Volume)
 viewVolumeEdit = action GET (pathHTML >/> pathId </< "edit") $ \vi -> withAuth $ do
@@ -268,7 +271,7 @@ createVolume = action POST (pathAPI </< "volume") $ \api -> withAuth $ do
   _ <- changeVolumeAccess $ VolumeAccess PermissionADMIN PermissionADMIN Nothing owner v
   case api of
     JSON -> return $ okResponse [] $ volumeJSON v
-    HTML -> peeks $ otherRouteResponse [] viewVolume (api, volumeId v)
+    HTML -> peeks $ otherRouteResponse [] viewVolume (api, volumeId $ volumeRow v)
 
 viewVolumeLinks :: ActionRoute (Id Volume)
 viewVolumeLinks = action GET (pathHTML >/> pathId </< "link") $ \vi -> withAuth $ do

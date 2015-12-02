@@ -30,7 +30,7 @@ data RecordSlot = RecordSlot
   }
 
 recordSlotId :: RecordSlot -> Id RecordSlot
-recordSlotId (RecordSlot r s) = Id $ RecordSlotId (recordId r) (slotId s)
+recordSlotId (RecordSlot r s) = Id $ RecordSlotId (recordId $ recordRow r) (slotId s)
 
 instance Has Record RecordSlot where
   view = slotRecord

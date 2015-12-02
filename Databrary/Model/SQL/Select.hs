@@ -1,8 +1,7 @@
 {-# LANGUAGE FunctionalDependencies, TemplateHaskell #-}
 module Databrary.Model.SQL.Select
   ( SelectOutput(..)
-  , Selector
-  , selectOutput
+  , Selector(..)
   , selector
   , columnSelector
   , selectColumns

@@ -27,7 +27,7 @@ selectVolumeCitation :: Selector -- ^ @Maybe 'T.Text' -> 'Citation'@
 selectVolumeCitation = citationRow
 
 makeVolumeCitation :: Volume -> Maybe (Maybe T.Text -> Citation) -> (Volume, Maybe Citation)
-makeVolumeCitation v cf = (v, cf <$- Just (volumeName v))
+makeVolumeCitation v cf = (v, cf <$- Just (volumeName $ volumeRow v))
 
 selectCitation :: TH.Name -- ^ @'Identity'@
   -> Selector -- ^ @('Volume', Maybe 'Citation')@
@@ -47,7 +47,7 @@ selectVolumeLink = selectMap ((`TH.AppE` TH.ConE 'Nothing) . (`TH.AppE` TH.ConE 
 volumeKeys :: String -- ^ @'Volume'@
   -> [(String, String)]
 volumeKeys v =
-  [ ("volume", "${volumeId " ++ v ++ "}") ]
+  [ ("volume", "${volumeId $ volumeRow " ++ v ++ "}") ]
 
 linkSets :: String -- ^ @'Citation'@
   -> [(String, String)]

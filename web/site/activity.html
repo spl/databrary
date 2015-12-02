@@ -1,0 +1,120 @@
+<ul class="flat activity">
+  <li ng-repeat="act in ::activity">
+    <small class="activity-timestamp">{{::act.when | date:'medium'}}</small> 
+    <a ng-if="::act.user >= 0" load-party="act.user" ng-href="{{::party.route()}}" class="activity-user" ng-bind="::party.name"></a> 
+    <span ng-bind="::activityAction(act)"></span> 
+
+    <ng-switch on="::act.type">
+      <dl ng-switch-when="party">
+        <span activity-change="act.prename" title-message="prename" ng-bind="::value"></span>
+        <span activity-change="act.sortname" title-message="sortname" ng-bind="::value"></span>
+        <span activity-change="act.orcid" title-message="orcid" ng-bind="::value"></span>
+        <span activity-change="act.affiliation" title-message="affiliation" ng-bind="::value"></span>
+        <span activity-change="act.url" title-message="party.edit.url.title" ng-bind="::value"></span>
+      </dl>
+
+      <dl ng-switch-when="account" ng-if="act.action==='add'||act.action==='remove'||act.action==='change'">
+        <span activity-change="act.email" title-message="email" ng-bind="::value"></span>
+        <dt ng-if="::act.password!==act.old.password">Password</dt>
+      </dl>
+
+      <dl ng-switch-when="authorize">
+        <dt>authorization</dt>
+        <dd ng-style="::{'border-color':idColor(act.party.id)}" class="activity-highlight">
+          <a ng-href="{{::act.party.route()}}" ng-bind="::act.party.name"></a> 
+          <span class="permission-auth-email" ng-if="::act.party.email">&lt;{{::act.party.email}}&gt;</span>
+        </dd>
+        <span activity-change="act.site" title-message="auth.site.edit" message="auth.site.{{::page.constants.permission[value]}}.title"></span>
+        <span activity-change="act.member" title-message="auth.member.edit" message="auth.member.{{::page.constants.permission[value]}}.title"></span>
+      </dl>
+
+      <dl ng-switch-when="volume">
+        <span activity-change="act.name" title-message="volume.name" ng-bind="::value"></span>
+        <span activity-change="act.alias" title-message="volume.alias" ng-bind="::value"></span>
+        <div activity-change="act.body" title-message="volume.body" block ng-bind-html="::value | format"></div>
+      </dl>
+
+      <dl ng-switch-when="access" class="activity-access">
+        <dt>access for</dt>
+        <dd ng-style="::{'border-color':idColor(act.party.id)}" class="activity-highlight">
+          <a ng-href="{{::act.party.route()}}" ng-bind="::act.party.name"></a> 
+          <span class="permission-auth-email" ng-if="::act.party.email">&lt;{{::act.party.email}}&gt;</span>
+        </dd>
+        <span activity-change="act.individual" title="Level" ng-init="perm=page.constants.permission[value]">
+          <span class="icon user-access" ng-class="::perm"></span> 
+          <span message="access.edit.{{::perm}}.title"></span>
+        </span>
+        <span activity-change="act.children" title="Extend">
+          <span ng-if="value" class="icon network"></span>
+        </span>
+      </dl>
+
+      <dl ng-switch-when="container">
+        <span activity-change="act.name" title="Name" ng-bind="::value"></span>
+        <span activity-change="act.date" title="Test date" ng-bind="::value"></span>
+      </dl>
+
+      <dl ng-switch-when="release">
+        <dt ng-if="::!!act.segment">Segment</dt>
+        <dd ng-if="::!!act.segment">{{::act.segment}}</dd>
+        <span activity-change="act.release" title="Release" ng-init="release=page.constants.release[value]">
+          <span class="icon release" ng-class="::release"></span>
+          {{::release}}
+        </span>
+      </dl>
+
+      <dl ng-switch-when="asset">
+        <dt>file</dt>
+        <dd ng-style="::{'border-color':idColor(act.id)}" class="activity-highlight">
+          <img ng-src="{{::page.router.rawAssetThumb([act.id, 56])}}"/>
+          {{::act.id}}
+        </dd>
+        <span activity-change="act.name" title-message="asset.name.title" ng-bind="::value"></span>
+        <span activity-change="act.classification" title-message="asset.classification" ng-init="release=page.constants.release[value]">
+          <span class="icon release" ng-class="::release"></span>
+          {{::release}}
+        </span>
+        <span activity-change="act.segment" title="Position">
+          {{::value.l | timecode}}
+        </span>
+        <dt ng-if="::act.transcode" class="activity-change-title">
+          Automatically converted from
+        </dt>
+        <dd ng-if="::act.transcode">
+          <span ng-style="::{'border-color':idColor(act.transcode.id)}" class="activity-highlight">
+            <img ng-src="{{::page.router.rawAssetThumb([act.transcode.id, 56])}}"/>
+            {{::act.transcode.id}} {{::act.transcode.name}}
+          </span>
+          <a class="icon download button neutral" ng-href="{{::page.router.rawAssetDownload([act.transcode.id])}}" target="_self"></a>
+        </dd>
+        <dt ng-if="::act.replace" class="activity-change-title">
+          Replaced
+        </dt>
+        <dd ng-if="::act.replace">
+          <span ng-style="::{'border-color':idColor(act.replace.id)}" class="activity-highlight activity-old">
+            <img ng-src="{{::page.router.rawAssetThumb([act.replace.id, 56])}}"/>
+            {{::act.replace.id}} {{::act.replace.name}}
+          </span>
+          <a class="icon download button neutral" ng-href="{{::page.router.rawAssetDownload([act.replace.id])}}" target="_self"></a>
+        </dd>
+      </dl>
+
+      <dl ng-switch-when="excerpt">
+        <dt ng-style="::{'border-color':idColor(act.id)}" class="activity-highlight">highlight</dt>
+        <dd>
+          {{::act.id}}: 
+          {{::act.segment.l | timecode}} &ndash; {{::act.segment.u | timecode}}
+        </dd>
+        <span activity-change="act.excerpt" title="Release" ng-init="release=page.constants.release[value]">
+          <span class="icon release" ng-class="::release"></span>
+          {{::release}}
+        </span>
+      </dl>
+
+      <span ng-switch-default ng-bind="::act.type"></span>
+    </ng-switch>
+
+    <span ng-if="::act.type==='account'"> from {{::act.ip}}</span>
+
+  </li>
+</ol>

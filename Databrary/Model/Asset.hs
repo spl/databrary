@@ -8,6 +8,7 @@ module Databrary.Model.Asset
   , addAsset
   , changeAsset
   , assetCreation
+  , assetRowJSON
   , assetJSON
   ) where
 
@@ -36,18 +37,20 @@ import Databrary.Model.Asset.SQL
 
 blankAsset :: Volume -> Asset
 blankAsset vol = Asset
-  { assetId = error "blankAsset"
-  , assetFormat = unknownFormat
-  , assetRelease = Nothing
-  , assetName = Nothing
-  , assetDuration = Nothing
-  , assetSHA1 = Nothing
-  , assetSize = Nothing
+  { assetRow = AssetRow
+    { assetId = error "blankAsset"
+    , assetFormat = unknownFormat
+    , assetRelease = Nothing
+    , assetName = Nothing
+    , assetDuration = Nothing
+    , assetSHA1 = Nothing
+    , assetSize = Nothing
+    }
   , assetVolume = vol
   }
 
 assetBacked :: Asset -> Bool
-assetBacked = isJust . assetSHA1
+assetBacked = isJust . assetSHA1 . assetRow
 
 lookupAsset :: (MonadHasIdentity c m, MonadDB c m) => Id Asset -> m (Maybe Asset)
 lookupAsset ai = do
@@ -56,7 +59,7 @@ lookupAsset ai = do
 
 lookupVolumeAsset :: (MonadDB c m) => Volume -> Id Asset -> m (Maybe Asset)
 lookupVolumeAsset vol ai = do
-  dbQuery1 $ ($ vol) <$> $(selectQuery selectVolumeAsset "WHERE asset.id = ${ai} AND asset.volume = ${volumeId vol}")
+  dbQuery1 $ (`Asset` vol) <$> $(selectQuery selectAssetRow "WHERE asset.id = ${ai} AND asset.volume = ${volumeId $ volumeRow vol}")
 
 addAsset :: (MonadAudit c m, MonadStorage c m) => Asset -> Maybe RawFilePath -> m Asset
 addAsset ba fp = do
@@ -73,12 +76,15 @@ changeAsset a fp = do
 
 assetCreation :: MonadDB c m => Asset -> m (Maybe Timestamp, Maybe T.Text)
 assetCreation a = maybe (Nothing, Nothing) (first Just) <$>
-  dbQuery1 [pgSQL|$SELECT audit_time, name FROM audit.asset WHERE id = ${assetId a} AND audit_action = 'add' ORDER BY audit_time DESC LIMIT 1|]
+  dbQuery1 [pgSQL|$SELECT audit_time, name FROM audit.asset WHERE id = ${assetId $ assetRow a} AND audit_action = 'add' ORDER BY audit_time DESC LIMIT 1|]
 
-assetJSON :: Asset -> JSON.Object
-assetJSON Asset{..} = JSON.record assetId $ catMaybes
+assetRowJSON :: AssetRow -> JSON.Object
+assetRowJSON AssetRow{..} = JSON.record assetId $ catMaybes
   [ Just $ "format" JSON..= formatId assetFormat
   , ("classification" JSON..=) <$> assetRelease
   , ("duration" JSON..=) <$> assetDuration
   , ("pending" JSON..= isNothing assetSize) <? isNothing assetSHA1
   ]
+
+assetJSON :: Asset -> JSON.Object
+assetJSON Asset{..} = assetRowJSON assetRow

@@ -49,7 +49,7 @@ dataCiteXML DataCite{..} =
       ("rightsURI" =. "http://databrary.org/access/policies/agreement.html")
       ) "Databrary Access Agreement"
     , Just $ "titles" <.> "title" <.> T.unpack dataCiteTitle
-    , "creators" <?> dataCiteAuthors $ \Party{..} -> "creator" <.> catMaybes
+    , "creators" <?> dataCiteAuthors $ \Party{ partyRow = PartyRow{..} } -> "creator" <.> catMaybes
       [ Just $ "creatorName" <.> (T.unpack $ partySortName <> foldMap (T.pack ", " <>) partyPreName)
       , ("nameIdentifier" <=>
         [ "schemeURI" =. "http://orcid.org/"

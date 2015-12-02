@@ -1,0 +1,12 @@
+
+
+<div class="wrap">
+  <div class="row">
+    <hgroup class="session-header">
+      <a class="view-link" ng-href="{{::slot.volume.route()}}" ng-bind="::slot.volume.alias || slot.volume.name"></a>
+      <h1 class="view-context">Activity</h1>
+      <h1 class="view-title">{{::slot.displayName}}</h1>
+    </hgroup>
+    <activity></activity>
+  </div>
+</div>

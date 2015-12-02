@@ -13,6 +13,7 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy as BSL
+import Data.Foldable (foldMap)
 import Data.Maybe (isJust, fromJust, listToMaybe)
 import Data.Monoid ((<>))
 import qualified Data.Text as T
@@ -60,7 +61,7 @@ assetSegmentJSONQuery vol = JSON.jsonQuery (assetSegmentJSON vol) (assetSegmentJ
 
 assetSegmentDownloadName :: AssetSegment -> [T.Text]
 assetSegmentDownloadName a =
-  volumeDownloadName (view a) ++ slotDownloadName (view a) ++ assetDownloadName (view a)
+  volumeDownloadName (view a) ++ foldMap slotDownloadName (assetSlot $ segmentAsset a) ++ assetDownloadName (assetRow $ view a)
 
 viewAssetSegment :: ActionRoute (API, Maybe (Id Volume), Id Slot, Id Asset)
 viewAssetSegment = action GET (pathAPI </>>> pathMaybe pathId </>> pathSlotId </> pathId) $ \(api, vi, si, ai) -> withAuth $ do
@@ -69,7 +70,7 @@ viewAssetSegment = action GET (pathAPI </>>> pathMaybe pathId </>> pathSlotId </
   case api of
     JSON -> okResponse [] <$> (assetSegmentJSONQuery as =<< peeks Wai.queryString)
     HTML
-      | isJust vi -> return $ okResponse [] $ T.pack $ show $ assetId $ slotAsset $ segmentAsset as -- TODO
+      | isJust vi -> return $ okResponse [] $ T.pack $ show $ assetId $ assetRow $ slotAsset $ segmentAsset as -- TODO
       | otherwise -> peeks $ redirectRouteResponse movedPermanently301 [] viewAssetSegment (api, Just (view as), slotId $ view as, view as)
 
 serveAssetSegment :: Bool -> AssetSegment -> ActionM Response
@@ -79,7 +80,7 @@ serveAssetSegment dl as = do
   when dl $ auditAssetSegmentDownload True as
   store <- maybeAction =<< getAssetFile a
   (hd, part) <- fileResponse store (view as) (dl ?> makeFilename (assetSegmentDownloadName as)) (BSL.toStrict $ BSB.toLazyByteString $
-    BSB.byteStringHex (fromJust (assetSHA1 a)) <> BSB.string8 (assetSegmentTag as sz))
+    BSB.byteStringHex (fromJust $ assetSHA1 $ assetRow a) <> BSB.string8 (assetSegmentTag as sz))
   either
     (return . okResponse hd)
     (\f -> do
@@ -100,5 +101,5 @@ thumbAssetSegment = action GET (pathSlotId </> pathId </< "thumb") $ \(si, ai) -
   as <- getAssetSegment PermissionPUBLIC Nothing si ai
   let as' = assetSegmentInterp 0.25 as
   if formatIsImage (view as') && assetBacked (view as) && dataPermission as' > PermissionNONE
-    then peeks $ otherRouteResponse [] downloadAssetSegment (slotId $ view as', assetId $ view as')
+    then peeks $ otherRouteResponse [] downloadAssetSegment (slotId $ view as', assetId $ assetRow $ view as')
     else peeks $ otherRouteResponse [] formatIcon (view as)

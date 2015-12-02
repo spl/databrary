@@ -29,21 +29,21 @@ import Databrary.Model.Excerpt.SQL
 
 lookupAssetExcerpts :: MonadDB c m => AssetSlot -> m [Excerpt]
 lookupAssetExcerpts a =
-  dbQuery $ ($ a) <$> $(selectQuery selectAssetSlotExcerpt "$WHERE excerpt.asset = ${assetId $ slotAsset a}")
+  dbQuery $ ($ a) <$> $(selectQuery selectAssetSlotExcerpt "$WHERE excerpt.asset = ${assetId $ assetRow $ slotAsset a}")
 
 lookupSlotExcerpts :: MonadDB c m => Slot -> m [Excerpt]
 lookupSlotExcerpts (Slot c s) =
-  dbQuery $ ($ c) <$> $(selectQuery selectContainerExcerpt "$WHERE slot_asset.container = ${containerId c} AND excerpt.segment && ${s}")
+  dbQuery $ ($ c) <$> $(selectQuery selectContainerExcerpt "$WHERE slot_asset.container = ${containerId $ containerRow c} AND excerpt.segment && ${s}")
 
 lookupVolumeExcerpts :: MonadDB c m => Volume -> m [Excerpt]
 lookupVolumeExcerpts v =
-  dbQuery $ ($ v) <$> $(selectQuery selectVolumeExcerpt "$WHERE asset.volume = ${volumeId v}")
+  dbQuery $ ($ v) <$> $(selectQuery selectVolumeExcerpt "$WHERE asset.volume = ${volumeId $ volumeRow v}")
 
 lookupSlotThumb :: MonadDB c m => Slot -> m (Maybe AssetSegment)
 lookupSlotThumb (Slot c s) = do
   dbQuery1 $ assetSegmentInterp 0 . excerptAsset . ($ c) <$> $(selectQuery selectContainerExcerpt "$\
     \JOIN format ON asset.format = format.id \
-    \WHERE slot_asset.container = ${containerId c} AND excerpt.segment && ${s} \
+    \WHERE slot_asset.container = ${containerId $ containerRow c} AND excerpt.segment && ${s} \
       \AND COALESCE(GREATEST(excerpt.release, asset.release), ${containerRelease c}) >= ${readRelease (view c)}::release \
       \AND (asset.duration IS NOT NULL AND format.mimetype LIKE 'video/%' OR format.mimetype LIKE 'image/%') \
     \LIMIT 1")
@@ -52,7 +52,7 @@ lookupVolumeThumb :: MonadDB c m => Volume -> m (Maybe AssetSegment)
 lookupVolumeThumb v = do
   dbQuery1 $ assetSegmentInterp 0 . excerptAsset . ($ v) <$> $(selectQuery selectVolumeExcerpt "$\
     \JOIN format ON asset.format = format.id \
-    \WHERE asset.volume = ${volumeId v} \
+    \WHERE asset.volume = ${volumeId $ volumeRow v} \
       \AND COALESCE(GREATEST(excerpt.release, asset.release), slot_release.release) >= ${readRelease (view v)}::release \
       \AND (asset.duration IS NOT NULL AND format.mimetype LIKE 'video/%' OR format.mimetype LIKE 'image/%') \
     \ORDER BY container.top DESC LIMIT 1")

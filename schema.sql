@@ -73,6 +73,7 @@ INSERT INTO "party" VALUES (-1, 'Everybody'); -- NOBODY
 INSERT INTO "party" VALUES (0, 'Databrary'); -- ROOT
 
 SELECT audit.CREATE_TABLE ('party');
+CREATE INDEX "party_activity_idx" ON audit."party" ("id") WHERE "audit_action" >= 'add';
 
 
 CREATE TABLE "account" (
@@ -88,6 +89,7 @@ COMMENT ON TABLE "account" IS 'Login information for parties associated with reg
 SELECT audit.CREATE_TABLE ('account');
 CREATE INDEX "audit_login_idx" ON audit."account" ("id", "audit_time") WHERE "audit_action" IN ('attempt', 'open');
 COMMENT ON INDEX audit."audit_login_idx" IS 'Allow efficient determination of recent login attempts for security.';
+CREATE INDEX "account_id_idx" ON audit."account" ("id");
 
 ----------------------------------------------------------- permissions
 
@@ -148,6 +150,7 @@ COMMENT ON COLUMN "authorize"."member" IS 'Level of permission granted to the ch
 
 SELECT audit.CREATE_TABLE ('authorize');
 CREATE INDEX "authorize_activity_idx" ON audit."authorize" ("audit_time" DESC) WHERE "audit_action" IN ('add', 'change') AND "site" > 'NONE';
+CREATE INDEX "authorize_parent_activity_idx" ON audit."authorize" ("parent") WHERE "audit_action" >= 'add';
 
 CREATE MATERIALIZED VIEW "authorize_inherit" AS
 	WITH RECURSIVE aa AS (
@@ -204,6 +207,7 @@ SELECT audit.CREATE_TABLE ('volume');
 ALTER TABLE audit."volume" ALTER "name" DROP NOT NULL;
 CREATE INDEX "volume_creation_idx" ON audit."volume" ("id") WHERE "audit_action" = 'add';
 COMMENT ON INDEX audit."volume_creation_idx" IS 'Allow efficient retrieval of volume creation information, specifically date.';
+CREATE INDEX "volume_activity_idx" ON audit."volume" ("id") WHERE "audit_action" >= 'add';
 
 CREATE FUNCTION "volume_creation" ("volume" integer) RETURNS timestamptz LANGUAGE sql STABLE STRICT AS
 	$$ SELECT max("audit_time") FROM audit."volume" WHERE "id" = $1 AND "audit_action" = 'add' $$;
@@ -221,6 +225,7 @@ COMMENT ON TABLE "volume_access" IS 'Permissions over volumes assigned to users.
 
 SELECT audit.CREATE_TABLE ('volume_access');
 CREATE INDEX "volume_share_activity_idx" ON audit."volume_access" ("audit_time" DESC) WHERE "audit_action" = 'add' AND "party" = 0 AND "children" > 'NONE';
+CREATE INDEX "volume_access_activity_idx" ON audit."volume_access" ("volume") WHERE "audit_action" >= 'add';
 
 CREATE VIEW "volume_access_view" ("volume", "party", "access") AS
 	SELECT volume, party, individual FROM volume_access
@@ -371,6 +376,7 @@ CREATE INDEX "container_top_idx" ON "container" ("volume") WHERE "top";
 COMMENT ON TABLE "container" IS 'Organizational unit within volume containing related files (with common annotations), often corresponding to an individual data session (single visit/acquisition/participant/group/day).';
 
 SELECT audit.CREATE_TABLE ('container');
+CREATE INDEX "container_activity_idx" ON audit."container" ("id") WHERE "audit_action" >= 'add';
 
 CREATE FUNCTION "container_top_create" () RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN
 	INSERT INTO container (volume, top) VALUES (NEW.id, true);
@@ -403,6 +409,7 @@ CREATE TABLE "slot_release" (
 COMMENT ON TABLE "slot_release" IS 'Sharing/release permissions granted by participants on (portions of) contained data.';
 
 SELECT audit.CREATE_TABLE ('slot_release', 'slot');
+CREATE INDEX "slot_release_activity_idx" ON audit."slot_release" ("container") WHERE "audit_action" >= 'add';
 
 
 ----------------------------------------------------------- studies
@@ -484,9 +491,9 @@ COMMENT ON TABLE "asset" IS 'Assets reflecting files in primary storage.';
 
 SELECT audit.CREATE_TABLE ('asset');
 ALTER TABLE audit."asset" ALTER "sha1" DROP NOT NULL;
-
 CREATE INDEX "asset_creation_idx" ON audit."asset" ("id") WHERE "audit_action" = 'add';
 COMMENT ON INDEX audit."asset_creation_idx" IS 'Allow efficient retrieval of asset creation information, specifically date.';
+CREATE INDEX "asset_activity_idx" ON audit."asset" ("id") WHERE "audit_action" >= 'add';
 
 CREATE TABLE "slot_asset" (
 	"asset" integer NOT NULL Primary Key References "asset",
@@ -497,23 +504,7 @@ CREATE INDEX "slot_asset_slot_idx" ON "slot_asset" ("container", "segment");
 COMMENT ON TABLE "slot_asset" IS 'Attachment point of assets, which, in the case of timeseries data, should match asset.duration.';
 
 SELECT audit.CREATE_TABLE ('slot_asset', 'slot');
-
-CREATE TABLE "asset_revision" (
-	"orig" integer NOT NULL References "asset" ON DELETE CASCADE,
-	"asset" integer Unique NOT NULL References "asset" ON DELETE CASCADE
-	-- Check ("orig" < "asset") -- this would be nice, but we have some ingests that were done the other way
-);
-COMMENT ON TABLE "asset_revision" IS 'Assets that reflect different versions of the same content, either generated automatically from reformatting or a replacement provided by the user.';
-
-CREATE FUNCTION "asset_supersede" ("asset_old" integer, "asset_new" integer) RETURNS void STRICT LANGUAGE plpgsql AS $$
-BEGIN
-	PERFORM asset FROM asset_revision WHERE orig = asset_new;
-	IF FOUND THEN
-		RAISE 'Asset % already superseded', asset_new;
-	END IF;
-	INSERT INTO asset_revision VALUES (asset_old, asset_new);
-	UPDATE slot_asset SET asset = asset_new WHERE asset = asset_old;
-END; $$;
+CREATE INDEX "slot_asset_activity_idx" ON audit."slot_asset" ("container") WHERE "audit_action" >= 'add';
 
 
 CREATE TABLE "excerpt" (
@@ -530,6 +521,7 @@ COMMENT ON COLUMN "excerpt"."segment" IS 'Segment within slot_asset.container sp
 COMMENT ON COLUMN "excerpt"."release" IS 'Override (by relaxing only) asset''s original release.';
 
 SELECT audit.CREATE_TABLE ('excerpt');
+CREATE INDEX "excerpt_activity_idx" ON audit."excerpt" ("asset") WHERE "audit_action" >= 'add';
 
 CREATE FUNCTION "excerpt_shift" () RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
@@ -548,6 +540,28 @@ CREATE TRIGGER "excerpt_shift" AFTER UPDATE OF "segment" ON "slot_asset" FOR EAC
 COMMENT ON TRIGGER "excerpt_shift" ON "slot_asset" IS 'Move or clear excerpts on repositioning of asset, just based on lower bound.';
 
 
+CREATE TABLE "asset_revision" (
+	"orig" integer NOT NULL References "asset" ON DELETE CASCADE,
+	"asset" integer Unique NOT NULL References "asset" ON DELETE CASCADE,
+	-- Check ("orig" < "asset"), -- this would be nice, but we have some ingests that were done the other way
+	Check (false) NO INHERIT
+);
+COMMENT ON TABLE "asset_revision" IS 'Assets that reflect different versions of the same content, either generated automatically from reformatting or a replacement provided by the user.';
+
+CREATE TABLE "asset_replace" (
+) INHERITS ("asset_revision");
+COMMENT ON TABLE "asset_replace" IS 'Replacement assets provided by the user.';
+
+CREATE FUNCTION "asset_replace" ("asset_old" integer, "asset_new" integer) RETURNS void STRICT LANGUAGE plpgsql AS $$
+BEGIN
+	PERFORM asset FROM asset_replace WHERE orig = asset_new;
+	IF FOUND THEN -- avoid cycles
+		RAISE 'Asset % already replaced', asset_new;
+	END IF;
+	INSERT INTO asset_replace (orig, asset) VALUES (asset_old, asset_new);
+	UPDATE slot_asset SET asset = asset_new WHERE asset = asset_old;
+END; $$;
+
 CREATE TABLE "transcode" (
 	"asset" integer NOT NULL Primary Key References "asset" ON DELETE CASCADE,
 	"owner" integer NOT NULL References "account",
@@ -558,7 +572,7 @@ CREATE TABLE "transcode" (
 	"process" integer,
 	"log" text
 ) INHERITS ("asset_revision");
-COMMENT ON TABLE "transcode" IS 'Format conversions that are being or have been applied to transform in input asset.';
+COMMENT ON TABLE "transcode" IS 'Format conversions that are being or have been applied to transform orig asset.';
 
 ----------------------------------------------------------- comments
 
@@ -1075,9 +1089,10 @@ INSERT INTO volume_access (volume, party, individual, children) VALUES (1, 3, 'A
 INSERT INTO volume_access (volume, party, individual, children) VALUES (1, -1, 'PUBLIC', 'PUBLIC');
 
 INSERT INTO asset (id, volume, format, release, duration, name, sha1) VALUES (1, 1, -800, 'PUBLIC', interval '40', 'counting', '\x3dda3931202cbe06a9e4bbb5f0873c879121ef0a');
-INSERT INTO slot_asset VALUES (1, '[0,40)'::segment, 1);
 SELECT setval('asset_id_seq', 1);
+INSERT INTO container VALUES (2, 1, 't', 'Top-level materials');
 SELECT setval('container_id_seq', 2);
+INSERT INTO slot_asset VALUES (2, '[0,40)'::segment, 1);
 
 -- special volumes (SERIAL starts at 1), done after container triggers:
 INSERT INTO "volume" (id, name) VALUES (0, 'Core'); -- CORE

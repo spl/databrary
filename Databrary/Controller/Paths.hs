@@ -7,6 +7,7 @@ module Databrary.Controller.Paths
   , pathAuthorizeTarget
   , VolumeAccessTarget(..)
   , pathVolumeAccessTarget
+  , pathSegment
   , pathSlotId
   , TagId(..)
   , pathTagId
@@ -63,8 +64,11 @@ pathVolumeAccessTarget = "access" >/> [iso|i <-> VolumeAccessTarget (Id i)|] I.<
 slotIdIso :: (Id Container, Segment) I.<-> SlotId
 slotIdIso = [iso|(c, s) <-> SlotId c s|]
 
+pathSegment :: PathParser Segment
+pathSegment = fullSegment =/= PathParameter
+
 pathSlot :: PathParser SlotId
-pathSlot = slotIdIso I.<$> (idIso I.<$> PathParameter </> fullSegment =/= PathParameter)
+pathSlot = slotIdIso I.<$> (idIso I.<$> PathParameter </> pathSegment)
 
 pathSlotId :: PathParser (Id Slot)
 pathSlotId = pathIdWith pathSlot

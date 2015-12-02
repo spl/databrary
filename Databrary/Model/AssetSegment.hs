@@ -55,7 +55,7 @@ lookupSlotSegmentThumb :: MonadDB c m => Slot -> m (Maybe AssetSegment)
 lookupSlotSegmentThumb (Slot c s) = do
   dbQuery1 $ assetSegmentInterp 0.25 . ($ c) <$> $(selectQuery (selectContainerAssetSegment 's) "$\
     \JOIN format ON asset.format = format.id \
-    \WHERE slot_asset.container = ${containerId c} AND slot_asset.segment && ${s} \
+    \WHERE slot_asset.container = ${containerId $ containerRow c} AND slot_asset.segment && ${s} \
       \AND COALESCE(asset.release, ${containerRelease c}) >= ${readRelease (view c)}::release \
       \AND (asset.duration IS NOT NULL AND format.mimetype LIKE 'video/%' OR format.mimetype LIKE 'image/%') \
     \LIMIT 1")
@@ -65,9 +65,9 @@ auditAssetSegmentDownload success AssetSegment{ segmentAsset = AssetSlot{ slotAs
   ai <- getAuditIdentity
   maybe
     (dbExecute1' [pgSQL|INSERT INTO audit.asset (audit_action, audit_user, audit_ip, id, volume, format, release) VALUES
-      (${act}, ${auditWho ai}, ${auditIp ai}, ${assetId a}, ${volumeId $ assetVolume a}, ${formatId $ assetFormat a}, ${assetRelease a})|])
+      (${act}, ${auditWho ai}, ${auditIp ai}, ${assetId $ assetRow a}, ${volumeId $ volumeRow $ assetVolume a}, ${formatId $ assetFormat $ assetRow a}, ${assetRelease $ assetRow a})|])
     (\s -> dbExecute1' [pgSQL|$INSERT INTO audit.slot_asset (audit_action, audit_user, audit_ip, container, segment, asset) VALUES
-      (${act}, ${auditWho ai}, ${auditIp ai}, ${containerId $ slotContainer s}, ${seg}, ${assetId a})|])
+      (${act}, ${auditWho ai}, ${auditIp ai}, ${containerId $ containerRow $ slotContainer s}, ${seg}, ${assetId $ assetRow a})|])
     as
   where act | success = AuditActionOpen 
             | otherwise = AuditActionAttempt
@@ -82,4 +82,4 @@ assetSegmentJSON as@AssetSegment{..} = JSON.object $ catMaybes $
   ] where fmt = view as
 
 assetSegmentInterp :: Float -> AssetSegment -> AssetSegment
-assetSegmentInterp f as = as{ assetSegment = segmentInterp f (assetSegment as) }
+assetSegmentInterp f as = as{ assetSegment = segmentInterp f $ assetSegment as }

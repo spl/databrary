@@ -119,8 +119,8 @@ ingestJSON vol jdata run overwrite = runExceptT $ do
   volume = do
     dir <- JE.keyOrDefault "directory" "" $ stageFileRel <$> asStageFile ""
     _ <- JE.keyMay "name" $ do
-      name <- check (volumeName vol) =<< JE.asText
-      Fold.forM_ name $ \n -> lift $ changeVolume vol{ volumeName = n }
+      name <- check (volumeName $ volumeRow vol) =<< JE.asText
+      Fold.forM_ name $ \n -> lift $ changeVolume vol{ volumeRow = (volumeRow vol){ volumeName = n } }
     JE.key "containers" $ JE.eachInArray (container dir)
   container dir = do
     cid <- JE.keyMay "id" $ Id <$> JE.asIntegral
@@ -133,10 +133,13 @@ ingestJSON vol jdata run overwrite = runExceptT $ do
             top <- JE.keyOrDefault "top" False JE.asBool
             name <- JE.keyMay "name" JE.asText
             date <- JE.keyMay "date" asDate
-            lift $ addContainer (blankContainer vol)
-              { containerTop = top
-              , containerName = name
-              , containerDate = date
+            let c = blankContainer vol
+            lift $ addContainer c
+              { containerRow = (containerRow c)
+                { containerTop = top
+                , containerName = name
+                , containerDate = date
+                }
               })
           (\i -> fromMaybeM (throwPE $ "container " <> T.pack (show i) <> "/" <> key <> " not found")
             =<< lift (lookupVolumeContainer vol i))
@@ -144,15 +147,17 @@ ingestJSON vol jdata run overwrite = runExceptT $ do
         inObj c $ lift $ addIngestContainer c key
         return c)
       (\c -> inObj c $ do
-        unless (Fold.all (containerId c ==) cid) $ do
+        unless (Fold.all (containerId (containerRow c) ==) cid) $ do
           throwPE "id mismatch"
-        top <- fmap join . JE.keyMay "top" $ check (containerTop c) =<< JE.asBool
-        name <- fmap join . JE.keyMay "name" $ check (containerName c) =<< JE.perhaps JE.asText
-        date <- fmap join . JE.keyMay "date" $ check (containerDate c) =<< JE.perhaps asDate
+        top <- fmap join . JE.keyMay "top" $ check (containerTop $ containerRow c) =<< JE.asBool
+        name <- fmap join . JE.keyMay "name" $ check (containerName $ containerRow c) =<< JE.perhaps JE.asText
+        date <- fmap join . JE.keyMay "date" $ check (containerDate $ containerRow c) =<< JE.perhaps asDate
         when (isJust top || isJust name || isJust date) $ lift $ changeContainer c
-          { containerTop = fromMaybe (containerTop c) top
-          , containerName = fromMaybe (containerName c) name
-          , containerDate = fromMaybe (containerDate c) date
+          { containerRow = (containerRow c)
+            { containerTop = fromMaybe (containerTop $ containerRow c) top
+            , containerName = fromMaybe (containerName $ containerRow c) name
+            , containerDate = fromMaybe (containerDate $ containerRow c) date
+            }
           }
         return c)
       c'
@@ -177,12 +182,12 @@ ingestJSON vol jdata run overwrite = runExceptT $ do
           as' <- lift $ lookupAssetAssetSlot a
           seg <- JE.keyOrDefault "position" (maybe fullSegment slotSegment $ assetSlot as') $
             JE.withTextM (\t -> if t == "auto"
-              then maybe (Right . Segment . Range.point <$> probeAutoPosition c probe) (return . Right . slotSegment) $ mfilter (on (==) containerId c . slotContainer) (assetSlot as')
+              then maybe (Right . Segment . Range.point <$> probeAutoPosition c probe) (return . Right . slotSegment) $ mfilter (((==) `on` containerId . containerRow) c . slotContainer) (assetSlot as')
               else return $ Left "invalid asset position")
               `catchError` \_ -> asSegment
           let seg'
                 | Just p <- Range.getPoint (segmentRange seg)
-                , Just d <- assetDuration a = Segment $ Range.bounded p (p + d)
+                , Just d <- assetDuration (assetRow a) = Segment $ Range.bounded p (p + d)
                 | otherwise = seg
               ss = Slot c seg'
           u <- maybe (return True) (\s' -> isJust <$> on check slotId s' ss) $ assetSlot as'
@@ -198,22 +203,22 @@ ingestJSON vol jdata run overwrite = runExceptT $ do
         r <- maybe
           (do
             category <- JE.key "category" asCategory
-            lift $ addRecord (blankRecord vol)
-              { recordCategory = category
-              })
+            lift $ addRecord $ blankRecord category vol)
           (\i -> fromMaybeM (throwPE $ "record " <> T.pack (show i) <> "/" <> key <> " not found")
             =<< lift (lookupVolumeRecord vol i))
           rid
         inObj r $ lift $ addIngestRecord r key
         return r)
       (\r -> inObj r $ do
-        unless (Fold.all (recordId r ==) rid) $ do
+        unless (Fold.all (recordId (recordRow r) ==) rid) $ do
           throwPE "id mismatch"
         _ <- JE.key "category" $ do
           category <- asCategory
-          category' <- (category <$) <$> on check recordCategoryName (recordCategory r) category
+          category' <- (category <$) <$> on check recordCategoryName (recordCategory $ recordRow r) category
           Fold.forM_ category' $ \c -> lift $ changeRecord r
-            { recordCategory = c
+            { recordRow = (recordRow r)
+              { recordCategory = c
+              }
             }
         return r)
       =<< lift (lookupIngestRecord vol key)
@@ -237,23 +242,28 @@ ingestJSON vol jdata run overwrite = runExceptT $ do
       (do
         release <- JE.key "release" asRelease
         name <- JE.keyMay "name" JE.asText
-        a <- lift $ addAsset (blankAsset vol)
-          { assetFormat = probeFormat probe
-          , assetRelease = release
-          , assetName = name
+        let ba = blankAsset vol
+        a <- lift $ addAsset ba
+          { assetRow = (assetRow ba)
+            { assetFormat = probeFormat probe
+            , assetRelease = release
+            , assetName = name
+            }
           } (Just $ toRawFilePath $ stageFileAbs file)
         lift $ addIngestAsset a (stageFileRel file)
-        Fold.forM_ orig $ \o -> lift $ supersedeAsset o a
+        Fold.forM_ orig $ \o -> lift $ replaceAsset o a -- FIXME
         return a)
       (\a -> inObj a $ do
         unless (assetBacked a) $ throwPE "ingested asset incomplete"
         -- compareFiles file =<< getAssetFile -- assume correct
-        release <- fmap join . JE.keyMay "release" $ check (assetRelease a) =<< asRelease
-        name <- fmap join . JE.keyMay "name" $ check (assetName a) =<< JE.perhaps JE.asText
+        release <- fmap join . JE.keyMay "release" $ check (assetRelease $ assetRow a) =<< asRelease
+        name <- fmap join . JE.keyMay "name" $ check (assetName $ assetRow a) =<< JE.perhaps JE.asText
         a' <- if isJust release || isJust name
           then lift $ changeAsset a
-            { assetRelease = fromMaybe (assetRelease a) release
-            , assetName = fromMaybe (assetName a) name
+            { assetRow = (assetRow a)
+              { assetRelease = fromMaybe (assetRelease $ assetRow a) release
+              , assetName = fromMaybe (assetName $ assetRow a) name
+              }
             } Nothing
           else return a
         Fold.forM_ orig $ \o -> lift $ replaceSlotAsset o a'

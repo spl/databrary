@@ -199,7 +199,16 @@ app.factory('modelService', [
     }
 
     Party.get = function (id, options) {
-      return partyGet(id, Party.peek(id), options);
+      var p = Party.peek(id);
+      if (!p)
+        return Party.cache.put(id, partyGet(id, p, options));
+      if (p instanceof Party)
+        return partyGet(id, p, options);
+      if (!options)
+        return p;
+      return p.then(function (p) {
+        return partyGet(id, p, options);
+      });
     };
 
     Party.prototype.get = function (options) {
@@ -299,6 +308,13 @@ app.factory('modelService', [
         .then(function (res) {
           subPartyUpdate(p.parents, res.data);
           return p;
+        });
+    };
+
+    Party.prototype.activity = function () {
+      return router.http(router.controllers.getPartyActivity, this.id)
+        .then(function (res) {
+          return makeActivity(res.data);
         });
     };
 
@@ -468,17 +484,29 @@ app.factory('modelService', [
     }
 
     function volumeGet(id, v, options) {
-      if ((options = checkOptions(v, options)))
-        return router.http(router.controllers.getVolume,
+      if ((options = checkOptions(v, options))) {
+        var q = router.http(router.controllers.getVolume,
           id, options).then(function (res) {
             return v ? v.update(res.data) : Volume.poke(new Volume(res.data));
           });
-      else
+        if (!v)
+          Volume.poke(q);
+        return q;
+      } else
         return $q.successful(v);
     }
 
     Volume.get = function (id, options) {
-      return volumeGet(id, Volume.cache.get(id), options);
+      var p = Volume.cache.get(id);
+      if (!p)
+        return Volume.cache.put(id, volumeGet(id, p, options));
+      if (p instanceof Volume)
+        return volumeGet(id, p, options);
+      if (!options)
+        return p;
+      return p.then(function (p) {
+        return volumeGet(id, p, options);
+      });
     };
 
     Volume.prototype.get = function (options) {
@@ -643,6 +671,14 @@ app.factory('modelService', [
             }
           }
           return d;
+        });
+    };
+
+    Volume.prototype.activity = function () {
+      var v = this;
+      return router.http(router.controllers.getVolumeActivity, this.id)
+        .then(function (res) {
+          return makeActivity(res.data, v);
         });
     };
 
@@ -908,6 +944,14 @@ app.factory('modelService', [
       return router.slotThumb([this.volume.id, this.container.id, this.segment.format(), size]);
     };
 
+    Container.prototype.activity = function () {
+      var v = this.volume;
+      return router.http(router.controllers.getContainerActivity, this.id)
+        .then(function (res) {
+          return makeActivity(res.data, v);
+        });
+    };
+
     ///////////////////////////////// Record
 
     function Record(volume, init) {
@@ -1104,11 +1148,15 @@ app.factory('modelService', [
     };
 
     AssetSlot.prototype.thumbRoute = function (size) {
-      return router.assetThumb([this.container.id, this.segment.format(), this.id, size]);
+      return this.container ?
+        router.assetThumb([this.container.id, this.segment.format(), this.id, size]) :
+        router.rawAssetThumb([this.id, size]);
     };
 
     AssetSlot.prototype.downloadRoute = function (inline) {
-      return router.assetDownload([this.container.id, this.segment.format(), this.id, inline]);
+      return this.container ?
+        router.assetDownload([this.container.id, this.segment.format(), this.id, inline]) :
+        router.rawAssetDownload([this.id, inline]);
     };
 
 
@@ -1143,8 +1191,6 @@ app.factory('modelService', [
       if (!this.container && 'container' in init)
         this.container = containerPrepare(this.volume, init.container);
       AssetSlot.prototype.init.call(this, init);
-      if ('revisions' in init)
-        this.revisions = assetMakeArray(this.volume, init.revisions);
     };
 
     Object.defineProperty(Asset.prototype, 'asset', {
@@ -1391,6 +1437,18 @@ app.factory('modelService', [
     };
 
     /////////////////////////////////
+    
+    function makeActivity (a, volume) {
+      for (var i = 0; i < a.length; i++) {
+        if (a[i].party)
+          a[i].party = partyMake(a[i].party);
+        if ('segment' in a[i])
+          a[i].segment = new Segment(a[i].segment);
+        else if (a[i].old && 'segment' in a[i].old)
+          a[i].old.segment = new Segment(a[i].old.segment);
+      }
+      return a;
+    }
 
     return {
       Party: Party,
@@ -1414,8 +1472,8 @@ app.factory('modelService', [
       analytic: function () {
         return router.http(router.controllers.get, {}, {cache:false});
       },
-      siteAudit: function () {
-        return router.http(router.controllers.getSiteAudit)
+      siteActivity: function () {
+        return router.http(router.controllers.getSiteActivity)
           .then(function (res) {
             var r = res.data;
             var a = r.activity;

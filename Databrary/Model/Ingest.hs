@@ -27,28 +27,28 @@ type IngestKey = T.Text
 
 lookupIngestContainer :: MonadDB c m => Volume -> IngestKey -> m (Maybe Container)
 lookupIngestContainer vol k =
-  dbQuery1 $ fmap ($ vol) $(selectQuery selectVolumeContainer "JOIN ingest.container AS ingest USING (id, volume) WHERE ingest.key = ${k} AND container.volume = ${volumeId vol}")
+  dbQuery1 $ fmap ($ vol) $(selectQuery selectVolumeContainer "JOIN ingest.container AS ingest USING (id, volume) WHERE ingest.key = ${k} AND container.volume = ${volumeId $ volumeRow vol}")
 
 addIngestContainer :: MonadDB c m => Container -> IngestKey -> m ()
 addIngestContainer c k =
-  dbExecute1' [pgSQL|INSERT INTO ingest.container (id, volume, key) VALUES (${containerId c}, ${volumeId $ containerVolume c}, ${k})|]
+  dbExecute1' [pgSQL|INSERT INTO ingest.container (id, volume, key) VALUES (${containerId $ containerRow c}, ${volumeId $ volumeRow $ containerVolume c}, ${k})|]
 
 lookupIngestRecord :: MonadDB c m => Volume -> IngestKey -> m (Maybe Record)
 lookupIngestRecord vol k =
-  dbQuery1 $ fmap ($ vol) $(selectQuery selectVolumeRecord "JOIN ingest.record AS ingest USING (id, volume) WHERE ingest.key = ${k} AND record.volume = ${volumeId vol}")
+  dbQuery1 $ fmap ($ vol) $(selectQuery selectVolumeRecord "JOIN ingest.record AS ingest USING (id, volume) WHERE ingest.key = ${k} AND record.volume = ${volumeId $ volumeRow vol}")
 
 addIngestRecord :: MonadDB c m => Record -> IngestKey -> m ()
 addIngestRecord r k =
-  dbExecute1' [pgSQL|INSERT INTO ingest.record (id, volume, key) VALUES (${recordId r}, ${volumeId $ recordVolume r}, ${k})|]
+  dbExecute1' [pgSQL|INSERT INTO ingest.record (id, volume, key) VALUES (${recordId $ recordRow r}, ${volumeId $ volumeRow $ recordVolume r}, ${k})|]
 
 lookupIngestAsset :: MonadDB c m => Volume -> FilePath -> m (Maybe Asset)
 lookupIngestAsset vol k =
-  dbQuery1 $ fmap ($ vol) $(selectQuery selectVolumeAsset "JOIN ingest.asset AS ingest USING (id) WHERE ingest.file = ${k} AND asset.volume = ${volumeId vol}")
+  dbQuery1 $ fmap (`Asset` vol) $(selectQuery selectAssetRow "JOIN ingest.asset AS ingest USING (id) WHERE ingest.file = ${k} AND asset.volume = ${volumeId $ volumeRow vol}")
 
 addIngestAsset :: MonadDB c m => Asset -> FilePath -> m ()
 addIngestAsset r k =
-  dbExecute1' [pgSQL|INSERT INTO ingest.asset (id, file) VALUES (${assetId r}, ${k})|]
+  dbExecute1' [pgSQL|INSERT INTO ingest.asset (id, file) VALUES (${assetId $ assetRow r}, ${k})|]
 
 replaceSlotAsset :: MonadDB c m => Asset -> Asset -> m Bool
 replaceSlotAsset o n =
-  dbExecute1 [pgSQL|UPDATE slot_asset SET asset = ${assetId n} WHERE asset = ${assetId o}|]
+  dbExecute1 [pgSQL|UPDATE slot_asset SET asset = ${assetId $ assetRow n} WHERE asset = ${assetId $ assetRow o}|]

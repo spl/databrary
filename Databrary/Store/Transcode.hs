@@ -46,7 +46,7 @@ ctlTranscode tc args = do
   Just ctl <- peeks storageTranscoder
   let args'
         = "-i" : show (transcodeId tc)
-        : "-f" : BSC.unpack (head (formatExtension (assetFormat (transcodeAsset tc))))
+        : "-f" : BSC.unpack (head $ formatExtension $ assetFormat $ assetRow $ transcodeAsset tc)
         : args
   r@(c, o, e) <- liftIO $ runTranscoder ctl args'
   focusIO $ logMsg t ("transcode " ++ unwords args' ++ ": " ++ case c of { ExitSuccess -> "" ; ExitFailure i -> ": exit " ++ show i ++ "\n" } ++ o ++ e)
@@ -81,12 +81,14 @@ startTranscode tc = do
       return pid)
     (\(transcodeAsset -> match) -> do
       a <- changeAsset (transcodeAsset tc)
-        { assetSHA1 = assetSHA1 match
-        , assetDuration = assetDuration match
-        , assetSize = assetSize match
+        { assetRow = (assetRow $ transcodeAsset tc)
+          { assetSHA1 = assetSHA1 $ assetRow match
+          , assetDuration = assetDuration $ assetRow match
+          , assetSize = assetSize $ assetRow match
+          }
         } Nothing
       void $ changeAssetSlotDuration a
-      _ <- updateTranscode tc' Nothing (Just $ "reuse " ++ show (assetId match))
+      _ <- updateTranscode tc' Nothing (Just $ "reuse " ++ show (assetId $ assetRow match))
       return Nothing)
   where lock = Just (-1)
 
@@ -117,12 +119,14 @@ collectTranscode tc 0 sha1 logs = do
     then fail $ "collectTranscode " ++ show (transcodeId tc) ++ ": " ++ show r ++ "\n" ++ out ++ err
     else do
       av <- focusIO $ avProbe (tempFilePath f)
-      unless (avProbeCheckFormat (assetFormat (transcodeAsset tc)) av)
+      unless (avProbeCheckFormat (assetFormat $ assetRow $ transcodeAsset tc) av)
         $ fail $ "collectTranscode " ++ show (transcodeId tc) ++ ": format error"
       let dur = avProbeLength av
       a <- changeAsset (transcodeAsset tc)
-        { assetSHA1 = sha1
-        , assetDuration = dur
+        { assetRow = (assetRow $ transcodeAsset tc)
+          { assetSHA1 = sha1
+          , assetDuration = dur
+          }
         } (Just $ tempFilePath f)
       void $ changeAssetSlotDuration a
 collectTranscode tc e _ logs =

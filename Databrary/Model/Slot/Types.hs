@@ -29,7 +29,7 @@ data Slot = Slot
   }
 
 slotId :: Slot -> Id Slot
-slotId (Slot c s) = Id $ SlotId (containerId c) s
+slotId (Slot c s) = Id $ SlotId (containerId (containerRow c)) s
 
 containerSlot :: Container -> Slot
 containerSlot c = Slot c fullSegment

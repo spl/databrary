@@ -29,7 +29,7 @@ import Databrary.Controller.Tag
 import Databrary.Controller.Comment
 import Databrary.Controller.CSV
 import Databrary.Controller.VolumeState
-import Databrary.Controller.Audit
+import Databrary.Controller.Activity
 import Databrary.Controller.Transcode
 import Databrary.Controller.Ingest
 import Databrary.Controller.Web
@@ -65,6 +65,7 @@ routeMap = fromRouteList
   , route deleteAuthorize
   , route postAuthorizeNotFound
   , route viewAvatar
+  , route viewPartyActivity
   , route createParty
   , route deleteParty
   , route queryParties
@@ -86,12 +87,14 @@ routeMap = fromRouteList
   , route viewVolumeDescription
   , route thumbVolume
   , route csvVolume
+  , route viewVolumeActivity
 
   , route createContainer
   , route viewSlot
   , route viewContainerEdit
   , route postContainer
   , route deleteContainer
+  , route viewContainerActivity
   , route zipContainer
   , route thumbSlot
 
@@ -102,6 +105,7 @@ routeMap = fromRouteList
   , route viewAssetEdit
   , route deleteAsset
   , route downloadAsset
+  , route thumbAsset
   , route viewAssetCreate
   , route createAsset
   , route createSlotAsset
@@ -140,7 +144,7 @@ routeMap = fromRouteList
   , route getCitation
   , route queryFunder
   , route remoteTranscode
-  , route viewSiteAudit
+  , route viewSiteActivity
 
   , route viewTranscodes
   , route postTranscode

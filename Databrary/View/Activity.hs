@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings, RecordWildCards #-}
-module Databrary.View.Audit
-  ( htmlSiteAudit
+module Databrary.View.Activity
+  ( htmlSiteActivity
   ) where
 
 import qualified Data.Array.Unboxed as A
@@ -14,8 +14,8 @@ import Databrary.Model.RecordCategory
 import Databrary.Action.Types
 import Databrary.View.Template
 
-htmlSiteAudit :: SiteStats -> RequestContext -> H.Html
-htmlSiteAudit SiteStats{..} req = htmlTemplate req (Just "activity") $ \_ -> do
+htmlSiteActivity :: SiteStats -> RequestContext -> H.Html
+htmlSiteActivity SiteStats{..} req = htmlTemplate req (Just "activity") $ \_ -> do
   H.ul $ do
     H.li $ sh (statsAuthorizedSite A.! PermissionEDIT) >> " authorized PIs"
     H.li $ sh (statsAuthorizedSite A.! PermissionREAD) >> " affiliates who have access to the shared data"

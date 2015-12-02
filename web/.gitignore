@@ -21,11 +21,13 @@
 /directive/setContents.js
 /directive/tooltip.js
 /filter/message.js
+/party/activity.js
 /party/authSearch.js
 /party/comments.js
 /party/data.js
 /party/editApply.js
 /party/editGrant.js
+/party/load.js
 /party/profile.js
 /party/search.js
 /service/offset.js
@@ -33,6 +35,8 @@
 /service/styles.js
 /service/tooltip.js
 /service/upload.js
+/site/activity.js
+/site/activityChange.js
 /site/errors.js
 /site/inputAge.js
 /site/inputCompleter.js
@@ -42,6 +46,7 @@
 /site/tags.js
 /site/tooltip.js
 /volume/accessSearch.js
+/volume/activity.js
 /volume/comments.js
 /volume/csv.js
 /volume/design.js
@@ -55,5 +60,6 @@
 /volume/search.js
 /volume/showInvestigators.js
 /volume/slot.js
+/volume/slotActivity.js
 /volume/spreadsheet.js
 /volume/zip.js
