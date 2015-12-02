@@ -1272,7 +1272,7 @@ app.directive 'spreadsheet', [
           $scope.filter.key = Key.id
           $scope.filter.list = $scope.filter.list.filter($scope.filter.accept)
           setFilter($scope.filter.make?())
-          $location.replace().search('key', if Key != pseudoCategory.slot then Key.id)
+          $location.replace().search('key', undefined)
           $scope.tabOptionsClick = undefined
           return
 

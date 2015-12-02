@@ -20,13 +20,13 @@
         </li>
       </ul>
     </div>
-    <div class="volume-design-section col-desktop-7 col-tablet-4 col-mobile-6">
+    <div class="volume-design-section col-desktop-7 col-tablet-4 col-mobile-6" ng-show="!!selected">
       <div class="volume-design-float">
         <div class="volume-design-header" ng-class="{selected: !!selected}">
           <strong ng-bind="selected ? selected.name : 'Fields'" ng-class="{b: volumeDesign.category[selected.id]}"></strong>
           <small class="reminder" ng-if="selected && !volumeDesign.category[selected.id]">Enable this category on the left to change fields</small>
           <small class="reminder" ng-if="!selected">Select a category name to edit its fields</small> 
-          <a ng-if="volumeDesign.category[selected.id]" class="button mini small" ng-click="activateStep(step.data)">manage list</a>
+          <a ng-if="volumeDesign.category[selected.id]" class="button mini small" ng-click="manage()">manage list</a>
         </div>
         <ul class="volume-design-fields flat" ng-class="{'disabled':!!selected && !volumeDesign.category[selected.id] || !selected}">
           <li ng-repeat="m in ::page.constants.metrics track by m.id" ng-if="::m.name != 'indicator'">
