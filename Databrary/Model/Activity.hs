@@ -6,6 +6,7 @@ module Databrary.Model.Activity
   , activityJSON
   ) where
 
+import Control.Applicative ((<|>))
 import Control.Arrow ((&&&))
 import Control.Monad (forM)
 import qualified Data.ByteString.Char8 as BSC
@@ -37,6 +38,9 @@ import Databrary.Model.Asset
 import Databrary.Model.AssetRevision
 import Databrary.Model.Activity.Types
 import Databrary.Model.Activity.SQL
+
+auditsMatch :: Audit -> Audit -> Bool
+auditsMatch a1 a2 = auditIdentity a1 == auditIdentity a2 && auditWhen a2 `diffUTCTime` auditWhen a1 < 1
 
 orderActivity :: Activity -> Activity -> Ordering
 orderActivity = compare `on` auditWhen . activityAudit
@@ -90,7 +94,7 @@ lookupVolumeActivity vol = do
 addAssetRevision :: (MonadDB c m, MonadHasIdentity c m) => Volume -> Activity -> m Activity
 addAssetRevision vol
   act@Activity{ activityAudit = Audit{ auditAction = aa }, activityTarget = ActivityAssetSlot{ activityAssetId = ai }, activityPrev = Nothing }
-  | aa == AuditActionAdd || aa == AuditActionChange = do
+  | aa <= AuditActionChange = do
     ar <- if aa == AuditActionChange then lookupAssetReplace a else return Nothing
     at <- lookupAssetTranscode a
     return act
@@ -106,10 +110,31 @@ mergeAssetCreation :: [Activity] -> [Activity]
 mergeAssetCreation
   ( a@Activity{ activityAudit = a1@Audit{ auditAction = AuditActionAdd  }, activityTarget = ActivityAsset aa, activityPrev = Nothing }
   : Activity{ activityAudit = a2@Audit{ auditAction = AuditActionChange }, activityTarget = ActivityAsset ac, activityPrev = Just (ActivityAsset aa') }
-  : al) | assetId aa == assetId aa' && auditIdentity a1 == auditIdentity a2 && auditWhen a2 `diffUTCTime` auditWhen a1 < 1 =
+  : al) | assetId aa == assetId aa' && auditsMatch a1 a2 =
   a{ activityTarget = ActivityAsset ac, activityPrev = Just (ActivityAsset aa) } : mergeAssetCreation al
 mergeAssetCreation (a:al) = a : mergeAssetCreation al
 mergeAssetCreation [] = []
+
+mergeActivityAssetAndSlot :: ActivityTarget -> ActivityTarget -> Maybe ActivityTarget
+mergeActivityAssetAndSlot (ActivityAsset ar) (ActivityAssetSlot ai si) =
+  assetId ar == ai ?> ActivityAssetAndSlot ar si
+mergeActivityAssetAndSlot _ _ = Nothing
+
+mergeAssetAndSlot :: [Activity] -> [Activity]
+mergeAssetAndSlot 
+  ( Activity{ activityAudit = a1, activityTarget = t1, activityPrev = p1, activityReplace = Nothing, activityTranscode = Nothing }
+  : a@Activity{ activityAudit = a2, activityTarget = t2, activityPrev = p2 }
+  : al)
+  | auditsMatch a1 a2 && auditAction a1 <= auditAction a2 && auditAction a2 <= AuditActionChange
+  , Just t <- mergeActivityAssetAndSlot t1 t2 =
+  a { activityAudit = a1
+    , activityTarget = t
+    , activityPrev = (do
+      p1t <- p1
+      mergeActivityAssetAndSlot p1t =<< p2) <|> p1 <|> p2
+    } : mergeAssetAndSlot al
+mergeAssetAndSlot (a:al) = a : mergeAssetAndSlot al
+mergeAssetAndSlot [] = []
 
 lookupContainerActivity :: (MonadDB c m, MonadHasIdentity c m) => Container -> m [Activity]
 lookupContainerActivity cont = do
@@ -137,7 +162,7 @@ lookupContainerActivity cont = do
   cea <- chainPrev (activityAssetId &&& activitySegment)
     <$> dbQuery $(selectQuery selectActivityExcerpt $ "JOIN slot_asset ON excerpt.asset = slot_asset.asset WHERE slot_asset.container = ${containerId $ containerRow cont} AND " ++ activityQual)
 
-  return $ mergeActivities (ca:ra:asa:cea:caa:oaa)
+  return $ mergeAssetAndSlot $ mergeActivities (ca:ra:asa:cea:caa:oaa)
 
 -- EDIT permission assumed for all
 activityTargetJSON :: ActivityTarget -> (T.Text, [JSON.Pair], JSON.Object)
@@ -181,6 +206,9 @@ activityTargetJSON ActivityExcerpt{..} =
   ("excerpt", ("id" JSON..= activityAssetId) : maybeToList (segmentJSON activitySegment), JSON.object $ maybeToList
     (("excerpt" JSON..=) <$> activityExcerptRelease))
 
+activityAssetJSON :: Asset -> JSON.Object
+activityAssetJSON a = assetJSON a JSON..+? (("name" JSON..=) <$> assetName (assetRow a))
+
 activityJSON :: Activity -> Maybe JSON.Object
 activityJSON Activity{ activityAudit = Audit{..}, ..} = auditAction == AuditActionChange && HM.null new && HM.null old ?!>
   new JSON..++ key ++ catMaybes
@@ -190,8 +218,8 @@ activityJSON Activity{ activityAudit = Audit{..}, ..} = auditAction == AuditActi
     , Just $ "user" JSON..= auditWho auditIdentity
     , Just $ "type" JSON..= typ
     , HM.null old ?!> "old" JSON..= old
-    , ("replace" JSON..=) . assetJSON <$> activityReplace
-    , ("transcode" JSON..=) . assetJSON <$> activityTranscode
+    , ("replace" JSON..=) . activityAssetJSON <$> activityReplace
+    , ("transcode" JSON..=) . activityAssetJSON <$> activityTranscode
     ]
   where
   (new, old)
