@@ -23,9 +23,10 @@
           <a ng-href="{{::act.party.route()}}" ng-bind="::act.party.name"></a> 
           <span class="permission-auth-email" ng-if="::act.party.email">&lt;{{::act.party.email}}&gt;</span>
         </span>
-        <dl>
-          <span activity-change="act.site" title-message="auth.site.edit" message="auth.site.{{::page.constants.permission[value]}}.title"></span>
-          <span activity-change="act.member" title-message="auth.member.edit" message="auth.member.{{::page.constants.permission[value]}}.title"></span>
+        <dl ng-if="::act.site || act.member || act.old">
+          <span activity-change="act.site" title="others' data" message="auth.site.{{::page.constants.permission[value]}}.title"></span>
+          <span activity-change="act.member" title="lab data" message="auth.member.{{::page.constants.permission[value]}}.title"></span>
+          <span activity-change="act.expires" title-message="auth.expiration.title" ng-bind="::value | date"></span>
         </dl>
       </span>
 

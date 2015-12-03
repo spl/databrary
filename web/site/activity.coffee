@@ -12,6 +12,9 @@ app.directive 'activity', [
         sv = hsv/360|0
         "hsl(#{hsv%360},#{70+sv%20}%,#{45+(sv/20|0)%27}%)"
 
+      isAuthRequest = (act) ->
+        act.type == 'authorize' && act.action == 'add' && act.party.id == act.user && !act.site && !act.member && !act.old
+
       action =
         add: "created"
         remove: "removed"
@@ -37,6 +40,8 @@ app.directive 'activity', [
         asset:
           add: "uploaded"
       $scope.activityAction = (act) ->
+        if isAuthRequest(act)
+          return "requested"
         a = action[act.type]?[act.action] ? action[act.action]
         if act.type == 'container'
           a += ' ' + (if act.top then 'materials' else 'session')
