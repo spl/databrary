@@ -51,8 +51,8 @@
           </th>
         </tr>
         <tr>
-          <th>&#8230;</th>
-          <th ng-repeat="c in ::page.constants.categories track by c.id" ng-if="volume.metrics[c.id]">
+          <th class="spreadsheet-fake-metric-th">&#8230;</th>
+          <th ng-repeat="c in ::page.constants.categories track by c.id" ng-if="volume.metrics[c.id]" class="spreadsheet-fake-metric-th">
             <span ng-repeat="m in volume.metrics[c.id]" class="spreadsheet-fake-th" ng-bind="::page.constants.metric[m].name"></span>
           </th>
         </tr>

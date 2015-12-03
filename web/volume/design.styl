@@ -70,9 +70,16 @@
   &.selected
     background-color orange52
 
+.spreadsheet-table
+  .spreadsheet-fake-metric-th
+    border-left 1px solid pale
+    border-right 1px solid pale
+
 .spreadsheet-fake-th
-  border-left 1px solid white
-  border-right 1px solid white
-  border-left-color pale
-  border-right-color pale
+  border-left 1px solid pale
+  border-right 1px solid pale
   padding 0 20px 0 20px
+  &:first-child
+    border-left 0
+  &:last-child
+    border-right 0
