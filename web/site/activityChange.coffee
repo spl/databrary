@@ -29,6 +29,7 @@ app.directive 'activityChange', [
           clone.addClass('activity-'+which)
           dd.append(clone))
       add('old')
+      dd.append('<wbr>')
       add('new')
 
       $element.after(dt, dd)
