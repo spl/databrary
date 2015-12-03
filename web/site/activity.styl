@@ -15,9 +15,11 @@
   dl > dt, dl > dd
     display inline-block
     
-  dl, dt
+  dl
     display inline-block
     margin 0
+    @media screen and (max-width: grid-tablet-width)
+      display block
   
   dd
     margin-width b3
@@ -57,3 +59,4 @@
   text-transform lowercase
   &:before
     content: '\2022'
+  

@@ -63,53 +63,54 @@
         </span>
       </dl>
 
-      <dl ng-switch-when="asset">
-        <dt>file</dt>
-        <dd ng-style="::{'border-color':idColor(act.id)}" class="activity-highlight">
-          <img ng-src="{{::page.router.rawAssetThumb([act.id, 56])}}"/>
-          {{::act.id}}
-        </dd>
-        <span activity-change="act.name" title-message="asset.name.title" ng-bind="::value"></span>
-        <span activity-change="act.classification" title-message="asset.classification" ng-init="release=page.constants.release[value]">
-          <span class="icon release" ng-class="::release"></span>
-          {{::release}}
+      <span ng-switch-when="asset">
+        file
+        <span ng-style="::{'border-color':idColor(act.id)}" class="activity-highlight"><img ng-src="{{::page.router.rawAssetThumb([act.id, 56])}}"/>{{::act.id}}
         </span>
-        <span activity-change="act.segment" title="Position">
-          {{::value.l | timecode}}
-        </span>
-        <dt ng-if="::act.transcode" class="activity-change-title">
-          Automatically converted from
-        </dt>
-        <dd ng-if="::act.transcode">
-          <span ng-style="::{'border-color':idColor(act.transcode.id)}" class="activity-highlight">
-            <img ng-src="{{::page.router.rawAssetThumb([act.transcode.id, 56])}}"/>
-            {{::act.transcode.id}} {{::act.transcode.name}}
+        <dl>
+          <span activity-change="act.name" title-message="asset.name.title" ng-bind="::value"></span>
+          <span activity-change="act.classification" title-message="asset.classification" ng-init="release=page.constants.release[value]">
+            <span class="icon release" ng-class="::release"></span>
+            {{::release}}
           </span>
-          <a class="icon download button neutral" ng-href="{{::page.router.rawAssetDownload([act.transcode.id])}}" target="_self"></a>
-        </dd>
-        <dt ng-if="::act.replace" class="activity-change-title">
-          Replaced
-        </dt>
-        <dd ng-if="::act.replace">
-          <span ng-style="::{'border-color':idColor(act.replace.id)}" class="activity-highlight activity-old">
-            <img ng-src="{{::page.router.rawAssetThumb([act.replace.id, 56])}}"/>
-            {{::act.replace.id}} {{::act.replace.name}}
+          <span activity-change="act.segment" title="Position">
+            {{::value.l | timecode}}
           </span>
-          <a class="icon download button neutral" ng-href="{{::page.router.rawAssetDownload([act.replace.id])}}" target="_self"></a>
-        </dd>
-      </dl>
+          <dt ng-if="::act.transcode" class="activity-change-title">
+            Automatically converted from
+          </dt>
+          <dd ng-if="::act.transcode">
+            <span ng-style="::{'border-color':idColor(act.transcode.id)}" class="activity-highlight">
+              <img ng-src="{{::page.router.rawAssetThumb([act.transcode.id, 56])}}"/>
+              {{::act.transcode.id}} {{::act.transcode.name}}
+            </span>
+            <a class="icon download button neutral" ng-href="{{::page.router.rawAssetDownload([act.transcode.id])}}" target="_self"></a>
+          </dd>
+          <dt ng-if="::act.replace" class="activity-change-title">
+            Replaced
+          </dt>
+          <dd ng-if="::act.replace">
+            <span ng-style="::{'border-color':idColor(act.replace.id)}" class="activity-highlight activity-old">
+              <img ng-src="{{::page.router.rawAssetThumb([act.replace.id, 56])}}"/>
+              {{::act.replace.id}} {{::act.replace.name}}
+            </span>
+            <a class="icon download button neutral" ng-href="{{::page.router.rawAssetDownload([act.replace.id])}}" target="_self"></a>
+          </dd>
+        </dl>
+      </span>
 
-      <dl ng-switch-when="excerpt">
-        <dt ng-style="::{'border-color':idColor(act.id)}" class="activity-highlight">highlight</dt>
-        <dd>
-          {{::act.id}}: 
-          {{::act.segment.l | timecode}} &ndash; {{::act.segment.u | timecode}}
-        </dd>
-        <span activity-change="act.excerpt" title="Release" ng-init="release=page.constants.release[value]">
-          <span class="icon release" ng-class="::release"></span>
-          {{::release}}
+      <span ng-switch-when="excerpt">
+        <span>highlight from file 
+          <span ng-style="::{'border-color':idColor(act.id)}" class="activity-highlight">{{::act.id}}</span>: 
+          {{::act.segment.l | timecode}} &ndash; {{::act.segment.u | timecode}} 
         </span>
-      </dl>
+        <dl>
+          <span activity-change="act.excerpt" title="Release" ng-init="release=page.constants.release[value]">
+            <span class="icon release" ng-class="::release"></span>
+            {{::release}}
+          </span>
+        </dl>
+      </span>
 
       <span ng-switch-default ng-bind="::act.type"></span>
     </ng-switch>
