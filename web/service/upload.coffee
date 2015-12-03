@@ -9,7 +9,7 @@ app.factory('uploadService', [
       target: router.controllers.uploadChunk.route()
       method: 'octet'
       chunkSize: 4194304
-      simultaneousUploads: 2
+      simultaneousUploads: 3
       testChunks: false
       chunkRetryInterval: 5000
       permanentErrors: [400, 403, 404, 409, 415, 500, 501]
