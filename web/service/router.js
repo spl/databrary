@@ -282,7 +282,7 @@ app.provider('routerService', [
         party: [
           'pageService', function (page) {
             return page.models.Party.get(page.$route.current.params.id).then(function (p) {
-              return p.activity().then(function (a) {
+              return p.getActivity().then(function (a) {
                 p.activity = a;
                 return p;
               });
@@ -383,7 +383,7 @@ app.provider('routerService', [
         volume: [
           'pageService', function (page) {
             return page.models.Volume.get(page.$route.current.params.id).then(function (v) {
-              return v.activity().then(function (a) {
+              return v.getActivity().then(function (a) {
                 v.activity = a;
                 return v;
               });
@@ -417,7 +417,7 @@ app.provider('routerService', [
           'pageService', function (page) {
             return page.models.Volume.get(page.$route.current.params.vid).then(function (v) {
               return v.getSlot(page.$route.current.params.id).then(function (s) {
-                return s.activity().then(function (a) {
+                return s.getActivity().then(function (a) {
                   s.activity = a;
                   return s;
                 });

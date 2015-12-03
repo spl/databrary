@@ -311,7 +311,7 @@ app.factory('modelService', [
         });
     };
 
-    Party.prototype.activity = function () {
+    Party.prototype.getActivity = function () {
       return router.http(router.controllers.getPartyActivity, this.id)
         .then(function (res) {
           return makeActivity(res.data);
@@ -674,7 +674,7 @@ app.factory('modelService', [
         });
     };
 
-    Volume.prototype.activity = function () {
+    Volume.prototype.getActivity = function () {
       var v = this;
       return router.http(router.controllers.getVolumeActivity, this.id)
         .then(function (res) {
@@ -944,7 +944,7 @@ app.factory('modelService', [
       return router.slotThumb([this.volume.id, this.container.id, this.segment.format(), size]);
     };
 
-    Container.prototype.activity = function () {
+    Container.prototype.getActivity = function () {
       var v = this.volume;
       return router.http(router.controllers.getContainerActivity, this.id)
         .then(function (res) {
