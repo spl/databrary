@@ -279,12 +279,12 @@ app.provider('routerService', [
       controller: 'party/activity',
       templateUrl: 'party/activity.html',
       resolve: {
-        party: [
+        activity: [
           'pageService', function (page) {
             return page.models.Party.get(page.$route.current.params.id).then(function (p) {
               return p.getActivity().then(function (a) {
-                p.activity = a;
-                return p;
+                a.party = p;
+                return a;
               });
             });
           }
@@ -380,12 +380,12 @@ app.provider('routerService', [
       controller: 'volume/activity',
       templateUrl: 'volume/activity.html',
       resolve: {
-        volume: [
+        activity: [
           'pageService', function (page) {
             return page.models.Volume.get(page.$route.current.params.id).then(function (v) {
               return v.getActivity().then(function (a) {
-                v.activity = a;
-                return v;
+                a.volume = v;
+                return a;
               });
             });
           }
@@ -413,13 +413,13 @@ app.provider('routerService', [
       controller: 'volume/slotActivity',
       templateUrl: 'volume/slotActivity.html',
       resolve: {
-        slot: [
+        activity: [
           'pageService', function (page) {
             return page.models.Volume.get(page.$route.current.params.vid).then(function (v) {
               return v.getSlot(page.$route.current.params.id).then(function (s) {
                 return s.getActivity().then(function (a) {
-                  s.activity = a;
-                  return s;
+                  a.slot = s;
+                  return a;
                 });
               });
             });

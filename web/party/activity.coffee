@@ -1,10 +1,11 @@
 'use strict'
 
 app.controller 'party/activity', [
-  '$scope', 'displayService', 'party',
-  ($scope, display, party) ->
+  '$scope', 'displayService', 'activity',
+  ($scope, display, activity) ->
+    party = activity.party
     display.title = party.name + " activity"
     $scope.party = party
-    $scope.activity = party.activity
+    $scope.activity = activity
     return
 ]

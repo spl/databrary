@@ -1,10 +1,11 @@
 'use strict'
 
 app.controller 'volume/activity', [
-  '$scope', 'displayService', 'volume',
-  ($scope, display, volume) ->
+  '$scope', 'displayService', 'activity',
+  ($scope, display, activity) ->
+    volume = activity.volume
     display.title = volume.name + " activity"
     $scope.volume = volume
-    $scope.activity = volume.activity
+    $scope.activity = activity
     return
 ]
