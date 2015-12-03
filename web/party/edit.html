@@ -8,6 +8,7 @@
         <h2 class="view-title">
           <span ng-bind="::party.name"></span>
           <a ng-href="{{::party.route()}}"><span class="button green icon view-icon"></span></a>
+          <a ng-href="{{::page.router.partyActivity([party.id])}}"><span class="button">User Activity</span></a>
         </h2>
       </hgroup>
 

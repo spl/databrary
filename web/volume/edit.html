@@ -12,6 +12,7 @@
         <h2 class="view-title">
           <span ng-bind="volume.displayName"></span>
           <a ng-href="{{::volume.route()}}"><span class="button green icon view-icon"></span></a>
+          <a ng-href="{{::page.router.volumeActivity([volume.id])}}"><span class="button">Volume history</span></a>
         </h2>
       </hgroup>
 
