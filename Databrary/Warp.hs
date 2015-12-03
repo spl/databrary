@@ -28,6 +28,7 @@ runWarp conf rc app =
       t <- getCurrentTime
       msg <- Trav.mapM (\q -> requestLog t q Nothing $ Warp.exceptionResponseForDebug e) req
       logMsg t (maybe id (\m -> (<>) (m <> "\n")) msg $ toLogStr $ show e) (serviceLogs rc))
+    $ Warp.setHTTP2Disabled
     $ Warp.defaultSettings)
     app
   where
