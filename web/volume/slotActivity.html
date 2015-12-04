@@ -5,7 +5,11 @@
     <hgroup class="session-header">
       <a class="view-link" ng-href="{{::slot.volume.route()}}" ng-bind="::slot.volume.alias || slot.volume.name"></a>
       <h1 class="view-context">Activity</h1>
-      <h1 class="view-title">{{::slot.displayName}}</h1>
+      <h1 class="view-title">
+        {{::slot.displayName}}
+        <a ng-href="{{::slot.route()}}"><span class="button icon view-icon"></span></a>
+        <a ng-href="{{::slot.editRoute()}}"><span class="button icon edit"></span></a>
+      </h1>
     </hgroup>
     <activity></activity>
   </div>
