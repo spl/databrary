@@ -39,21 +39,27 @@
       </dl>
 
       <span ng-switch-when="access" class="activity-access">
-        access for
-        <span ng-style="::{'border-color':idColor(act.party.id)}" class="activity-highlight">
-          <a ng-href="{{::act.party.route()}}" ng-bind="::act.party.name"></a> 
-          <span class="permission-auth-email" ng-if="::act.party.email">&lt;{{::act.party.email}}&gt;</span>
+        <span ng-if="::act.party.id > 0">
+          access for
+          <span ng-style="::{'border-color':idColor(act.party.id)}" class="activity-highlight">
+            <a ng-href="{{::act.party.route()}}" ng-bind="::act.party.name"></a> 
+            <span class="permission-auth-email" ng-if="::act.party.email">&lt;{{::act.party.email}}&gt;</span>
+          </span>
+          <dl>
+            <span activity-change="act.individual" title="Level" ng-init="perm=page.constants.permission[value]">
+              <span class="icon user-access" ng-class="::perm"></span> 
+              <span message="access.edit.{{::perm}}.title"></span>
+            </span>
+            <span activity-change="act.children" title="Extend to">
+              <span ng-if="::value"><span class="icon network"></span>affiliates</span>
+              <span ng-if="::!value">none</span>
+            </span>
+          </dl>
         </span>
-        <dl>
-          <span activity-change="act.individual" title="Level" ng-init="perm=page.constants.permission[value]">
-            <span class="icon user-access" ng-class="::perm"></span> 
-            <span message="access.edit.{{::perm}}.title"></span>
-          </span>
-          <span activity-change="act.children" title="Extend to">
-            <span ng-if="value"><span class="icon network"></span>affiliates</span>
-            <span ng-if="!value">none</span>
-          </span>
-        </dl>
+        <span ng-if="::act.party.id <= 0">
+          <span ng-if="::act.children"><span class="icon access1"></span></span>
+          <span ng-if="::!act.children"><span class="icon access0"></span></span>
+        </span>
       </span>
 
       <dl ng-switch-when="container">

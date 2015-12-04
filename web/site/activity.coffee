@@ -1,7 +1,8 @@
 'use strict'
 
 app.directive 'activity', [
-  () ->
+  'constantService',
+  (constants) ->
     restrict: 'E'
     templateUrl: 'site/activity.html'
     link: ($scope) ->
@@ -34,15 +35,29 @@ app.directive 'activity', [
           change: "changed volume"
         access:
           add: "added"
+        preset:
+          [
+            {
+              add: "shared selected information with the public"
+              remove: "stopped sharing with the public"
+            }, {
+              add: "shared with authorized researchers"
+              remove: "stopped sharing with authorized researchers"
+            }
+          ]
         release:
           add: "set"
           remove: "cleared"
         asset:
           add: "uploaded"
+
       $scope.activityAction = (act) ->
         if isAuthRequest(act)
           return "requested"
-        a = action[act.type]?[act.action] ? action[act.action]
+        at = action[act.type]
+        if act.type == 'access' && (i = constants.accessPreset.parties.indexOf(act.party.id)) >= 0
+          at = action.preset[i]
+        a = at?[act.action] ? action[act.action]
         if act.type == 'container'
           a += ' ' + (if act.top then 'materials' else 'session')
         a
