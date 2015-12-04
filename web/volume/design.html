@@ -40,4 +40,27 @@
       </div>
     </div>
   </div>
+
+  <div class="spreadsheet">
+    <div class="volume-design-header">
+      <strong>Spreadsheet Preview</strong>
+      <small>This is a preview of how the <a ng-click="activateStep(step.data)">spreadsheet</a> headers will look with the current selections, where each session is entered on a row.</small>
+    </div>
+    <table class="spreadsheet-table">
+      <thead>
+        <tr class="spreadsheet-head-groups">
+          <th class="metric-col">folder</th>
+          <th class="metric-col" ng-repeat="c in ::page.constants.categories track by c.id" ng-if="volume.metrics[c.id]">
+            <span class="spreadsheet-tab-name" ng-bind="::c.name"></span>
+          </th>
+        </tr>
+        <tr>
+          <th class="spreadsheet-fake-metric-th">test date</th>
+          <th ng-repeat="c in ::page.constants.categories track by c.id" ng-if="volume.metrics[c.id]" class="spreadsheet-fake-metric-th">
+            <span ng-repeat="m in volume.metrics[c.id]" class="spreadsheet-fake-th" ng-bind="::page.constants.metric[m].name"></span>
+          </th>
+        </tr>
+      </thead>
+    </table>
+  </div>
 </ng-form>
