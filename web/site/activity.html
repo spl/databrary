@@ -4,6 +4,8 @@
     <a ng-if="::act.user >= 0" load-party="act.user" ng-href="{{::party.route()}}" class="activity-user" ng-bind="::party.name"></a> 
     <span ng-bind="::activityAction(act)"></span> 
 
+    <span ng-if="::act.type==='account'"> from {{::act.ip}}</span>
+
     <ng-switch on="::act.type">
       <dl ng-switch-when="party">
         <span activity-change="act.prename" title-message="prename" ng-bind="::value"></span>
@@ -47,8 +49,9 @@
             <span class="icon user-access" ng-class="::perm"></span> 
             <span message="access.edit.{{::perm}}.title"></span>
           </span>
-          <span activity-change="act.children" title="Extend">
-            <span ng-if="value" class="icon network"></span>
+          <span activity-change="act.children" title="Extend to">
+            <span ng-if="value"><span class="icon network"></span>affiliates</span>
+            <span ng-if="!value">none</span>
           </span>
         </dl>
       </span>
@@ -117,8 +120,6 @@
 
       <span ng-switch-default ng-bind="::act.type"></span>
     </ng-switch>
-
-    <span ng-if="::act.type==='account'"> from {{::act.ip}}</span>
 
   </li>
 </ol>

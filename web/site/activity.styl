@@ -14,20 +14,30 @@
 
   dl > dt, dl > dd
     display inline-block
+    font-size b2
+    span.icon
+      height 16px
+      vertical-align text-top
+      & .release
+        min-width initial
     
   dl
-    display inline-block
-    margin 0
+    margin b8 0 0 0
     @media screen and (max-width: grid-tablet-width)
       display block
-  
+      
+  dt
+    text-indent b2
+
   dd
-    margin-width b3
+    margin-width b8
     & > div > p
       line-height initial
   
   a.download.button
-    vertical-align text-bottom
+    vertical-align text-top
+    padding 0
+    size 22px 20px
     margin-width b8
   a.download.button:not(:hover)
     background-color white
@@ -51,9 +61,8 @@
 .activity-highlight
   padding-width b8
   border-width 0
-  border-bottom-width 5px
+  border-bottom-width b8
   border-style solid
-  display inline-block
   
 .activity-change-title
   text-transform lowercase
