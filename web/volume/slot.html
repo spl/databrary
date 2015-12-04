@@ -15,7 +15,7 @@
             <span ng-if="::slot.release != null" class="release icon" ng-class="::[page.constants.release[slot.release], 'hint-release-'+page.constants.release[slot.release]]"></span>
             <a ng-if="::!editing && volume.checkPermission(page.permission.EDIT)" ng-click="toggleEdit()"><span class="neutral button icon edit"></span></a>
             <a ng-if="::editing" ng-click="toggleEdit()"><span class="neutral button icon view-icon"></span></a>
-            <a ng-if="::volume.checkPermission(page.permission.EDIT)" ng-href="{{::page.router.slotActivity([volume.id, slot.id])}}"><span class="button">{{::slot.top? 'Materials' : 'Session'}} history</span></a>
+            <a ng-if="::volume.checkPermission(page.permission.EDIT)" ng-href="{{::page.router.slotActivity([volume.id, slot.id])}}"><span class="button mini white">{{::slot.top? 'Materials' : 'Session'}} history</span></a>
           </h3>
         </hgroup>
 
