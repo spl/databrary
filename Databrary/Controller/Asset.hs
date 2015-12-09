@@ -197,6 +197,9 @@ processAsset api target = do
         _ <- forkTranscode t
         return $ transcodeAsset t
       _ -> return a'
+    case target of
+      AssetTargetAsset _ -> replaceAsset a t
+      _ -> return ()
     return $ fixAssetSlotDuration as'
       { slotAsset = t
         { assetRow = (assetRow t)
@@ -205,9 +208,6 @@ processAsset api target = do
         }
       })
     up'
-  case target of
-    AssetTargetAsset _ -> replaceAsset a (slotAsset as'')
-    _ -> return ()
   _ <- changeAsset (slotAsset as'') Nothing
   _ <- changeAssetSlot as''
   case api of

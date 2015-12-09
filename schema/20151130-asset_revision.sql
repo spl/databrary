@@ -1,3 +1,5 @@
+ALTER TABLE "asset_revision" ADD Check ("orig" <> "asset");
+
 CREATE TABLE "asset_replace" (
 ) INHERITS ("asset_revision");
 COMMENT ON TABLE "asset_replace" IS 'Replacement assets provided by the user.';

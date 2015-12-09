@@ -544,6 +544,7 @@ CREATE TABLE "asset_revision" (
 	"orig" integer NOT NULL References "asset" ON DELETE CASCADE,
 	"asset" integer Unique NOT NULL References "asset" ON DELETE CASCADE,
 	-- Check ("orig" < "asset"), -- this would be nice, but we have some ingests that were done the other way
+	Check ("orig" <> "asset"),
 	Check (false) NO INHERIT
 );
 COMMENT ON TABLE "asset_revision" IS 'Assets that reflect different versions of the same content, either generated automatically from reformatting or a replacement provided by the user.';
