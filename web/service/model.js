@@ -1444,7 +1444,7 @@ app.factory('modelService', [
           a[i].party = partyMake(a[i].party);
         if ('segment' in a[i])
           a[i].segment = new Segment(a[i].segment);
-        else if (a[i].old && 'segment' in a[i].old)
+        if (a[i].old && 'segment' in a[i].old)
           a[i].old.segment = new Segment(a[i].old.segment);
       }
       return a;
