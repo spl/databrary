@@ -92,9 +92,9 @@
             Automatically converted from
           </dt>
           <dd ng-if="::act.transcode">
-            <span ng-style="::{'border-color':idColor(act.transcode.id)}" class="activity-highlight">
+            <span class="activity-highlight">
               <img ng-src="{{::page.router.rawAssetThumb([act.transcode.id, 56])}}"/>
-              {{::act.transcode.id}} {{::act.transcode.name}}
+              {{::act.transcode.name}}
             </span>
             <a class="icon download button neutral" ng-href="{{::page.router.rawAssetDownload([act.transcode.id])}}" target="_self"></a>
           </dd>
