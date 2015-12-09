@@ -68,7 +68,7 @@
                     </validator>
 
                     <validator name="classification" label="asset.classification">
-                      <classification-select name="classification" ng-model="current.data.classification" default="slot.release"></classification-select>
+                      <classification-select name="classification" ng-model="current.data.classification" default="slot.release" force="slot.top && slot.release==undefined"></classification-select>
                     </validator>
                   </div>
                 </ng-form>
