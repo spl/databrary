@@ -15,28 +15,34 @@
         <ul class="flat hide-mobile inline-block">
           <li>
             <span class="home-stats-num">{{::stats.authorized[page.permission.EDIT] | number:0}} </span>
-            <small class="inline-block">authorized<br>investigators</small>
+            <small class="inline-block">investigators</small>
           </li>
           <li>
             <span class="home-stats-num">{{::stats.authorized[page.permission.READ] | number:0}} </span>
-            <small class="inline-block">authorized<br>affiliates</small>
+            <small class="inline-block">affiliates</small>
           </li>
           <li>
             <span class="home-stats-num">{{::stats.authorized[page.permission.ADMIN] | number:0}} </span>
-            <small class="inline-block">authorized<br>institutions</small>
+            <small class="inline-block">institutions</small>
           </li>  
           <hr class="home-stats-split">    
           <li>
             <span class="home-stats-num">{{::stats.volumes | number:0}} </span>
             <small class="inline-block">total<br>volumes </small>
+          </li>
+          <li>
             <span class="home-stats-num">{{::stats.shared | number:0}} </span>
             <small class="inline-block">shared<br>volumes</small>
           </li>        
           <li>
+            <span class="home-stats-num">{{::stats.assets | number:0}} </span>
+            <small class="inline-block">files </small>     
+          </li>
+          <li>      
             <span class="home-stats-num">{{::stats.duration/(1000*60*60) | number:0}} </span>
             <small class="inline-block">hours of <br>recordings </small>
-            <span class="home-stats-num">{{::stats.assets | number:0}} </span>
-            <small class="inline-block">files </small> 
+          </li>
+          <li>
             <span class="home-stats-num">{{::stats.records[page.constants.categoryName.participant.id] | number:0}} </span>
             <small class="inline-block">participants</small>
           </li>
