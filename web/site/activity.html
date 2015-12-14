@@ -77,8 +77,11 @@
       </dl>
 
       <span ng-switch-when="asset">file
-        <span ng-style="::{'border-color':idColor(act.id)}" class="activity-highlight"><img ng-src="{{::page.router.rawAssetThumb([act.id, 56])}}"/>{{::act.id}}
+        <span ng-style="::{'border-color':idColor(act.id)}" class="activity-highlight">
+          <img ng-src="{{::page.router.rawAssetThumb([act.id, 56])}}"/>
+          {{::act.id}}
         </span>
+        <a class="icon download button neutral" ng-href="{{::page.router.rawAssetDownload([act.id])}}" target="_self"></a>
         <dl>
           <span activity-change="act.name" title-message="asset.name.title" ng-bind="::value"></span>
           <span activity-change="act.classification" title-message="asset.classification" ng-init="release=page.constants.release[value]">
