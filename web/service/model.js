@@ -1076,12 +1076,6 @@ app.factory('modelService', [
       }
     }
 
-    function assetMakeArray(context, l) {
-      if (l) for (var i = 0; i < l.length; i ++)
-        l[i] = assetMake(context, l[i]);
-      return l;
-    }
-
     Volume.prototype.getAsset = function (asset, container, segment, options) {
       var v = this;
       options = checkOptions(null, options);
