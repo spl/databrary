@@ -11,9 +11,11 @@
         <h1 class="view-context">Manage volume</h1>
         <h2 class="view-title">
           <span ng-bind="volume.displayName"></span>
-          <a ng-href="{{::volume.route()}}" class="button white icon view-icon"></a>
-          <a class="button green icon edit"></a>          
-          <a ng-href="{{::page.router.volumeActivity([volume.id])}}" class="button mini white view-title-text">Volume history</a>
+          <div class="view-title-buttons inline-block">
+            <a ng-href="{{::volume.route()}}" class="button white icon view-icon"></a>
+            <a href="" class="button green icon edit"></a>
+            <a ng-href="{{::page.router.volumeActivity([volume.id])}}" class="button mini white view-title-text">Volume history</a>
+          </div>
         </h2>
       </hgroup>
 

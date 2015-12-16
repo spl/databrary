@@ -3,9 +3,11 @@
     <h1 class="view-context">Activity</h1>
     <h2 class="view-title">
       {{::volume.alias? volume.alias : volume.name}}
-      <a ng-href="{{::volume.route()}}"><span class="button icon view-icon"></span></a>
-      <a ng-href="{{::volume.editRoute()}}"><span class="button icon edit"></span></a>
-      <a class="button mini green view-title-text">Volume history</a>
+      <div class="view-title-buttons inline-block">
+        <a ng-href="{{::volume.route()}}"><span class="button icon view-icon"></span></a>
+        <a ng-href="{{::volume.editRoute()}}"><span class="button icon edit"></span></a>
+        <a href="" class="button mini green view-title-text">Volume history</a>
+      </div>
     </h2>
 
     <activity></activity>

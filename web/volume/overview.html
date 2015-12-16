@@ -6,9 +6,11 @@
       <div ng-if="::!volume.alias" class="view-context panel-context">Volume</div>
       <h1 class="view-title">
         <span ng-bind="::volume.name"></span>
-        <a class="button green icon view-icon"></a>
-        <a ng-if="::volume.checkPermission(page.permission.EDIT)" ng-href="{{::volume.editRoute('overview')}}" class="button white icon edit"></a>
-        <a ng-if="::volume.checkPermission(page.permission.EDIT)" ng-href="{{::page.router.volumeActivity([volume.id])}}" class="button mini white view-title-text">Volume history</a>
+        <div class="view-title-buttons inline-block">
+          <a href="" class="button green icon view-icon"></a>
+          <a ng-if="::volume.checkPermission(page.permission.EDIT)" ng-href="{{::volume.editRoute('overview')}}" class="button white icon edit"></a>
+          <a ng-if="::volume.checkPermission(page.permission.EDIT)" ng-href="{{::page.router.volumeActivity([volume.id])}}" class="button mini white view-title-text">Volume history</a>
+        </div>
       </h1>
     </hgroup>
   </div>
