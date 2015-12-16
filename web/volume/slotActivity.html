@@ -7,8 +7,13 @@
       <h1 class="view-context">Activity</h1>
       <h1 class="view-title">
         {{::slot.displayName}}
-        <a ng-href="{{::slot.route()}}"><span class="button icon view-icon"></span></a>
-        <a ng-href="{{::slot.editRoute()}}"><span class="button icon edit"></span></a>
+        <span ng-if="::slot.date" ng-bind="::' (' + slot.date + ')'"></span>
+        <span ng-if="::slot.release != null" class="release icon" ng-class="::[page.constants.release[slot.release], 'hint-release-'+page.constants.release[slot.release]]"></span>
+        <div class="view-title-buttons inline-block">
+          <a ng-href="{{::slot.route()}}" class="white button icon view-icon"></a>
+          <a ng-href="{{::slot.editRoute()}}" class="white button icon edit"></a>
+          <a href="" class="green button mini view-title-text">Session history</a>
+        </div>
       </h1>
     </hgroup>
     <activity></activity>
