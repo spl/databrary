@@ -9,13 +9,16 @@
       <div class="col">
         <hgroup class="session-header">
           <a class="view-link" ng-href="{{::editing ? volume.editRoute(slot.top ? 'materials' : 'data') : volume.route() + '#panel-' + (slot.top ? 'materials' : 'session')}}" ng-bind="::volume.alias || volume.name"></a>
+          <h3 class="view-context">{{::editing? 'Manage' : 'View'}}</h3>
           <h3 class="view-title">
             <span ng-bind="::slot.displayName"></span>
             <span ng-if="::slot.date" ng-bind="::' (' + slot.date + ')'"></span>
             <span ng-if="::slot.release != null" class="release icon" ng-class="::[page.constants.release[slot.release], 'hint-release-'+page.constants.release[slot.release]]"></span>
-            <a ng-if="::!editing && volume.checkPermission(page.permission.EDIT)" ng-click="toggleEdit()"><span class="neutral button icon edit"></span></a>
-            <a ng-if="::editing" ng-click="toggleEdit()"><span class="neutral button icon view-icon"></span></a>
-            <a ng-if="::volume.checkPermission(page.permission.EDIT)" ng-href="{{::page.router.slotActivity([volume.id, slot.id])}}"><span class="button mini white view-title-text">{{::slot.top? 'Materials' : 'Session'}} history</span></a>
+            <div ng-if="::volume.checkPermission(page.permission.EDIT)" class="view-title-buttons inline-block">
+              <button ng-class="::editing ? 'white' : 'green selected'" ng-disabled="::!editing" ng-click="toggleEdit()" class="button icon view-icon"></button>
+              <button ng-class="::editing ? 'green selected' : 'white'" ng-disabled="::editing" ng-click="toggleEdit()" class="button icon edit"></button>
+              <a ng-href="{{::page.router.slotActivity([volume.id, slot.id])}}" class="button mini white view-title-text">{{::slot.top? 'Materials' : 'Session'}} history</a>
+            </div>
           </h3>
         </hgroup>
 

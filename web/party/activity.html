@@ -3,8 +3,11 @@
     <h1 class="view-context">User history</h1>
     <h2 class="view-title">
       {{::party.name}}
-      <a ng-href="{{::party.route()}}"><span class="button icon view-icon"></span></a>
-      <a ng-href="{{::party.editRoute()}}"><span class="button icon edit"></span></a>
+      <div class="view-title-buttons inline-block">
+        <a ng-href="{{::party.route()}}"><span class="button white icon view-icon"></span></a>
+        <a ng-href="{{::party.editRoute()}}"><span class="button white icon edit"></span></a>
+        <a href="" class="button green selected mini view-title-text">User history</a>
+      </div>
     </h2>
 
     <activity></activity>
