@@ -38,7 +38,7 @@ button, .button
     box-shadow none
     cursor default
 
-  &:disabled, &.disabled
+  &:disabled:not(.selected), &.disabled
     disabled-background = mix(gray, white, 75%)
     border 1px solid gray
     background disabled-background
