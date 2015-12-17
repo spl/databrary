@@ -8,7 +8,7 @@
         <h1 class="view-title">
           <span>{{party.name}}</span>
           <div class="view-title-buttons inline-block">
-            <a href="" class="green button icon view-icon"></a>
+            <a href="" class="green selected button icon view-icon"></a>
             <a ng-if="::party.checkPermission(page.permission.EDIT)" ng-href="{{::party.editRoute()}}"><span class="white button icon edit"></span></a>
             <a ng-if="::party.checkPermission(page.permission.EDIT)" ng-href="{{::page.router.partyActivity([party.id])}}" class="button mini white view-title-text">User history</a>
           </div>

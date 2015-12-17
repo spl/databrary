@@ -34,13 +34,15 @@ button, .button
   &.purple
     button-color purple
 
+  &.selected, &:disabled, &.disabled
+    box-shadow none
+    cursor default
+
   &:disabled, &.disabled
     disabled-background = mix(gray, white, 75%)
     border 1px solid gray
     background disabled-background
     color mix(black, gray, 25%)
-    cursor default
-    box-shadow none
 
     &:hover
       background disabled-background
