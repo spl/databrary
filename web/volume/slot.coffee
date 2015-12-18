@@ -730,7 +730,7 @@ app.controller('volume/slot', [
       updateExcerpt: () ->
         @excerpt = undefined
         return unless @asset && @excerpts
-        seg = if @full then this else getSelection()
+        seg = if @full then this else getSelection().intersect(this)
         return if !@asset || !seg
         e = @excerpts.find((e) -> seg.overlaps(e))
         @excerpt =

@@ -160,7 +160,7 @@ processAsset api target = do
       >>= Trav.mapM (\c -> "position" .:> do
         let seg = slotSegment <$> s
             dur = maybe (assetDuration $ assetRow a) (probeLength . fileUploadProbe) up
-        p <- (<|> (lowerBound . segmentRange =<< seg)) <$> deformNonEmpty deform
+        p <- fromMaybe (lowerBound . segmentRange =<< seg) <$> deformOptional (deformNonEmpty deform)
         Slot c . maybe fullSegment
           (\l -> Segment $ Range.bounded l (l + fromMaybe 0 ((segmentLength =<< seg) <|> dur)))
           <$> orElseM p (Trav.mapM (lift . probeAutoPosition c . fileUploadProbe) (guard (isNothing s && isJust dur) >> up)))
