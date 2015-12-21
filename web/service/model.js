@@ -1196,7 +1196,7 @@ app.factory('modelService', [
     Object.defineProperty(Asset.prototype, 'fullExcerpt', {
       get: function () {
         var e = this.excerpts;
-        if (e && e.length === 1 && e[0].segment.contains(this.segment))
+        if (e && e.length === 1 && e[0].full)
           return e[0];
       }
     });
@@ -1206,6 +1206,12 @@ app.factory('modelService', [
         var r = this.classification != null ? this.classification : (this.container.release || 0);
         var e = this.fullExcerpt;
         return e ? Math.max(e.excerpt || 0, r) : r;
+      }
+    });
+
+    Object.defineProperty(Asset.prototype, 'assumedSegment', {
+      get: function () {
+        return this.segment.full ? new Segment(0, this.duration || 0) : this.segment;
       }
     });
 
@@ -1351,6 +1357,12 @@ app.factory('modelService', [
         l[i] = excerptMake(context, l[i]);
       return l;
     }
+
+    Object.defineProperty(Excerpt.prototype, 'full', {
+      get: function () {
+        return this.segment.contains(this.asset.assumedSegment);
+      }
+    });
 
     ///////////////////////////////// Comment
 
