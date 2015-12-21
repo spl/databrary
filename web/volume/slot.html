@@ -135,6 +135,7 @@
               &#32;
               <button ng-click="addBlank()" class="mini">Add file</button>
               <button ng-if="!!(current.asset || current.file) && !current.pending" ng-click="current.remove()" class="mini">Remove file</button>
+              <button ng-if="!!(current.asset || current.file) && !current.pending" class="mini" flow-btn>Replace file</button>
               <button ng-if="!!current.asset" ng-click="current.rePosition()" class="mini">Position file</button>
               &#32;
               <button ng-if="current.excerpt.on === false" ng-click="current.editExcerpt()" class="mini">Highlight on volume</button>
