@@ -702,6 +702,8 @@ app.controller('volume/slot', [
             shift -= @asset.segment.l
             if isFinite(shift) && shift
               for e in @excerpts
+                e.excerpt.segment.l -= shift
+                e.excerpt.segment.u -= shift
                 e.l -= shift
                 e.u -= shift
             updateRange()
@@ -730,7 +732,7 @@ app.controller('volume/slot', [
       updateExcerpt: () ->
         @excerpt = undefined
         return unless @asset && @excerpts
-        seg = if @full then this else getSelection().intersect(this)
+        seg = if @full then @asset.assumedSegment else getSelection().intersect(this)
         return if !@asset || !seg
         e = @excerpts.find((e) -> seg.overlaps(e))
         @excerpt =
@@ -739,7 +741,7 @@ app.controller('volume/slot', [
               target: @asset.inSegment(seg)
               on: false
               release: ''
-              full: seg.contains(@)
+              full: seg.contains(@asset.assumedSegment)
             else
               undefined
           else if e.equals(seg)
@@ -747,7 +749,7 @@ app.controller('volume/slot', [
             target: e.excerpt
             on: true
             release: e.excerpt.excerpt+''
-            full: e.contains(@)
+            full: e.excerpt.full
           else
             null
         return
