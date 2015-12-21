@@ -1272,6 +1272,7 @@ app.factory('modelService', [
       return router.http(router.controllers.postAsset, this.id, data)
         .then(function (res) {
           a.id = res.data.id;
+          delete a.$$hashKey; // angular hack
           a.volume.assets[a.id] = a;
           return a.update(res.data);
         });
