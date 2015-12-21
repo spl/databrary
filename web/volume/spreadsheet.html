@@ -7,6 +7,11 @@
     Show legend of session release levels
   </a>
   <ul class="release-legend flat" ng-show="showConsents">
+    <li>
+      <span class="icon release"></span>
+      <span ng-bind="::'release.DEFAULT.title' | message"></span>: 
+      <span ng-bind=":: 'release.DEFAULT.description' | message"></span>
+    </li>
     <li ng-repeat="(i,c) in page.constants.release" ng-if="i>=0">
       <span class="icon release" ng-class="c"></span>
       <span ng-bind="'release.'+c+'.title' | message"></span>: 
