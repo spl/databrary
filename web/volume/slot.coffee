@@ -696,10 +696,10 @@ app.controller('volume/slot', [
 
       savePosition: () ->
         messages.clear(this)
-        shift = @asset?.segment.l
+        shift = @asset?.segment.base
         @asset.save({container:slot.id, position:Math.floor(@l)}).then (asset) =>
             @asset = asset
-            shift -= @asset.segment.l
+            shift -= @asset.segment.base
             if isFinite(shift) && shift
               for e in @excerpts
                 e.excerpt.segment.l -= shift

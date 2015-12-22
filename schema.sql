@@ -526,12 +526,9 @@ CREATE INDEX "excerpt_activity_idx" ON audit."excerpt" ("asset") WHERE "audit_ac
 CREATE FUNCTION "excerpt_shift" () RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
 	-- if we ever support "stretching" timeseries this will be wrong
-	shift interval := lower(NEW.segment) - lower(OLD.segment);
+	shift interval := COALESCE(lower(NEW.segment), '0') - COALESCE(lower(OLD.segment), '0');
 BEGIN
-	IF NEW.segment = OLD.segment THEN
-	ELSIF shift IS NULL THEN
-		DELETE FROM excerpt WHERE asset = NEW.asset AND segment <> '(,)';
-	ELSE
+	IF NEW.segment <> OLD.segment THEN
 		UPDATE excerpt SET segment = segment_shift(segment, shift) WHERE asset = NEW.asset;
 	END IF;
 	RETURN null;
