@@ -11,33 +11,31 @@ import Control.Exception.Lifted (handleJust)
 import Control.Monad (guard)
 import Database.PostgreSQL.Typed.Query (pgSQL)
 
-import Databrary.Ops
 import Databrary.Service.DB
 import Databrary.Model.SQL
 import Databrary.Model.Id.Types
 import Databrary.Model.Volume.Types
-import Databrary.Model.RecordCategory
+import Databrary.Model.Category
 import Databrary.Model.Metric
 import Databrary.Model.VolumeMetric.SQL
 
-lookupVolumeMetrics :: (MonadDB c m) => Volume -> m [(Id RecordCategory, [Id Metric])]
+lookupVolumeMetrics :: (MonadDB c m) => Volume -> m [Id Metric]
 lookupVolumeMetrics v =
-  {- map (getRecordCategory' *** map getMetric') . -} groupTuplesBy (==) <$>
-  dbQuery $(selectQuery selectVolumeMetric "$WHERE volume = ${volumeId $ volumeRow v} ORDER BY category, metric")
+  dbQuery $(selectQuery selectVolumeMetric "$WHERE volume = ${volumeId $ volumeRow v} ORDER BY metric")
 
-addVolumeCategory :: (MonadDB c m) => Volume -> Id RecordCategory -> m [Id Metric]
+addVolumeCategory :: (MonadDB c m) => Volume -> Id Category -> m [Id Metric]
 addVolumeCategory v c =
-  dbQuery [pgSQL|INSERT INTO volume_metric SELECT ${volumeId $ volumeRow v}, category, metric FROM record_template WHERE category = ${c} RETURNING metric|]
+  dbQuery [pgSQL|INSERT INTO volume_metric SELECT ${volumeId $ volumeRow v}, id FROM metric WHERE category = ${c} AND required IS NOT NULL RETURNING metric|]
   
-addVolumeMetric :: (MonadDB c m) => Volume -> Id RecordCategory -> Id Metric -> m Bool
-addVolumeMetric v c m = liftDBM $
+addVolumeMetric :: (MonadDB c m) => Volume -> Id Metric -> m Bool
+addVolumeMetric v m = liftDBM $
   handleJust (guard . isUniqueViolation) (const $ return False) $
-    dbExecute1 [pgSQL|INSERT INTO volume_metric VALUES (${volumeId $ volumeRow v}, ${c}, ${m})|]
+    dbExecute1 [pgSQL|INSERT INTO volume_metric VALUES (${volumeId $ volumeRow v}, ${m})|]
 
-removeVolumeMetric :: (MonadDB c m) => Volume -> Id RecordCategory -> Id Metric -> m Bool
-removeVolumeMetric v c m =
-  dbExecute1 [pgSQL|DELETE FROM volume_metric WHERE volume = ${volumeId $ volumeRow v} AND category = ${c} AND metric = ${m}|]
+removeVolumeMetric :: (MonadDB c m) => Volume -> Id Metric -> m Bool
+removeVolumeMetric v m =
+  dbExecute1 [pgSQL|DELETE FROM volume_metric WHERE volume = ${volumeId $ volumeRow v} AND metric = ${m}|]
 
-removeVolumeCategory :: (MonadDB c m) => Volume -> Id RecordCategory -> m Int
+removeVolumeCategory :: (MonadDB c m) => Volume -> Id Category -> m Int
 removeVolumeCategory v c =
-  dbExecute [pgSQL|DELETE FROM volume_metric WHERE volume = ${volumeId $ volumeRow v} AND category = ${c}|]
+  dbExecute [pgSQL|DELETE FROM volume_metric USING metric WHERE volume = ${volumeId $ volumeRow v} AND metric = id AND category = ${c}|]

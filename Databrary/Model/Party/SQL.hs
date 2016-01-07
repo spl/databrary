@@ -99,7 +99,7 @@ makeSiteAuth p w a = SiteAuth (p maxBound $ Just maxBound) w (Fold.fold a)
 selectSiteAuth :: Selector -- @'SiteAuth'@
 selectSiteAuth = selectJoin 'makeSiteAuth
   [ selectPermissionAccount
-  , columnSelector $ SelectColumn "account" "password"
+  , Selector (SelectColumn "account" "password") "" ""
   , maybeJoinOn "party.id = authorize_view.child AND authorize_view.parent = 0"
     $ accessRow "authorize_view"
   ]

@@ -17,7 +17,7 @@ import Databrary.Model.Id.Types
 import Databrary.Model.Release.Types
 import Databrary.Model.Volume.Types
 import Databrary.Model.Volume.SQL
-import Databrary.Model.RecordCategory
+import Databrary.Model.Category
 import Databrary.Model.Metric
 import Databrary.Model.Record.Types
 
@@ -25,9 +25,9 @@ parseMeasure :: Record -> BSC.ByteString -> Measure
 parseMeasure r s = Measure r (getMetric' (Id (read (BSC.unpack m)))) (BSC.tail d) where
   (m, d) = BSC.splitAt (fromMaybe (error $ "parseMeasure " ++ show (recordId $ recordRow r) ++ ": " ++ BSC.unpack s) $ BSC.elemIndex ':' s) s
 
-makeRecord :: Id Record -> Id RecordCategory -> [Maybe BSC.ByteString] -> Maybe Release -> Volume -> Record
+makeRecord :: Id Record -> Id Category -> [Maybe BSC.ByteString] -> Maybe Release -> Volume -> Record
 makeRecord i c ms p v = r where
-  r = Record (RecordRow i (getRecordCategory' c)) (map (parseMeasure r . fromMaybe (error "NULL record.measure")) ms) p v
+  r = Record (RecordRow i (getCategory' c)) (map (parseMeasure r . fromMaybe (error "NULL record.measure")) ms) p v
 
 selectRecordRow :: Selector -- ^ @Maybe 'Release' -> 'Volume' -> 'Record'@
 selectRecordRow = fromMap ("record_measures AS " ++) $
@@ -52,7 +52,7 @@ recordSets :: String -- ^ @'Record'@
   -> [(String, String)]
 recordSets r =
   [ ("volume", "${volumeId $ volumeRow $ recordVolume " ++ r ++ "}")
-  , ("category", "${recordCategoryId $ recordCategory $ recordRow " ++ r ++ "}")
+  , ("category", "${categoryId $ recordCategory $ recordRow " ++ r ++ "}")
   ]
 
 setRecordId :: Record -> Id Record -> Record

@@ -15,13 +15,13 @@ import Databrary.Model.Permission.Types
 import Databrary.Model.Release.Types
 import Databrary.Model.Volume.Types
 import Databrary.Model.Metric.Types
-import Databrary.Model.RecordCategory.Types
+import Databrary.Model.Category.Types
 
 type instance IdType Record = Int32
 
 data RecordRow = RecordRow
   { recordId :: Id Record
-  , recordCategory :: RecordCategory
+  , recordCategory :: Category
   }
 
 data Record = Record
@@ -56,9 +56,9 @@ instance Has Volume Measure where
   view = view . measureRecord
 instance Has (Id Volume) Measure where
   view = view . measureRecord
-instance Has RecordCategory Measure where
+instance Has Category Measure where
   view = view . measureRecord
-instance Has (Id RecordCategory) Measure where
+instance Has (Id Category) Measure where
   view = view . measureRecord
 instance Has Permission Measure where
   view = view . measureRecord

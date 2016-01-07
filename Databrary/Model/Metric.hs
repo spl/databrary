@@ -16,6 +16,7 @@ import Data.Maybe (catMaybes, fromJust)
 import Databrary.Ops
 import qualified Databrary.JSON as JSON
 import Databrary.Model.Id
+import Databrary.Model.Category
 import Databrary.Model.Metric.Types
 import Databrary.Model.Metric.Boot
 
@@ -40,11 +41,13 @@ birthdateMetric = fromJust $ {- castMetric =<< -} find (("birthdate" ==) . metri
 
 metricJSON :: Metric -> JSON.Object
 metricJSON m@Metric{..} = JSON.record metricId $ catMaybes
-  [ Just $ "name" JSON..= metricName
+  [ Just $ "category" JSON..= categoryId metricCategory
+  , Just $ "name" JSON..= metricName
   , ("release" JSON..=) <$> metricRelease
   , Just $ "type" JSON..= show metricType
   , "options" JSON..= metricOptions <!? null metricOptions
   , ("assumed" JSON..=) <$> metricAssumed
   , "long" JSON..= True <? metricLong m
   , ("description" JSON..=) <$> metricDescription
+  , ("required" JSON..=) <$> metricRequired
   ]

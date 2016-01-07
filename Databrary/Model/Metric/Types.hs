@@ -18,6 +18,7 @@ import Databrary.Model.Enum
 import Databrary.Model.Kind
 import Databrary.Model.Release.Types
 import Databrary.Model.Id.Types
+import Databrary.Model.Category.Types
 
 makeDBEnum "data_type" "MeasureType"
 
@@ -27,12 +28,14 @@ type instance IdType Metric = Int32
 
 data Metric = Metric
   { metricId :: Id Metric
+  , metricCategory :: Category
   , metricName :: T.Text
   , metricRelease :: Maybe Release
   , metricType :: MeasureType
   , metricOptions :: [MeasureDatum]
   , metricAssumed :: Maybe MeasureDatum
   , metricDescription :: Maybe T.Text
+  , metricRequired :: Maybe Bool
   }
 
 instance Kinded Metric where
@@ -45,5 +48,5 @@ instance Eq Metric where
 instance Ord Metric where
   compare = comparing metricId
 
-makeHasRec ''Metric ['metricId, 'metricRelease, 'metricType]
+makeHasRec ''Metric ['metricId, 'metricCategory, 'metricRelease, 'metricType]
 deriveLiftMany [''MeasureType, ''Metric]

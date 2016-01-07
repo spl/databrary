@@ -10,7 +10,7 @@ import qualified Text.Blaze.Html5 as H
 
 import Databrary.Model.Stats.Types
 import Databrary.Model.Permission.Types
-import Databrary.Model.RecordCategory
+import Databrary.Model.Category
 import Databrary.Action.Types
 import Databrary.View.Template
 
@@ -21,9 +21,9 @@ htmlSiteActivity SiteStats{..} req = htmlTemplate req (Just "activity") $ \_ -> 
     H.li $ sh (statsAuthorizedSite A.! PermissionREAD) >> " affiliates who have access to the shared data"
     H.li $ sh (statsAuthorizedSite A.! PermissionADMIN) >> " universities"
     H.li $ sh statsVolumes >> " volumes, " >> sh statsVolumesShared >> " have been opened for sharing"
-    H.li $ sh statsAssetDuration >> " of recordings and " >> sh statsAssets >> " files from " >> sh (maybe 0 ((statsRecords M.!) . recordCategoryId) participant) >> " participants"
+    H.li $ sh statsAssetDuration >> " of recordings and " >> sh statsAssets >> " files from " >> sh (maybe 0 ((statsRecords M.!) . categoryId) participant) >> " participants"
   return ()
   where
-  participant = find (("participant" ==) . recordCategoryName) allRecordCategories
+  participant = find (("participant" ==) . categoryName) allCategories
   sh :: Show a => a -> H.Markup
   sh = H.string . show

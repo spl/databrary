@@ -11,7 +11,7 @@ import qualified Data.Map.Strict as M
 import Databrary.Model.Permission.Types
 import Databrary.Model.Offset
 import Databrary.Model.Id.Types
-import Databrary.Model.RecordCategory.Types
+import Databrary.Model.Category.Types
 
 data SiteStats = SiteStats
   { statsAuthorizedSite :: !(A.Array Permission Int64)
@@ -19,7 +19,7 @@ data SiteStats = SiteStats
   , statsAssets :: !Int64
   , statsAssetDuration :: !Offset
   , statsAssetBytes :: !Int64
-  , statsRecords :: !(M.Map (Id RecordCategory) Int64)
+  , statsRecords :: !(M.Map (Id Category) Int64)
   }
 
 instance JSON.ToJSON SiteStats where

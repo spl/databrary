@@ -5,5 +5,5 @@ module Databrary.Model.VolumeMetric.SQL
 
 import Databrary.Model.SQL.Select
 
-selectVolumeMetric :: Selector -- ^ @(Id RecordCategory, Id Metric)@
-selectVolumeMetric = selectColumns '(,) "volume_metric" ["category", "metric"]
+selectVolumeMetric :: Selector -- ^ @Metric@
+selectVolumeMetric = selectColumns 'id "volume_metric" ["metric"]
