@@ -1,6 +1,7 @@
 {-# LANGUAGE TypeFamilies #-}
 module Databrary.Model.AssetSlot.Types
-  ( AssetSlot(..)
+  ( AssetSlotId(..)
+  , AssetSlot(..)
   , assetSlotId
   , assetNoSlot
   ) where
@@ -19,7 +20,7 @@ import Databrary.Model.Asset.Types
 import Databrary.Model.Slot.Types
 
 data AssetSlotId = AssetSlotId
-  { _slotAssetId :: !(Id Asset)
+  { slotAssetId :: !(Id Asset)
   , _assetSlotId :: !(Maybe (Id Slot))
   }
 
@@ -32,7 +33,7 @@ data AssetSlot = AssetSlot
   }
 
 assetSlotId :: AssetSlot -> Id AssetSlot
-assetSlotId (AssetSlot a s) = Id $ AssetSlotId (assetId a) (slotId <$> s)
+assetSlotId (AssetSlot a s) = Id $ AssetSlotId (assetId $ assetRow a) (slotId <$> s)
 
 assetNoSlot :: Asset -> AssetSlot
 assetNoSlot a = AssetSlot a Nothing
@@ -61,12 +62,12 @@ instance Has (Maybe (Id Container)) AssetSlot where
 instance Has (Maybe Segment) AssetSlot where
   view = fmap view . assetSlot
 instance Has Segment AssetSlot where
-  view = maybe emptySegment slotSegment . assetSlot
+  view = maybe fullSegment slotSegment . assetSlot
 
 instance Has (Maybe Release) AssetSlot where
   view (AssetSlot a (Just s)) = view a <|> view s
   view (AssetSlot a Nothing)
-    | volumeId (assetVolume a) == Id 0 = view a
+    | volumeId (volumeRow $ assetVolume a) == Id 0 = view a
     | otherwise = Nothing -- "deleted" assets are always unreleased (private?), not view a
 instance Has Release AssetSlot where
   view = view . (view :: AssetSlot -> Maybe Release)

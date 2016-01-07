@@ -38,7 +38,9 @@ paginateLink (Paginate o l) q = HA.href $ builderValue $ encodePath' (Wai.pathIn
 htmlPaginate :: ([a] -> H.Html) -> Paginate -> [a] -> Wai.Request -> H.Html
 htmlPaginate f p c q = do
   f c'
-  H.ul $ do
-    forM_ prev (\p' -> H.li $ H.a H.! paginateLink p' q $ "prev")
-    forM_ next (\p' -> H.li $ H.a H.! paginateLink p' q $ "next")
+  H.ul
+    H.! HA.class_ "search-pages"
+    $ do
+      forM_ prev (\p' -> H.li $ H.a H.! paginateLink p' q $ "prev")
+      forM_ next (\p' -> H.li $ H.a H.! paginateLink p' q $ "next")
   where (prev, c', next) = paginateContent p c

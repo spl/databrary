@@ -329,7 +329,7 @@ app.controller('volume/slot', [
 
     playerMinHeight = 200
     viewportMinHeight = 120
-    playerHeight = parseInt(storage.get('player-height'), 10) || 400
+    playerHeight = parseInt(storage.getString('player-height'), 10) || 400
     unless playerHeight >= playerMinHeight
       playerHeight = playerMinHeight
 
@@ -350,7 +350,7 @@ app.controller('volume/slot', [
         return
       return
     setPlayerHeight = () ->
-      storage.set('player-height', playerHeight)
+      storage.setString('player-height', playerHeight)
       $scope.playerHeight = playerHeight
       updatePlayerHeight()
       return
@@ -696,12 +696,14 @@ app.controller('volume/slot', [
 
       savePosition: () ->
         messages.clear(this)
-        shift = @asset?.segment.l
+        shift = @asset?.segment.base
         @asset.save({container:slot.id, position:Math.floor(@l)}).then (asset) =>
             @asset = asset
-            shift -= @asset.segment.l
+            shift -= @asset.segment.base
             if isFinite(shift) && shift
               for e in @excerpts
+                e.excerpt.segment.l -= shift
+                e.excerpt.segment.u -= shift
                 e.l -= shift
                 e.u -= shift
             updateRange()
@@ -730,7 +732,7 @@ app.controller('volume/slot', [
       updateExcerpt: () ->
         @excerpt = undefined
         return unless @asset && @excerpts
-        seg = if @full then this else getSelection()
+        seg = if @full then @asset.assumedSegment else getSelection().intersect(this)
         return if !@asset || !seg
         e = @excerpts.find((e) -> seg.overlaps(e))
         @excerpt =
@@ -739,6 +741,7 @@ app.controller('volume/slot', [
               target: @asset.inSegment(seg)
               on: false
               release: ''
+              full: seg.contains(@asset.assumedSegment)
             else
               undefined
           else if e.equals(seg)
@@ -746,19 +749,23 @@ app.controller('volume/slot', [
             target: e.excerpt
             on: true
             release: e.excerpt.excerpt+''
+            full: e.excerpt.full
           else
             null
         return
 
       editExcerpt: () ->
         @updateExcerpt() # should be unnecessary
-        $scope.editing = 'excerpt'
+        if @excerpt.full
+          @saveExcerpt(if @excerpt.on then null else true)
+        else
+          $scope.editing = 'excerpt'
         return
 
       excerptOptions: () ->
-        l = {}
-        r = @asset.release || 0
-        l[0] = constants.message('release.DEFAULT.select') + ' (' + constants.message('release.' + constants.release[r] + '.title') + ')'
+        r = (@asset.classification ? @asset.container.release) || 0
+        l =
+          true: constants.message('release.DEFAULT.select') + ' (' + constants.message('release.' + constants.release[r] + '.title') + ')'
         for c, i in constants.release when i > r
           l[i] = constants.message('release.' + c + '.title') + ': ' + constants.message('release.' + c + '.select')
         l[@excerpt.release] = constants.message('release.prompt') unless @excerpt.release of l
@@ -766,10 +773,10 @@ app.controller('volume/slot', [
 
       saveExcerpt: (value) ->
         $scope.editing = true
-        if value == undefined || value == ''
-          return
         messages.clear(this)
-        if !@asset.classification? && value > (slot.release || 0) && !confirm(constants.message('release.excerpt.warning'))
+        return if value == undefined || value == ''
+        value = true if value == 'true'
+        if !@asset.classification? && value != true && value > (slot.release || 0) && !confirm(constants.message('release.excerpt.warning'))
           return
         @excerpt.target.setExcerpt(value)
           .then (excerpt) =>
@@ -777,12 +784,15 @@ app.controller('volume/slot', [
               if 'excerpt' of excerpt
                 @excerpts.push(new Excerpt(excerpt))
               @updateExcerpt()
+              return
             , (res) =>
               messages.addError
                 type: 'red'
                 body: constants.message('asset.update.error', @name)
                 report: res
                 owner: this
+              return
+        return
 
       canRestore: () ->
         uploads.removedAsset? if editing && this == blank && uploads.removedAsset?.volume.id == slot.volume.id
@@ -1040,7 +1050,7 @@ app.controller('volume/slot', [
     $scope.vote = (name, vote) ->
       new TagName(name).save(vote)
 
-    tagToggle = storage.get('tag-toggle')?.split("\n") ? []
+    tagToggle = storage.getString('tag-toggle')?.split("\n") ? []
 
     class Tag extends TagName
       constructor: (t) ->
@@ -1071,7 +1081,7 @@ app.controller('volume/slot', [
           tagToggle.push(@id)
         else
           tagToggle.remove(@id)
-        storage.set('tag-toggle', tagToggle.join("\n"))
+        storage.setString('tag-toggle', tagToggle.join("\n"))
 
       update: ->
         state = false

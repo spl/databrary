@@ -7,6 +7,7 @@ module Databrary.Service.DB
   , withDB
   , MonadDB
   , DBM
+  , runDBM
   , liftDBM
   , dbTryJust
   , dbRunQuery
@@ -19,15 +20,17 @@ module Databrary.Service.DB
   , dbQuery1
   , dbQuery1'
   , dbTransaction
+  , dbTransaction'
 
   , runDBConnection
   , useTDB
   , runTDB
   ) where
 
-import Control.Exception (onException, tryJust, bracket)
-import Control.Monad (unless, (<=<))
+import Control.Exception (tryJust, bracket)
+import Control.Monad (unless)
 import Control.Monad.IO.Class (MonadIO)
+import Control.Monad.Trans.Control (MonadBaseControl, liftBaseOp_)
 import Control.Monad.Trans.Reader (ReaderT(..))
 import qualified Data.ByteString.Lazy as BSL
 import Data.IORef (IORef, newIORef, atomicModifyIORef')
@@ -89,8 +92,11 @@ liftDB = focusIO
 
 type DBM a = ReaderT PGConnection IO a
 
+runDBM :: DBPool -> DBM a -> IO a
+runDBM p = withDB p . runReaderT
+
 liftDBM :: MonadDB c m => DBM a -> m a
-liftDBM q = liftDB $ runReaderT q
+liftDBM = liftDB . runReaderT
 
 -- |Combination of 'liftDBM' and lifted 'tryJust'
 dbTryJust :: MonadDB c m => (PGError -> Maybe e) -> DBM a -> m (Either e a)
@@ -105,18 +111,18 @@ dbExecute q = liftDB $ \c -> pgExecute c q
 dbExecuteSimple :: MonadDB c m => PGSimpleQuery () -> m Int
 dbExecuteSimple = dbExecute
 
-dbExecute1 :: (MonadDB c m, PGQuery q ()) => q -> m Bool
+dbExecute1 :: (MonadDB c m, PGQuery q (), Show q) => q -> m Bool
 dbExecute1 q = do
   r <- dbExecute q
   case r of
     0 -> return False
     1 -> return True
-    _ -> fail $ "pgExecute1: " ++ show r ++ " rows"
+    _ -> fail $ "pgExecute1 " ++ show q ++ ": " ++ show r ++ " rows"
 
-dbExecute1' :: (MonadDB c m, PGQuery q ()) => q -> m ()
+dbExecute1' :: (MonadDB c m, PGQuery q (), Show q) => q -> m ()
 dbExecute1' q = do
   r <- dbExecute1 q
-  unless r $ fail $ "pgExecute1': failed"
+  unless r $ fail $ "pgExecute1' " ++ show q ++ ": failed"
 
 dbExecute_ :: (MonadDB c m) => BSL.ByteString -> m ()
 dbExecute_ q = liftDB $ \c -> pgSimpleQueries_ c q
@@ -124,26 +130,24 @@ dbExecute_ q = liftDB $ \c -> pgSimpleQueries_ c q
 dbQuery :: (MonadDB c m, PGQuery q a) => q -> m [a]
 dbQuery q = liftDB $ \c -> pgQuery c q
 
-dbQuery1 :: (MonadDB c m, PGQuery q a) => q -> m (Maybe a)
+dbQuery1 :: (MonadDB c m, PGQuery q a, Show q) => q -> m (Maybe a)
 dbQuery1 q = do
   r <- dbQuery q
   case r of
     [] -> return $ Nothing
     [x] -> return $ Just x
-    _ -> fail "pgQuery1: too many results"
+    _ -> fail $ "pgQuery1 " ++ show q ++ ": too many results"
 
-dbQuery1' :: (MonadDB c m, PGQuery q a) => q -> m a
-dbQuery1' = maybe (fail "pgQuery1': no results") return <=< dbQuery1
+dbQuery1' :: (MonadDB c m, PGQuery q a, Show q) => q -> m a
+dbQuery1' q = maybe (fail $ "pgQuery1' " ++ show q ++ ": no results") return =<< dbQuery1 q
 
 dbTransaction :: MonadDB c m => DBM a -> m a
-dbTransaction f = liftDB $ \c -> do
-  _ <- pgSimpleQuery c "BEGIN"
-  onException (do
-    r <- runReaderT f c
-    _ <- pgSimpleQuery c "COMMIT"
-    return r)
-    (pgSimpleQuery c "ROLLBACK")
+dbTransaction f = liftDB $ \c -> pgTransaction c (runReaderT f c)
 
+dbTransaction' :: (MonadBaseControl IO m, MonadDB c m) => m a -> m a
+dbTransaction' f = do
+  c <- peek
+  liftBaseOp_ (pgTransaction c) f
 
 -- For connections outside runtime:
 

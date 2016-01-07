@@ -16,7 +16,7 @@ import Database.PostgreSQL.Typed.Types (PGParameter(..), PGColumn(..))
 import Numeric (showSigned, showFFloat, readSigned, readDec)
 import qualified Text.ParserCombinators.ReadP as RP
 import qualified Text.ParserCombinators.ReadPrec as RP (lift)
-import Text.Read (readMaybe, readPrec)
+import Text.Read (readMaybe, Read(readPrec))
 
 import qualified Databrary.JSON as JSON
 

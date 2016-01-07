@@ -18,7 +18,7 @@ makeDBEnum "audit.action" "AuditAction"
 data AuditIdentity = AuditIdentity
   { auditWho :: !(Id Party)
   , auditIp :: !PGInet
-  }
+  } deriving (Eq)
 
 data Audit = Audit
   { auditWhen :: !Timestamp

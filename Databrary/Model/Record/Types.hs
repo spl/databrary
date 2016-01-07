@@ -1,7 +1,7 @@
 {-# LANGUAGE TemplateHaskell, TypeFamilies, OverloadedStrings #-}
 module Databrary.Model.Record.Types
-  ( Record(..)
-  , MonadHasRecord
+  ( RecordRow(..)
+  , Record(..)
   , Measure(..)
   , Measures
   ) where
@@ -15,16 +15,20 @@ import Databrary.Model.Permission.Types
 import Databrary.Model.Release.Types
 import Databrary.Model.Volume.Types
 import Databrary.Model.Metric.Types
-import Databrary.Model.RecordCategory.Types
+import Databrary.Model.Category.Types
 
 type instance IdType Record = Int32
 
-data Record = Record
+data RecordRow = RecordRow
   { recordId :: Id Record
-  , recordVolume :: Volume
-  , recordCategory :: RecordCategory
-  , recordRelease :: Maybe Release
+  , recordCategory :: Category
+  }
+
+data Record = Record
+  { recordRow :: !RecordRow
   , recordMeasures :: Measures
+  , recordRelease :: Maybe Release
+  , recordVolume :: Volume
   }
 
 instance Kinded Record where
@@ -41,7 +45,8 @@ instance Kinded Measure where
 
 type Measures = [Measure]
 
-makeHasRec ''Record ['recordId, 'recordVolume, 'recordCategory, 'recordRelease]
+makeHasRec ''RecordRow ['recordId, 'recordCategory]
+makeHasRec ''Record ['recordRow, 'recordVolume, 'recordRelease]
 
 instance Has Record Measure where
   view = measureRecord
@@ -51,9 +56,9 @@ instance Has Volume Measure where
   view = view . measureRecord
 instance Has (Id Volume) Measure where
   view = view . measureRecord
-instance Has RecordCategory Measure where
+instance Has Category Measure where
   view = view . measureRecord
-instance Has (Id RecordCategory) Measure where
+instance Has (Id Category) Measure where
   view = view . measureRecord
 instance Has Permission Measure where
   view = view . measureRecord

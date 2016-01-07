@@ -19,6 +19,7 @@ module Databrary.Action
   , module Databrary.Action.Route
 
   , withAuth
+  , withoutAuth
   , runActionRoute
   ) where
 
@@ -32,6 +33,7 @@ import qualified Network.Wai as Wai
 import Databrary.Has (peeks)
 import Databrary.HTTP.Request
 import Databrary.Action.Types
+import Databrary.Action.Run
 import Databrary.Action.Response
 import Databrary.Action.Route
 import Databrary.Service.Types

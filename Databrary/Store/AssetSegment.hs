@@ -80,14 +80,14 @@ genVideoClip av src frame sz dst =
 
 getAssetSegmentStore :: AssetSegment -> Maybe Word16 -> ActionM (Either (Stream -> IO ()) RawFilePath)
 getAssetSegmentStore as sz 
-  | aimg && isJust sz || not (assetSegmentFull as) && isJust (assetDuration a) && isJust (formatSample afmt) = do
+  | aimg && isJust sz || not (assetSegmentFull as) && isJust (assetDuration $ assetRow a) && isJust (formatSample afmt) = do
   Just af <- getAssetFile a
   av <- peek
   store <- peek
   rs <- peek
   let cache = storageCache store
       cf = liftM2 (</>) cache $ assetSegmentFile as sz
-      gen = genVideoClip av af (afmt == imageFormat ?!> clip) sz
+      gen = genVideoClip av af (aimg ?!> clip) sz
   liftIO $ maybe
     (return $ Left $ gen . Left)
     (\f -> do
@@ -103,6 +103,6 @@ getAssetSegmentStore as sz
   | otherwise = Right . fromJust <$> getAssetFile a
   where
   a = slotAsset $ segmentAsset as
-  afmt = assetFormat a
+  afmt = assetFormat $ assetRow a
   aimg = afmt == imageFormat
   clip = assetSegmentRange as

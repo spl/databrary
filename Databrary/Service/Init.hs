@@ -4,11 +4,12 @@ module Databrary.Service.Init
   ) where
 
 import Control.Exception (bracket)
+import Data.IORef (newIORef)
 import Data.Time.Clock (getCurrentTime)
 
 import Databrary.Ops
 import qualified Databrary.Store.Config as C
-import Databrary.Service.DB (initDB, finiDB)
+import Databrary.Service.DB (initDB, finiDB, runDBM)
 import Databrary.Service.Entropy (initEntropy)
 import Databrary.HTTP.Client (initHTTPClient)
 import Databrary.Store.Service (initStorage)
@@ -19,6 +20,7 @@ import Databrary.Service.Messages (loadMessages)
 import Databrary.Web.Service (initWeb)
 import Databrary.Static.Service (initStatic)
 import Databrary.Ingest.Service (initIngest)
+import Databrary.Model.Stats
 import Databrary.Solr.Service (initSolr, finiSolr)
 import Databrary.EZID.Service (initEZID)
 import Databrary.Service.Periodic (forkPeriodic)
@@ -40,6 +42,8 @@ initService fg conf = do
   solr <- initSolr fg (conf C.! "solr")
   ezid <- initEZID (conf C.! "ezid")
   ingest <- initIngest
+  stats <- if fg then runDBM db lookupSiteStats else return (error "siteStats")
+  statsref <- newIORef stats
   let rc = Service
         { serviceStartTime = time
         , serviceSecret = Secret $ conf C.! "secret"
@@ -53,13 +57,15 @@ initService fg conf = do
         , serviceWeb = web
         , serviceHTTPClient = httpc
         , serviceStatic = static
+        , serviceStats = statsref
         , serviceIngest = ingest
         , serviceSolr = solr
         , serviceEZID = ezid
         , servicePeriodic = Nothing
+        , serviceDown = conf C.! "store.DOWN"
         }
   periodic <- fg ?$> forkPeriodic rc
-  return rc
+  return $! rc
     { servicePeriodic = periodic
     }
 

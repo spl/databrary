@@ -28,6 +28,8 @@ generateRoutesJS = staticWebGenerate $ \f ->
   withBinaryFile f WriteMode $ \h -> do
     hPutStrLn h "'use strict';"
     hPutStr h "app.constant('routeData',{"
-    hFlush h                 -- need this
-    B.hPutBuilder h jsRoutes -- or this hangs
+    mapM_ (\r -> do
+      hFlush h           -- need this
+      B.hPutBuilder h r) -- or this hangs
+      jsRoutes
     hPutStrLn h "});"

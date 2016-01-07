@@ -5,7 +5,6 @@ module Databrary.Controller.API
 
 import Databrary.Has
 import Databrary.HTTP.Path.Parser
-import Databrary.Action.Types
 import Databrary.Action
 import Databrary.Routes.API (swagger)
 

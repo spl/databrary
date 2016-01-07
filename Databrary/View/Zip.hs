@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, RecordWildCards #-}
+{-# LANGUAGE OverloadedStrings, RecordWildCards, ScopedTypeVariables #-}
 module Databrary.View.Zip
   ( htmlVolumeDescription
   ) where
@@ -41,13 +41,15 @@ import Databrary.Controller.Party
 import Databrary.Controller.Container
 import Databrary.Controller.Asset
 import Databrary.Controller.Web
+import Databrary.Controller.IdSet
 import Databrary.View.Html
 
 import {-# SOURCE #-} Databrary.Controller.Zip
 
-htmlVolumeDescription :: Bool -> Container -> [Citation] -> [Funding] -> [[AssetSlot]] -> [[AssetSlot]] -> RequestContext -> H.Html
-htmlVolumeDescription inzip top@Container{ containerVolume = Volume{..} } cite fund atl abl req = H.docTypeHtml $ do
+htmlVolumeDescription :: Bool -> Volume -> [Citation] -> [Funding] -> IdSet Container -> [[AssetSlot]] -> [[AssetSlot]] -> RequestContext -> H.Html
+htmlVolumeDescription inzip Volume{ volumeRow = VolumeRow{..}, ..} cite fund cs atl abl req = H.docTypeHtml $ do
   H.head $ do
+    H.meta H.! HA.httpEquiv "content-type" H.! HA.content "text/html;charset=utf-8"
     H.title $ do
       void "Databrary Volume "
       H.toMarkup (unId volumeId)
@@ -91,12 +93,13 @@ htmlVolumeDescription inzip top@Container{ containerVolume = Volume{..} } cite f
           H.string $ formatTime defaultTimeLocale "%a, %d %b %Y %H:%M:%S %Z" (view req :: Timestamp)
           void " by "
           H.a H.! HA.href (link viewParty (HTML, TargetParty $ view req)) $
-            H.text $ partyName (view req)
+            H.text $ partyName $ partyRow $ view req
       else do
-        H.dt $ H.a H.! HA.href (link zipVolume volumeId) $
+        H.dt $ H.a H.! actionLink zipVolume volumeId (idSetQuery cs) $
           void "Download"
+    unless (idSetIsFull cs) $ H.p $ msg "download.zip.partial"
     H.p $ do
-      H.text $ msg "download.warning"
+      msg "download.warning"
       void " For more information and terms of use see the "
       H.a H.! HA.href "http://databrary.org/access/policies/agreement.html"
         $ "Databrary Access Agreement"
@@ -107,17 +110,17 @@ htmlVolumeDescription inzip top@Container{ containerVolume = Volume{..} } cite f
       H.dt $ H.string n
       H.dd $ do
         H.img H.! HA.src (link webFile (Just $ staticPath ["icons", "release", BSC.pack $ map toLower n <.> "svg"]))
-        H.text $ msg (fromString $ "release." ++ n ++ ".title")
+        msg (fromString $ "release." ++ n ++ ".title")
         void ": "
-        H.text $ msg (fromString $ "release." ++ n ++ ".description")
+        msg (fromString $ "release." ++ n ++ ".description")
     H.h3 "Materials"
-    atable (Just (containerId top)) atl
+    atable atl
     H.h3 "Sessions"
-    atable Nothing abl
+    atable abl
   where
   link r a = builderValue $ actionURL (inzip ?> view req) r a []
-  msg m = getMessage m $ view req
-  atable tid acl = H.table H.! H4A.border "1" $ do
+  msg m = H.text $ getMessage m $ view req
+  atable acl = H.table H.! H4A.border "1" $ do
     H.thead $ H.tr $ do
       H.th "directory"
       H.th "container"
@@ -127,27 +130,29 @@ htmlVolumeDescription inzip top@Container{ containerVolume = Volume{..} } cite f
       H.th "size"
       H.th "duration"
       H.th "sha1 checksum"
-    H.tbody $ abody tid acl
-  abody _ [] = mempty
-  abody tid (~(a@AssetSlot{ assetSlot = Just Slot{ slotContainer = c } }:l):al) = do
+    H.tbody $ abody acl
+  abody [] = mempty
+  abody (~(a@AssetSlot{ assetSlot = Just Slot{ slotContainer = c } }:l):al) = do
     H.tr $ do
       H.td H.! rs $ H.a !? (inzip ?> HA.href (byteStringValue fn)) $
         byteStringHtml dn
-      H.td H.! rs $ H.a H.! HA.href (link viewContainer (HTML, (Just volumeId, containerId c))) $ do
+      H.td H.! rs $ H.a H.! HA.href (link viewContainer (HTML, (Just volumeId, containerId $ containerRow c))) $ do
         mapM_ H.string $ formatContainerDate c
-        mapM_ H.text $ containerName c
+        mapM_ H.text $ containerName $ containerRow c
       arow fn a
       mapM_ (H.tr . arow fn) l
-    abody tid al
+    abody al
     where
     rs = HA.rowspan $ H.toValue $ succ $ length l
-    dn = makeFilename $ containerDownloadName tid c
-    fn = maybe ("sessions" </>) seq tid dn
-  arow bf as@AssetSlot{ slotAsset = a } = do
+    dn = makeFilename $ containerDownloadName c
+    fn
+      | containerTop (containerRow c) = dn
+      | otherwise = "sessions" </> dn
+  arow bf as@AssetSlot{ slotAsset = Asset{ assetRow = a } } = do
     H.td $ H.a !? (inzip ?> HA.href (byteStringValue $ bf </> fn)) $
       byteStringHtml fn
     H.td $ H.a H.! HA.href (link viewAsset (HTML, assetId a)) $
-      H.text $ fromMaybe (formatName (assetFormat a)) $ assetName a
+      H.text $ fromMaybe (formatName $ assetFormat a) $ assetName a
     H.td $ H.string $ show (view as :: Release)
     H.td $ maybe mempty H.toMarkup $ assetSize a
     H.td $ maybe mempty (H.string . show) $ assetDuration a

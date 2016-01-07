@@ -38,24 +38,24 @@ makeSlotAsset a c s = AssetSlot a (Just (Slot c s))
 _selectAssetContainerSlotAsset :: Selector -- ^ @'Asset' -> 'Container' -> 'AssetSlot'@
 _selectAssetContainerSlotAsset = selectMap (TH.VarE 'makeSlotAsset `TH.AppE`) slotAssetRow
 
-makeContainerSlotAsset :: Segment -> (Volume -> Asset) -> Container -> AssetSlot
-makeContainerSlotAsset s af c = makeSlotAsset (af (view c)) c s
+makeContainerSlotAsset :: Segment -> AssetRow -> Container -> AssetSlot
+makeContainerSlotAsset s ar c = makeSlotAsset (Asset ar $ view c) c s
 
 selectContainerSlotAsset :: Selector -- ^ @'Container' -> 'AssetSlot'@
 selectContainerSlotAsset = selectJoin 'makeContainerSlotAsset
   [ slotAssetRow
   , joinOn "slot_asset.asset = asset.id"
-    selectVolumeAsset -- XXX volumes match?
+    selectAssetRow -- XXX volumes match?
   ]
 
-makeVolumeSlotIdAsset :: SlotId -> (Volume -> Asset) -> Volume -> (Asset, SlotId)
-makeVolumeSlotIdAsset s af v = (af v, s)
+makeVolumeSlotIdAsset :: SlotId -> AssetRow -> Volume -> (Asset, SlotId)
+makeVolumeSlotIdAsset s ar v = (Asset ar v, s)
 
 selectVolumeSlotIdAsset :: Selector -- ^ @'Volume' -> ('Asset', 'SlotId')@
 selectVolumeSlotIdAsset = selectJoin 'makeVolumeSlotIdAsset
   [ selectColumns 'SlotId "slot_asset" ["container", "segment"]
   , joinOn "slot_asset.asset = asset.id"
-    selectVolumeAsset -- XXX volumes match?
+    selectAssetRow -- XXX volumes match?
   ]
 
 makeAssetSlotAsset :: Segment -> (Volume -> Container) -> Asset -> AssetSlot
@@ -68,14 +68,14 @@ selectAssetSlotAsset = selectJoin 'makeAssetSlotAsset
     selectVolumeContainer -- XXX volumes match?
   ]
 
-makeVolumeSlotAsset :: Segment -> (Volume -> Asset) -> (Volume -> Container) -> Volume -> AssetSlot
-makeVolumeSlotAsset s af cf v = makeSlotAsset (af v) (cf v) s
+makeVolumeSlotAsset :: Segment -> AssetRow -> (Volume -> Container) -> Volume -> AssetSlot
+makeVolumeSlotAsset s ar cf v = makeSlotAsset (Asset ar v) (cf v) s
 
 selectVolumeSlotAsset :: Selector -- ^ @'Volume' -> 'AssetSlot'@
 selectVolumeSlotAsset = selectJoin 'makeVolumeSlotAsset
   [ slotAssetRow
   , joinOn "slot_asset.asset = asset.id"
-    selectVolumeAsset
+    selectAssetRow
   , joinOn "slot_asset.container = container.id AND asset.volume = container.volume"
     selectVolumeContainer
   ]
@@ -88,12 +88,12 @@ selectSlotAsset ident = selectJoin '($)
     $ selectVolume ident
   ]
 
-makeVolumeAssetSlot :: (Volume -> Asset) -> Maybe (Asset -> AssetSlot) -> Volume -> AssetSlot
-makeVolumeAssetSlot af sf = fromMaybe assetNoSlot sf . af
+makeVolumeAssetSlot :: AssetRow -> Maybe (Asset -> AssetSlot) -> Volume -> AssetSlot
+makeVolumeAssetSlot ar sf = fromMaybe assetNoSlot sf . Asset ar
 
 selectVolumeAssetSlot :: Selector -- ^ @'Volume' -> 'AssetSlot'@
 selectVolumeAssetSlot = selectJoin 'makeVolumeAssetSlot
-  [ selectVolumeAsset
+  [ selectAssetRow
   , maybeJoinOn "asset.id = slot_asset.asset AND asset.volume = container.volume"
     selectAssetSlotAsset
   ]
@@ -109,12 +109,12 @@ selectAssetSlot ident = selectJoin '($)
 slotAssetKeys :: String -- ^ @'AssetSlot'@
   -> [(String, String)]
 slotAssetKeys as =
-  [ ("asset", "${assetId (slotAsset " ++ as ++ ")}") ]
+  [ ("asset", "${assetId $ assetRow $ slotAsset " ++ as ++ "}") ]
 
 slotAssetSets :: String -- ^ @'AssetSlot'@
   -> [(String, String)]
 slotAssetSets as =
-  [ ("container", "${containerId . slotContainer <$> assetSlot " ++ as ++ "}")
+  [ ("container", "${containerId . containerRow . slotContainer <$> assetSlot " ++ as ++ "}")
   , ("segment", "${slotSegment <$> assetSlot " ++ as ++ "}")
   ]
 

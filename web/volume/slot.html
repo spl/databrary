@@ -8,13 +8,17 @@
     <div class="row">
       <div class="col">
         <hgroup class="session-header">
-          <a class="view-link" ng-href="{{::editing ? volume.editRoute(slot.top ? 'materials' : 'data') : volume.route() + '#panel-' + (slot.top ? 'materials' : 'sessions')}}" ng-bind="::volume.alias || volume.name"></a>
+          <a class="view-link" ng-href="{{::editing ? volume.editRoute(slot.top ? 'materials' : 'data') : volume.route() + '#panel-' + (slot.top ? 'materials' : 'session')}}" ng-bind="::volume.alias || volume.name"></a>
+          <h3 class="view-context">{{::editing? 'Manage' : 'View'}}</h3>
           <h3 class="view-title">
             <span ng-bind="::slot.displayName"></span>
             <span ng-if="::slot.date" ng-bind="::' (' + slot.date + ')'"></span>
             <span ng-if="::slot.release != null" class="release icon" ng-class="::[page.constants.release[slot.release], 'hint-release-'+page.constants.release[slot.release]]"></span>
-            <a ng-if="::!editing && volume.checkPermission(page.permission.EDIT)" ng-click="toggleEdit()"><span class="neutral button icon edit"></span></a>
-            <a ng-if="::editing" ng-click="toggleEdit()"><span class="neutral button icon view-icon"></span></a>
+            <div ng-if="::volume.checkPermission(page.permission.EDIT)" class="view-title-buttons inline-block">
+              <button ng-class="::editing ? 'white' : 'green selected'" ng-disabled="::!editing" ng-click="toggleEdit()" class="button icon view-icon"></button>
+              <button ng-class="::editing ? 'green selected' : 'white'" ng-disabled="::editing" ng-click="toggleEdit()" class="button icon edit"></button>
+              <a ng-href="{{::page.router.slotActivity([volume.id, slot.id])}}" class="button mini white view-title-text">{{::slot.top? 'Materials' : 'Session'}} history</a>
+            </div>
           </h3>
         </hgroup>
 
@@ -63,11 +67,11 @@
                 <ng-form ng-if="::editing" name="form.edit" ng-switch="current.type">
                   <div ng-switch-when="asset">
                     <validator name="name" label="asset.name.title">
-                      <input type="text" name="name" ng-model="current.data.name" placeholder="{{::'asset.name.placeholder' | message}}">
+                      <input type="text" name="name" ng-model="current.data.name" placeholder="Please add a name. This name will be displayed to all users.">
                     </validator>
 
                     <validator name="classification" label="asset.classification">
-                      <classification-select name="classification" ng-model="current.data.classification" default="slot.release"></classification-select>
+                      <classification-select name="classification" ng-model="current.data.classification" default="slot.release" force="slot.top && slot.release==undefined"></classification-select>
                     </validator>
                   </div>
                 </ng-form>
@@ -131,10 +135,11 @@
               &#32;
               <button ng-click="addBlank()" class="mini">Add file</button>
               <button ng-if="!!(current.asset || current.file) && !current.pending" ng-click="current.remove()" class="mini">Remove file</button>
+              <button ng-if="!!(current.asset || current.file) && !current.pending" class="mini" flow-btn>Replace file</button>
               <button ng-if="!!current.asset" ng-click="current.rePosition()" class="mini">Position file</button>
               &#32;
               <button ng-if="current.excerpt.on === false" ng-click="current.editExcerpt()" class="mini">Highlight on volume</button>
-              <button ng-if="current.excerpt.on === true" ng-click="current.editExcerpt()" class="mini">Edit highlight</button>
+              <button ng-if="current.excerpt.on === true" ng-click="current.editExcerpt()" class="mini"><span ng-if="::current.excerpt.full">Remove</span><span ng-if="::!current.excerpt.full">Edit</span> highlight</button>
             </div>
             <ng-form ng-switch-when="addrecord" name="form.record">
               <button ng-click="addRecord(null)" class="mini">Cancel</button>&#32;
@@ -146,14 +151,14 @@
               </select>
             </ng-form>
             <ng-form ng-switch-when="record" name="form.position">
-              <input input-position="-Infinity" class="position-input" type="text" size="10" name="position-lower" ng-model="current.l" position-max="current.u" ng-change="current.updatePosition(false)" key-enter="updatePosition()" placeholder="{{::'position.placeholder' | message}}"> 
+              <input input-position="-Infinity" class="position-input" type="text" size="10" name="position-lower" ng-model="current.l" position-max="current.u" ng-change="current.updatePosition(false)" key-enter="updatePosition()" placeholder="MM:SS"> 
               &ndash; 
-              <input input-position="Infinity" class="position-input" type="text" size="10" name="position-upper" ng-model="current.u" position-min="current.l" ng-change="current.updatePosition(true)" placeholder="{{::'position.placeholder' | message}}"> 
+              <input input-position="Infinity" class="position-input" type="text" size="10" name="position-upper" ng-model="current.u" position-min="current.l" ng-change="current.updatePosition(true)" placeholder="MM:SS"> 
               <button ng-click="current.finishPosition()">Cancel</button>
               <button class="green" ng-click="current.savePosition()" ng-disabled="form.position.$pristine || form.position.$invalid">Save</button>
             </ng-form>
             <ng-form ng-switch-when="asset" name="form.position">
-              <input input-position="-Infinity" class="position-input" type="text" size="10" name="position-lower" ng-model="current.l" ng-change="current.updatePosition(false)" key-enter="updatePosition()" placeholder="{{::'position.placeholder' | message}}"> 
+              <input input-position="-Infinity" class="position-input" type="text" size="10" name="position-lower" ng-model="current.l" ng-change="current.updatePosition(false)" key-enter="updatePosition()" placeholder="MM:SS"> 
               &ndash; 
               <span ng-bind="current.u | timecode:true"></span> 
               <button ng-click="current.finishPosition()">Cancel</button>
@@ -214,7 +219,7 @@
 
             <div class="slot-timeline-tracks">
               <div ng-repeat="t in assets" class="slot-timeline-track slot-track" ng-class="{select: t.asset === asset, dirty: t.dirty, 'slot-track-positioned': t.asset && !t.full, 'slot-track-select': t === current, 'slot-track-empty': !(t.asset || t.file)}" ng-click="t.click($event)" ng-dblclick="t.select($event)" mouse-drag="dragSelection($down, $up, t)">
-                <div class="slot-excerpt" ng-repeat="excerpt in t.excerpts" ng-if="editing !== 'asset' && !excerpt.contains(t)" ng-style="excerpt.style()" ng-dblclick="excerpt.select($event)">
+                <div class="slot-excerpt" ng-repeat="excerpt in t.excerpts" ng-if="editing !== 'asset' && !excerpt.excerpt.full" ng-style="excerpt.style()" ng-dblclick="excerpt.select($event)">
                 </div>
                 <div class="slot-track-asset-info">
                   <span ng-if="!(t.asset || t.file)" message="asset.empty" class="slot-message-empty"></span>
@@ -238,13 +243,13 @@
         <div ng-if="::!editing" class="slot-download" ng-show="!!assets[0].asset">
           <a ng-href="{{::slot.zipRoute()}}">
             <span class="icon download"></span>
-            <span class="download" message="download.zip.title"></span>
+            <span class="download">Download all files as zip</span>
           </a>
         </div>
 
         <section ng-if="::!editing" id="slot-comments" class="slot-comments">
           <div ng-if="!commentReply && authorized">
-            <textarea ng-model="form.comment.text" placeholder="{{::'comments.prompt' | message}}"></textarea>
+            <textarea ng-model="form.comment.text" placeholder="Post a comment..."></textarea>
             <button ng-disabled="!form.comment.text.length" ng-click="addComment(form.comment.text)" class="mini" message="comments.post"></button>
           </div>
 

@@ -1,10 +1,8 @@
 {-# LANGUAGE FunctionalDependencies, TemplateHaskell #-}
 module Databrary.Model.SQL.Select
   ( SelectOutput(..)
-  , Selector
-  , selectOutput
+  , Selector(..)
   , selector
-  , columnSelector
   , selectColumns
   , addSelects
   , fromMap
@@ -99,9 +97,6 @@ data Selector = Selector
 
 selector :: String -> SelectOutput -> Selector
 selector t o = Selector o t (',':t)
-
-columnSelector :: SelectOutput -> Selector
-columnSelector o = Selector o "" ""
 
 selectColumns :: TH.Name -> String -> [String] -> Selector
 selectColumns f t c =

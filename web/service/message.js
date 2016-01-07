@@ -3,7 +3,6 @@
 app.factory('messageService', [
   '$sanitize', '$sce', 'constantService',
   function ($sanitize, $sce, constants) {
-
     var defaults = {
       type: 'blue',
       persist: false,
@@ -16,19 +15,35 @@ app.factory('messageService', [
       this.id = init.id || 'message-' + sequence++;
       angular.extend(this, defaults, init);
 
+      if (Array.isArray(this.body))
+        this.body = (this.more = this.body).shift();
       /* suppress duplicate messages */
       if (this.body in byBody)
         return;
 
       Message.list[this.id] = this;
-      byBody[this.body] = this;
+      byBody[this.orig = this.body] = this;
     }
 
     Message.list = {};
 
     Message.prototype.remove = function () {
       delete Message.list[this.id];
-      delete byBody[this.body];
+      delete byBody[this.orig];
+    };
+
+    Message.prototype.next = function () {
+      var more;
+      if (Array.isArray(this.more))
+        more = this.more.shift();
+      else if (typeof this.more === 'string') {
+        more = this.more;
+        delete this.more;
+      }
+      if (more)
+        this.body = more;
+      else
+        this.remove();
     };
 
     Message.add = function (message) {

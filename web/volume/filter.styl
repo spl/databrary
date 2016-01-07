@@ -1,5 +1,5 @@
 .volume-filters
-  margin-bottom b2
+  min-height 2
 
 .volume-filter
   display inline-block
@@ -8,7 +8,6 @@
   background-color orange51
   width max-content
   margin-width b2
-  margin-bottom b2
   padding-left b4
   height 1.5
 
@@ -18,6 +17,7 @@
 select.volume-filter-part //necessary to override select styles
 .volume-filter-part
 .volume-filter-part > input
+.volume-filter-part > select
   width auto
   position relative
   height 100%
@@ -29,16 +29,9 @@ select.volume-filter-part //necessary to override select styles
   padding-height 0
   box-shadow none
   display inline-block
-  &:focus
-    box-shadow none
 
 .volume-filter-part >input-completer
   display inline-block
-
-select.volume-filter-part
-  padding-right b1
-  appearance none
-  background url('/web/icons/sort-desc.png') white right no-repeat
   
 button.volume-filter-remove
   vertical-align bottom

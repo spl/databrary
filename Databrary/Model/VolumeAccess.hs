@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell, RecordWildCards, OverloadedStrings, DataKinds #-}
+{-# LANGUAGE TemplateHaskell, RecordWildCards, OverloadedStrings, ScopedTypeVariables #-}
 module Databrary.Model.VolumeAccess
   ( module Databrary.Model.VolumeAccess.Types
   , lookupVolumeAccess
@@ -10,7 +10,7 @@ module Databrary.Model.VolumeAccess
   , volumeAccessJSON
   , volumeAccessPartyJSON
   , volumeAccessVolumeJSON
-  , lookupVolumeActivity
+  , lookupVolumeShareActivity
   ) where
 
 import Data.Int (Int64)
@@ -51,7 +51,7 @@ lookupPartyVolumeAccess p perm = do
 lookupPartyVolumes :: (MonadDB c m, MonadHasIdentity c m) => Party -> Permission -> m [Volume]
 lookupPartyVolumes p perm = do
   ident <- peek
-  dbQuery $(selectDistinctQuery (Just ["volume.id"]) (selectVolume 'ident) "$JOIN volume_access_view ON volume.id = volume_access_view.volume WHERE party = ${partyId p} AND access >= ${perm}")
+  dbQuery $(selectDistinctQuery (Just ["volume.id"]) (selectVolume 'ident) "$JOIN volume_access_view ON volume.id = volume_access_view.volume WHERE party = ${partyId $ partyRow p} AND access >= ${perm}")
 
 changeVolumeAccess :: (MonadAudit c m) => VolumeAccess -> m Bool
 changeVolumeAccess va = do
@@ -80,7 +80,7 @@ volumeAccessPartyJSON va@VolumeAccess{..} = volumeAccessJSON va JSON..+ ("party"
 volumeAccessVolumeJSON :: VolumeAccess -> JSON.Object
 volumeAccessVolumeJSON va@VolumeAccess{..} = volumeAccessJSON va JSON..+ ("volume" JSON..= volumeJSON volumeAccessVolume)
 
-lookupVolumeActivity :: (MonadDB c m, MonadHasIdentity c m) => Int -> m [(Timestamp, Volume)]
-lookupVolumeActivity limit = do
+lookupVolumeShareActivity :: (MonadDB c m, MonadHasIdentity c m) => Int -> m [(Timestamp, Volume)]
+lookupVolumeShareActivity limit = do
   ident :: Identity <- peek
   dbQuery $(selectQuery (selectVolumeActivity 'ident) "$WHERE audit.audit_action = 'add' AND audit.party = 0 AND audit.children > 'NONE' ORDER BY audit.audit_time DESC LIMIT ${fromIntegral limit :: Int64}")

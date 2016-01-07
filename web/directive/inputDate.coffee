@@ -4,6 +4,8 @@ app.directive 'inputDate', [
   () ->
     restrict: 'A'
     link: ($scope, $element) ->
-      $element[0].type = 'date'
+      try
+        $element[0].type = 'date'
+      catch
       return
 ]

@@ -2,11 +2,12 @@
 module Databrary.Service.Types
   ( Secret(..)
   , Service(..)
-  , MonadHasService
   ) where
 
 import Control.Concurrent (ThreadId)
 import qualified Data.ByteString as BS
+import Data.IORef (IORef)
+import qualified Data.Text as T
 
 import Databrary.Has (makeHasRec)
 import Databrary.Service.DB (DBPool)
@@ -23,6 +24,7 @@ import Databrary.Solr.Service (Solr)
 import Databrary.Ingest.Service (Ingest)
 import Databrary.EZID.Service (EZID)
 import Databrary.Model.Time
+import Databrary.Model.Stats.Types
 
 newtype Secret = Secret BS.ByteString
 
@@ -34,15 +36,17 @@ data Service = Service
   , serviceLogs :: !Logs
   , serviceMessages :: !Messages
   , serviceDB :: !DBPool
-  , serviceStorage :: !Storage
+  , serviceStorage :: Storage -- may be down
   , serviceAV :: !AV
   , serviceWeb :: !Web
   , serviceHTTPClient :: !HTTPClient
   , serviceStatic :: !Static
+  , serviceStats :: !(IORef SiteStats)
   , serviceIngest :: !Ingest
   , serviceSolr :: !Solr
   , serviceEZID :: !(Maybe EZID)
   , servicePeriodic :: !(Maybe ThreadId)
+  , serviceDown :: !(Maybe T.Text)
   }
 
 makeHasRec ''Service ['serviceSecret, 'serviceEntropy, 'servicePasswd, 'serviceLogs, 'serviceMessages, 'serviceDB, 'serviceStorage, 'serviceAV, 'serviceWeb, 'serviceHTTPClient, 'serviceStatic, 'serviceIngest, 'serviceSolr]

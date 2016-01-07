@@ -9,7 +9,7 @@ import qualified Databrary.JSON as JSON
 import Databrary.Model.Id
 import Databrary.Model.Permission
 import Databrary.Model.Volume
-import Databrary.Model.RecordCategory
+import Databrary.Model.Category
 import Databrary.Model.Metric
 import Databrary.Model.VolumeMetric
 import Databrary.HTTP.Path.Parser
@@ -18,16 +18,16 @@ import Databrary.Action
 import Databrary.Controller.Paths
 import Databrary.Controller.Volume
 
-postVolumeMetric :: ActionRoute (Id Volume, (Id RecordCategory, Maybe (Id Metric)))
-postVolumeMetric = action PUT (pathJSON >/> pathId </> (pathId </> pathMaybe pathId)) $ \(vi, (c, mm)) -> withAuth $ do
+postVolumeMetric :: ActionRoute (Id Volume, Either (Id Category) (Id Metric))
+postVolumeMetric = action PUT (pathJSON >/> pathId </> PathEither pathId pathId) $ \(vi, cm) -> withAuth $ do
   v <- getVolume PermissionEDIT vi
-  r <- maybe (addVolumeCategory v c) (\m -> do
-    r <- addVolumeMetric v c m
-    return $ if r then [m] else []) mm
+  r <- either (addVolumeCategory v) (\m -> do
+    r <- addVolumeMetric v m
+    return $ if r then [m] else []) cm
   return $ okResponse [] $ JSON.toJSON r
 
-deleteVolumeMetric :: ActionRoute (Id Volume, (Id RecordCategory, Maybe (Id Metric)))
-deleteVolumeMetric = action DELETE (pathJSON >/> pathId </> (pathId </> pathMaybe pathId)) $ \(vi, (c, mm)) -> withAuth $ do
+deleteVolumeMetric :: ActionRoute (Id Volume, Either (Id Category) (Id Metric))
+deleteVolumeMetric = action DELETE (pathJSON >/> pathId </> PathEither pathId pathId) $ \(vi, cm) -> withAuth $ do
   v <- getVolume PermissionEDIT vi
-  r <- maybe (removeVolumeCategory v c) (fmap fromEnum . removeVolumeMetric v c) mm
+  r <- either (removeVolumeCategory v) (fmap fromEnum . removeVolumeMetric v) cm
   return $ okResponse [] $ JSON.toJSON r

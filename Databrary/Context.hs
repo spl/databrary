@@ -1,11 +1,9 @@
 {-# LANGUAGE TemplateHaskell #-}
 module Databrary.Context
   ( Context(..)
-  , MonadHasContext
   , ContextM
   , runContextM
   , BackgroundContext(..)
-  , MonadHasBackgroundContext
   , BackgroundContextM
   , withBackgroundContextM
   ) where

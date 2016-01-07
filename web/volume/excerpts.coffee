@@ -1,8 +1,8 @@
 'use strict'
 
 app.directive 'volumeExcerpts', [
-  'constantService',
-  (constants) ->
+  'constantService', 'messageService', '$sce'
+  (constants, messages, $sce) ->
     restrict: 'E'
     templateUrl: 'volume/excerpts.html'
     scope: false
@@ -25,4 +25,12 @@ app.directive 'volumeExcerpts', [
 
       $scope.hasThumbnail = (asset) ->
         asset.checkPermission(constants.permission.VIEW) && (asset.format.type == 'image' || asset.format.type == 'video' && asset.duration && !asset.pending)
+
+      $scope.tutorial = (message...) ->
+        if message.length
+          messages.add
+            type: 'tutorial'
+            persist: true
+            body: message.map($sce.trustAsHtml)
+        return
 ]

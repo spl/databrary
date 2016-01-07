@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell, OverloadedStrings #-}
 module Databrary.Model.Party.SQL
-  ( partyRow
+  ( selectPartyRow
   , selectParty
   , selectPartyAuthorization
   , selectAuthParty
@@ -28,19 +28,19 @@ import Databrary.Model.Id.Types
 import Databrary.Model.Identity.Types
 import Databrary.Model.Party.Types
 
-partyRow :: Selector -- ^ @Maybe 'Account' -> 'Permission' -> Maybe 'Access' -> 'Party'@
-partyRow = selectColumns 'Party "party" ["id", "name", "prename", "orcid", "affiliation", "url"]
+selectPartyRow :: Selector -- ^ @'PartyRow'@
+selectPartyRow = selectColumns 'PartyRow "party" ["id", "name", "prename", "orcid", "affiliation", "url"]
 
 accountRow :: Selector -- ^ @'Party' -> 'Account'@
 accountRow = selectColumns 'Account "account" ["email"]
 
-makeParty :: (Maybe Account -> Permission -> Maybe Access -> Party) -> Maybe (Party -> Account) -> Permission -> Maybe Access -> Party
-makeParty pc ac perm a = p where
-  p = pc (fmap ($ p) ac) perm a
+makeParty :: PartyRow -> Maybe (Party -> Account) -> Permission -> Maybe Access -> Party
+makeParty pr ac perm a = p where
+  p = Party pr (fmap ($ p) ac) perm a
 
 selectPermissionParty :: Selector -- ^ @'Permission' -> Maybe 'Access' -> 'Party'@
 selectPermissionParty = selectJoin 'makeParty 
-  [ partyRow
+  [ selectPartyRow
   , maybeJoinUsing ["id"] accountRow
   ]
 
@@ -77,13 +77,13 @@ selectAuthParty ident = selectMap (`TH.AppE` TH.VarE ident) $ selectJoin 'permis
     $ accessRow "authorize_valid" -- optimization, should be authorize_view if we used site
   ]
 
-makeAccount :: (Maybe Account -> Permission -> Maybe Access -> Party) -> (Party -> Account) -> Permission -> Maybe Access -> Account
-makeAccount pc ac perm ma = a where
-  a = ac $ pc (Just a) perm ma
+makeAccount :: PartyRow -> (Party -> Account) -> Permission -> Maybe Access -> Account
+makeAccount pr ac perm ma = a where
+  a = ac $ Party pr (Just a) perm ma
 
 selectPermissionAccount :: Selector -- ^ @'Permission' -> Maybe 'Access' -> 'Account'@
 selectPermissionAccount = selectJoin 'makeAccount 
-  [ partyRow
+  [ selectPartyRow
   , joinUsing ["id"] accountRow
   ]
 
@@ -98,7 +98,7 @@ makeSiteAuth p w a = SiteAuth (p maxBound $ Just maxBound) w (fold a)
 selectSiteAuth :: Selector -- @'SiteAuth'@
 selectSiteAuth = selectJoin 'makeSiteAuth
   [ selectPermissionAccount
-  , columnSelector $ SelectColumn "account" "password"
+  , Selector (SelectColumn "account" "password") "" ""
   , maybeJoinOn "party.id = authorize_view.child AND authorize_view.parent = 0"
     $ accessRow "authorize_view"
   ]
@@ -106,7 +106,7 @@ selectSiteAuth = selectJoin 'makeSiteAuth
 partyKeys :: String -- ^ @'Party'@
   -> [(String, String)]
 partyKeys p =
-  [ ("id", "${partyId " ++ p ++ "}") ]
+  [ ("id", "${partyId $ partyRow " ++ p ++ "}") ]
 
 accountKeys :: String -- ^ @'Account'@
   -> [(String, String)]
@@ -115,10 +115,10 @@ accountKeys a = partyKeys $ "(accountParty " ++ a ++ ")"
 partySets :: String -- ^ @'Party'@
   -> [(String, String)]
 partySets p =
-  [ ("name",        "${partySortName "    ++ p ++ "}")
-  , ("prename",     "${partyPreName "     ++ p ++ "}")
-  , ("affiliation", "${partyAffiliation " ++ p ++ "}")
-  , ("url",         "${partyURL "         ++ p ++ "}")
+  [ ("name",        "${partySortName $ partyRow "    ++ p ++ "}")
+  , ("prename",     "${partyPreName $ partyRow "     ++ p ++ "}")
+  , ("affiliation", "${partyAffiliation $ partyRow " ++ p ++ "}")
+  , ("url",         "${partyURL $ partyRow "         ++ p ++ "}")
   ]
 
 accountSets :: String -- ^ @'Account'@
@@ -149,10 +149,10 @@ updateAccount ident a = auditUpdate ident "account"
 
 insertParty :: TH.Name -- ^ @'AuditIdentity'
   -> TH.Name -- ^ @'Party'@
-  -> TH.ExpQ -- ^ @'Permission' -> 'Party'@
+  -> TH.ExpQ -- ^ @'PartyRow'@
 insertParty ident p = auditInsert ident "party"
   (partySets ps)
-  (Just $ OutputMap False (`TH.AppE` TH.ConE 'Nothing) $ selectOutput partyRow)
+  (Just $ selectOutput selectPartyRow)
   where ps = nameRef p
 
 insertAccount :: TH.Name -- ^ @'AuditIdentity'

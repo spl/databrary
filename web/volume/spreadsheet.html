@@ -7,6 +7,11 @@
     Show legend of session release levels
   </a>
   <ul class="release-legend flat" ng-show="showConsents">
+    <li>
+      <span class="icon release"></span>
+      <span ng-bind="::'release.DEFAULT.title' | message"></span>: 
+      <span ng-bind=":: 'release.DEFAULT.description' | message"></span>
+    </li>
     <li ng-repeat="(i,c) in page.constants.release" ng-if="i>=0">
       <span class="icon release" ng-class="c"></span>
       <span ng-bind="'release.'+c+'.title' | message"></span>: 
@@ -20,15 +25,23 @@
   Return to the <a href="" ng-click="setKey('slot')">folder view</a> to edit session data.
 </div>
 
-<slot-filter ng-if="::!editing">
-</slot-filter>
-<volume-pivot ng-if="::!editing">
-</volume-pivot>
+<div ng-if="::!editing" class="spreadsheet-report-manage">
+  <select ng-options="k as k for (k,s) in volume.state" ng-model="state.name" ng-change="state.restore()" class="width-auto spreadsheet-pivot-part">
+    <option value=''>Show saved display mode...</option>
+  </select>
+  <wbr>
+</div>
 
-<div ng-if="::!editing" class="spreadsheet-options">
-  <a ng-href="{{::volume.csvRoute()}}">export</a> | 
-  <a ng-if="!pivot.active" ng-click="pivot.show()">summarize</a>
-  <a ng-if="pivot.active" ng-click="pivot.hide()">hide summary</a>
+<div ng-if="::!editing">
+  <div class="spreadsheet-dynamic-section" >
+    <a ng-if="!pivot.active" ng-click="pivot.show()"><b>Show summary</b></a>
+    <a ng-if="pivot.active" ng-click="pivot.hide()"><b>Hide summary</b></a>
+    <div ng-hide="!pivot.active">
+      <div class="small reminder foot-2">Summarize by dragging fields of interest between the shaded boxes</div>
+      <volume-pivot></volume-pivot>
+    </div>
+  </div>
+  <slot-filter></slot-filter>
 </div>
 
 <div class="spreadsheet" ng-class="::{'edit': editing, 'view': !editing}">
@@ -43,10 +56,13 @@
           <span class="icon list spreadsheet-tab-options-icon clickable" ng-click="tabOptionsToggle($event)" ng-if="key === col.category && views.length > 1" tooltip="'spreadsheet.switchview' | message"></span>
           <ul class="flat spreadsheet-tab-options" click-elsewhere="tabOptionsToggle($event)" ng-if="key === col.category && tabOptionsClick">
             <li ng-repeat="c in views track by c.id" class="spreadsheet-tab-option clickable" ng-click="setKey(c.id)" ng-if="key !== c">
-              <span ng-if="::key.id !== 'slot' && c.id == 'slot'" ng-bind="::'back to '+c.name+' view'" class="default"></span>
-              <span ng-if="::key.id !== 'slot' && c.id !== 'slot' || key.id === 'slot'" ng-bind="::c.name+' view'"></span>
+              <span ng-if="::key.id !== 'slot' && c.id === 'slot'" ng-bind="::'back to '+c.name+' view'" class="default"></span>
+              <span ng-if="::key.id !== c.id && c.id !== 'slot'" ng-bind="::c.name+' view'"></span>
             </li>
           </ul>
+        </th>
+        <th class="spreadsheet-col-manage" ng-if="::editing" ng-click="activateStep(step.design)">
+          <span class="icon settings clickable" tooltip="'spreadsheet.manage' | message"></span>
         </th>
       </tr>
       <tr class="spreadsheet-head-metrics">
@@ -63,8 +79,30 @@
   </table>
 </div>
 
-<a ng-if="::!editing" ng-href="{{::page.router.volumeDescription([volume.id])}}">
+<div ng-if="::volume.checkPermission(page.permission.EDIT) && !editing" class="spreadsheet-dynamic-section">
+  <div class="foot-2">
+  <b>Save current display mode </b>
+  <span class="small reminder">This will replace any previously saved versions with the same name</span>
+  </div>
+  <input type="text" name="state" ng-model="state.name" ng-maxlength="64" class="width-auto" placeholder="Name display mode..." /><wbr>
+  <span class="spreadsheet-pivot-part" tooltip="'Make this display mode available to anyone with access to the volume, rather than only to other editors'">
+    <input type="checkbox" name="public" ng-model="state.public" class="width-auto"/>
+    <label for="public" class="option">Make public</label>
+  </span>
+  <span class="spreadsheet-pivot-part">
+    <button ng-click="state.save()">Save</button>
+    <button ng-click="state.delete()">
+      <span class="icon trash2"></span>
+      Delete
+    </button>
+  </span>
+</div>
+
+<div ng-if="::!editing" ng-show="key.id === 'slot' && count" class="spreadsheet-options">
   <span class="icon download"></span>
-  <span class="download" message="download.zip.title"></span>
-</a>
+  <a ng-href="{{::volume.csvRoute()}}">Export all as CSV</a> | 
+  <a ng-href="{{::page.router.volumeDescription([volume.id])}}" class="download">Download all folders as zip</a>
+  <span ng-show="filter.count && filter.count < count"> | <a ng-click="zip($event)" class="download">Download selected folders ({{filter.count}} omitted) as zip</a></span>
+</div>
+
 </ng-form>

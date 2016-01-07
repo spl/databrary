@@ -1,6 +1,6 @@
 <div class="wizard-step" ng-if="active">
   <header class="wizard-step-header">
-    <span>Your volume is <b>{{100*meter | number:0}}% complete! </b></span>
+    <span>Your volume is <b>{{100*meter | number:0}}% complete!</b></span>
   </header>
   <div class="wizard-step-instructions" >
     <span message="wizard.volume-edit-meter.description" message-html></span>
@@ -8,12 +8,12 @@
     <small class="reminder">Note: If you recently added to your volume, try refreshing the page for up-to-date information.</small>
   </div>
   <div>
-    <div class="volume-meter-category volume-meter-done col-desktop-15 col-tablet-9 col-mobile-6" ng-click="goto(metrics.name.link)">
+    <div class="volume-meter-category volume-meter-done col-desktop-15 col-tablet-9 col-mobile-6" ng-click="goto('overview')">
       <div class="icon done-not">
         <span class="icon done"></span>
       </div>
-      <h5>{{::metrics.name.title}}</h5>
-      <span ng-if="::!metrics.name.done">: {{::metrics.name.help}}</span>
+      <h5>Volume created and named</h5>
+      <span ng-if="::!metrics.name.done">: Create your volume and give it a title.</span>
     </div>
 
     <div class="volume-meter-category col-desktop-15 col-tablet-9 col-mobile-6" ng-class="{'volume-meter-done': !!metrics.description.done && !!metrics.citation.done && !!metrics.keywords.done}">
@@ -26,23 +26,23 @@
         <li ng-class="{'volume-meter-done': metrics.description.done}">
           <span ng-if="::!!metrics.description.done">
             <span class="icon done"></span>
-            {{::metrics.description.title}}
+            Description added
           </span>
-          <span ng-click="goto(metrics.description.link)" ng-if="::!metrics.description.done" class="clickable">{{::metrics.description.help}}</span>
+          <span ng-click="goto('overview', '#body')" ng-if="::!metrics.description.done" class="clickable">Add a description of at least 500 characters. <br><small> This will summarize what your volume contains and how the data were collected (e.g., the abstract of a corresponding publication).</small></span>
         </li>
         <li ng-class="{'volume-meter-done': metrics.citation.done}">
           <span ng-if="::!!metrics.citation.done">
             <span class="icon done"></span>
-            {{::metrics.citation.title}}
+            Publication linked
           </span>
-          <span ng-click="goto(metrics.citation.link)" ng-if="::!metrics.citation.done" class="clickable">{{::metrics.citation.help}}</span>
+          <span ng-click="goto('overview', '#citation','<p class=\'message-title\'>Link volume to corresponding publication:</p><p>(1/1) Select yes to whether this volume corresponds to a published paper or resource. Additional fields for DOI and citation will appear.</p>')" ng-if="::!metrics.citation.done" class="clickable">Link your volume to any corresponding publication by adding a DOI or citation.</span>
         </li>
         <li ng-class="{'volume-meter-done': metrics.keywords.done}">
           <span ng-if="::!!metrics.keywords.done">
             <span class="icon done"></span>
-            {{::metrics.keywords.title}}
+            Keywords added
           </span>
-          <span ng-click="goto(metrics.keywords.link)" ng-if="::!metrics.keywords.done" class="clickable">{{::metrics.keywords.help}}</span>
+          <span ng-click="goto('overview', '#tag-add')" ng-if="::!metrics.keywords.done" class="clickable">Add at least three keywords to label your volume.</span>
         </li>
       </ul>
     </div>
@@ -52,86 +52,78 @@
         <span ng-if="::!!metrics.design.done && !!metrics.session.done && !!metrics.record.done" class="icon done"></span>
       </div> 
       <h5>Study design and data spreadsheet</h5>
-      <p>Describe your study design, then start creating and labeling sessions in the data spreadsheet.</p>
+      <p>Define your study design, then start creating and describing sessions in the data spreadsheet.</p>
       <ul ng-if="::!metrics.design.done || !metrics.session.done || !metrics.record.done">
         <li ng-class="metrics.design.done? 'volume-meter-done' : 'clickable'">
           <span ng-if="::!!metrics.design.done">
             <span class="icon done"></span> 
-            {{::metrics.design.title}}
+            Study design defined
           </span>
-          <span ng-click="goto(metrics.design.link)" ng-if="::!metrics.design.done">{{::metrics.design.help}}</span>
+          <span ng-click="goto('design')" ng-if="::!metrics.design.done">Select the categories and fields by which you will describe your sessions.</span>
         </li> 
         <li ng-class="metrics.session.done? 'volume-meter-done' : 'clickable'">
           <span ng-if="::!!metrics.session.done">
             <span class="icon done"></span>
-            {{::metrics.session.title}}
+            Created a study session
           </span>
-          <span ng-click="goto(metrics.session.link)" ng-if="::!metrics.session.done">{{::metrics.session.help}}<br>
-            <small>Click 'add folder' and select 'session' in the folder type dropdown on the left of the spreadsheet</small>
+          <span ng-click="goto('data',undefined,['<p class=\'message-title\'>Create a session for your volume:</p><p>(1/1) Add a folder, and select session in the folder type dropdown on the left end of the spreadsheet</p>'])" ng-if="::!metrics.session.done">Create at least one study session in order to start uploading data.
           </span>
         </li>
         <li ng-class="metrics.record.done? 'volume-meter-done' : 'clickable'">
           <span ng-if="::!!metrics.record.done">
             <span class="icon done"></span>
-            {{::metrics.record.title}}
+            Described a session
           </span>
-          <span ng-click="goto(metrics.record.link)" ng-if="::!metrics.record.done">{{::metrics.record.help}}</span>
+          <span ng-click="goto('data')" ng-if="::!metrics.record.done">
+          Fill out the fields for a session category such as participant, task, condition, etc.</span>
         </li>
       </ul>
     </div>
 
-    <div class="volume-meter-category col-desktop-15 col-tablet-9 col-mobile-6" ng-click="goto(metrics.asset.link)" ng-class="metrics.asset.done? 'volume-meter-done' : 'clickable'">
+    <div class="volume-meter-category col-desktop-15 col-tablet-9 col-mobile-6" ng-click="goto('data',undefined,['Upload at least one file. Start by clicking add file in the right end of the spreadsheet.'])" ng-class="metrics.asset.done? 'volume-meter-done' : 'clickable'">
       <div class="icon done-not">
         <span ng-if="::!!metrics.asset.done" class="icon done"></span>
       </div> 
-      <h5>{{::metrics.asset.title}}</h5>
-      <p ng-if="::!metrics.asset.done">{{::metrics.asset.help}}</p>
+      <h5>Upload a file</h5>
     </div>
 
-    <div class="volume-meter-category col-desktop-15 col-tablet-9 col-mobile-6" ng-class="{'volume-meter-done': !!metrics.excerpts.done && !!metrics.asset.done}">
+    <div class="volume-meter-category col-desktop-15 col-tablet-9 col-mobile-6" ng-class="{'volume-meter-done': !!metrics.excerpts.done && !!metrics.thumbnail.done}">
       <div class="icon done-not">
         <span ng-if="::!!metrics.excerpts.done && !!metrics.thumbnail.done" class="icon done"></span>
       </div>
-      <h5>Highlight data representative of your study</h5>
+      <h5>Highlight data that represents your study</h5>
       <p ng-if="::!metrics.excerpts.done || !metrics.thumbnail.done">
-        Highlighting data or files makes it easier for others to understand what your volume is about.
+        Highlighting data or files makes it easier for others to understand what your volume contains.
         <span ng-if="::!metrics.asset.done" class="reminder"><br>Note: You need to have uploaded at least one file before you can select a highlight.</span>
       </p>
       <ul ng-if="::!metrics.excerpts.done || !metrics.thumbnail.done">
         <li ng-class="{'volume-meter-done':metrics.excerpts.done}">
           <span ng-if="::!!metrics.excerpts.done">
             <span class="icon done"></span>
-            {{::metrics.excerpts.title}}
+            Highlights selected
           </span>
-          <span ng-click="goto(metrics.excerpts.link)" ng-if="::!metrics.excerpts.done" class="clickable">
-            {{::metrics.excerpts.help}}<br>
-            <small>
-              <b>Clicking will take you to the data spreadsheet<br></b>
-              Step 1: Select the file you wish to highlight from the 'file' tab. You will be taken to the file viewer. <br>Step 2: If you selected a video, you may additionally choose to highlight a specific segment by drag-and-select along the timeline. <br>Step 3: Click the 'highlight on volume' button, and choose your sharing level in the dropdown that appears.
-            </small>
+          <span ng-click="goto('data',undefined,'<p class=\'message-title\'>Selecting highlights from your data: </p><p>(1/3) Select the file you wish to highlight from the \'file\' column on the right end of the spreadsheet. Click next once you are done.</p>','<p>(2/3) You may choose to highlight an entire video or only a specific section. Skip this step if you are highlighting the entire file. Otherwise, select the file you want to create a highlight from, press down and drag over the portion of video that you want to highlight.</p>','<p>(3/3) Click the \'Highlight on volume\' button. If you are highlighting a segment, you have the option of changing the sharing level of that segment in the dropdown that appears.</p><p>You now have a highlight on your volume page!</p>')" ng-if="::!metrics.excerpts.done" class="clickable">
+            Select at least three highlights from your data to represent your volume.
           </span>
         </li>
         <li ng-class="{'volume-meter-done':metrics.thumbnail.done}">
           <span ng-if="::!!metrics.thumbnail.done">
             <span class="icon done"></span>
-            {{::metrics.thumbnail.title}}
+            Thumbnail chosen
           </span>
-          <span ng-click="goto(metrics.thumbnail.link)" ng-if="::!metrics.thumbnail.done" class="clickable">
-            {{::metrics.thumbnail.help}}<br>
-            <small>
-              <b>Clicking will take you to the data spreadsheet. </b>Select 'Public' in the sharing level dropdown, and the highlight will automatically be used as your volume thumbnail.
-            </small>
+          <span ng-click="goto('data',undefined,'<p class=\'message-title\'>Make a highlight public to use as volume thumbnail:</p><p>(1/2) Select the file you wish to highlight from the \'file\' column on the right end of the spreadsheet. Click next once you are done.</p>','<p>(2/2) Select the segment you want to make a thumbnail. Click the \'Edit highlight\' button and choose \'Public: Available openly to anybody\' in the dropdown. This highlight will default as your volume thumbnail.</p>')" ng-if="::!metrics.thumbnail.done" class="clickable">
+            Select a public highlight from a video or image to use as your volume thumbnail.
           </span>
         </li>
       </ul>
     </div>
 
-    <div class="volume-meter-category col-desktop-15 col-tablet-9 col-mobile-6" ng-click="goto(metrics.share.link)"  ng-class="metrics.share.done? 'volume-meter-done' : 'clickable'">
+    <div class="volume-meter-category col-desktop-15 col-tablet-9 col-mobile-6" ng-click="goto('access', '#preset')" ng-class="metrics.share.done ? 'volume-meter-done' : 'clickable'">
       <div class="icon done-not">
         <span ng-if="::!!metrics.share.done" class="icon done"></span>
       </div> 
-      <h5>{{::metrics.share.title}}</h5>
-      <p ng-if="::!metrics.share.done">{{::metrics.share.help}}</p>
+      <h5>Share your volume</h5>
+      <p ng-if="::!metrics.share.done">Share your volume with other Databrary users.</p>
     </div>
   </div>
 </div>

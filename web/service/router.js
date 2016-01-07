@@ -133,7 +133,7 @@ app.provider('routerService', [
         activity: [
           'modelService',
           function (models) {
-            return models.activity();
+            return models.siteActivity();
           }
         ]
       },
@@ -275,6 +275,23 @@ app.provider('routerService', [
       reloadOnSearch: false,
     });
 
+    routes.partyActivity = makeRoute(controllers.viewPartyActivity, ['id'], {
+      controller: 'party/activity',
+      templateUrl: 'party/activity.html',
+      resolve: {
+        activity: [
+          'pageService', function (page) {
+            return page.models.Party.get(page.$route.current.params.id).then(function (p) {
+              return p.getActivity().then(function (a) {
+                a.party = p;
+                return a;
+              });
+            });
+          }
+        ],
+      }
+    });
+
     routes.partySearch = makeRoute(controllers.viewPartySearch, [], {
       controller: 'party/search',
       templateUrl: 'party/search.html',
@@ -326,7 +343,7 @@ app.provider('routerService', [
         volume: [
           'pageService', function (page) {
             return page.models.Volume.get(page.$route.current.params.id,
-              {access:true, citation:true, links:true, funding:true, top:true, tags:true, excerpts:true, comments:true, records:true, containers:'all', metrics:true});
+              {access:true, citation:true, links:true, funding:true, top:true, tags:true, excerpts:true, comments:true, records:true, containers:'all', metrics:true, state:true});
           }
         ]
       },
@@ -339,7 +356,7 @@ app.provider('routerService', [
       resolve: {
         volume: [
           'pageService', function (page) {
-            return page.models.Volume.get(page.$route.current.params.id, {containers:'assets'});
+            return page.models.Volume.get(page.$route.current.params.id, {containers:'assets',top:true});
           }
         ],
         slot: function() {
@@ -352,8 +369,25 @@ app.provider('routerService', [
       templateUrl: 'volume/csv.html',
       resolve: {
         volume: [
-          'pageService', function(page) {
+          'pageService', function (page) {
             return page.models.Volume.get(page.$route.current.params.id);
+          }
+        ],
+      }
+    });
+
+    routes.volumeActivity = makeRoute(controllers.viewVolumeActivity, ['id'], {
+      controller: 'volume/activity',
+      templateUrl: 'volume/activity.html',
+      resolve: {
+        activity: [
+          'pageService', function (page) {
+            return page.models.Volume.get(page.$route.current.params.id).then(function (v) {
+              return v.getActivity().then(function (a) {
+                a.volume = v;
+                return a;
+              });
+            });
           }
         ],
       }
@@ -372,6 +406,25 @@ app.provider('routerService', [
         ],
         volume: function () {
         },
+      }
+    });
+
+    routes.slotActivity = makeRoute(controllers.viewSlotActivity, ['vid', 'id'], {
+      controller: 'volume/slotActivity',
+      templateUrl: 'volume/slotActivity.html',
+      resolve: {
+        activity: [
+          'pageService', function (page) {
+            return page.models.Volume.get(page.$route.current.params.vid).then(function (v) {
+              return v.getSlot(page.$route.current.params.id).then(function (s) {
+                return s.getActivity().then(function (a) {
+                  a.slot = s;
+                  return a;
+                });
+              });
+            });
+          }
+        ],
       }
     });
 
@@ -425,6 +478,8 @@ app.provider('routerService', [
     routes.assetThumb = makeRoute(controllers.thumbAssetSegment, ['cid', 'segment', 'id', 'size']);
     routes.slotThumb = makeRoute(controllers.thumbSlot, ['id','cid','segment', 'size']);
     routes.assetDownload = makeRoute(controllers.downloadAssetSegment, ['cid', 'segment', 'id', 'inline']);
+    routes.rawAssetDownload = makeRoute(controllers.downloadAsset, ['id', 'inline']);
+    routes.rawAssetThumb = makeRoute(controllers.thumbAsset, ['id', 'size']);
     routes.volumeZip = makeRoute(controllers.zipVolume, ['id']);
 
     $routeProvider.otherwise('/');

@@ -55,5 +55,5 @@ sendMail to subj body =
   where
   addr (Left e) = Address Nothing (TE.decodeLatin1 e)
   addr (Right Account{ accountEmail = email, accountParty = p }) =
-    Address (Just (partyName p)) (TE.decodeLatin1 email)
+    Address (Just $ partyName $ partyRow p) (TE.decodeLatin1 email)
 

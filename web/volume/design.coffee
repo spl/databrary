@@ -5,14 +5,15 @@ app.directive 'volumeDesign', [
   ($location, constants, router, messages) ->
     restrict: 'E'
     templateUrl: 'volume/design.html'
-    link: ($scope) ->
+    require: '^wizard',
+    link: ($scope, $element, $attrs, wizard) ->
       volume = $scope.volume
       form = $scope.volumeDesign
 
       $scope.select = (c) ->
         form.metric = {}
         return unless ($scope.selected = constants.category[c])?
-        $location.replace().search('key', volume.metrics[c] && c)
+        $location.replace().search('key', undefined)
         for m in volume.metrics[c] ? $scope.selected.template
           form.metric[m] = true
         return
@@ -41,6 +42,11 @@ app.directive 'volumeDesign', [
               report: res
               owner: form
             return)
+        return
+
+      $scope.manage = () ->
+        $location.replace().search('key', $scope.selected.id)
+        wizard.activateStep('data')
         return
 
       $scope.stop = (e) ->

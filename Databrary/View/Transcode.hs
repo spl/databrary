@@ -44,15 +44,15 @@ htmlTranscodes tl req = htmlTemplate req (Just "transcodes") $ \js -> do
             act TranscodeFail)
             (\p -> when (p >= 0) $ act TranscodeStop)
             transcodeProcess
-        H.td $ H.a H.! actionLink viewAsset (HTML, assetId transcodeAsset) js $
-          H.string $ show $ assetId transcodeAsset
+        H.td $ H.a H.! actionLink viewAsset (HTML, assetId $ assetRow $ transcodeAsset t) js $
+          H.string $ show $ assetId $ assetRow $ transcodeAsset t
         H.td $ foldMap (H.string . show) transcodeStart
         H.td $ do
           let p = view transcodeOwner
           H.a H.! actionLink viewParty (HTML, TargetParty (partyId p)) js $
             H.text $ partyName p
-        H.td $ H.a H.! actionLink viewAsset (HTML, assetId transcodeOrig) js $
-          maybe (H.string $ show $ assetId transcodeOrig) H.text (assetName transcodeOrig)
+        H.td $ H.a H.! actionLink viewAsset (HTML, assetId $ assetRow $ transcodeOrig t) js $
+          maybe (H.string $ show $ assetId $ assetRow $ transcodeOrig t) H.text (assetName $ assetRow $ transcodeOrig t)
         H.td $ H.string $ show transcodeSegment
         H.td $ mapM_ ((>>) " " . H.string) transcodeOptions
         H.td $ foldMap (H.string . show) transcodeProcess

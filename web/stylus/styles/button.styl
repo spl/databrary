@@ -2,8 +2,9 @@
 
 button, .button
   display inline-block
-  line-height 1
-  border-padding-height f4 1px
+  line-height 29px
+  border-width 1px
+  padding-height 0
   padding-width f2
   border-radius b8
   color black
@@ -33,13 +34,15 @@ button, .button
   &.purple
     button-color purple
 
-  &:disabled, &.disabled
+  &.selected, &:disabled, &.disabled
+    box-shadow none
+    cursor default
+
+  &:disabled:not(.selected), &.disabled
     disabled-background = mix(gray, white, 75%)
     border 1px solid gray
     background disabled-background
     color mix(black, gray, 25%)
-    cursor default
-    box-shadow none
 
     &:hover
       background disabled-background
@@ -51,6 +54,7 @@ button, .button
     border-padding-height 1px 1px
     padding-width f4
     font-size b2
+    line-height f1
     span.icon
       height 13px
       width 13px
@@ -66,6 +70,7 @@ button, .button
     background-position center
     background-repeat no-repeat
     size b1
+    padding-height f4
     
   &.icon-text
     display initial
@@ -74,6 +79,11 @@ button, .button
       vertical-align middle
       margin-right b8
 
+  &.view-title-text.mini
+    line-height b2
+    padding-height 5px
+    vertical-align middle
+    margin-bottom b4
 // link button
 
 a.button

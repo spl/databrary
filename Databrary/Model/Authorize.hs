@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell, RecordWildCards, OverloadedStrings, DataKinds #-}
+{-# LANGUAGE TemplateHaskell, RecordWildCards, OverloadedStrings, ScopedTypeVariables #-}
 module Databrary.Model.Authorize
   ( module Databrary.Model.Authorize.Types
   , selfAuthorize
@@ -36,7 +36,7 @@ import Databrary.Model.Authorize.SQL
 
 selfAuthorize :: Party -> Authorize
 selfAuthorize p =
-  Authorize (Authorization (if partyId p == partyId nobodyParty then minBound else maxBound) p p) Nothing
+  Authorize (Authorization (if partyId (partyRow p) == partyId (partyRow nobodyParty) then minBound else maxBound) p p) Nothing
 
 filterAll :: PGQuery a b => Bool -> a -> a
 filterAll True = id
@@ -54,7 +54,7 @@ lookupAuthorizedChildren parent al = do
 
 lookupAuthorize :: (MonadDB c m, MonadHasIdentity c m) => Party -> Party -> m (Maybe Authorize)
 lookupAuthorize child parent =
-  dbQuery1 $ (\a -> a child parent) <$> $(selectQuery authorizeRow "$WHERE authorize.child = ${partyId child} AND authorize.parent = ${partyId parent} AND (expires IS NULL OR expires > CURRENT_TIMESTAMP)")
+  dbQuery1 $ (\a -> a child parent) <$> $(selectQuery authorizeRow "$WHERE authorize.child = ${partyId $ partyRow child} AND authorize.parent = ${partyId $ partyRow parent} AND (expires IS NULL OR expires > CURRENT_TIMESTAMP)")
 
 lookupAuthorizeParent :: (MonadDB c m, MonadHasIdentity c m) => Party -> Id Party -> m (Maybe Authorize)
 lookupAuthorizeParent child parent = do
@@ -63,13 +63,13 @@ lookupAuthorizeParent child parent = do
 
 lookupAuthorization :: (MonadDB c m, MonadHasIdentity c m) => Party -> Party -> m Authorization
 lookupAuthorization child parent 
-  | partyId child == partyId parent = return $ authorization $ selfAuthorize child
+  | partyId (partyRow child) == partyId (partyRow parent) = return $ authorization $ selfAuthorize child
   | otherwise = do
     auth <- peek
-    if partyId (view auth) == partyId child && partyId parent == partyId rootParty
+    if partyId (view auth) == partyId (partyRow child) && partyId (partyRow parent) == partyId (partyRow rootParty)
       then return $ Authorization (siteAccess auth) child parent
       else fromMaybe (Authorization mempty child parent) <$>
-        dbQuery1 ((\a -> a child parent) <$> $(selectQuery authorizationRow "!$WHERE authorize_view.child = ${partyId child} AND authorize_view.parent = ${partyId parent}"))
+        dbQuery1 ((\a -> a child parent) <$> $(selectQuery authorizationRow "!$WHERE authorize_view.child = ${partyId $ partyRow child} AND authorize_view.parent = ${partyId $ partyRow parent}"))
 
 changeAuthorize :: (MonadAudit c m) => Authorize -> m ()
 changeAuthorize auth = do

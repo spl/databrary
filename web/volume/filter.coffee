@@ -25,17 +25,24 @@ app.directive 'slotFilter', [
         contains: (o,x) -> join(o, '||', '!(v&&v.includes('+JSON.stringify(x)+'))')
       indicator = constants.metricName.indicator.id
 
-      makeFilter = () ->
-        exp = ['var v']
+      makeFilter = (key) ->
+        exp = ['var v,i,c']
         cats = {slot:{}}
         ci = 0
+        any = false
         for f in filter.list when f.op
+          any = true
           c = f.category.id
           unless c of cats
             cats[c] =
               $index:ci++
           m = f.metric.id
           cats[c][m] = ops[f.op](cats[c][m], f.value)
+        return unless any
+
+        indicate = (mets, any) ->
+          mets[indicator] = ops[if any then 'two' else 'any'](mets[indicator])
+          any
 
         record = (mets, rv, age, brk) ->
           any = false
@@ -48,26 +55,38 @@ app.directive 'slotFilter', [
               if constants.metric[m].assumed
                 exp.push('if(v==null)v='+JSON.stringify(constants.metric[m].assumed))
             exp.push('if('+e+')'+brk)
-          mets[indicator] = ops[if any then 'two' else 'any'](mets[indicator])
-          any
+          indicate(mets, any)
 
-        if filter.key && filter.key != 'slot'
-          if mets = cats[filter.key]
-            exp.push('if(s){')
-            exp.push('v='+(if record(mets, 's', 'undefined', 'return') then 2 else 1))
+        if key && key != 'slot'
+          if mets = cats[key]
+            exp.push('if(x){')
+            exp.push('v='+(if record(mets, 'x', 'undefined', 'return') then 2 else 1))
             exp.push('}else v=0',
+              'if('+mets[indicator]+')return')
+          if Object.keys(mets = cats.slot).length
+            exp.push('c=0',
+              'for(i=0;i<y.length;i++){c=1')
+            any = false
+            for m, e of mets when e && `m != indicator`
+              any = true
+              exp.push('v=y[i].'+m,
+                'if('+e+')continue')
+            if indicate(mets, any)
+              exp.push('c=2', 'break')
+            exp.push('}',
+              'v=c',
               'if('+mets[indicator]+')return')
         else
           for m, e of cats.slot when e
-            exp.push('v=s.'+m,
+            exp.push('v=x.'+m,
               'if('+e+')return')
           if ci
-            exp.push('var c,i,r')
+            exp.push('var r')
             exp.push('c=new Uint8Array(new ArrayBuffer('+ci+'))',
-              'for(i=0;i<s.records.length;i++){if(!(r=s.records[i].record)){continue')
+              'for(i=0;i<y.length;i++){if(!(r=y[i].record)){continue')
             for c, mets of cats when c != 'slot'
-              exp.push('}else if(r.category==='+c+'){c['+mets.$index+']=1')
-              if record(mets, 'r', 's.records[i].age', 'continue')
+              exp.push('}else if(r.category==='+c+'){if(!c['+mets.$index+'])c['+mets.$index+']=1')
+              if record(mets, 'r', 'y[i].age', 'continue')
                 exp.push('c['+mets.$index+']=2')
             exp.push('}}')
             for c, mets of cats when c != 'slot'
@@ -78,15 +97,18 @@ app.directive 'slotFilter', [
         console.log(exp) if DEBUG
         exp
 
-      filter.make = () ->
-        new Function('s', makeFilter())
+      make = (f) ->
+        f && new Function('x', 'y', f)
 
       old = undefined
+      filter.make = (key) ->
+        make(old = makeFilter(key || @key))
+
       filter.change = () ->
-        f = makeFilter()
+        f = makeFilter(@key)
         return if f == old
         old = f
-        filter.update(new Function('s', f))
+        filter.update(make(f))
         return
 
       filter.remove = (i) ->
@@ -106,6 +128,8 @@ app.directive 'slotFilter', [
               filter.change()
               this.text
             default: input && i==0
+
+      filter.change()
 
       return
 ]

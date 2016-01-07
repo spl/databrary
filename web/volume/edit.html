@@ -10,8 +10,12 @@
       <hgroup class="col" ng-if="::volume">
         <h1 class="view-context">Manage volume</h1>
         <h2 class="view-title">
-          <span ng-bind="volume.alias || volume.name"></span>
-          <a ng-href="{{::volume.route()}}"><span class="button green icon view-icon"></span></a>
+          <span ng-bind="volume.displayName"></span>
+          <div class="view-title-buttons inline-block">
+            <a ng-href="{{::volume.route()}}" class="button white icon view-icon"></a>
+            <a href="" class="button selected green icon edit"></a>
+            <a ng-href="{{::page.router.volumeActivity([volume.id])}}" class="button mini white view-title-text">Volume history</a>
+          </div>
         </h2>
       </hgroup>
 
@@ -29,23 +33,23 @@
             <volume-edit-overview-form></volume-edit-overview-form>
           </wizard-page>
 
-          <wizard-page name="access" disabled="!volume.checkPermission(page.permission.ADMIN)">
+          <wizard-page name="access" wizard-disabled="!volume.checkPermission(page.permission.ADMIN)">
             <volume-edit-access-form></volume-edit-access-form>
           </wizard-page>
 
-          <wizard-page name="design" disabled="!volume">
+          <wizard-page name="design" wizard-disabled="!volume">
             <volume-design></volume-design>
           </wizard-page>
 
-          <wizard-page name="data" disabled="!volume">
+          <wizard-page name="data" wizard-disabled="!volume">
             <spreadsheet edit></spreadsheet>
           </wizard-page>
 
-          <wizard-page name="links" disabled="!volume">
+          <wizard-page name="links" wizard-disabled="!volume">
             <volume-edit-links-form></volume-edit-links-form>
           </wizard-page>
 
-          <wizard-page name="funding" disabled="!volume">
+          <wizard-page name="funding" wizard-disabled="!volume">
             <volume-edit-funding-form></volume-edit-funding-form>
           </wizard-page>
         </wizard>

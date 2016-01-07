@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell, DeriveDataTypeable, TupleSections, Rank2Types #-}
+{-# LANGUAGE TemplateHaskell, DeriveDataTypeable, TupleSections, Rank2Types, ScopedTypeVariables #-}
 module Databrary.Service.Periodic
   ( forkPeriodic
   , Period(..)
@@ -9,6 +9,7 @@ import Control.Exception (Exception, handle, mask)
 import Control.Monad (void, when)
 import Control.Monad.Trans.Reader (withReaderT)
 import Data.Fixed (Fixed(..), Micro)
+import Data.IORef (writeIORef)
 import Data.Time.Calendar.OrdinalDate (sundayStartWeek)
 import Data.Time.Clock (UTCTime(..), diffUTCTime, getCurrentTime)
 import Data.Time.LocalTime (TimeOfDay(TimeOfDay), timeOfDayToTime)
@@ -20,6 +21,7 @@ import Databrary.Service.Log
 import Databrary.Context
 import Databrary.Model.Token
 import Databrary.Model.Volume
+import Databrary.Model.Stats
 import Databrary.Solr.Index
 import Databrary.EZID.Volume -- TODO
 
@@ -45,6 +47,8 @@ run p = runContextM $ withReaderT BackgroundContext $ do
   cleanTokens
   updateVolumeIndex
   updateIndex
+  ss <- lookupSiteStats
+  focusIO $ (`writeIORef` ss) . serviceStats
   when (p >= PeriodWeekly) $
     void updateEZID
 

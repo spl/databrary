@@ -8,10 +8,9 @@ module Databrary.Model.Identity.Types
   , identitySuperuser
   ) where
 
-import Control.Monad.Reader (MonadReader)
 import qualified Data.ByteString as BS
 
-import Databrary.Has (Has(..))
+import Databrary.Has (Has(..), MonadHas)
 import Databrary.Model.Id.Types
 import Databrary.Model.Permission.Types
 import Databrary.Model.Party.Types
@@ -37,7 +36,7 @@ instance Has (Id Party) Identity where
 instance Has Access Identity where
   view = view . (view :: Identity -> SiteAuth)
 
-type MonadHasIdentity c m = (Functor m, Applicative m, MonadReader c m, Has Identity c, Has SiteAuth c, Has Party c, Has (Id Party) c, Has Access c)
+type MonadHasIdentity c m = (MonadHas Identity c m, Has SiteAuth c, Has Party c, Has (Id Party) c, Has Access c)
 
 foldIdentity :: a -> (Session -> a) -> Identity -> a
 foldIdentity _ i (Identified s) = i s

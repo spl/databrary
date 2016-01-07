@@ -31,7 +31,7 @@ select
   box-shadow inset-shadow
   placeholder gray
 
-  &:focus
+  &:focus:not(.no-focus)
     border-color green
     input-shadow green
 
@@ -52,6 +52,9 @@ select
 
   &.quarter
     width 25%
+  
+  &.width-auto
+    width auto
 
 input
   &[type="search"]
@@ -87,6 +90,11 @@ input
 
 select
   padding-bottom f4
+  &.select-clear-style
+    appearance none
+    background url('/web/icons/sort-desc.png') white right no-repeat
+    padding-right b23  
+    padding-height 0
 
 input,
 select,

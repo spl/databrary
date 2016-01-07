@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, RecordWildCards, GeneralizedNewtypeDeriving, TemplateHaskell #-}
+{-# LANGUAGE OverloadedStrings, RecordWildCards, GeneralizedNewtypeDeriving, ScopedTypeVariables, TemplateHaskell #-}
 module Databrary.Solr.Index
   ( updateIndex
   ) where
@@ -39,7 +39,7 @@ import Databrary.Model.Asset.Types
 import Databrary.Model.AssetSlot
 import Databrary.Model.AssetSegment.Types
 import Databrary.Model.Excerpt
-import Databrary.Model.RecordCategory.Types
+import Databrary.Model.Category.Types
 import Databrary.Model.Record.Types
 import Databrary.Model.RecordSlot
 import Databrary.Model.Measure
@@ -53,7 +53,7 @@ solrDocId :: forall a . (Kinded a, Show (Id a)) => Id a -> BS.ByteString
 solrDocId i = kindOf (undefined :: a) <> BSC.pack ('_' : show i)
 
 solrParty :: Party -> Maybe Permission -> SolrDocument
-solrParty Party{..} auth = SolrParty
+solrParty Party{ partyRow = PartyRow{..}, ..} auth = SolrParty
   { solrId = solrDocId partyId
   , solrPartyId = partyId
   , solrPartySortName = partySortName
@@ -64,7 +64,7 @@ solrParty Party{..} auth = SolrParty
   }
 
 solrVolume :: Volume -> Maybe Citation -> SolrDocument
-solrVolume Volume{..} cite = SolrVolume
+solrVolume Volume{ volumeRow = VolumeRow{..}, ..} cite = SolrVolume
   { solrId = solrDocId volumeId
   , solrVolumeId = volumeId
   , solrName = Just volumeName
@@ -77,10 +77,10 @@ solrVolume Volume{..} cite = SolrVolume
   (ownerIds, ownerNames) = unzip volumeOwners
 
 solrContainer :: Container -> SolrDocument
-solrContainer c@Container{..} = SolrContainer
+solrContainer c@Container{ containerRow = ContainerRow{..}, ..} = SolrContainer
   { solrId = solrDocId containerId
   , solrContainerId = containerId
-  , solrVolumeId = volumeId containerVolume
+  , solrVolumeId = volumeId $ volumeRow containerVolume
   , solrName = containerName
   , solrContainerTop = containerTop
   , solrContainerDate = getContainerDate c
@@ -88,11 +88,11 @@ solrContainer c@Container{..} = SolrContainer
   }
 
 solrAsset :: AssetSlot -> SolrDocument
-solrAsset as@AssetSlot{ slotAsset = Asset{..}, assetSlot = ~(Just Slot{..}) } = SolrAsset
+solrAsset as@AssetSlot{ slotAsset = Asset{ assetRow = AssetRow{..}, ..}, assetSlot = ~(Just Slot{..}) } = SolrAsset
   { solrId = solrDocId assetId
   , solrAssetId = assetId
-  , solrVolumeId = volumeId assetVolume
-  , solrContainerId = containerId slotContainer
+  , solrVolumeId = volumeId $ volumeRow assetVolume
+  , solrContainerId = containerId $ containerRow slotContainer
   , solrSegment = SolrSegment slotSegment
   , solrSegmentDuration = segmentLength slotSegment
   , solrName = assetSlotName as
@@ -101,27 +101,27 @@ solrAsset as@AssetSlot{ slotAsset = Asset{..}, assetSlot = ~(Just Slot{..}) } = 
   }
 
 solrExcerpt :: Excerpt -> SolrDocument
-solrExcerpt Excerpt{ excerptAsset = AssetSegment{ segmentAsset = AssetSlot{ slotAsset = Asset{..}, assetSlot = ~(Just Slot{ slotContainer = container }) }, assetSegment = seg }, ..} = SolrExcerpt
+solrExcerpt Excerpt{ excerptAsset = AssetSegment{ segmentAsset = AssetSlot{ slotAsset = Asset{ assetRow = AssetRow{..}, ..}, assetSlot = ~(Just Slot{ slotContainer = container }) }, assetSegment = seg }, ..} = SolrExcerpt
   { solrId = BSC.pack $ "excerpt_" <> show assetId
     <> maybe "" (('_':) . show) (lowerBound $ segmentRange seg)
   , solrAssetId = assetId
-  , solrVolumeId = volumeId assetVolume
-  , solrContainerId = containerId container
+  , solrVolumeId = volumeId $ volumeRow assetVolume
+  , solrContainerId = containerId $ containerRow container
   , solrSegment = SolrSegment seg
   , solrSegmentDuration = segmentLength seg
   , solrRelease = assetRelease
   }
 
 solrRecord :: RecordSlot -> SolrDocument
-solrRecord rs@RecordSlot{ slotRecord = r@Record{..}, recordSlot = Slot{..} } = SolrRecord
+solrRecord rs@RecordSlot{ slotRecord = r@Record{ recordRow = RecordRow{..}, ..}, recordSlot = Slot{..} } = SolrRecord
   { solrId = solrDocId recordId
-    <> BSC.pack ('_' : show (containerId slotContainer))
+    <> BSC.pack ('_' : show (containerId $ containerRow slotContainer))
   , solrRecordId = recordId
-  , solrVolumeId = volumeId recordVolume
-  , solrContainerId = containerId slotContainer
+  , solrVolumeId = volumeId $ volumeRow recordVolume
+  , solrContainerId = containerId $ containerRow slotContainer
   , solrSegment = SolrSegment slotSegment
   , solrSegmentDuration = segmentLength slotSegment
-  , solrRecordCategoryId = recordCategoryId recordCategory
+  , solrRecordCategoryId = categoryId recordCategory
   , solrRecordMeasures = SolrRecordMeasures $ map (\m -> (measureMetric m, measureDatum m)) $ getRecordMeasures r
   , solrRecordAge = recordSlotAge rs
   }
@@ -181,7 +181,7 @@ joinContainers :: (a -> Slot -> b) -> [Container] -> [(a, SlotId)] -> [b]
 joinContainers _ _ [] = []
 joinContainers _ [] _ = error "joinContainers"
 joinContainers f cl@(c:cr) al@((a, SlotId ci s):ar)
-  | containerId c == ci = f a (Slot c s) : joinContainers f cl ar
+  | containerId (containerRow c) == ci = f a (Slot c s) : joinContainers f cl ar
   | otherwise = joinContainers f cr al
 
 writeVolume :: (Volume, Maybe Citation) -> SolrM ()
@@ -193,8 +193,8 @@ writeVolume (v, vc) = do
   -- this could be more efficient, but there usually aren't many:
   writeDocuments . map solrExcerpt =<< lookupVolumeExcerpts v
   writeDocuments . map solrRecord . joinContainers RecordSlot cl =<< lookupVolumeRecordSlotIds v
-  writeDocuments . map (solrTagUse (volumeId v)) =<< lookupVolumeTagUseRows v
-  writeDocuments . map (solrComment (volumeId v)) =<< lookupVolumeCommentRows v
+  writeDocuments . map (solrTagUse (volumeId $ volumeRow v)) =<< lookupVolumeTagUseRows v
+  writeDocuments . map (solrComment (volumeId $ volumeRow v)) =<< lookupVolumeCommentRows v
 
 writeAllDocuments :: SolrM ()
 writeAllDocuments = do

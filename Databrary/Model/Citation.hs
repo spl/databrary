@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell, DataKinds #-}
+{-# LANGUAGE TemplateHaskell, ScopedTypeVariables #-}
 module Databrary.Model.Citation
   ( module Databrary.Model.Citation.Types
   , lookupVolumeCitation
@@ -21,7 +21,7 @@ import Databrary.Model.Citation.SQL
 
 lookupVolumeCitation :: (MonadDB c m) => Volume -> m (Maybe Citation)
 lookupVolumeCitation vol =
-  dbQuery1 $ fmap ($ Just (volumeName vol)) $(selectQuery selectVolumeCitation "$WHERE volume_citation.volume = ${volumeId vol}")
+  dbQuery1 $ fmap ($ Just (volumeName $ volumeRow vol)) $(selectQuery selectVolumeCitation "$WHERE volume_citation.volume = ${volumeId $ volumeRow vol}")
 
 lookupVolumesCitations :: (MonadDB c m, MonadHasIdentity c m) => m [(Volume, Maybe Citation)]
 lookupVolumesCitations = do
@@ -30,7 +30,7 @@ lookupVolumesCitations = do
 
 lookupVolumeLinks :: (MonadDB c m) => Volume -> m [Citation]
 lookupVolumeLinks vol =
-  dbQuery $(selectQuery selectVolumeLink "$WHERE volume_link.volume = ${volumeId vol}")
+  dbQuery $(selectQuery selectVolumeLink "$WHERE volume_link.volume = ${volumeId $ volumeRow vol}")
 
 changeVolumeCitation :: (MonadAudit c m) => Volume -> Maybe Citation -> m Bool
 changeVolumeCitation vol citem = do

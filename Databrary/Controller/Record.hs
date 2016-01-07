@@ -24,7 +24,7 @@ import Databrary.Model.Id
 import Databrary.Model.Volume
 import Databrary.Model.Permission
 import Databrary.Model.Record
-import Databrary.Model.RecordCategory
+import Databrary.Model.Category
 import Databrary.Model.RecordSlot
 import Databrary.Model.Metric
 import Databrary.Model.Measure
@@ -48,21 +48,19 @@ viewRecord = action GET (pathAPI </> pathId) $ \(api, i) -> withAuth $ do
   rec <- getRecord PermissionPUBLIC i
   return $ case api of
     JSON -> okResponse [] $ recordJSON rec
-    HTML -> okResponse [] $ T.pack $ show $ recordId rec -- TODO
+    HTML -> okResponse [] $ T.pack $ show $ recordId $ recordRow rec -- TODO
 
 createRecord :: ActionRoute (API, Id Volume)
 createRecord = action POST (pathAPI </> pathId </< "record") $ \(api, vi) -> withAuth $ do
   vol <- getVolume PermissionEDIT vi
   br <- runForm (api == HTML ?> htmlRecordForm vol) $ do
     csrfForm
-    cat <- "category" .:> (deformMaybe' "No such record category." . getRecordCategory =<< deform)
-    return (blankRecord vol)
-      { recordCategory = cat
-      }
+    cat <- "category" .:> (deformMaybe' "No such category" . getCategory =<< deform)
+    return $ blankRecord cat vol
   rec <- addRecord br
   case api of
     JSON -> return $ okResponse [] $ recordJSON rec
-    HTML -> peeks $ otherRouteResponse [] viewRecord (api, recordId rec)
+    HTML -> peeks $ otherRouteResponse [] viewRecord (api, recordId $ recordRow rec)
 
 postRecordMeasure :: ActionRoute (API, Id Record, Id Metric)
 postRecordMeasure = action POST (pathAPI </>> pathId </> pathId) $ \(api, ri, mi) -> withAuth $ do
@@ -80,7 +78,7 @@ postRecordMeasure = action POST (pathAPI </>> pathId </> pathId) $ \(api, ri, mi
         return $ fromMaybe rec r)
   case api of
     JSON -> return $ okResponse [] $ recordJSON rec'
-    HTML -> peeks $ otherRouteResponse [] viewRecord (api, recordId rec')
+    HTML -> peeks $ otherRouteResponse [] viewRecord (api, recordId $ recordRow rec')
 
 deleteRecord :: ActionRoute (API, Id Record)
 deleteRecord = action DELETE (pathAPI </> pathId) $ \(api, ri) -> withAuth $ do
@@ -89,7 +87,7 @@ deleteRecord = action DELETE (pathAPI </> pathId) $ \(api, ri) -> withAuth $ do
   r <- removeRecord rec
   unless r $ result $ case api of
     JSON -> response conflict409 [] (recordJSON rec)
-    HTML -> response conflict409 [] ("This record is still used." :: T.Text)
+    HTML -> response conflict409 [] ("This record is still used" :: T.Text)
   case api of
     JSON -> return $ emptyResponse noContent204 []
     HTML -> peeks $ otherRouteResponse [] viewVolume (api, view rec)
@@ -104,7 +102,7 @@ postRecordSlot = action POST (pathAPI </>> pathSlotId </> pathId) $ \(api, si, r
   r <- moveRecordSlot (RecordSlot rec slot{ slotSegment = fromMaybe emptySegment src }) (slotSegment slot)
   case api of
     HTML | r      -> peeks $ otherRouteResponse [] viewSlot (api, (Just (view slot), slotId slot))
-      | otherwise -> peeks $ otherRouteResponse [] viewRecord (api, recordId rec)
+      | otherwise -> peeks $ otherRouteResponse [] viewRecord (api, recordId $ recordRow rec)
     JSON | r      -> return $ okResponse [] $ recordSlotJSON (RecordSlot rec slot)
       | otherwise -> return $ okResponse [] $ recordJSON rec
 
@@ -115,6 +113,6 @@ deleteRecordSlot = action DELETE (pathAPI </>> pathSlotId </> pathId) $ \(api, s
   rec <- getRecord PermissionEDIT ri
   r <- moveRecordSlot (RecordSlot rec slot) emptySegment
   case api of
-    HTML | r -> peeks $ otherRouteResponse [] viewRecord (api, recordId rec)
+    HTML | r -> peeks $ otherRouteResponse [] viewRecord (api, recordId $ recordRow rec)
     JSON | r -> return $ okResponse [] $ recordJSON rec
     _ -> return $ emptyResponse noContent204 []

@@ -105,4 +105,7 @@ runResult :: IO Response -> IO Response
 runResult = handle (return . resultResponse)
 
 proxyResponse :: HC.Response BSL.ByteString -> Response
-proxyResponse r = responseLBS (HC.responseStatus r) (HC.responseHeaders r) (HC.responseBody r)
+proxyResponse r = responseLBS
+  (HC.responseStatus r)
+  (filter ((/= "transfer-encoding") . fst) $ HC.responseHeaders r)
+  (HC.responseBody r)

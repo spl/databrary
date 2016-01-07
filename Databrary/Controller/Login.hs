@@ -27,7 +27,6 @@ import Databrary.HTTP.Cookie
 import Databrary.HTTP.Form.Deform
 import Databrary.HTTP.Path.Parser
 import Databrary.Action
-import Databrary.Action.Types
 import Databrary.Controller.Paths
 import Databrary.Controller.Form
 import Databrary.Controller.Angular

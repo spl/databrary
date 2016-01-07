@@ -19,13 +19,13 @@ import {-# SOURCE #-} Databrary.Controller.Asset
 
 htmlAssetForm :: Maybe Asset -> FormHtml f
 htmlAssetForm asset = do
-  field "name" $ inputText (assetName =<< asset)
-  field "classification" $ inputEnum True (assetRelease =<< asset)
+  field "name" $ inputText (assetName . assetRow =<< asset)
+  field "classification" $ inputEnum True (assetRelease . assetRow =<< asset)
   field "file" inputFile
   -- TODO
 
 htmlAssetEdit :: AssetTarget -> RequestContext -> FormHtml f
-htmlAssetEdit (AssetTargetVolume v) = htmlForm "Create asset" createAsset     (HTML, volumeId v) (htmlAssetForm Nothing) (const mempty)
-htmlAssetEdit (AssetTargetSlot s)   = htmlForm "Create asset" createSlotAsset (HTML, slotId s) (field "container" (inputHidden $ show $ containerId $ slotContainer s) >> htmlAssetForm Nothing) (const mempty)
-htmlAssetEdit (AssetTargetAsset t)  = htmlForm ("Edit asset " <> fold (assetName a)) postAsset (HTML, assetId a) (htmlAssetForm (Just a)) (const mempty)
+htmlAssetEdit (AssetTargetVolume v) = htmlForm "Create asset" createAsset     (HTML, volumeId $ volumeRow v) (htmlAssetForm Nothing) (const mempty)
+htmlAssetEdit (AssetTargetSlot s)   = htmlForm "Create asset" createSlotAsset (HTML, slotId s) (field "container" (inputHidden $ show $ containerId $ containerRow $ slotContainer s) >> htmlAssetForm Nothing) (const mempty)
+htmlAssetEdit (AssetTargetAsset t)  = htmlForm ("Edit asset " <> fold (assetName $ assetRow a)) postAsset (HTML, assetId $ assetRow a) (htmlAssetForm (Just a)) (const mempty)
   where a = slotAsset t

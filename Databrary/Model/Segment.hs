@@ -37,7 +37,7 @@ lowerBound, upperBound :: Range.Range a -> Maybe a
 lowerBound = Range.bound . Range.lowerBound
 upperBound = Range.bound . Range.upperBound
 
-newtype Segment = Segment { segmentRange :: Range.Range Offset } deriving (Eq, Typeable)
+newtype Segment = Segment { segmentRange :: Range.Range Offset } deriving (Eq, Ord, Typeable)
 
 instance PGType "segment"
 instance Range.PGRangeType "segment" "interval"

@@ -18,7 +18,7 @@ import Databrary.Model.Enum
 import Databrary.Model.Permission.Types
 import Databrary.Model.Release.Types
 import Databrary.Model.Metric
-import Databrary.Model.RecordCategory
+import Databrary.Model.Category
 import Databrary.Model.Format
 import Databrary.Model.Party
 import Databrary.Web.Types
@@ -29,7 +29,7 @@ constantsJSON = JSON.Object $ JSON.object
   [ "permission" JSON..= enumValues PermissionPUBLIC
   , "release" JSON..= enumValues ReleasePUBLIC
   , "metric" JSON..= JSON.recordMap (map metricJSON allMetrics)
-  , "category" JSON..= JSON.recordMap (map recordCategoryJSON allRecordCategories)
+  , "category" JSON..= JSON.recordMap (map categoryJSON allCategories)
   , "format" JSON..= JSON.recordMap (map formatJSON allFormats)
   , "party" JSON..= JSON.object
     [ "nobody" JSON..= partyJSON nobodyParty

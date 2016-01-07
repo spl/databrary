@@ -15,24 +15,39 @@
   border-radius b3
   font-size b2
   padding b3
-  margin-bottom b2
   background-color neutral51
   ul
     padding 0
     margin 0
-  input
-    margin-bottom 0
-    height initial
-    line-height initial
 
 .search-filter
   border-bottom 1px dotted neutral53
   padding-top b3
   padding-bottom b3
+  input-no-spin()
+  
   &:last-of-type
     border-bottom 0
   .icon
     vertical-align text-top
+  input:not(.input-age-input)
+    margin-bottom 0
+    height initial
+    line-height initial
+  div
+    margin-bottom b3
+  .input-age-input
+  .input-age-select
+    height 26px
+    vertical-align top
+  .input-age-input
+    border-top-right-radius 0
+    border-bottom-right-radius 0
+    max-width 2.2
+  .input-age-select
+    border-top-left-radius 0
+    border-bottom-left-radius 0       
+    
 .search-filter-sub
   border-top 1px solid neutral53
   border-bottom 1px solid neutral53
@@ -92,7 +107,6 @@
     
 .search-volume-results
   padding b2 b2 0 b2
-  margin-bottom b2
   ul
     padding-left 0
     
@@ -117,15 +131,14 @@
     width 36px
 
 .search-pages
+  input-no-spin()
   input[type=number]
     max-width 2
     width auto
     padding-top 1px
     border-radius 0
-  input[type=number]::-webkit-inner-spin-button, 
-  input[type=number]::-webkit-outer-spin-button 
-    -webkit-appearance none
-    margin 0 
+    -moz-appearance textfield
+    line-height 31px
   .icon
     top b8
     margin 0 b8

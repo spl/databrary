@@ -45,6 +45,7 @@ import Databrary.HTTP.Path.Parser
 import Databrary.HTTP.Form.Deform
 import Databrary.Action.Route
 import Databrary.Action.Types
+import Databrary.Action.Run
 import Databrary.Action
 import Databrary.Controller.Paths
 import Databrary.Controller.Permission
@@ -60,7 +61,7 @@ getParty (Just p) (TargetParty i) =
 getParty _ mi = do
   u <- accountParty <$> authAccount
   let isme TargetProfile = True
-      isme (TargetParty i) = partyId u == i
+      isme (TargetParty i) = partyId (partyRow u) == i
   unless (isme mi) $ result =<< peeks forbiddenResponse
   return u
 
@@ -122,23 +123,30 @@ processParty api p = do
           deformMaybe' "Unknown or unsupported file format."
           (getFormatByFilename (fileName a))
         return $ Just $ Just (a, f)) =<< deform)
-    return ((fromMaybe blankParty p)
-      { partySortName = name
-      , partyPreName = prename
-      , partyORCID = orcid
-      , partyAffiliation = affiliation
-      , partyURL = url
+    return (bp
+      { partyRow = (partyRow bp)
+        { partySortName = name
+        , partyPreName = prename
+        , partyORCID = orcid
+        , partyAffiliation = affiliation
+        , partyURL = url
+        }
       }, avatar)
   a' <- forM a $ mapM $ \(af, fmt) -> do
-    a' <- addAsset (blankAsset coreVolume)
-      { assetFormat = fmt
-      , assetRelease = Just ReleasePUBLIC
-      , assetName = Just $ TE.decodeUtf8 $ fileName af
+    let ba = blankAsset coreVolume
+    a' <- addAsset ba
+      { assetRow = (assetRow ba)
+        { assetFormat = fmt
+        , assetRelease = Just ReleasePUBLIC
+        , assetName = Just $ TE.decodeUtf8 $ fileName af
+        }
       } $ Just $ tempFilePath (fileContent af)
     focusIO $ releaseTempFile $ fileContent af
     return a'
   return (p', a')
-  where maxAvatarSize = 10*1024*1024
+  where
+  maxAvatarSize = 10*1024*1024
+  bp = fromMaybe blankParty p
 
 viewPartyEdit :: ActionRoute PartyTarget
 viewPartyEdit = action GET (pathHTML >/> pathPartyTarget </< "edit") $ \i -> withAuth $ do
@@ -169,7 +177,7 @@ createParty = multipartAction $ action POST (pathAPI </< "party") $ \api -> with
   mapM_ (changeAvatar p) a
   case api of
     JSON -> return $ okResponse [] $ partyJSON p
-    HTML -> peeks $ otherRouteResponse [] viewParty (api, TargetParty $ partyId p)
+    HTML -> peeks $ otherRouteResponse [] viewParty (api, TargetParty $ partyId $ partyRow p)
 
 deleteParty :: ActionRoute (Id Party)
 deleteParty = action POST (pathHTML >/> pathId </< "delete") $ \i -> withAuth $ do
@@ -177,8 +185,8 @@ deleteParty = action POST (pathHTML >/> pathId </< "delete") $ \i -> withAuth $ 
   p <- getParty (Just PermissionADMIN) (TargetParty i)
   r <- removeParty p
   return $ if r
-    then okResponse [] $ partyName p <> " deleted"
-    else response badRequest400 [] $ partyName p <> " not deleted"
+    then okResponse [] $ partyName (partyRow p) <> " deleted"
+    else response badRequest400 [] $ partyName (partyRow p) <> " not deleted"
 
 viewPartyDelete :: ActionRoute (Id Party)
 viewPartyDelete = action GET (pathHTML >/> pathId </< "delete") $ \i -> withAuth $ do

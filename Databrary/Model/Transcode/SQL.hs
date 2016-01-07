@@ -19,30 +19,42 @@ import Databrary.Model.Volume.SQL
 import Databrary.Model.Asset.Types
 import Databrary.Model.Asset.SQL
 import Databrary.Model.Segment
+import Databrary.Model.AssetRevision.Types
 import Databrary.Model.Transcode.Types
 
-makeOrigTranscode :: Segment -> [Maybe String] -> Maybe Timestamp -> Maybe Int32 -> Maybe BS.ByteString -> SiteAuth -> (Volume -> Asset) -> Asset -> Transcode
-makeOrigTranscode s f t p l u a o =
-  Transcode (a $ assetVolume o) u o s (map (fromMaybe (error "NULL transcode options")) f) t p l
+makeTranscodeRow :: Segment -> [Maybe String] -> Maybe Timestamp -> Maybe Int32 -> Maybe BS.ByteString -> SiteAuth -> AssetRevision -> Transcode
+makeTranscodeRow s f t p l u a =
+  Transcode a u s (map (fromMaybe (error "NULL transcode options")) f) t p l
 
-selectOrigTranscode :: Selector -- ^ @'Asset' -> 'Transcode'@
-selectOrigTranscode = selectJoin 'id
-  [ selectColumns 'makeOrigTranscode "transcode" ["segment", "options", "start", "process", "log"]
+selectTranscodeRow :: Selector -- ^ @'SiteAuth' -> 'Asset' -> 'Asset' -> 'Transcode'@
+selectTranscodeRow = selectColumns 'makeTranscodeRow "transcode" ["segment", "options", "start", "process", "log"]
+
+selectAssetRevisionTranscode :: Selector -- ^ @'AssetRevision' -> 'Transcode'@
+selectAssetRevisionTranscode = selectJoin '($)
+  [ selectTranscodeRow
   , joinOn "transcode.owner = party.id"
     selectSiteAuth
-  , joinOn "transcode.asset = asset.id"
-    selectVolumeAsset
   ]
 
-makeTranscode :: (Asset -> Transcode) -> (Volume -> Asset) -> (Permission -> Volume) -> Transcode
-makeTranscode t o vp = t $ o $ vp PermissionADMIN
+makeOrigTranscode :: (AssetRevision -> Transcode) -> AssetRow -> Asset -> Transcode
+makeOrigTranscode f a o = f $ AssetRevision (Asset a $ assetVolume o) o
+
+selectOrigTranscode :: Selector -- ^ @'Asset' -> 'Transcode'@
+selectOrigTranscode = selectJoin 'makeOrigTranscode
+  [ selectAssetRevisionTranscode
+  , joinOn "transcode.asset = asset.id"
+    selectAssetRow
+  ]
+
+makeTranscode :: (Asset -> Transcode) -> AssetRow -> (Permission -> Volume) -> Transcode
+makeTranscode t o vp = t $ Asset o $ vp PermissionADMIN
 
 selectTranscode :: Selector -- ^ @'Transcode'@
 selectTranscode = selectJoin 'makeTranscode
   [ selectOrigTranscode
   , joinOn "transcode.orig = orig.id"
-    $ selectVolumeAsset `fromAlias` "orig"
+    $ selectAssetRow `fromAlias` "orig"
   , selectMap (`TH.AppE` TH.ListE [])
     $ joinOn "asset.volume = volume.id AND orig.volume = volume.id"
-      volumeRow
+      selectPermissionVolume
   ]

@@ -19,6 +19,7 @@ app.directive 'inputCompleter', [
       post: ($scope, $element, $attrs) ->
         input = $element[0].firstChild
         # this doesn't happen early enough with normal angular binding:
+        input.setAttribute('id', $attrs.inputId) if $attrs.inputId
         input.setAttribute('name', $attrs.inputName)
         min = 3 unless isFinite(min = parseInt($attrs.min))
         sent = resend = undefined

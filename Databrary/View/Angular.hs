@@ -15,6 +15,7 @@ import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as HA
 
 import Databrary.Has (view)
+import Databrary.Service.Types
 import Databrary.Model.Identity
 import Databrary.Action.Types
 import Databrary.Web (WebFilePath, webFileRelRaw)
@@ -58,6 +59,9 @@ htmlAngular debug nojs auth = H.docTypeHtml H.! ngAttribute "app" "databraryModu
     H.script $ do
       H.preEscapedString "window.$play={user:"
       H.unsafeLazyByteString $ JSON.encode $ identityJSON (view auth)
+      forM_ (serviceDown (view auth)) $ \msg -> do
+        H.preEscapedString ",down:"
+        H.unsafeLazyByteString $ JSON.encode msg
       H.preEscapedString "};"
     forM_ (maybe ["all.min.js"] ((webDeps True ++) . ("debug.js" :)) debug) $ \js ->
       H.script

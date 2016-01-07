@@ -13,13 +13,11 @@ Build-type:          Custom
 Cabal-version:       >=1.22
 
 data-files:
-  databrary.conf,
   messages.conf,
   schema/*.sql,
   transctl.sh,
   transcode,
   volume.json,
-  web/constants.json,
   web/all.min.css,
   web/all.min.css.gz,
   web/all.min.js,
@@ -51,10 +49,6 @@ Source-Repository head
   Type:	git
   Location: https://github.com/databrary/databrary
 
-Flag tls
-  description: Enable TLS/SSL https connections
-  default: True
-
 Flag devel
   description: Enable development mode
   default: False
@@ -84,7 +78,7 @@ Executable schemabrary
     parsec >= 3,
     resource-pool,
     network,
-    postgresql-typed == 0.4.1
+    postgresql-typed
 
 Executable databrary
   main-is: Databrary/Main.hs
@@ -95,6 +89,7 @@ Executable databrary
     base == 4.8.*,
     bytestring >= 0.10,
     containers,
+    array,
     transformers == 0.4.*,
     transformers-base,
     mtl >= 2.2.1,
@@ -123,13 +118,14 @@ Executable databrary
     wai,
     wai-extra,
     warp,
+    warp-tls,
     case-insensitive,
     aeson,
     vector,
     cookie,
     resource-pool,
     scientific,
-    postgresql-typed == 0.4.1,
+    postgresql-typed == 0.4.2.2,
     memory >= 0.8,
     cryptonite,
     resourcet,
@@ -147,10 +143,8 @@ Executable databrary
     hjsonschema,
     aeson-better-errors > 0.9.0,
     xml,
-    zlib
-
-  if flag(tls)
-    Build-depends: warp-tls
+    zlib,
+    range-set-list
 
   default-language: Haskell2010
   default-extensions: MultiParamTypeClasses, FlexibleContexts, FlexibleInstances, ScopedTypeVariables, ConstraintKinds, PatternGuards

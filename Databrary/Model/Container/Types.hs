@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings, TemplateHaskell, TypeFamilies #-}
 module Databrary.Model.Container.Types
-  ( Container(..)
-  , MonadHasContainer
+  ( ContainerRow(..)
+  , Container(..)
   ) where
 
 import qualified Data.Text as T
@@ -15,11 +15,15 @@ import Databrary.Model.Volume.Types
 
 type instance IdType Container = Int32
 
-data Container = Container
+data ContainerRow = ContainerRow
   { containerId :: Id Container
   , containerTop :: Bool
   , containerName :: Maybe T.Text
   , containerDate :: Maybe Date
+  }
+
+data Container = Container
+  { containerRow :: !ContainerRow
   , containerRelease :: Maybe Release
   , containerVolume :: Volume
   }
@@ -27,4 +31,5 @@ data Container = Container
 instance Kinded Container where
   kindOf _ = "container"
 
-makeHasRec ''Container ['containerId, 'containerRelease, 'containerVolume]
+makeHasRec ''ContainerRow ['containerId]
+makeHasRec ''Container ['containerRow, 'containerRelease, 'containerVolume]

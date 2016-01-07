@@ -34,12 +34,13 @@ import Databrary.Controller.Zip
 import Databrary.Controller.Tag
 import Databrary.Controller.Comment
 import Databrary.Controller.CSV
+import Databrary.Controller.VolumeState
 import Databrary.Controller.Search
-import Databrary.Controller.Audit
+import Databrary.Controller.Activity
 import Databrary.Web.Routes
 
-jsRoutes :: B.Builder
-jsRoutes = mconcat
+jsRoutes :: [B.Builder] -- should be mconcat, but BSB bug causes hangs
+jsRoutes =
   [ jsRoute "viewRoot" viewRoot (HTML)
   , jsRoute "viewLogin" viewLogin ()
   , jsRoute "viewRegister" viewRegister ()
@@ -51,6 +52,7 @@ jsRoutes = mconcat
   , jsRoute "viewPartyEdit" viewPartyEdit (TargetParty party)
   , jsRoute "viewPartySearch" queryParties (HTML)
   , jsRoute "partyAvatar" viewAvatar (party)
+  , jsRoute "viewPartyActivity" viewPartyActivity (HTML, TargetParty party)
 
   , jsRoute "viewVolume" viewVolume (HTML, volume)
   , jsRoute "viewVolumeCreate" viewVolumeCreate ()
@@ -58,9 +60,11 @@ jsRoutes = mconcat
   , jsRoute "viewVolumeSearch" queryVolumes (HTML)
   , jsRoute "thumbVolume" thumbVolume (volume)
   , jsRoute "csvVolume" csvVolume (volume)
+  , jsRoute "viewVolumeActivity" viewVolumeActivity (HTML, volume)
 
   , jsRoute "viewSlot" viewSlot (HTML, (Just volume, slot))
   , jsRoute "viewSlotEdit" viewContainerEdit (Just volume, container)
+  , jsRoute "viewSlotActivity" viewContainerActivity (HTML, (Just volume, container))
   , jsRoute "thumbSlot" thumbSlot (Just volume, slot)
 
   , jsRoute "viewRecord" viewRecord (HTML, record)
@@ -69,6 +73,8 @@ jsRoutes = mconcat
   , jsRoute "viewAssetSegment" viewAssetSegment (HTML, Just volume, slot, asset)
   , jsRoute "downloadAssetSegment" downloadAssetSegment (slot, asset)
   , jsRoute "thumbAssetSegment" thumbAssetSegment (slot, asset)
+  , jsRoute "downloadAsset" downloadAsset (asset, fullSegment)
+  , jsRoute "thumbAsset" thumbAsset (asset, fullSegment)
 
   , jsRoute "viewSearch" postSearch (HTML)
 
@@ -90,6 +96,7 @@ jsRoutes = mconcat
   , jsRoute "getProfile" viewParty (JSON, TargetProfile)
   , jsRoute "postParty" postParty (JSON, TargetParty party)
   , jsRoute "getParties" queryParties (JSON)
+  , jsRoute "getPartyActivity" viewPartyActivity (JSON, TargetParty party)
 
   , jsRoute "postAuthorizeApply" postAuthorize (JSON, TargetParty party, AuthorizeTarget True party)
   , jsRoute "postAuthorize" postAuthorize (JSON, TargetParty party, AuthorizeTarget False party)
@@ -105,6 +112,7 @@ jsRoutes = mconcat
   , jsRoute "postVolumeFunding" postVolumeFunding (volume, funder)
   , jsRoute "postVolumeLinks" postVolumeLinks (JSON, volume)
   , jsRoute "deleteVolumeFunder" deleteVolumeFunder (volume, funder)
+  , jsRoute "getVolumeActivity" viewVolumeActivity (JSON, volume)
 
   , jsRoute "postSearch" postSearch (JSON)
   , jsRoute "getFunders" queryFunder ()
@@ -114,6 +122,7 @@ jsRoutes = mconcat
   , jsRoute "postContainer" postContainer (JSON, container)
   , jsRoute "deleteContainer" deleteContainer (JSON, container)
   , jsRoute "createContainer" createContainer (JSON, volume)
+  , jsRoute "getContainerActivity" viewContainerActivity (JSON, (Nothing, container))
 
   , jsRoute "getRecord" viewRecord (JSON, record)
   , jsRoute "createRecord" createRecord (JSON, volume)
@@ -121,10 +130,12 @@ jsRoutes = mconcat
   , jsRoute "postRecordMeasure" postRecordMeasure (JSON, record, metric)
   , jsRoute "postRecordSlot" postRecordSlot (JSON, slot, record)
 
-  , jsRoute "addVolumeMetric" postVolumeMetric (volume, (category, Just metric))
-  , jsRoute "addVolumeCategory" postVolumeMetric (volume, (category, Nothing))
-  , jsRoute "deleteVolumeMetric" deleteVolumeMetric (volume, (category, Just metric))
-  , jsRoute "deleteVolumeCategory" deleteVolumeMetric (volume, (category, Nothing))
+  , jsRoute "addVolumeMetric" postVolumeMetric (volume, Right metric)
+  , jsRoute "addVolumeCategory" postVolumeMetric (volume, Left category)
+  , jsRoute "deleteVolumeMetric" deleteVolumeMetric (volume, Right metric)
+  , jsRoute "deleteVolumeCategory" deleteVolumeMetric (volume, Left category)
+  , jsRoute "postVolumeState" postVolumeState (volume, "")
+  , jsRoute "deleteVolumeState" deleteVolumeState (volume, "")
 
   , jsRoute "getAsset" viewAsset (JSON, asset)
   , jsRoute "getAssetSegment" viewAssetSegment (JSON, Just volume, slot, asset)
@@ -143,7 +154,7 @@ jsRoutes = mconcat
   , jsRoute "deleteTag" deleteTag (JSON, slot, TagId False tag)
   , jsRoute "deleteKeyword" deleteTag (JSON, slot, TagId True tag)
   , jsRoute "getTopTags" queryTags Nothing
-  , jsRoute "getActivity" viewActivity ()
+  , jsRoute "getSiteActivity" viewSiteActivity (JSON)
   ] where
   token = Id ""
   party = Id 0

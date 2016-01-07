@@ -10,13 +10,13 @@
   </scroll-float>
   <fieldset ng-if="::!volume">
     <validator name="owner" label="volume.owner">
-      <select name="owner" ng-model="volumeEditOverviewForm.data.owner" ng-options="p.id as p.name for p in ::owners"/>
+      <select name="owner" ng-model="volumeEditOverviewForm.data.owner" ng-options="p.id as p.name for p in ::owners track by p.id||p"/>
     </validator>
   </fieldset>
   <fieldset>
     <div>Does this volume correspond to a published paper or resource?</div>
     <label class="line-option">
-      <input type="radio" name="published" ng-model="volumeEditOverviewForm.data.published" ng-value="true" required>Yes
+      <input id="citation" type="radio" name="published" ng-model="volumeEditOverviewForm.data.published" ng-value="true" required>Yes
     </label>
     <label class="line-option">
       <input type="radio" name="published" ng-model="volumeEditOverviewForm.data.published" ng-value="false" required>No
@@ -33,12 +33,12 @@
   <fieldset class="skinny" ng-if="volumeEditOverviewForm.data.published !== undefined">
     <!-- title -->
     <validator name="name" label="volume.name" required>
-      <input type="text" name="name" ng-model="volumeEditOverviewForm.data.name" placeholder="{{::'volume.edit.name.placeholder' | message}}" required>
+      <input type="text" name="name" ng-model="volumeEditOverviewForm.data.name" placeholder="Title" required>
     </validator>
     <!-- citation -->
     <div ng-if="volumeEditOverviewForm.data.published===true">
       <validator name="citation.head" label="citation.head">
-        <input type="text" name="citation.head" ng-model="volumeEditOverviewForm.data.citation.head" placeholder="{{::'volume.edit.citation.head.placeholder' | message}}">
+        <input type="text" name="citation.head" ng-model="volumeEditOverviewForm.data.citation.head" placeholder="Last, F. (2014). Title...">
       </validator>
     <!-- year -->
       <validator name="citation.year" label="citation.year">
@@ -47,11 +47,11 @@
     </div>
     <!-- description and alias -->
     <validator name="body" label="volume.body" noclientval>
-      <textarea name="body" ng-model="volumeEditOverviewForm.data.body" placeholder="{{::'volume.edit.body.placeholder' | message}}"></textarea>
+      <textarea id="body" name="body" ng-model="volumeEditOverviewForm.data.body"></textarea>
     </validator>
 
     <validator name="alias" label="volume.alias">
-      <input type="text" name="alias" ng-model="volumeEditOverviewForm.data.alias" placeholder="{{::'volume.edit.alias.placeholder' | message}}">
+      <input type="text" name="alias" ng-model="volumeEditOverviewForm.data.alias">
     </validator>
   </fieldset>
 

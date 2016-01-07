@@ -27,7 +27,7 @@ maxAssetSize :: Word64
 maxAssetSize = 128*1024*1024*1024
 
 assetFile :: Asset -> Maybe RawFilePath
-assetFile = fmap sf . BS.uncons <=< assetSHA1 where
+assetFile = fmap sf . BS.uncons <=< assetSHA1 . assetRow where
   sf (h,t) = bs (BSB.word8HexFixed h) </> bs (BSB.byteStringHex t)
   bs = BSL.toStrict . BSB.toLazyByteString
 
@@ -49,13 +49,13 @@ getAssetFile a = do
   mapM (liftIO . mf (storageFallback s)) $ assetFile a
 
 storeAssetFile :: MonadStorage c m => Asset -> RawFilePath -> m Asset
-storeAssetFile ba fp = peeks storageMaster >>= \sm -> liftIO $ do
-  size <- (fromIntegral . fileSize              <$> getFileStatus fp) `fromMaybeM` assetSize ba
-  sha1 <- ((convert :: Digest SHA1 -> BS.ByteString) <$> hashFile fp) `fromMaybeM` assetSHA1 ba
-  let a = ba
+storeAssetFile ba@Asset{ assetRow = bar } fp = peeks storageMaster >>= \sm -> liftIO $ do
+  size <- (fromIntegral . fileSize              <$> getFileStatus fp) `fromMaybeM` assetSize bar
+  sha1 <- ((convert :: Digest SHA1 -> BS.ByteString) <$> hashFile fp) `fromMaybeM` assetSHA1 bar
+  let a = ba{ assetRow = bar
         { assetSize = Just size
         , assetSHA1 = Just sha1
-        }
+        } }
       Just af = assetFile a
       as = sm </> af
   ase <- fileExist as

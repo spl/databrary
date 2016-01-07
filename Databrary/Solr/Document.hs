@@ -28,7 +28,7 @@ import Databrary.Model.Asset.Types
 import Databrary.Model.Time
 import Databrary.Model.Age
 import Databrary.Model.Record.Types
-import Databrary.Model.RecordCategory.Types
+import Databrary.Model.Category.Types
 import Databrary.Model.Metric
 import Databrary.Model.Tag.Types
 import Databrary.Model.Comment.Types
@@ -125,7 +125,7 @@ data SolrDocument
     , solrSegment :: SolrSegment
     , solrSegmentDuration :: Maybe Offset
     , solrRecordId :: Id Record
-    , solrRecordCategoryId :: Id RecordCategory
+    , solrRecordCategoryId :: Id Category
     , solrRecordMeasures :: SolrRecordMeasures
     , solrRecordAge :: Maybe Age
     }

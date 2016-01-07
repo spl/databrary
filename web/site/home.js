@@ -6,6 +6,7 @@ app.controller('site/home', [
     display.title = constants.message('welcome.title');
     $scope.volume = volume;
     $scope.tags = tags;
-    $scope.activity = activity;
+    $scope.activity = activity.activity;
+    $scope.stats = activity.stats;
   }
 ]);

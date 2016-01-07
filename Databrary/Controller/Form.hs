@@ -29,7 +29,7 @@ import Network.HTTP.Types (badRequest400)
 import qualified Text.Blaze.Html5 as Html
 import qualified Text.Regex.Posix as Regex
 
-import Databrary.Has (peeks)
+import Databrary.Has
 import Databrary.Model.Paginate
 import Databrary.Model.Party
 import Databrary.Model.Identity
@@ -90,7 +90,7 @@ passwordForm acct = do
   p <- "once" .:> do
     p <- deform
     deformGuard "Password too short. Must be 7 characters." (7 <= BS.length p)
-    c <- lift $ passwdCheck p (accountEmail acct) (TE.encodeUtf8 $ partyName $ accountParty acct)
+    c <- lift $ focusIO $ passwdCheck p (accountEmail acct) (TE.encodeUtf8 $ partyName $ partyRow $ accountParty acct)
     mapM_ (deformError . ("Insecure password: " <>) . TE.decodeLatin1) c
     return p
   "again" .:> do

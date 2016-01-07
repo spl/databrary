@@ -14,7 +14,8 @@ import Instances.TH.Lift ()
 import Language.Haskell.TH.Lift (deriveLift)
 import qualified Network.URI as URI
 import qualified Text.ParserCombinators.ReadP as RP
-import Text.Read (Read(readPrec), lift)
+import qualified Text.ParserCombinators.ReadPrec as RP (lift)
+import Text.Read (Read(readPrec))
 
 newtype ORCID = ORCID { orcid :: BSC.ByteString }
 
@@ -38,7 +39,7 @@ instance Show ORCID where
     group r = r
 
 instance Read ORCID where
-  readPrec = lift $ do
+  readPrec = RP.lift $ do
     RP.skipSpaces
     RP.optional $ RP.string "http://"
     RP.optional $ RP.string "orcid.org/"

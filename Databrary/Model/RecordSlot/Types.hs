@@ -14,7 +14,7 @@ import Databrary.Model.Segment
 import Databrary.Model.Volume.Types
 import Databrary.Model.Container.Types
 import Databrary.Model.Record.Types
-import Databrary.Model.RecordCategory.Types
+import Databrary.Model.Category.Types
 import Databrary.Model.Slot.Types
 
 data RecordSlotId = RecordSlotId
@@ -30,15 +30,15 @@ data RecordSlot = RecordSlot
   }
 
 recordSlotId :: RecordSlot -> Id RecordSlot
-recordSlotId (RecordSlot r s) = Id $ RecordSlotId (recordId r) (slotId s)
+recordSlotId (RecordSlot r s) = Id $ RecordSlotId (recordId $ recordRow r) (slotId s)
 
 instance Has Record RecordSlot where
   view = slotRecord
 instance Has (Id Record) RecordSlot where
   view = view . slotRecord
-instance Has RecordCategory RecordSlot where
+instance Has Category RecordSlot where
   view = view . slotRecord
-instance Has (Id RecordCategory) RecordSlot where
+instance Has (Id Category) RecordSlot where
   view = view . slotRecord
 instance Has Volume RecordSlot where
   view = view . slotRecord

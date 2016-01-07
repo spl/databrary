@@ -1,4 +1,4 @@
-{-# LANGUAGE CPP, OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings #-}
 module Databrary.Warp
   ( runWarp
   ) where
@@ -10,9 +10,7 @@ import Data.Time (getCurrentTime)
 import Data.Version (showVersion)
 import qualified Network.Wai as Wai
 import qualified Network.Wai.Handler.Warp as Warp
-#ifdef VERSION_warp_tls
 import qualified Network.Wai.Handler.WarpTLS as WarpTLS
-#endif
 
 import Paths_databrary (version)
 import qualified Databrary.Store.Config as C
@@ -29,11 +27,10 @@ runWarp conf rc app =
       t <- getCurrentTime
       msg <- mapM (\q -> requestLog t q Nothing $ Warp.exceptionResponseForDebug e) req
       logMsg t (maybe id (\m -> (<>) (m <> "\n")) msg $ toLogStr $ show e) (serviceLogs rc))
+    $ Warp.setHTTP2Disabled
     $ Warp.defaultSettings)
     app
   where
   certs c = C.config c <|> return <$> C.config c
-#ifdef VERSION_warp_tls
   run (Just k) (Just (cert:chain)) = WarpTLS.runTLS (WarpTLS.tlsSettingsChain cert chain k)
-#endif
   run _ _ = Warp.runSettings

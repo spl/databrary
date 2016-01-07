@@ -65,7 +65,7 @@ authorizeAddr = return . Left . staticAuthorizeAddr
 postAuthorize :: ActionRoute (API, PartyTarget, AuthorizeTarget)
 postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarget) $ \arg@(api, i, AuthorizeTarget app oi) -> withAuth $ do
   p <- getParty (Just PermissionADMIN) i
-  o <- maybeAction . mfilter ((0 <) . unId . partyId) =<< lookupParty oi
+  o <- maybeAction . mfilter ((0 <) . unId . partyId . partyRow) =<< lookupParty oi
   let (child, parent) = if app then (p, o) else (o, p)
   c <- lookupAuthorize child parent
   let c' = Authorize (Authorization mempty child parent) Nothing `fromMaybe` c
@@ -78,10 +78,10 @@ postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarge
         agent <- peeks $ fmap accountEmail . partyAccount
         req <- peek
         sendMail (map Right dl ++ authaddr)
-          ("Databrary authorization request from " <> partyName child)
-          $ BSL.fromChunks [TE.encodeUtf8 (partyName child), " <", fold agent, "> has requested to be authorized by ", TE.encodeUtf8 (partyName parent), ". \
+          ("Databrary authorization request from " <> partyName (partyRow child))
+          $ BSL.fromChunks [TE.encodeUtf8 (partyName $ partyRow child), " <", fold agent, "> has requested to be authorized by ", TE.encodeUtf8 (partyName $ partyRow parent), ". \
             \To approve or reject this authorization request, go to:\n\n" ] <>
-            BSB.toLazyByteString (actionURL (Just req) viewPartyEdit (TargetParty $ partyId parent) [("page", Just "grant")]) <> "#auth-" <> BSLC.pack (show $ partyId child) <> "\n\n\
+            BSB.toLazyByteString (actionURL (Just req) viewPartyEdit (TargetParty $ partyId $ partyRow parent) [("page", Just "grant")]) <> "#auth-" <> BSLC.pack (show $ partyId $ partyRow child) <> "\n\n\
             \Find more information about authorizing and managing affiliates here: \
             \http://databrary.org/access/guide/investigators/authorization/affiliates.html\n"
       return $ Just $ fromMaybe c' c
@@ -104,8 +104,8 @@ postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarge
         sendMail (maybe id (:) (Right <$> partyAccount child) authaddr)
           "Databrary authorization approved"
           $ BSL.fromChunks
-          [ "Dear ", TE.encodeUtf8 (partyName child), ",\n\n\
-            \You have been authorized by ", TE.encodeUtf8 (partyName parent), ", allowing you to access all the shared data in Databrary. \
+          [ "Dear ", TE.encodeUtf8 (partyName $ partyRow child), ",\n\n\
+            \You have been authorized by ", TE.encodeUtf8 (partyName $ partyRow parent), ", allowing you to access all the shared data in Databrary. \
             \As you begin exploring, you can find illustrative videos for teaching, see how to conduct procedures, generate citations to your work, preserve data, and repurpose shared videos to ask new questions outside the scope of the original study.\
             \\n\n\
             \Databrary's unique video data management functionality also enables you to manage, organize, and preserve your videos and associated metadata in a secure web-based library. \
@@ -139,7 +139,7 @@ deleteAuthorize = action DELETE (pathAPI </>> pathPartyTarget </> pathAuthorizeT
     HTML -> peeks $ otherRouteResponse [] viewAuthorize arg
 
 postAuthorizeNotFound :: ActionRoute (PartyTarget)
-postAuthorizeNotFound = action POST (pathJSON >/> pathPartyTarget </< "notfound") $ \i -> withAuth $ do
+postAuthorizeNotFound = action POST (pathJSON </> pathPartyTarget </< "notfound") $ \i -> withAuth $ do
   p <- getParty (Just PermissionADMIN) i
   agent <- peeks $ fmap accountEmail . partyAccount
   (name, info) <- runForm Nothing $ liftM2 (,)
@@ -147,6 +147,6 @@ postAuthorizeNotFound = action POST (pathJSON >/> pathPartyTarget </< "notfound"
     ("info" .:> deformNonEmpty deform)
   authaddr <- peeks authorizeAddr
   sendMail authaddr
-    ("Databrary authorization request from " <> partyName p)
-    $ BSL.fromChunks [TE.encodeUtf8 (partyName p), " <", fold agent, "> has requested to be authorized by ", TE.encodeUtf8 name, maybe "" (\it -> " (" <> TE.encodeUtf8 it <> ")") info, ".\n"]
+    ("Databrary authorization request from " <> partyName (partyRow p))
+    $ BSL.fromChunks [TE.encodeUtf8 (partyName $ partyRow p), " <", fold agent, "> has requested to be authorized by ", TE.encodeUtf8 name, maybe "" (\it -> " (" <> TE.encodeUtf8 it <> ")") info, ".\n"]
   return $ emptyResponse noContent204 []

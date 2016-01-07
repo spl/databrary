@@ -16,8 +16,8 @@ import {-# SOURCE #-} Databrary.Controller.Authorize
 
 htmlAuthorizeForm :: Authorize -> RequestContext -> FormHtml f
 htmlAuthorizeForm a = htmlForm
-  ("Authorize " `T.append` partyName child)
-  postAuthorize (HTML, TargetParty (partyId parent), AuthorizeTarget False (partyId child))
+  ("Authorize " `T.append` partyName (partyRow child))
+  postAuthorize (HTML, TargetParty $ partyId $ partyRow parent, AuthorizeTarget False $ partyId $ partyRow child)
   (do
     field "site" $ inputEnum True $ Just $ accessSite a
     field "member" $ inputEnum True $ Just $ accessMember a

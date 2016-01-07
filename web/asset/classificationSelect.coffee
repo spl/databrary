@@ -9,8 +9,10 @@ app.directive 'classificationSelect', [
       value: '=ngModel'
       name: '@'
       defaultFn: '&default'
+      forceFn: '&force'
     link: ($scope) ->
       def = ($scope.defaultFn() || 0)+''
+      $scope.force = $scope.forceFn()
       $scope.releases = constants.release.map (l) ->
         constants.message('release.'+l+'.title') + ': ' + constants.message('release.'+l+'.select')
       $scope.form = Object.defineProperties {},

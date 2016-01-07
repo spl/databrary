@@ -73,6 +73,7 @@ INSERT INTO "party" VALUES (-1, 'Everybody'); -- NOBODY
 INSERT INTO "party" VALUES (0, 'Databrary'); -- ROOT
 
 SELECT audit.CREATE_TABLE ('party');
+CREATE INDEX "party_activity_idx" ON audit."party" ("id") WHERE "audit_action" >= 'add';
 
 
 CREATE TABLE "account" (
@@ -88,6 +89,7 @@ COMMENT ON TABLE "account" IS 'Login information for parties associated with reg
 SELECT audit.CREATE_TABLE ('account');
 CREATE INDEX "audit_login_idx" ON audit."account" ("id", "audit_time") WHERE "audit_action" IN ('attempt', 'open');
 COMMENT ON INDEX audit."audit_login_idx" IS 'Allow efficient determination of recent login attempts for security.';
+CREATE INDEX "account_id_idx" ON audit."account" ("id");
 
 ----------------------------------------------------------- permissions
 
@@ -148,6 +150,7 @@ COMMENT ON COLUMN "authorize"."member" IS 'Level of permission granted to the ch
 
 SELECT audit.CREATE_TABLE ('authorize');
 CREATE INDEX "authorize_activity_idx" ON audit."authorize" ("audit_time" DESC) WHERE "audit_action" IN ('add', 'change') AND "site" > 'NONE';
+CREATE INDEX "authorize_parent_activity_idx" ON audit."authorize" ("parent") WHERE "audit_action" >= 'add';
 
 CREATE MATERIALIZED VIEW "authorize_inherit" AS
 	WITH RECURSIVE aa AS (
@@ -204,6 +207,7 @@ SELECT audit.CREATE_TABLE ('volume');
 ALTER TABLE audit."volume" ALTER "name" DROP NOT NULL;
 CREATE INDEX "volume_creation_idx" ON audit."volume" ("id") WHERE "audit_action" = 'add';
 COMMENT ON INDEX audit."volume_creation_idx" IS 'Allow efficient retrieval of volume creation information, specifically date.';
+CREATE INDEX "volume_activity_idx" ON audit."volume" ("id") WHERE "audit_action" >= 'add';
 
 CREATE FUNCTION "volume_creation" ("volume" integer) RETURNS timestamptz LANGUAGE sql STABLE STRICT AS
 	$$ SELECT max("audit_time") FROM audit."volume" WHERE "id" = $1 AND "audit_action" = 'add' $$;
@@ -221,6 +225,7 @@ COMMENT ON TABLE "volume_access" IS 'Permissions over volumes assigned to users.
 
 SELECT audit.CREATE_TABLE ('volume_access');
 CREATE INDEX "volume_share_activity_idx" ON audit."volume_access" ("audit_time" DESC) WHERE "audit_action" = 'add' AND "party" = 0 AND "children" > 'NONE';
+CREATE INDEX "volume_access_activity_idx" ON audit."volume_access" ("volume") WHERE "audit_action" >= 'add';
 
 CREATE VIEW "volume_access_view" ("volume", "party", "access") AS
 	SELECT volume, party, individual FROM volume_access
@@ -371,6 +376,7 @@ CREATE INDEX "container_top_idx" ON "container" ("volume") WHERE "top";
 COMMENT ON TABLE "container" IS 'Organizational unit within volume containing related files (with common annotations), often corresponding to an individual data session (single visit/acquisition/participant/group/day).';
 
 SELECT audit.CREATE_TABLE ('container');
+CREATE INDEX "container_activity_idx" ON audit."container" ("id") WHERE "audit_action" >= 'add';
 
 CREATE FUNCTION "container_top_create" () RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN
 	INSERT INTO container (volume, top) VALUES (NEW.id, true);
@@ -403,6 +409,7 @@ CREATE TABLE "slot_release" (
 COMMENT ON TABLE "slot_release" IS 'Sharing/release permissions granted by participants on (portions of) contained data.';
 
 SELECT audit.CREATE_TABLE ('slot_release', 'slot');
+CREATE INDEX "slot_release_activity_idx" ON audit."slot_release" ("container") WHERE "audit_action" >= 'add';
 
 
 ----------------------------------------------------------- studies
@@ -460,6 +467,7 @@ INSERT INTO "format" ("mimetype", "extension", "name") VALUES ('text/x-chat',			
 INSERT INTO "format" ("mimetype", "extension", "name") VALUES ('audio/aac',								        ARRAY['aac'], 'Advanced Audio Coding');
 INSERT INTO "format" ("mimetype", "extension", "name") VALUES ('audio/x-ms-wma',								ARRAY['wma'], 'Windows Media audio');
 INSERT INTO "format" ("mimetype", "extension", "name") VALUES ('application/vnd.lena.interpreted-time-segments',				ARRAY['its'], 'LENA Interpreted Time Segments');
+INSERT INTO "format" ("mimetype", "extension", "name") VALUES ('video/x-dv',									ARRAY['dv', 'dif'], 'Digital Interface Format video');
 
 -- The privledged formats with special handling (image and video for now) have hard-coded IDs:
 INSERT INTO "format" ("id", "mimetype", "extension", "name") VALUES (-800, 'video/mp4',								ARRAY['mp4'], 'MPEG-4 video');
@@ -484,9 +492,9 @@ COMMENT ON TABLE "asset" IS 'Assets reflecting files in primary storage.';
 
 SELECT audit.CREATE_TABLE ('asset');
 ALTER TABLE audit."asset" ALTER "sha1" DROP NOT NULL;
-
 CREATE INDEX "asset_creation_idx" ON audit."asset" ("id") WHERE "audit_action" = 'add';
 COMMENT ON INDEX audit."asset_creation_idx" IS 'Allow efficient retrieval of asset creation information, specifically date.';
+CREATE INDEX "asset_activity_idx" ON audit."asset" ("id") WHERE "audit_action" >= 'add';
 
 CREATE TABLE "slot_asset" (
 	"asset" integer NOT NULL Primary Key References "asset",
@@ -497,29 +505,7 @@ CREATE INDEX "slot_asset_slot_idx" ON "slot_asset" ("container", "segment");
 COMMENT ON TABLE "slot_asset" IS 'Attachment point of assets, which, in the case of timeseries data, should match asset.duration.';
 
 SELECT audit.CREATE_TABLE ('slot_asset', 'slot');
-
-CREATE TABLE "asset_revision" (
-	"orig" integer NOT NULL References "asset" ON DELETE CASCADE,
-	"asset" integer Unique NOT NULL References "asset" ON DELETE CASCADE
-	-- Check ("orig" < "asset") -- this would be nice, but we have some ingests that were done the other way
-);
-COMMENT ON TABLE "asset_revision" IS 'Assets that reflect different versions of the same content, either generated automatically from reformatting or a replacement provided by the user.';
-
-CREATE RECURSIVE VIEW "asset_revisions" ("orig", "asset") AS
-	SELECT * FROM asset_revision
-	UNION
-	SELECT o.orig, a.asset FROM asset_revision o JOIN asset_revisions a ON o.asset = a.orig;
-COMMENT ON VIEW "asset_revisions" IS 'Transitive closure of asset_revision.';
-
-CREATE FUNCTION "asset_supersede" ("asset_old" integer, "asset_new" integer) RETURNS void STRICT LANGUAGE plpgsql AS $$
-BEGIN
-	PERFORM asset FROM asset_revision WHERE orig = asset_new;
-	IF FOUND THEN
-		RAISE 'Asset % already superseded', asset_new;
-	END IF;
-	INSERT INTO asset_revision VALUES (asset_old, asset_new);
-	UPDATE slot_asset SET asset = asset_new WHERE asset = asset_old;
-END; $$;
+CREATE INDEX "slot_asset_activity_idx" ON audit."slot_asset" ("container") WHERE "audit_action" >= 'add';
 
 
 CREATE TABLE "excerpt" (
@@ -536,16 +522,14 @@ COMMENT ON COLUMN "excerpt"."segment" IS 'Segment within slot_asset.container sp
 COMMENT ON COLUMN "excerpt"."release" IS 'Override (by relaxing only) asset''s original release.';
 
 SELECT audit.CREATE_TABLE ('excerpt');
+CREATE INDEX "excerpt_activity_idx" ON audit."excerpt" ("asset") WHERE "audit_action" >= 'add';
 
 CREATE FUNCTION "excerpt_shift" () RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
 	-- if we ever support "stretching" timeseries this will be wrong
-	shift interval := lower(NEW.segment) - lower(OLD.segment);
+	shift interval := COALESCE(lower(NEW.segment), '0') - COALESCE(lower(OLD.segment), '0');
 BEGIN
-	IF NEW.segment = OLD.segment THEN
-	ELSIF shift IS NULL THEN
-		DELETE FROM excerpt WHERE asset = NEW.asset AND segment <> '(,)';
-	ELSE
+	IF NEW.segment <> OLD.segment THEN
 		UPDATE excerpt SET segment = segment_shift(segment, shift) WHERE asset = NEW.asset;
 	END IF;
 	RETURN null;
@@ -553,6 +537,29 @@ END; $$;
 CREATE TRIGGER "excerpt_shift" AFTER UPDATE OF "segment" ON "slot_asset" FOR EACH ROW EXECUTE PROCEDURE "excerpt_shift" ();
 COMMENT ON TRIGGER "excerpt_shift" ON "slot_asset" IS 'Move or clear excerpts on repositioning of asset, just based on lower bound.';
 
+
+CREATE TABLE "asset_revision" (
+	"orig" integer NOT NULL References "asset" ON DELETE CASCADE,
+	"asset" integer Unique NOT NULL References "asset" ON DELETE CASCADE,
+	-- Check ("orig" < "asset"), -- this would be nice, but we have some ingests that were done the other way
+	Check ("orig" <> "asset"),
+	Check (false) NO INHERIT
+);
+COMMENT ON TABLE "asset_revision" IS 'Assets that reflect different versions of the same content, either generated automatically from reformatting or a replacement provided by the user.';
+
+CREATE TABLE "asset_replace" (
+) INHERITS ("asset_revision");
+COMMENT ON TABLE "asset_replace" IS 'Replacement assets provided by the user.';
+
+CREATE FUNCTION "asset_replace" ("asset_old" integer, "asset_new" integer) RETURNS void STRICT LANGUAGE plpgsql AS $$
+BEGIN
+	PERFORM asset FROM asset_replace WHERE orig = asset_new;
+	IF FOUND THEN -- avoid cycles
+		RAISE 'Asset % already replaced', asset_new;
+	END IF;
+	INSERT INTO asset_replace (orig, asset) VALUES (asset_old, asset_new);
+	UPDATE slot_asset SET asset = asset_new WHERE asset = asset_old;
+END; $$;
 
 CREATE TABLE "transcode" (
 	"asset" integer NOT NULL Primary Key References "asset" ON DELETE CASCADE,
@@ -564,7 +571,7 @@ CREATE TABLE "transcode" (
 	"process" integer,
 	"log" text
 ) INHERITS ("asset_revision");
-COMMENT ON TABLE "transcode" IS 'Format conversions that are being or have been applied to transform in input asset.';
+COMMENT ON TABLE "transcode" IS 'Format conversions that are being or have been applied to transform orig asset.';
 
 ----------------------------------------------------------- comments
 
@@ -651,26 +658,19 @@ COMMENT ON TABLE "keyword_use" IS 'Special "keyword" tags editable as volume dat
 
 ----------------------------------------------------------- records
 
-CREATE TABLE "record_category" (
+CREATE TABLE "category" (
 	"id" smallserial NOT NULL Primary Key,
 	"name" varchar(64) NOT NULL Unique,
 	"description" text
 );
-ALTER TABLE "record_category"
+ALTER TABLE "category"
 	ALTER "name" SET STORAGE EXTERNAL;
-COMMENT ON TABLE "record_category" IS 'Types of records that are relevant for data organization.';
-INSERT INTO "record_category" ("id", "name", "description") VALUES (-500, 'participant', 'An individual subject depicted, represented, or otherwise contributing data');
-INSERT INTO "record_category" ("id", "name", "description") VALUES (-200, 'group', 'A grouping determined by an aspect of the data (participant ability, age, experience, longitudinal visit, measurements used/available)');
-INSERT INTO "record_category" ("id", "name", "description") VALUES (-800, 'pilot', 'Indicates that the methods used were not finalized or were non-standard');
-INSERT INTO "record_category" ("id", "name", "description") VALUES (-700, 'exclusion', 'Indicates that data were not usable for a study');
-INSERT INTO "record_category" ("id", "name", "description") VALUES (-400, 'condition', 'An experimenter-determined manipulation (within or between sessions)');
-INSERT INTO "record_category" ("id", "name", "description") VALUES (-300, 'task', 'A particular task, activity, or phase of the session or study');
-INSERT INTO "record_category" ("id", "name", "description") VALUES (-100, 'context', 'A particular setting or other variable aspect of where/when/how data were collected');
+COMMENT ON TABLE "category" IS 'Types of records that are relevant for data organization.';
 
 CREATE TABLE "record" (
 	"id" serial NOT NULL Primary Key,
 	"volume" integer NOT NULL References "volume",
-	"category" smallint NOT NULL References "record_category" ON UPDATE CASCADE ON DELETE SET NULL
+	"category" smallint NOT NULL References "category" ON UPDATE CASCADE
 );
 CREATE INDEX ON "record" ("volume");
 COMMENT ON TABLE "record" IS 'Sets of metadata measurements organized into or applying to a single cohesive unit.  These belong to the object(s) they''re attached to, which are expected to be within a single volume.';
@@ -682,62 +682,75 @@ COMMENT ON TYPE data_type IS 'Types of measurement data corresponding to measure
 
 CREATE TABLE "metric" (
 	"id" serial NOT NULL Primary Key,
-	"name" varchar(64) NOT NULL Unique,
+	"category" smallint NOT NULL References "category" ON UPDATE CASCADE,
+	"name" varchar(64) NOT NULL,
 	"release" release,
 	"type" data_type NOT NULL,
 	"options" text[],
 	"assumed" text,
-	"description" text
+	"description" text,
+	"required" boolean,
+	Unique ("category", "name")
 );
 ALTER TABLE "metric"
 	ALTER "name" SET STORAGE EXTERNAL;
 COMMENT ON TABLE "metric" IS 'Types of measurements for data stored in measure_$type tables.';
 COMMENT ON COLUMN "metric"."options" IS '(Suggested) options for text enumerations, not enforced.';
-INSERT INTO "metric" ("id", "name", "release", "type") VALUES (-1000, 'indicator', 'PUBLIC', 'void');
-INSERT INTO "metric" ("id", "name", "release", "type", "description") VALUES (-900, 'ID', 'PUBLIC', 'text', 'A primary, unique, anonymized identifier, label, or name');
-INSERT INTO "metric" ("id", "name", "release", "type", "options", "description") VALUES (-700, 'reason', 'PUBLIC', 'text', ARRAY['Did not meet inclusion criteria','Procedural/experimenter error','Withdrew/fussy/tired','Outlier'], 'A reason for a label (often for an exclusion)');
-INSERT INTO "metric" ("id", "name", "release", "type", "description") VALUES (-600, 'description', 'PUBLIC', 'text', 'A longer explanation or description of this label');
-INSERT INTO "metric" ("id", "name", "type", "description") VALUES (-590, 'birthdate', 'date', 'The date of birth of an individual, or start/inception date for other labels (used with session date to calculate age)');
-INSERT INTO "metric" ("id", "name", "release", "type", "options", "description") VALUES (-580, 'gender', 'PUBLIC', 'text', ARRAY['Female','Male'], '"Male", "Female", or any other relevant gender label');
-INSERT INTO "metric" ("id", "name", "release", "type", "options", "description") VALUES (-550, 'race', 'PUBLIC', 'text', ARRAY['American Indian or Alaska Native','Asian','Native Hawaiian or Other Pacific Islander','Black or African American','White','Multiple'], 'Usually as categorized by NIH');
-INSERT INTO "metric" ("id", "name", "release", "type", "options", "description") VALUES (-540, 'ethnicity', 'PUBLIC', 'text', ARRAY['Not Hispanic or Latino','Hispanic or Latino'], 'Usually as categorized by NIH (Hispanic/Non-Hispanic)');
-INSERT INTO "metric" ("id", "name", "release", "type", "description") VALUES (-530, 'gestational age', 'PUBLIC', 'numeric', 'Pregnancy age in weeks between last menstrual period and birth (or pre-natal observation)');
-INSERT INTO "metric" ("id", "name", "type", "assumed", "description") VALUES (-520, 'disability', 'text', 'typical', 'Any developmental, physical, or mental disability');
-INSERT INTO "metric" ("id", "name", "release", "type", "assumed", "description") VALUES (-510, 'language', 'PUBLIC', 'text', 'English', 'Primary language relevant to this label, spoken by this participant, or used in this context');
-INSERT INTO "metric" ("id", "name", "release", "type", "options", "description") VALUES (-180, 'setting', 'PUBLIC', 'text', ARRAY['Lab','Home','Classroom','Outdoor','Clinic'], 'The physical context of this label');
-INSERT INTO "metric" ("id", "name", "release", "type", "assumed", "description") VALUES (-150, 'country', 'PUBLIC', 'text', 'US', 'Relevant country of origin, setting, or otherwise');
-INSERT INTO "metric" ("id", "name", "release", "type", "options", "description") VALUES (-140, 'state', 'PUBLIC', 'text', ARRAY['AL','AK','AZ','AR','CA','CO','CT','DE','DC','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','MD','MA','MI','MN','MS','MO','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY'], 'Relevant state/territory, usually within specified country');
-INSERT INTO "metric" ("id", "name", "release", "type", "description") VALUES (-90, 'info', 'PUBLIC', 'text', 'Other information or alternate identifier for this label');
+COMMENT ON COLUMN "metric"."required" IS 'Indicates the default status of this field in volume designs: on by default (not null), or required on (true).';
 
-CREATE TABLE "record_template" (
-	"category" smallint NOT NULL References "record_category" ON UPDATE CASCADE ON DELETE CASCADE,
-	"metric" integer NOT NULL References "metric" ON UPDATE CASCADE ON DELETE CASCADE,
-	"ident" boolean NOT NULL Default false,
-	Primary Key ("category", "metric")
-);
-COMMENT ON TABLE "record_template" IS 'Default set of measures defining a given record category.';
-INSERT INTO "record_template" VALUES (-500, -590);
-INSERT INTO "record_template" VALUES (-500, -580);
-INSERT INTO "record_template" VALUES (-500, -550);
-INSERT INTO "record_template" VALUES (-500, -540);
-INSERT INTO "record_template" VALUES (-500, -520);
-INSERT INTO "record_template" VALUES (-500, -510);
-INSERT INTO "record_template" VALUES (-300, -600);
-INSERT INTO "record_template" VALUES (-500, -900, true);
-INSERT INTO "record_template" VALUES (-200, -900, true);
-INSERT INTO "record_template" VALUES (-400, -900, true);
-INSERT INTO "record_template" VALUES (-300, -900, true);
-INSERT INTO "record_template" VALUES (-700, -700, true);
-INSERT INTO "record_template" VALUES (-100, -180, true);
-INSERT INTO "record_template" VALUES (-100, -140, true);
-INSERT INTO "record_template" VALUES (-100, -150, true);
-INSERT INTO "record_template" VALUES (-800, -1000);
+
+INSERT INTO "category" ("name", "description") VALUES ('participant', 'An individual human subject whose data are used or represented');
+INSERT INTO "metric" ("category", "name", "release", "type", "description", "required")			VALUES (currval('category_id_seq'), 'ID', 'PUBLIC', 'text', 'A unique, anonymized, primary identifier, such as participant ID', true);
+INSERT INTO "metric" ("category", "name", "release", "type", "description")				VALUES (currval('category_id_seq'), 'info', 'PUBLIC', 'text', 'Other information or alternate identifier');
+INSERT INTO "metric" ("category", "name", "release", "type", "description")				VALUES (currval('category_id_seq'), 'description', 'PUBLIC', 'text', 'A longer explanation or description');
+INSERT INTO "metric" ("category", "name", "type", "description", "required")				VALUES (currval('category_id_seq'), 'birthdate', 'date', 'Date of birth (used with session date to calculate age; you can also use the group category to designate age groups)', false);
+INSERT INTO "metric" ("category", "name", "release", "type", "options", "description", "required")	VALUES (currval('category_id_seq'), 'gender', 'PUBLIC', 'text', ARRAY['Female','Male'], '"Male", "Female", or any other relevant gender', false);
+INSERT INTO "metric" ("category", "name", "release", "type", "options", "description", "required")	VALUES (currval('category_id_seq'), 'race', 'PUBLIC', 'text', ARRAY['American Indian or Alaska Native','Asian','Native Hawaiian or Other Pacific Islander','Black or African American','White','Multiple'], 'As classified by NIH, or user-defined classification', false);
+INSERT INTO "metric" ("category", "name", "release", "type", "options", "description", "required")	VALUES (currval('category_id_seq'), 'ethnicity', 'PUBLIC', 'text', ARRAY['Not Hispanic or Latino','Hispanic or Latino'], 'As classified by NIH (Hispanic/Non-Hispanic), or user-defined classification', false);
+INSERT INTO "metric" ("category", "name", "release", "type", "description")				VALUES (currval('category_id_seq'), 'gestational age', 'PUBLIC', 'numeric', 'Pregnancy age in weeks between last menstrual period and birth (or pre-natal observation)');
+INSERT INTO "metric" ("category", "name", "release", "type", "description")				VALUES (currval('category_id_seq'), 'pregnancy term', 'PUBLIC', 'text', Array['Full term', 'Preterm'], '"Full term", "Preterm", or other gestational term');
+INSERT INTO "metric" ("category", "name", "type", "assumed", "description", "required")			VALUES (currval('category_id_seq'), 'disability', 'text', 'typical', 'Any developmental, physical, or mental disability or disabilities', false);
+INSERT INTO "metric" ("category", "name", "release", "type", "assumed", "description", "required")	VALUES (currval('category_id_seq'), 'language', 'PUBLIC', 'text', 'English', 'Primary language(s) spoken by and to participant', false);
+INSERT INTO "metric" ("category", "name", "release", "type", "assumed", "description")			VALUES (currval('category_id_seq'), 'country', 'PUBLIC', 'text', 'US', 'Country where participant was born');
+INSERT INTO "metric" ("category", "name", "release", "type", "options", "description")			VALUES (currval('category_id_seq'), 'state', 'PUBLIC', 'text', ARRAY['AL','AK','AZ','AR','CA','CO','CT','DE','DC','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','MD','MA','MI','MN','MS','MO','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY'], 'State/territory where participant was born');
+
+INSERT INTO "category" ("name", "description") VALUES ('pilot', 'Indicates that the methods used were not finalized or were non-standard');
+INSERT INTO "metric" ("category", "name", "release", "type", "required")				VALUES (currval('category_id_seq'), 'pilot', 'PUBLIC', 'void', false);
+INSERT INTO "metric" ("category", "name", "release", "type", "description")				VALUES (currval('category_id_seq'), 'name', 'PUBLIC', 'text', 'A label or identifier referring to the pilot method');
+INSERT INTO "metric" ("category", "name", "release", "type", "description")				VALUES (currval('category_id_seq'), 'description', 'PUBLIC', 'text', 'A longer explanation or description of the pilot method');
+
+INSERT INTO "category" ("name", "description") VALUES ('exclusion', 'Indicates that data were not usable');
+INSERT INTO "metric" ("category", "name", "release", "type")						VALUES (currval('category_id_seq'), 'excluded', 'PUBLIC', 'void');
+INSERT INTO "metric" ("category", "name", "release", "type", "description")				VALUES (currval('category_id_seq'), 'name', 'PUBLIC', 'text', 'A label or identifier referring to the exclusion criterion');
+INSERT INTO "metric" ("category", "name", "release", "type", "options", "description", "required")	VALUES (currval('category_id_seq'), 'reason', 'PUBLIC', 'text', ARRAY['Did not meet inclusion criteria','Procedural/experimenter error','Withdrew/fussy/tired','Outlier'], 'The reason for excluding these data', false);
+INSERT INTO "metric" ("category", "name", "release", "type", "description")				VALUES (currval('category_id_seq'), 'description', 'PUBLIC', 'text', 'A longer explanation or description of the reason for excluding data');
+
+INSERT INTO "category" ("name", "description") VALUES ('condition', 'An experimenter-determined manipulation (within or between sessions)');
+INSERT INTO "metric" ("category", "name", "release", "type", "description", "required")			VALUES (currval('category_id_seq'), 'name', 'PUBLIC', 'text', 'A label or identifier for the condition', true);
+INSERT INTO "metric" ("category", "name", "release", "type", "description")				VALUES (currval('category_id_seq'), 'description', 'PUBLIC', 'text', 'A longer explanation or description of the condition');
+INSERT INTO "metric" ("category", "name", "release", "type", "description")				VALUES (currval('category_id_seq'), 'info', 'PUBLIC', 'text', 'Other information or alternate identifier');
+
+INSERT INTO "category" ("name", "description") VALUES ('group', 'A grouping determined by an aspect of the data (participant ability, age, grade level, experience, longitudinal visit, measurements used/available)');
+INSERT INTO "metric" ("category", "name", "release", "type", "description", "required")			VALUES (currval('category_id_seq'), 'name', 'PUBLIC', 'text', 'A label or identifier for the grouping', true);
+INSERT INTO "metric" ("category", "name", "release", "type", "description")				VALUES (currval('category_id_seq'), 'description', 'PUBLIC', 'text', 'A longer explanation or description of the grouping');
+INSERT INTO "metric" ("category", "name", "release", "type", "description")				VALUES (currval('category_id_seq'), 'info', 'PUBLIC', 'text', 'Other information or alternate identifier');
+
+INSERT INTO "category" ("name", "description") VALUES ('task', 'A particular task, activity, or phase of the session or study');
+INSERT INTO "metric" ("category", "name", "release", "type", "description", "required")			VALUES (currval('category_id_seq'), 'name', 'PUBLIC', 'text', 'A label or identifier for the task', true);
+INSERT INTO "metric" ("category", "name", "release", "type", "description", "required")			VALUES (currval('category_id_seq'), 'description', 'PUBLIC', 'text', 'A longer explanation or description of the task', false);
+INSERT INTO "metric" ("category", "name", "release", "type", "description")				VALUES (currval('category_id_seq'), 'info', 'PUBLIC', 'text', 'Other information or alternate identifier');
+
+INSERT INTO "category" ("name", "description") VALUES ('context', 'A particular setting or other aspect of where/when/how data were collected');
+INSERT INTO "metric" ("category", "name", "release", "type", "description")				VALUES (currval('category_id_seq'), 'name', 'PUBLIC', 'text', 'A label or identifier for the context');
+INSERT INTO "metric" ("category", "name", "release", "type", "options", "description", "required")	VALUES (currval('category_id_seq'), 'setting', 'PUBLIC', 'text', ARRAY['Lab','Home','Classroom','Outdoor','Clinic'], 'The physical context', false);
+INSERT INTO "metric" ("category", "name", "release", "type", "assumed", "description")			VALUES (currval('category_id_seq'), 'language', 'PUBLIC', 'text', 'English', 'Language used in this context');
+INSERT INTO "metric" ("category", "name", "release", "type", "assumed", "description", "required")	VALUES (currval('category_id_seq'), 'country', 'PUBLIC', 'text', 'US', 'Country of data collection', false);
+INSERT INTO "metric" ("category", "name", "release", "type", "options", "description", "required")	VALUES (currval('category_id_seq'), 'state', 'PUBLIC', 'text', ARRAY['AL','AK','AZ','AR','CA','CO','CT','DE','DC','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','MD','MA','MI','MN','MS','MO','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY'], 'State/territory of data collection', false);
 
 CREATE TABLE "volume_metric" (
 	"volume" integer NOT NULL References "volume",
-	"category" smallint NOT NULL References "record_category" ON UPDATE CASCADE ON DELETE CASCADE,
 	"metric" integer NOT NULL References "metric" ON UPDATE CASCADE ON DELETE CASCADE,
-	Primary Key ("volume", "category", "metric")
+	Primary Key ("volume", "metric")
 );
 
 CREATE TABLE "measure_abstract" ( -- ABSTRACT
@@ -1037,6 +1050,17 @@ END; $$;
 CREATE TRIGGER "volume_changed_text" AFTER INSERT OR UPDATE OF "name", "body" ON "volume" FOR EACH ROW EXECUTE PROCEDURE "volume_text_changed" ();
 CREATE TRIGGER "volume_citation_changed_text" AFTER INSERT OR UPDATE OF "head", "year" ON "volume_citation" FOR EACH ROW EXECUTE PROCEDURE "volume_text_changed" ();
 
+----------------------------------------------------------- client state
+
+CREATE TABLE "volume_state" (
+	"volume" integer NOT NULL References "volume" ON DELETE CASCADE ON UPDATE CASCADE,
+	"key" varchar(64) NOT NULL,
+	"value" jsonb NOT NULL,
+	"public" boolean NOT NULL,
+	Primary Key ("volume", "key")
+);
+COMMENT ON TABLE "volume_state" IS 'Client-side per-volume state, primarily used for saved reports.';
+
 ----------------------------------------------------------- analytics
 
 CREATE TABLE audit."analytic" (
@@ -1070,9 +1094,10 @@ INSERT INTO volume_access (volume, party, individual, children) VALUES (1, 3, 'A
 INSERT INTO volume_access (volume, party, individual, children) VALUES (1, -1, 'PUBLIC', 'PUBLIC');
 
 INSERT INTO asset (id, volume, format, release, duration, name, sha1) VALUES (1, 1, -800, 'PUBLIC', interval '40', 'counting', '\x3dda3931202cbe06a9e4bbb5f0873c879121ef0a');
-INSERT INTO slot_asset VALUES (1, '[0,40)'::segment, 1);
 SELECT setval('asset_id_seq', 1);
+INSERT INTO container VALUES (2, 1, 't', 'Top-level materials');
 SELECT setval('container_id_seq', 2);
+INSERT INTO slot_asset VALUES (2, '[0,40)'::segment, 1);
 
 -- special volumes (SERIAL starts at 1), done after container triggers:
 INSERT INTO "volume" (id, name) VALUES (0, 'Core'); -- CORE

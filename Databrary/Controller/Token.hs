@@ -22,7 +22,7 @@ import Databrary.Model.Party
 import Databrary.Model.Permission
 #endif
 import Databrary.HTTP.Path.Parser
-import Databrary.Action.Types
+import Databrary.Action.Run
 import Databrary.Action
 import Databrary.Controller.Paths
 import Databrary.Controller.Form

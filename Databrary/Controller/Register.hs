@@ -25,7 +25,6 @@ import Databrary.Model.Token
 import Databrary.HTTP.Form.Deform
 import Databrary.HTTP.Path.Parser
 import Databrary.Action
-import Databrary.Action.Types
 import Databrary.Controller.Paths
 import Databrary.Controller.Form
 import Databrary.Controller.Permission
@@ -59,9 +58,11 @@ postRegister = action POST (pathAPI </< "user" </< "register") $ \api -> without
     affiliation <- "affiliation" .:> deformNonEmpty deform
     _ <- "agreement" .:> (deformCheck "You must consent to the user agreement." id =<< deform)
     let p = blankParty
-          { partySortName = name
-          , partyPreName = prename
-          , partyAffiliation = affiliation
+          { partyRow = (partyRow blankParty)
+            { partySortName = name
+            , partyPreName = prename
+            , partyAffiliation = affiliation
+            }
           , partyAccount = Just a
           }
         a = Account

@@ -9,7 +9,7 @@ module Databrary.Model.Identity
 import Data.Maybe (catMaybes)
 
 import Databrary.Ops
-import Databrary.Has (peek, view)
+import Databrary.Has
 import qualified Databrary.JSON as JSON
 import Databrary.Model.Token
 import Databrary.HTTP.Request
@@ -20,7 +20,7 @@ import Databrary.Model.Party
 import Databrary.Model.Permission
 import Databrary.Model.Identity.Types
 
-determineIdentity :: (MonadHasService c m, MonadHasRequest c m, MonadDB c m) => m Identity
+determineIdentity :: (MonadHas Secret c m, MonadHasRequest c m, MonadDB c m) => m Identity
 determineIdentity =
   maybe NotIdentified Identified <$> (flatMapM lookupSession =<< getSignedCookie "session")
 

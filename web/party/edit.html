@@ -7,7 +7,11 @@
 
         <h2 class="view-title">
           <span ng-bind="::party.name"></span>
-          <a ng-href="{{::party.route()}}"><span class="button green icon view-icon"></span></a>
+          <div class="view-title-buttons inline-block">
+            <a ng-href="{{::party.route()}}"><span class="button white icon view-icon"></span></a>
+            <a href="" class="button green selected icon edit"></a>
+            <a ng-href="{{::page.router.partyActivity([party.id])}}" class="button mini white view-title-text">User Activity</a>
+          </div>
         </h2>
       </hgroup>
 
@@ -17,15 +21,15 @@
             <party-edit-profile-form></party-edit-profile-form>
           </wizard-page>
 
-          <wizard-page name="account" disabled="party.institution || !party.checkPermission(page.permission.SUPER)">
+          <wizard-page name="account" wizard-disabled="party.institution || !party.checkPermission(page.permission.SUPER)">
             <party-edit-account-form></party-edit-account-form>
           </wizard-page>
 
-          <wizard-page name="apply" disabled="!party.checkPermission(page.permission.ADMIN)">
+          <wizard-page name="apply" wizard-disabled="!party.checkPermission(page.permission.ADMIN)">
             <party-edit-apply-form></party-edit-apply-form>
           </wizard-page>
 
-          <wizard-page name="grant" disabled="!party.checkPermission(page.permission.ADMIN)">
+          <wizard-page name="grant" wizard-disabled="!party.checkPermission(page.permission.ADMIN)">
             <party-edit-grant-form></party-edit-grant-form>
           </wizard-page>
         </wizard>

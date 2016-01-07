@@ -1,7 +1,6 @@
 {-# LANGUAGE TemplateHaskell, OverloadedStrings, TypeFamilies #-}
 module Databrary.Model.Format.Types
   ( Format(..)
-  , MonadHasFormat
   ) where
 
 import qualified Data.ByteString as BS

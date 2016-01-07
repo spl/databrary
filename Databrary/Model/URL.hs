@@ -39,10 +39,8 @@ instance C.Configurable URI where
   config = parseAbsoluteURI <=< C.config
 
 instance H.ToValue URI where
-  toValue = H.stringValue . show
-  preEscapedToValue = H.preEscapedStringValue . show
-
-deriveLiftMany [''URIAuth, ''URI]
+  toValue = H.stringValue . show . urlLink
+  preEscapedToValue = H.preEscapedStringValue . show . urlLink
 
 validHDL :: String -> Bool
 validHDL = v0 (0 :: Int) where
@@ -70,3 +68,13 @@ parseURL s = do
     else do
       guard $ uriScheme u `elem` ["http:","https:"]
       return u
+
+httpAuth :: String -> URI -> URI
+httpAuth a u = u{ uriScheme = "http:", uriAuthority = Just (URIAuth "" a ""), uriPath = '/':uriPath u }
+
+urlLink :: URI -> URI
+urlLink u@URI{ uriScheme = "hdl:" } = httpAuth "hdl.handle.net" u
+urlLink u@URI{ uriScheme = "doi:" } = httpAuth "doi.org" u
+urlLink u = u
+
+deriveLiftMany [''URIAuth, ''URI]

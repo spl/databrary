@@ -23,16 +23,18 @@ import Databrary.Model.Id
 import Databrary.Model.Identity.Types
 import Databrary.Model.Volume.Types
 import Databrary.Model.Party.Types
-import Databrary.Model.RecordCategory
+import Databrary.Model.Category
 import Databrary.Model.Measure
 import Databrary.Model.Record.Types
 import Databrary.Model.Record.SQL
 
-blankRecord :: Volume -> Record
-blankRecord vol = Record
-  { recordId = error "blankRecord"
+blankRecord :: Category -> Volume -> Record
+blankRecord cat vol = Record
+  { recordRow = RecordRow
+    { recordId = error "blankRecord"
+    , recordCategory = cat
+    }
   , recordVolume = vol
-  , recordCategory = head allRecordCategories
   , recordRelease = Nothing
   , recordMeasures = []
   }
@@ -44,11 +46,11 @@ lookupRecord ri = do
 
 lookupVolumeRecord :: MonadDB c m => Volume -> Id Record -> m (Maybe Record)
 lookupVolumeRecord vol ri =
-  dbQuery1 $ fmap ($ vol) $(selectQuery selectVolumeRecord "$WHERE record.id = ${ri} AND record.volume = ${volumeId vol}")
+  dbQuery1 $ fmap ($ vol) $(selectQuery selectVolumeRecord "$WHERE record.id = ${ri} AND record.volume = ${volumeId $ volumeRow vol}")
 
 lookupVolumeRecords :: MonadDB c m => Volume -> m [Record]
 lookupVolumeRecords vol =
-  dbQuery $ fmap ($ vol) $(selectQuery selectVolumeRecord "$WHERE record.volume = ${volumeId vol}")
+  dbQuery $ fmap ($ vol) $(selectQuery selectVolumeRecord "$WHERE record.volume = ${volumeId $ volumeRow vol}")
 
 addRecord :: MonadAudit c m => Record -> m Record
 addRecord br = do
@@ -66,8 +68,8 @@ removeRecord r = do
   isRight <$> dbTryJust (guard . isForeignKeyViolation) (dbExecute1 $(deleteRecord 'ident 'r))
 
 recordJSON :: Record -> JSON.Object
-recordJSON r@Record{..} = JSON.record recordId
+recordJSON r@Record{ recordRow = RecordRow{..}, ..} = JSON.record recordId
   [ -- "volume" JSON..= volumeId recordVolume
-    "category" JSON..= recordCategoryId recordCategory
+    "category" JSON..= categoryId recordCategory
   , "measures" JSON..= JSON.Object (measuresJSON $ getRecordMeasures r)
   ]

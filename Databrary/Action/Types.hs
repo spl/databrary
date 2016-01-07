@@ -1,41 +1,22 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving, TypeFamilies, TemplateHaskell, OverloadedStrings #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving, TypeFamilies, TemplateHaskell #-}
 module Databrary.Action.Types
   ( RequestContext(..)
-  , MonadHasRequestContext
-  , ActionM
+  , ActionM(..)
   , runActionM
-  , Action
-  , runAction
-  , forkAction
-  , withAuth
-  , withoutAuth
-  , withReAuth
   ) where
 
 import Control.Applicative (Alternative)
-import Control.Concurrent (ThreadId, forkFinally)
-import Control.Exception (SomeException)
 import Control.Monad (MonadPlus)
 import Control.Monad.Base (MonadBase)
 import Control.Monad.IO.Class (MonadIO)
-import Control.Monad.Reader (MonadReader, ReaderT(..), withReaderT)
+import Control.Monad.Reader (MonadReader, ReaderT(..))
 import Control.Monad.Trans.Control (MonadBaseControl(..))
 import Control.Monad.Trans.Resource (MonadThrow, MonadResource(..), runInternalState)
-import Data.Time (getCurrentTime)
-import Network.HTTP.Types (hDate, methodHead)
-import qualified Network.Wai as Wai
 
 import Databrary.Has
-import Databrary.HTTP
-import Databrary.Service.Types
-import Databrary.Service.Log
 import Databrary.Model.Identity
-import Databrary.Model.Id.Types
-import Databrary.Model.Party.Types
 import Databrary.HTTP.Request
 import Databrary.Context
-import Databrary.Action.Response
-import Databrary.Controller.Analytics
 
 data RequestContext = RequestContext
   { requestContext :: !Context
@@ -59,38 +40,3 @@ instance MonadBaseControl IO ActionM where
   type StM ActionM a = a
   liftBaseWith f = ActionM $ liftBaseWith $ \r -> f (r . unActionM)
   restoreM = ActionM . restoreM
-
-withActionM :: Request -> Identity -> ActionM a -> ContextM a
-withActionM r i = withReaderT (\c -> RequestContext c r i) . unActionM
-
-data Action = Action
-  { _actionAuth :: !Bool
-  , _actionM :: !(ActionM Response)
-  }
-
-runAction :: Service -> Action -> Wai.Application
-runAction rc (Action auth act) req send = do
-  ts <- getCurrentTime
-  (i, r) <- runContextM (do
-    i <- if auth then withActionM req PreIdentified determineIdentity else return PreIdentified
-    r <- ReaderT $ \ctx -> runResult $ runActionM (angularAnalytics >> act) (RequestContext ctx req i)
-    return (i, r))
-    rc
-  logAccess ts req (foldIdentity Nothing (Just . (show :: Id Party -> String) . view) i) r (serviceLogs rc)
-  let r' = Wai.mapResponseHeaders ((hDate, formatHTTPTimestamp ts) :) r
-  send $ if Wai.requestMethod req == methodHead
-    then emptyResponse (Wai.responseStatus r') (Wai.responseHeaders r')
-    else r'
-
-forkAction :: ActionM a -> RequestContext -> (Either SomeException a -> IO ()) -> IO ThreadId
-forkAction f (RequestContext c r i) = forkFinally $
-  runContextM (withActionM r i f) (contextService c)
-
-withAuth :: ActionM Response -> Action
-withAuth = Action True
-
-withoutAuth :: ActionM Response -> Action
-withoutAuth = Action False
-
-withReAuth :: SiteAuth -> ActionM a -> ActionM a
-withReAuth u = ActionM . withReaderT (\a -> a{ requestIdentity = ReIdentified u }) . unActionM

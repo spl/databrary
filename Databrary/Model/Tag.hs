@@ -52,7 +52,7 @@ addTag n =
 
 lookupVolumeTagUseRows :: MonadDB c m => Volume -> m [TagUseRow]
 lookupVolumeTagUseRows v =
-  dbQuery $(selectQuery selectTagUseRow "JOIN container ON tag_use.container = container.id WHERE container.volume = ${volumeId v} ORDER BY container.id")
+  dbQuery $(selectQuery selectTagUseRow "JOIN container ON tag_use.container = container.id WHERE container.volume = ${volumeId $ volumeRow v} ORDER BY container.id")
 
 addTagUse :: MonadDB c m => TagUse -> m Bool
 addTagUse t = either (const False) id <$> do
@@ -78,7 +78,7 @@ emptyTagCoverage t c = TagCoverage (TagWeight t 0) c [] [] []
 lookupTagCoverage :: (MonadDB c m, MonadHasIdentity c m) => Tag -> Slot -> m TagCoverage
 lookupTagCoverage t (Slot c s) = do
   ident <- peek
-  fromMaybe (emptyTagCoverage t c) <$> dbQuery1 (($ c) . ($ t) <$> $(selectQuery (selectTagCoverage 'ident "WHERE container = ${containerId c} AND segment && ${s} AND tag = ${tagId t}") "$!"))
+  fromMaybe (emptyTagCoverage t c) <$> dbQuery1 (($ c) . ($ t) <$> $(selectQuery (selectTagCoverage 'ident "WHERE container = ${containerId $ containerRow c} AND segment && ${s} AND tag = ${tagId t}") "$!"))
 
 lookupSlotTagCoverage :: (MonadDB c m, MonadHasIdentity c m) => Slot -> Int -> m [TagCoverage]
 lookupSlotTagCoverage slot lim = do
@@ -87,7 +87,7 @@ lookupSlotTagCoverage slot lim = do
 
 lookupSlotKeywords :: (MonadDB c m) => Slot -> m [Tag]
 lookupSlotKeywords Slot{..} =
-  dbQuery $(selectQuery selectTag "JOIN keyword_use ON id = tag WHERE container = ${containerId slotContainer} AND segment = ${slotSegment}")
+  dbQuery $(selectQuery selectTag "JOIN keyword_use ON id = tag WHERE container = ${containerId $ containerRow slotContainer} AND segment = ${slotSegment}")
 
 tagWeightJSON :: TagWeight -> JSON.Object
 tagWeightJSON TagWeight{..} = JSON.record (tagName tagWeightTag) $

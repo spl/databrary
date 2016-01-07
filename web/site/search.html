@@ -5,12 +5,12 @@
       <div class="col">
         <h1 class="view-title">
           <span>Search</span>
-          <input class="search-input" type="search" ng-model="query" key-enter="search()"/>
+          <input class="search-input no-focus" type="search" ng-model="query" key-enter="search()"/>
         </h1>
       </div>
     </div>
     <div class="col-desktop-3 col-tablet-3 col-mobile-6">
-      <div class="search-left-section" ng-if="::!!volumes">
+      <div class="search-left-section foot-2" ng-if="::!!volumes">
         <legend>Volume filters</legend>
         <div class="search-volume-types search-filter">
           <div>
@@ -30,9 +30,9 @@
         </div>
         <div class="search-filter">
           Contains data released<br/>
-          <input type="radio" ng-model="fields.release" ng-value="::undefined"     ng-change="searchVolumes()" id="anyRelease"><label for="anyRelease">At any level</label><br/>
-          <input type="radio" ng-model="fields.release" value="EXCERPTS OR PUBLIC" ng-change="searchVolumes()" id="excerpt"   ><label for="excerpt"   ><span class="icon release EXCERPTS" hint="release-EXCERPTS"></span>For presentation use</label><br/>
-          <input type="radio" ng-model="fields.release" value="PUBLIC"             ng-change="searchVolumes()" id="public"    ><label for="public"    ><span class="icon release PUBLIC"   hint="release-PUBLIC"  ></span>For public use</label>
+          <input type="radio" ng-model="fields.release" ng-value="::undefined" ng-change="searchVolumes()" id="anyRelease"><label for="anyRelease">At any level</label><br/>
+          <input type="radio" ng-model="fields.release" value="EXCERPTS OR PUBLIC" ng-change="searchVolumes()" id="excerpt"><label for="excerpt"><span class="icon release EXCERPTS" hint="release-EXCERPTS"></span>For presentation use</label><br/>
+          <input type="radio" ng-model="fields.release" value="PUBLIC" ng-change="searchVolumes()" id="public"><label for="public"><span class="icon release PUBLIC" hint="release-PUBLIC"></span>For public use</label>
         </div>
         <div class="search-filter">
           Contains tag
@@ -40,16 +40,16 @@
         </div>
         <div class="search-filter">
           Contains files of type
-          <select ng-model="fields.format_id" ng-options="'\\'+f.id as f.name+' ('+f.extension+')' for f in ::formats | orderBy:'mimetype'" ng-change="searchVolumes()">
+          <select ng-model="fields.format_id" ng-options="'\\'+f.id as f.name+' ('+f.extension+')' for f in ::formats | orderBy:'mimetype' track by f.id||f.substr(1)" ng-change="searchVolumes()">
             <option value="">Any</option>
           </select>
         </div>
 
         <div class="search-filter">
           <span>Participants' age</span><br>
-          <div ui-slider="{range:true}" min="0" max="{{ageMax()}}" step="1" ng-model="fields.record_age"></div>
-          <input-age ng-model="fields.record_age[0]"></input-age>
-          <input-age ng-model="fields.record_age[1]" class="slider-right-label"></input-age>
+          <div ui-slider="{range:true}" min="{{::ageRange[0]}}" max="{{::ageRange[1]}}" use-decimals step="0.01" ng-model="ageSlider" ng-model-options="{getterSetter:true}"></div>
+          <input-age ng-model="fields.record_age[0]" class="inline-block"></input-age> - 
+          <input-age ng-model="fields.record_age[1]" class="inline-block"></input-age>
         </div>
         <div class="search-filter" ng-repeat="(mi, v) in metrics" ng-if="metrics[mi] !== undefined" ng-init="m=page.constants.metric[mi]">
           <span class="icon trash clickable" ng-click="removeMetric(mi)"></span>
@@ -61,17 +61,17 @@
           </span>
         </div>
         <div class="search-filter additional-filters">
-          <select ng-model="addMetric.id" ng-options="m.id as m.name for m in availableMetrics()" ng-change="addMetric()">
+          <select ng-model="addMetric.id" ng-options="m.id as m.name for m in availableMetrics() track by m.id||m" ng-change="addMetric()">
             <option value="">Additional filters by field</option>
           </select>
         </div>
         <div class="search-filter">
-          <button class="small green" ng-disabled="searchForm.$pristine || searchForm.$invalid" ng-click="searchVolumes()">Apply filters</button>
-          <button class="search-clear small" ng-click="page.$location.search({volume:true,q:query}) && page.$route.reload()">Clear filters</button>
+          <button class="mini green" ng-disabled="searchForm.$pristine || searchForm.$invalid" ng-click="searchVolumes()">Apply filters</button>
+          <button class="search-clear mini" ng-click="page.$location.search({volume:true,q:query}) && page.$route.reload()">Clear filters</button>
         </div>
       </div>
 
-      <div class="search-left-section" ng-if="::!!parties">
+      <div class="search-left-section foot-2" ng-if="::!!parties">
         <legend>User filters</legend>
         <ul class="search-party-types flat">
           <li class="clickable" ng-click="searchParties(page.constants.permission.EDIT, 'false')" ng-class="::{selected:fields.party_authorization == page.constants.permission.EDIT && fields.party_is_institution == 'false'}">Authorized investigators</li>
@@ -80,6 +80,7 @@
         </ul>
       </div>
     </div>
+    </ng-form>
 
     <div class="search-results col-desktop-12 col-tablet-6 col-mobile-6">
       <small class="status" ng-if="::!!spellcheck">
@@ -97,7 +98,7 @@
           </small>
         </h3>
 
-        <ul class="row search-volume-results flat">
+        <ul class="row search-volume-results foot-2 flat">
           <li ng-repeat="volume in ::volumes">
             <h1 class="search-volume-result-title">
               <span ng-click="expandVolume(volume)">
@@ -144,13 +145,12 @@
           <a class="button" ng-click="searchPage(1)">1</a> 
           <a class="button" ng-click="searchPage(pageCurrent-1)"><span class="icon backward"></span><span>Previous</span></a> 
         </div>
-        <input type="number" ng-model="pageCurrent" min="1" key-enter="searchPage(pageCurrent)"/>
+        <input type="number" class="no-focus" ng-model="pageCurrent" min="1" max="{{pageCount}}" key-enter="searchPage(pageCurrent)"/>
         <div class="search-forward" ng-if="::pageCurrent != pageCount">
           <a class="button" ng-click="searchPage(pageCurrent+1)"><span>Next</span><span class="icon forward"></span></a> 
           <a class="button" ng-click="searchPage(pageCount)" ng-bind="::pageCount"></a>
         </div>
       </div>
     </div>
-    </ng-form>
   </div>
 </article>

@@ -1,8 +1,8 @@
 'use strict'
 
 app.directive 'spreadsheet', [
-  'constantService', 'displayService', 'messageService', 'tooltipService', 'styleService', '$compile', '$templateCache', '$timeout', '$document', '$location',
-  (constants, display, messages, tooltips, styles, $compile, $templateCache, $timeout, $document, $location) ->
+  'constantService', 'displayService', 'messageService', 'tooltipService', 'styleService', '$compile', '$templateCache', '$timeout', '$document', '$location', '$filter', 'routerService', 'storageService',
+  (constants, display, messages, tooltips, styles, $compile, $templateCache, $timeout, $document, $location, $filter, router, storage) ->
     restrict: 'E'
     scope: true
     templateUrl: 'volume/spreadsheet.html'
@@ -228,7 +228,7 @@ app.directive 'spreadsheet', [
             return unless (if i? then @id = i else i = @id) and (i = stripPrefix(i, ID+'-'))
             s = i.split '_'
             switch s[0]
-              when 'add', 'more'
+              when 'add', 'more', 'no'
                 @t = s[0]
                 @i = parseInt(s[1], 10)
                 @c = parseIntish(s[2])
@@ -284,8 +284,8 @@ app.directive 'spreadsheet', [
             asset: ->
               @d?.asset
             v: ->
-              if d = @d
-                d[@metric.id]
+              if (d = @d) && (m = @metric)
+                d[m.id]
 
           property = (v, f) ->
             get: f
@@ -326,14 +326,15 @@ app.directive 'spreadsheet', [
             cats = [Key, pseudoCategory.slot]
 
           $scope.groups = Groups = cats.map (category) ->
-            metrics = (category.metrics || volume.metrics[category.id]).map(getMetric)
+            metrics = (category.metrics || volume.metrics[category.id] || []).map(getMetric)
+            metrics.push(constants.metricName.ID) unless metrics.length
             if !Editing && constants.metricName.birthdate in metrics
               (slot || metrics).push(pseudoMetric.age)
             if slot && category.id == 'slot'
               metrics.push.apply metrics, slot
             metrics.sort(bySortId)
             si = Cols.length
-            Cols.push.apply Cols, _.map metrics, (m) ->
+            Cols.push.apply Cols, metrics.map (m) ->
               category: category
               metric: m
             l = metrics.length
@@ -344,7 +345,8 @@ app.directive 'spreadsheet', [
               start: si
             }
           $scope.cols = Cols
-          $scope.views = (g.category for g in Groups when g.category.id != 'asset')
+          if Key == pseudoCategory.slot || !$scope.views
+            $scope.views = (g.category for g in Groups when g.category.id != 'asset')
           return
 
         populateSlotData = (s) ->
@@ -420,7 +422,7 @@ app.directive 'spreadsheet', [
               d = populateSlotData(slot)
               d.summary = (rrr.record.displayName for rrr in recs).join(', ')
               nor.add('slot', d)
-              
+
         ################################# Generate HTML
 
         # Add or replace the text contents of cell c for measure/type m with value v
@@ -442,7 +444,7 @@ app.directive 'spreadsheet', [
               icon.className = 'icon release ' + constants.release[asset.release] + ' hint-release-' + constants.release[asset.release]
             else
               if Editing && Key.id == info.c
-                cell.classList.add('folder-type')
+                cell.classList.add('folder-type') # XXX not necessarily!?
                 cell.classList.add('clickable')
                 del = cell.appendChild(document.createElement('a'))
                 del.className = 'clickable trash icon'
@@ -519,6 +521,7 @@ app.directive 'spreadsheet', [
                 generateAdd(info, td)
               else if !info.n
                 td.appendChild(document.createTextNode(info.category.not))
+                td.id = ID + '-no_' + info.i + '_' + info.c
           else
             td.appendChild(document.createTextNode(t + " " + info.category.name + "s"))
             td.className = 'more'
@@ -605,11 +608,22 @@ app.directive 'spreadsheet', [
         fill = ->
           collapse()
           n = 0
+          next = TBody.firstChild
           for i in Order
+            tr = Rows[i].tr
             if Rows[i].filt && n++ < Limit
-              TBody.appendChild(Rows[i].tr)
+              if next == tr
+                next = next.nextSibling
+              else if next
+                TBody.insertBefore(tr, next)
+              else
+                TBody.appendChild(tr)
             else
-              TBody.removeChild(Rows[i].tr) if Rows[i].tr.parentNode
+              if next == tr
+                next = next.nextSibling
+                TBody.removeChild(tr)
+              else if tr.parentNode
+                TBody.removeChild(tr)
           if n > Limit
             $scope.more = n
           else
@@ -629,8 +643,8 @@ app.directive 'spreadsheet', [
         currentSortDirection = false
 
         # Sort by column
-        sortBy = (col) ->
-          if currentSort == col
+        sortBy = (col, dir) ->
+          if currentSort == col && !dir?
             currentSortDirection = !currentSortDirection
             Order.reverse()
           else
@@ -639,8 +653,11 @@ app.directive 'spreadsheet', [
             sort (i) ->
               Rows[i].get(c)?[m]
             currentSort = col
-            currentSortDirection = false
-          fill()
+            if dir
+              currentSortDirection = true
+              Order.reverse()
+            else
+              currentSortDirection = false
           return
 
         $scope.colClasses = (col) ->
@@ -703,6 +720,7 @@ app.directive 'spreadsheet', [
           delete Rows[i]
           TBody.removeChild(row.tr) if row.tr.parentNode
           Order.remove(i)
+          Expanded = undefined if Expanded?.i == i
           return
 
         removeSlot = (info) ->
@@ -933,7 +951,7 @@ app.directive 'spreadsheet', [
               if info.c == 'slot'
                 return if info.slot?.top && (mi == 'date' || mi == 'release')
                 v = info.slot?[mi]
-                v = !!v if mi == 'top'
+                v = !!v if mi == 'top' && info.slot
               else if info.c == 'asset' # not reached
                 v = info.asset[mi]
               else
@@ -1027,7 +1045,7 @@ app.directive 'spreadsheet', [
 
           if Editing
             edit(info)
-          else if info.metric
+          else if info.category
             $scope.filter.add(info)
           return
 
@@ -1130,6 +1148,8 @@ app.directive 'spreadsheet', [
             $scope.filter.add(col)
           if col.metric
             sortBy(col)
+            fill()
+          return
 
         clickRemove = (event) ->
           return unless info = parseId(event.target.parentNode)
@@ -1158,46 +1178,70 @@ app.directive 'spreadsheet', [
 
         ################################# main
 
+        pivotOpts = undefined
         $scope.pivot =
           show: ->
             @run(Rows)
+            return
           hide: ->
             @clear()
+            return
+          load: (opts) ->
+            if @run
+              if opts
+                @run(Rows, opts)
+              else
+                @clear()
+            else
+              pivotOpts = opts
+            return
+          init: ->
+            @run(Rows, pivotOpts) if pivotOpts
+            pivotOpts = undefined
+            return
+
+        $scope.filter =
+          update: (f) ->
+            unedit()
+            setFilter(f)
+            fill()
+            return
+          accept: (f) ->
+            if f.category == pseudoCategory.slot
+              if Key == pseudoCategory.slot
+                f.metric
+              else
+                f.metric != pseudoMetric.summary
+            else
+              f.category != pseudoCategory.asset && (Key == pseudoCategory.slot || Key == f.category)
+          add: (info) ->
+            return unless @accept(info)
+            last = @list.pop()
+            if last?.op
+              @list.push(last)
+            @list.push
+              category: info.category
+              metric: info.metric || constants.metricName.indicator
+              value: if info.metric?.type == 'numeric' then parseFloat(info.v) else info.v
+            return
+          count: 0
 
         setFilter = (f) ->
+          c = 0
           if !f
             for row in Rows
               row.filt = true
           else if Key.id == 'slot'
             for row in Rows
-              row.filt = f(row.slot.slot)
+              s = row.slot.slot
+              c++ unless row.filt = f(s, s.records)
           else
             for row in Rows
-              row.filt = f(row.key?.record)
+              c++ unless row.filt = f(row.key?.record, row.list('slot'))
+          $scope.filter.count = c
           if $scope.pivot.active
             $scope.pivot.show()
           return
-
-        $scope.filter =
-          list:
-            [
-              category: pseudoCategory.slot
-              metric: pseudoMetric.top
-            ]
-          update: (f) ->
-            unedit()
-            setFilter(f)
-            fill()
-          add: (info) ->
-            last = @list.pop()
-            if last?.op
-              @list.push(last)
-            return if info.category != Key && Key != pseudoCategory.slot || info.category == pseudoCategory.asset
-            @list.push
-              category: info.category
-              metric: info.metric || constants.metricName.indicator
-              value: info.v
-            return
 
         # Call all populate functions
         populate = ->
@@ -1209,6 +1253,7 @@ app.directive 'spreadsheet', [
             populateRecords()
           if Order.length != Rows.length
             Order = if Rows.length then [0..Rows.length-1] else []
+          $scope.count = Rows.length
           $(TBody).empty()
           Expanded = undefined
           Rows[-1] = foot if foot
@@ -1220,19 +1265,158 @@ app.directive 'spreadsheet', [
           tooltips.clear()
           return
 
-        $scope.setKey = (key) ->
+        setKey = (key) ->
           unedit()
           Key = $scope.key = key? && getCategory(key) || pseudoCategory.slot
-          $location.replace().search('key', if Key != pseudoCategory.slot then Key.id)
-          if ($scope.filter.key = Key.id) != 'slot'
-            $scope.filter.list = $scope.filter.list.filter((f) -> f.category == Key && f.metric.type != 'void')
           populate()
+          $scope.filter.key = Key.id
+          $scope.filter.list = $scope.filter.list.filter($scope.filter.accept)
           setFilter($scope.filter.make?())
-          fill()
+          $location.replace().search('key', undefined)
           $scope.tabOptionsClick = undefined
+          return
 
-        $scope.setKey($attrs.key || $location.search().key)
+        $scope.setKey = (key) ->
+          setKey(key)
+          fill()
+          return
+
+        $scope.state =
+          get: ->
+            state =
+              key: Key.id
+              sort: currentSort && {
+                  c: currentSort.category.id
+                  m: currentSort.metric.id
+                  dir: currentSortDirection
+                }
+              filter: $scope.filter.list.map (f) ->
+                c: f.category.id
+                m: f.metric.id
+                op: f.op
+                v: f.value
+              pivot: $scope.pivot.get?()
+              public: @public
+            delete state.sort unless state.sort
+            l = state.filter.pop()
+            if l?.op
+              state.filter.push(l)
+            delete state.pivot unless state.pivot
+            delete state.public unless state.public
+            state
+
+          put: (state, key) ->
+            if state.filter
+              l = []
+              for f in state.filter
+                r =
+                  category: getCategory(f.c)
+                  metric: getMetric(f.m)
+                  op: f.op
+                  value: f.v
+                l.push r if r.category && r.metric
+              $scope.filter.list = l
+            else
+              $scope.filter.list = [
+                category: pseudoCategory.slot
+                metric: pseudoMetric.top
+              ]
+            setKey(key || state.key)
+            sortBy(Cols.find((c) -> c.category.id == 'slot' && c.metric.id == 'date'))
+            if state.sort && col = Cols.find((c) -> c.category.id == state.sort.c && c.metric.id == state.sort.m)
+              sortBy(col, state.sort.currentSortDirection)
+            fill()
+            $scope.pivot.load(state.pivot)
+            return
+
+          name: 'default'
+          save: ->
+            return unless name = @name
+            state = @get()
+            router.http(router.controllers.postVolumeState, volume.id, encodeURIComponent(name), state).then ->
+                volume.state[name] = state
+                messages.add
+                  type: 'green'
+                  body: 'Display mode "' + name + '" saved successfully.'
+                return
+              , (res) ->
+                messages.addError
+                  body: 'Error saving report state'
+                  report: res
+                return
+            return
+
+          delete: ->
+            return unless @name
+            router.http(router.controllers.deleteVolumeState, volume.id, encodeURIComponent(@name)).then =>
+                delete volume.state[@name]
+                @name = undefined
+                return
+              , (res) ->
+                messages.addError
+                  body: 'Error deleting report state'
+                  report: res
+                return
+            return
+
+          restore: (key, state) ->
+            state = state || volume.state?[@name] || {}
+            state.public = !!state.public
+            @put(state, key)
+            return
+
+        if volume.state
+          volume.state['NIH Inclusion Enrollment Report'] ?=
+            key: constants.categoryName.participant.id
+            pivot:
+              cols: ["participant ethnicity", "participant gender"]
+              rows: ["participant race"]
+              rendererName: "Table"
+              aggregatorName: "Count"
+            filter: [ # these aren't actually used (yet)
+              {c: "slot", m: "top", op: "false"},
+              {c: "slot", m: "date", op: "ge"},
+              {c: "slot", m: "date", op: "le", v: $filter('date')(new Date(), 'yyyy-MM-dd')}]
+
+        $scope.zip = (event) ->
+          event.preventDefault()
+          cs = []
+          for row in Rows
+            cs.push
+              i: row.slot.id
+              f: !!row.filt
+          cs.sort (a, b) -> a.i-b.i
+          f = $scope.filter.count < cs.length/2
+          l = []
+          b = undefined
+          add = ->
+            if b
+              l.push(b.join('-'))
+              b = undefined
+          for c in cs
+            if c.f == f
+              add()
+            else if b
+              b[1] = c.i
+            else
+              b = [c.i]
+          add()
+          params = {}
+          if l.length
+            params[if f then 'exclude' else 'include'] = l.join(',')
+          $location.url(router.volumeDescription([volume.id], params))
+          return
+
         return
-
     ]
+    link: ($scope, $element, $attrs) ->
+      state = storage.getValue('spreadsheet-state')
+      state = undefined unless state?.volume == $scope.volume.id
+      $scope.state.restore($attrs.key || $location.search().key, state)
+      $scope.$on '$destroy', ->
+        state = $scope.state.get()
+        state.volume = $scope.volume.id
+        storage.setValue('spreadsheet-state', state)
+        return
+      return
 ]

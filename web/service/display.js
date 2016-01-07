@@ -1,8 +1,8 @@
 'use strict';
 
 app.factory('displayService', [
-  '$rootScope', 'storageService', '$filter', 'messageService', 'tooltipService', 'constantService', '$timeout', '$window', 'analyticService',
-  function ($rootScope, storage, $filter, messages, tooltips, constants, $timeout, window, analytics) {
+  '$rootScope', 'storageService', '$filter', '$sce', 'messageService', 'tooltipService', 'constantService', '$timeout', '$window', '$play', 'analyticService',
+  function ($rootScope, storage, $filter, $sce, messages, tooltips, constants, $timeout, window, $play, analytics) {
     var display = {};
 
     display.title = '';
@@ -39,12 +39,14 @@ app.factory('displayService', [
 
     display.scrollTo = function (target) {
       $timeout(function () {
-        if (angular.isFunction(target))
+        if (typeof target === 'function')
           target = target();
-        if (angular.isString(target))
+        if (typeof target === 'string')
           target = $(target);
-        if (!angular.isNumber(target)) {
+        if (target instanceof $) {
           if (!target.length) return;
+          if (target.is('input,textarea'))
+            target.focus();
           target = target.offset().top - 72;
         }
         $scroll.animate({
@@ -54,7 +56,7 @@ app.factory('displayService', [
     };
 
     var ageKeys = ['auto', 'day', 'month', 'year'];
-    display.age = storage.get('displayAge') || 'auto';
+    display.age = storage.getString('displayAge') || 'auto';
 
     display.ageMode = function (days) {
       if (display.age !== 'auto')
@@ -69,7 +71,7 @@ app.factory('displayService', [
     display.toggleAge = function (mode) {
       display.age = mode || ageKeys[(ageKeys.indexOf(display.age) + 1) % ageKeys.length];
       $rootScope.$broadcast('displayService-toggleAge', display.age);
-      storage.set('displayAge', display.age);
+      storage.setString('displayAge', display.age);
     };
 
     display.formatAge = function (value) {
@@ -87,6 +89,13 @@ app.factory('displayService', [
       messages.add({
         type: 'yellow',
         body: constants.message('video.unsupported'),
+        persist: true
+      });
+
+    if ($play.down)
+      messages.add({
+        type: 'red',
+        body: $sce.trustAsHtml($play.down + " <a href='/' target='_self'>Learn more.</a>"),
         persist: true
       });
 

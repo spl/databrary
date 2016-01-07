@@ -1,7 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 module Databrary.Model.VolumeAccess.Types
   ( VolumeAccess(..)
-  , MonadHasVolumeAccess
   ) where
 
 import Data.Int (Int16)

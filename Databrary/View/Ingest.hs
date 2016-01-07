@@ -33,8 +33,8 @@ htmlIngestStatus (IngestCompleted cl) js = do
 
 htmlIngestForm :: Volume -> IngestStatus -> RequestContext -> FormHtml JSON.Value
 htmlIngestForm v s = htmlForm
-  ("Ingest " <> volumeName v)
-  postIngest (volumeId v)
+  ("Ingest " <> volumeName (volumeRow v))
+  postIngest (volumeId $ volumeRow v)
   (case s of
     IngestActive _ ->
       field "abort" $ inputCheckbox False

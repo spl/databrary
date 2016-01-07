@@ -1,10 +1,11 @@
 <div>
-  <label class="option classification">
+  <label ng-if="!force" class="option classification">
     <input type="checkbox" name="{{::name+'.check'}}" ng-model="form.check">
     <span message="release.DEFAULT.deselect"></span>
   </label>
-  <div class="classification-select-dropdown" ng-if="form.check">
+  <div ng-class="::force ? [] : ['classification-select-dropdown']" ng-if="form.check || force">
     <select name="{{::name}}" ng-model="form.value" ng-options="i as l for (i, l) in ::releases">
+      <option ng-if="force" value="">Choose file release...</option>
     </select>
   </div>
 </div>

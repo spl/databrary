@@ -9,11 +9,14 @@ app.directive 'volumePivot', [
 
       indicator = constants.metricName.indicator.id
 
-      pivot.run = (rows) ->
+      pivot.run = (rows, opts) ->
         cols = $scope.groups
         head = []
         for g in cols when g.category.id != 'asset'
-          n = g.category.name + ' '
+          if g.category.id == 'slot'
+            n = ''
+          else
+            n = g.category.name + ' '
           for m in g.metrics when m.id != 'summary'
             if m.id == 'age'
               agemode = display.ageMode($scope.volume.summary.agemean)
@@ -37,7 +40,7 @@ app.directive 'volumePivot', [
             else
               $sanitize(v)
 
-        for row in rows when row.filt
+        for row in rows when row.filt && row.key
           data.push(d = [])
           for g in cols when g.category.id != 'asset'
             l = row.list(g.category.id)
@@ -60,13 +63,24 @@ app.directive 'volumePivot', [
                     else
                       d.push('<em>multiple</em>')
                 
-        $element.pivotUI(data)
+        $element.pivotUI(data, opts, opts?)
         @active = true
         return
 
       pivot.clear = ->
         @active = false
         $element.empty()
+
+      pivot.get = ->
+        return unless @active
+        opts = $element.data('pivotUIOptions')
+        r = {}
+        for k in ['rendererName', 'cols', 'rows', 'aggregatorName', 'vals']
+          if k of opts
+            r[k] = opts[k]
+        r
+
+      pivot.init?()
 
       return
 ]

@@ -16,8 +16,8 @@ import {-# SOURCE #-} Databrary.Controller.VolumeAccess
 
 htmlVolumeAccessForm :: VolumeAccess -> RequestContext -> FormHtml f
 htmlVolumeAccessForm a@VolumeAccess{ volumeAccessVolume = vol, volumeAccessParty = p } = htmlForm
-  ("Access to " <> volumeName vol <> " for " <> partyName p)
-  postVolumeAccess (HTML, (volumeId vol, VolumeAccessTarget (partyId p)))
+  ("Access to " <> volumeName (volumeRow vol) <> " for " <> partyName (partyRow p))
+  postVolumeAccess (HTML, (volumeId $ volumeRow vol, VolumeAccessTarget $ partyId $ partyRow p))
   (do
     field "individual" $ inputEnum True $ Just $ volumeAccessIndividual a
     field "children" $ inputEnum True $ Just $ volumeAccessChildren a

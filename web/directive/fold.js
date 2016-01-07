@@ -15,7 +15,7 @@ app.directive('fold', [
           $element.removeClass('folded');
         $scope.folded = folded;
         if (!forget)
-          storage.set('folding-' + id, folded ? '1' : '');
+          storage.setString('folding-' + id, folded ? '1' : '');
       }
 
       $scope.toggleFold = function (state) {
@@ -25,7 +25,7 @@ app.directive('fold', [
       $element.addClass('foldable');
       $element.find('[folder]').addClass('folder');
 
-      setFold(storage.get('folding-' + id));
+      setFold(storage.getString('folding-' + id));
     };
 
     return {

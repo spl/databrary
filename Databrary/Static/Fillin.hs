@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
 module Databrary.Static.Fillin
   ( staticSendInvestigator
   ) where
@@ -29,8 +29,8 @@ staticSendInvestigator p Context{ contextTimestamp = t, contextService = rc@Serv
   where
   fields =
     [ ("auth", convertToBase Base16 $ key $ foldMap snd $ tail fields)
-    , ("id", BSC.pack $ show $ partyId p)
-    , ("name", TE.encodeUtf8 $ partyName p)
+    , ("id", BSC.pack $ show $ partyId $ partyRow p)
+    , ("name", TE.encodeUtf8 $ partyName $ partyRow p)
     , ("date", BSC.pack $ formatTime defaultTimeLocale "%B %e, %Y" t)
     , ("mail", a)
     ]

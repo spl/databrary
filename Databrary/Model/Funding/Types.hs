@@ -1,9 +1,7 @@
 {-# LANGUAGE OverloadedStrings, RecordWildCards, TemplateHaskell, TypeFamilies #-}
 module Databrary.Model.Funding.Types
   ( Funder(..)
-  , MonadHasFunder
   , Funding(..)
-  , MonadHasFunding
   ) where
 
 import Data.Int (Int64)

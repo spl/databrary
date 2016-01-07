@@ -1,7 +1,6 @@
 {-# LANGUAGE TemplateHaskell, TypeFamilies, OverloadedStrings #-}
 module Databrary.Model.Comment.Types
   ( Comment(..)
-  , MonadHasComment
   , CommentRow(..)
   ) where
 
