@@ -31,8 +31,6 @@ app.factory('constantService', [
     invertArray(constants.release);
     constants.categories = _.sortBy(constants.category, 'id');
     constants.categoryName = _.indexBy(constants.category, 'name');
-    constants.metrics = _.sortBy(constants.metric, 'id');
-    constants.metricName = _.indexBy(constants.metric, 'name');
 
     /* convenient aliases: */
     constants.permission.VIEW = constants.permission.PUBLIC;
@@ -40,22 +38,28 @@ app.factory('constantService', [
     constants.permission.SUPER = constants.permission.length;
 
     /* backwards compatibility: */
-    _.forEach(constants.party, function (party, name) {
+    for (var name in constants.party) {
       var uname = name.toUpperCase();
-      if (angular.isObject(party) && name !== uname)
+      var party = constants.party[name];
+      if (typeof party === 'object' && name !== uname)
         constants.party[uname] = party.id;
-    });
+    }
 
     var msgnot = messages.not;
-    _.forEach(constants.category, function (cat) {
+    for (var c in constants.category) {
+      var cat = constants.category[c];
       var n = cat.name;
       cat.not = n in msgnot ? msgnot[n] : 'No ' + n;
-    });
+      var metrics = _.filter(constants.metric, 'category', cat.id);
+      cat.metrics = _.sortBy(metrics, 'id');
+      cat.metricName = _.indexBy(metrics, 'name');
+    }
 
-    _.forEach(constants.format, function (fmt) {
+    for (var f in constants.format) {
+      var fmt = constants.format[f];
       var m = fmt.mimetype;
       fmt.type = m.slice(0, m.indexOf('/'));
-    });
+    }
 
     constants.accessPreset = [
       [constants.permission.NONE,   constants.permission.NONE],
