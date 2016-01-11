@@ -1032,13 +1032,8 @@ app.factory('modelService', [
     Object.defineProperty(Record.prototype, 'displayName', {
       get: function () {
         var cat = constants.category[this.category];
-        var idents = cat.ident || [constants.metricName.ID.id];
-        var ident = [];
-        for (var i = 0; i < idents.length; i ++)
-          if (idents[i] in this.measures)
-            ident.push(this.measures[idents[i]]);
-
-        return cat.name + ' ' + ident.join(', ');
+        var met = this.volume.metrics[cat.id][0];
+        return cat.name + ' ' + this.measures[met];
       }
     });
 

@@ -47,42 +47,49 @@ app.directive 'spreadsheet', [
             a[f] = 1
             0
 
+        Birthdate = constants.categoryName.participant.metricName.birthdate
         pseudoMetric =
-          top: # slot
+          top:
             id: 'top'
+            category: 'slot'
             name: 'type'
             type: 'top'
             sort: -10000
             options:
               false: 'session'
               true: 'materials'
-          name: # slot, asset
+          name:
             id: 'name'
+            #category: 'slot', 'asset'
             name: 'name'
             type: 'text'
             sort: -9000
-          date: # slot
+          date:
             id: 'date'
+            category: 'slot'
             name: 'test date'
             type: 'date'
             description: 'Date on which this session was acquired'
             sort: -8000
-          release: # slot
+          release:
             id: 'release'
+            category: 'slot'
             name: 'release'
             type: 'release'
             description: 'Level of data release to which depicted participant(s) consented'
             sort: -7000
           age: # record
             id: 'age'
+            category: Birthdate.category.id
             name: 'age'
             type: 'age'
             release: constants.release.EXCERPTS
-            sort: constants.metricName.birthdate.id + 0.5
+            sort: Birthdate.id + 0.5
             description: 'Time between birthdate and test date'
             readonly: true
-          summary: # slot
+          summary:
             id: 'summary'
+            category: 'slot'
             name: 'summary'
             type: 'text'
             sort: 10000
@@ -96,13 +103,13 @@ app.directive 'spreadsheet', [
             id: 'slot'
             name: 'folder'
             not: 'No folders'
-            metrics: ['top', 'name', 'date', 'release']
+            template: ['top', 'name', 'date', 'release']
             fixed: true
           asset:
             id: 'asset'
             name: 'file'
             not: 'No files'
-            metrics: ['name']
+            template: ['name']
             description: 'Files included in this folder'
             fixed: true
         constants.deepFreeze(pseudoCategory)
@@ -326,9 +333,8 @@ app.directive 'spreadsheet', [
             cats = [Key, pseudoCategory.slot]
 
           $scope.groups = Groups = cats.map (category) ->
-            metrics = (category.metrics || volume.metrics[category.id] || []).map(getMetric)
-            metrics.push(constants.metricName.ID) unless metrics.length
-            if !Editing && constants.metricName.birthdate in metrics
+            metrics = (category.template || volume.metrics[category.id]).map(getMetric)
+            if !Editing && Birthdate in metrics
               (slot || metrics).push(pseudoMetric.age)
             if slot && category.id == 'slot'
               metrics.push.apply metrics, slot
@@ -1221,7 +1227,7 @@ app.directive 'spreadsheet', [
               @list.push(last)
             @list.push
               category: info.category
-              metric: info.metric || constants.metricName.indicator
+              metric: info.metric || info.category.metrics[0]
               value: if info.metric?.type == 'numeric' then parseFloat(info.v) else info.v
             return
           count: 0
