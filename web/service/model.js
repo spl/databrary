@@ -434,7 +434,6 @@ app.factory('modelService', [
       links: false,
       funding: false,
       tags: false,
-      metrics: false,
       state: false,
       // consumers: false,
       // producers: false,
@@ -464,6 +463,8 @@ app.factory('modelService', [
         this.excerpts = excerptMakeArray(this, init.excerpts);
       if ('comments' in init)
         this.comments = commentMakeArray(this, init.comments);
+      if ('metrics' in init)
+        this.metrics = _.groupBy(init.metrics, function (m) { return constants.metric[m].category; });
     };
 
     function volumeMake(init) {
@@ -653,7 +654,7 @@ app.factory('modelService', [
       return router.http(m == null ?
           on ? router.controllers.addVolumeCategory : router.controllers.deleteVolumeCategory :
           on ? router.controllers.addVolumeMetric   : router.controllers.deleteVolumeMetric,
-          this.id, c, m)
+          this.id, m == null ? c : m)
         .then(function (res) {
           var d = res.data;
           if ('metrics' in v) {

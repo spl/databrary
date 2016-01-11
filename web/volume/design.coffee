@@ -14,8 +14,12 @@ app.directive 'volumeDesign', [
         form.metric = {}
         return unless ($scope.selected = constants.category[c])?
         $location.replace().search('key', undefined)
-        for m in volume.metrics[c] ? $scope.selected.template
-          form.metric[m] = true
+        if volume.metrics[c]
+          for m in volume.metrics[c]
+            form.metric[m] = true
+        else
+          for m in $scope.selected.metrics when m.required?
+            form.metric[m.id] = true
         return
 
       init = () ->
@@ -42,6 +46,22 @@ app.directive 'volumeDesign', [
               report: res
               owner: form
             return)
+        unless m?
+          return
+        # set/clear indicator when necessary
+        # could be done more efficiently without a separate call
+        i = $scope.selected.metrics[0]
+        unless i.type == 'void' && m != i.id
+          return
+        if form.metric[m]
+          s = false
+        else if !_.some(form.metric)
+          s = true
+        else
+          return
+        i = i.id
+        form.metric[i] = s
+        $scope.change(c, i)
         return
 
       $scope.manage = () ->
