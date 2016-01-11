@@ -27,15 +27,15 @@ type MeasureDatum = BS.ByteString
 type instance IdType Metric = Int32
 
 data Metric = Metric
-  { metricId :: Id Metric
-  , metricCategory :: Category
-  , metricName :: T.Text
-  , metricRelease :: Maybe Release
-  , metricType :: MeasureType
-  , metricOptions :: [MeasureDatum]
-  , metricAssumed :: Maybe MeasureDatum
-  , metricDescription :: Maybe T.Text
-  , metricRequired :: Maybe Bool
+  { metricId :: !(Id Metric)
+  , metricCategory :: !Category
+  , metricName :: !T.Text
+  , metricRelease :: !(Maybe Release)
+  , metricType :: !MeasureType
+  , metricOptions :: ![MeasureDatum]
+  , metricAssumed :: !(Maybe MeasureDatum)
+  , metricDescription :: !(Maybe T.Text)
+  , metricRequired :: !(Maybe Bool)
   }
 
 instance Kinded Metric where
