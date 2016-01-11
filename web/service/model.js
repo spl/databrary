@@ -1032,8 +1032,11 @@ app.factory('modelService', [
     Object.defineProperty(Record.prototype, 'displayName', {
       get: function () {
         var cat = constants.category[this.category];
-        var met = this.volume.metrics[cat.id][0];
-        return cat.name + ' ' + this.measures[met];
+        var val = this.measures[this.volume.metrics[cat.id][0]];
+        if (val)
+          return cat.name + ' ' + val;
+        else
+          return cat.name;
       }
     });
 

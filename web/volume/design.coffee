@@ -46,12 +46,9 @@ app.directive 'volumeDesign', [
               report: res
               owner: form
             return)
-        unless m?
-          return
         # set/clear indicator when necessary
         # could be done more efficiently without a separate call
-        i = $scope.selected.metrics[0]
-        unless i.type == 'void' && m != i.id
+        unless m? && (i = $scope.selected.indicator) && m != i.id
           return
         if form.metric[m]
           s = false
@@ -60,8 +57,9 @@ app.directive 'volumeDesign', [
         else
           return
         i = i.id
-        form.metric[i] = s
-        $scope.change(c, i)
+        if form.metric[i] != s
+          form.metric[i] = s
+          $scope.change(c, i)
         return
 
       $scope.manage = () ->

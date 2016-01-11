@@ -53,6 +53,8 @@ app.factory('constantService', [
       var metrics = _.filter(constants.metric, 'category', cat.id);
       cat.metrics = _.sortBy(metrics, 'id');
       cat.metricName = _.indexBy(metrics, 'name');
+      if (cat.metrics[0].type === 'void')
+        cat.indicator = cat.metrics[0];
     }
 
     for (var f in constants.format) {

@@ -49,12 +49,18 @@ app.directive 'spreadsheet', [
 
         Birthdate = constants.categoryName.participant.metricName.birthdate
         pseudoMetric =
+          indicator:
+            id: 'indicator'
+            name: 'indicator'
+            type: 'void'
+            sort: 0
+            assumed: true
           top:
             id: 'top'
             category: 'slot'
             name: 'type'
             type: 'top'
-            sort: -10000
+            sort: 1
             options:
               false: 'session'
               true: 'materials'
@@ -63,21 +69,21 @@ app.directive 'spreadsheet', [
             #category: 'slot', 'asset'
             name: 'name'
             type: 'text'
-            sort: -9000
+            sort: 2
           date:
             id: 'date'
             category: 'slot'
             name: 'test date'
             type: 'date'
             description: 'Date on which this session was acquired'
-            sort: -8000
+            sort: 3
           release:
             id: 'release'
             category: 'slot'
             name: 'release'
             type: 'release'
             description: 'Level of data release to which depicted participant(s) consented'
-            sort: -7000
+            sort: 4
           age: # record
             id: 'age'
             category: Birthdate.category.id
@@ -92,7 +98,7 @@ app.directive 'spreadsheet', [
             category: 'slot'
             name: 'summary'
             type: 'text'
-            sort: 10000
+            sort: Infinity
             readonly: true
         constants.deepFreeze(pseudoMetric)
         getMetric = (m) ->
@@ -946,7 +952,7 @@ app.directive 'spreadsheet', [
                 $location.url(info.slot.editRoute({asset:info.d.id}))
                 return
               m = info.metric
-              if m.name == 'indicator'
+              if m.type == 'void'
                 # trash/bullet: remove
                 setRecord(info, null) if info.category != Key
                 return
@@ -1070,7 +1076,7 @@ app.directive 'spreadsheet', [
             while true
               c = if event.shiftKey then c.previousSibling else c.nextSibling
               return unless c && i = parseId(c)
-              break unless i.category?.id == 'asset' || i.metric?.name == 'indicator' # skip "delete" actions
+              break unless i.category?.id == 'asset' || i.metric?.type == 'void' # skip "delete" actions
             select(i)
 
           return
@@ -1227,7 +1233,7 @@ app.directive 'spreadsheet', [
               @list.push(last)
             @list.push
               category: info.category
-              metric: info.metric || info.category.metrics[0]
+              metric: if info.metric && info.metric.type != 'void' then info.metric else pseudoMetric.indicator
               value: if info.metric?.type == 'numeric' then parseFloat(info.v) else info.v
             return
           count: 0
