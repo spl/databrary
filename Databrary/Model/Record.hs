@@ -24,12 +24,12 @@ import Databrary.Model.Id
 import Databrary.Model.Identity.Types
 import Databrary.Model.Volume.Types
 import Databrary.Model.Party.Types
-import Databrary.Model.RecordCategory
+import Databrary.Model.Category
 import Databrary.Model.Measure
 import Databrary.Model.Record.Types
 import Databrary.Model.Record.SQL
 
-blankRecord :: RecordCategory -> Volume -> Record
+blankRecord :: Category -> Volume -> Record
 blankRecord cat vol = Record
   { recordRow = RecordRow
     { recordId = error "blankRecord"
@@ -71,6 +71,6 @@ removeRecord r = do
 recordJSON :: Record -> JSON.Object
 recordJSON r@Record{ recordRow = RecordRow{..}, ..} = JSON.record recordId
   [ -- "volume" JSON..= volumeId recordVolume
-    "category" JSON..= recordCategoryId recordCategory
+    "category" JSON..= categoryId recordCategory
   , "measures" JSON..= JSON.Object (measuresJSON $ getRecordMeasures r)
   ]

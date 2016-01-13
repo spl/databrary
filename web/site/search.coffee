@@ -81,14 +81,12 @@ app.controller 'site/search', [
     $scope.fields = fields = {}
     for f, v of handlers
       fields[f] = [v.range[0],v.range[1]] if v.range
-    $scope.metrics = metrics = {}
     for f, v of params
       if f.startsWith('f.')
         n = f.substr(2)
         fields[n] = (handlers[n] ? Default).parse(v)
       else if f.startsWith('m.')
         mi = f.substr(2)
-        metrics[mi] = (handlers[constants.metric[mi].type] ? Default).parse(v)
 
     any = (o) ->
       for f, v of o
@@ -103,8 +101,6 @@ app.controller 'site/search', [
       for f, v of fields
         q['f.'+f] = (handlers[f] ? Default).print(v)
       delete q['f.container_top'] if q['f.container_date']
-      for f, v of metrics
-        q['m.'+f] = (handlers[constants.metric[f].type] ? Default).print(v)
       $location.search(q)
       return
 
@@ -151,32 +147,6 @@ app.controller 'site/search', [
     $scope.ageRange = [Math.log(ageLogOffset), Math.log(ageLogOffset+constants.age.limit)]
     $scope.clearAge = () ->
       fields.record_age = [-Infinity,Infinity]
-
-    $scope.availableMetrics = () ->
-      m for m in constants.metrics when metrics[m.id] == undefined && m.release >= constants.permission.PUBLIC
-    $scope.addMetric = () ->
-      if mi = $scope.addMetric.id
-        $scope.addMetric.id = ''
-        metrics[mi] = if constants.metric[mi].type == 'numeric' then [] else ''
-      return
-    $scope.removeMetric = (mi) ->
-      metrics[mi] = undefined
-      $scope.searchVolumes()
-      return
-
-    $scope.optionsCompleter = (m, input) ->
-      i = input.toLowerCase()
-      match = (o for o in m.options when o.toLowerCase().startsWith(i))
-      switch match.length
-        when 0 then input
-        when 1 then match[0]
-        else for o, i in match
-          text: o
-          select: () ->
-            metrics[m.id] = this.text
-            $scope.searchVolumes()
-            this.text
-          default: input && i==0
 
     $scope.expandVolume = (v) ->
       if v && $scope.expanded?.volume == v

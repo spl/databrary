@@ -24,7 +24,7 @@ import Databrary.Model.Id
 import Databrary.Model.Volume
 import Databrary.Model.Permission
 import Databrary.Model.Record
-import Databrary.Model.RecordCategory
+import Databrary.Model.Category
 import Databrary.Model.RecordSlot
 import Databrary.Model.Metric
 import Databrary.Model.Measure
@@ -55,7 +55,7 @@ createRecord = action POST (pathAPI </> pathId </< "record") $ \(api, vi) -> wit
   vol <- getVolume PermissionEDIT vi
   br <- runForm (api == HTML ?> htmlRecordForm vol) $ do
     csrfForm
-    cat <- "category" .:> (deformMaybe' "No such record category." . getRecordCategory =<< deform)
+    cat <- "category" .:> (deformMaybe' "No such category" . getCategory =<< deform)
     return $ blankRecord cat vol
   rec <- addRecord br
   case api of
@@ -87,7 +87,7 @@ deleteRecord = action DELETE (pathAPI </> pathId) $ \(api, ri) -> withAuth $ do
   r <- removeRecord rec
   unless r $ result $ case api of
     JSON -> response conflict409 [] (recordJSON rec)
-    HTML -> response conflict409 [] ("This record is still used." :: T.Text)
+    HTML -> response conflict409 [] ("This record is still used" :: T.Text)
   case api of
     JSON -> return $ emptyResponse noContent204 []
     HTML -> peeks $ otherRouteResponse [] viewVolume (api, view rec)

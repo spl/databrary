@@ -39,7 +39,7 @@ import Databrary.Model.Asset.Types
 import Databrary.Model.AssetSlot
 import Databrary.Model.AssetSegment.Types
 import Databrary.Model.Excerpt
-import Databrary.Model.RecordCategory.Types
+import Databrary.Model.Category.Types
 import Databrary.Model.Record.Types
 import Databrary.Model.RecordSlot
 import Databrary.Model.Measure
@@ -121,7 +121,7 @@ solrRecord rs@RecordSlot{ slotRecord = r@Record{ recordRow = RecordRow{..}, ..},
   , solrContainerId = containerId $ containerRow slotContainer
   , solrSegment = SolrSegment slotSegment
   , solrSegmentDuration = segmentLength slotSegment
-  , solrRecordCategoryId = recordCategoryId recordCategory
+  , solrRecordCategoryId = categoryId recordCategory
   , solrRecordMeasures = SolrRecordMeasures $ map (\m -> (measureMetric m, measureDatum m)) $ getRecordMeasures r
   , solrRecordAge = recordSlotAge rs
   }

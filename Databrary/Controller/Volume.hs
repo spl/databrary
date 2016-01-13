@@ -153,7 +153,7 @@ volumeJSONField vol "records" _ = do
   (l, _) <- cacheVolumeRecords vol
   return $ Just $ JSON.toJSON $ map recordJSON l
 volumeJSONField vol "metrics" _ = do
-  Just . JSON.toJSON . JSON.object . map (T.pack . show *** JSON.toJSON) <$> lookupVolumeMetrics vol
+  Just . JSON.toJSON <$> lookupVolumeMetrics vol
 volumeJSONField o "excerpts" _ =
   Just . JSON.toJSON . map (\e -> excerptJSON e JSON..+
     "asset" JSON..= (assetSlotJSON (view e) JSON..+

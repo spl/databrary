@@ -895,8 +895,7 @@ app.controller('volume/slot', [
             return
 
       metrics: ->
-        ident = constants.category[@record.category].ident || [constants.metricName.ID.id]
-        (constants.metric[m] for m of @record.measures when !(+m in ident)).sort(byId)
+        (constants.metric[m] for m of @record.measures).sort(byId)
 
       rePosition: () ->
         $scope.editing = 'record'

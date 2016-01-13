@@ -42,7 +42,7 @@ import Databrary.Model.Segment
 import Databrary.Model.Slot.Types
 import Databrary.Model.Release
 import Databrary.Model.Record
-import Databrary.Model.RecordCategory
+import Databrary.Model.Category
 import Databrary.Model.Metric
 import Databrary.Model.Measure
 import Databrary.Model.RecordSlot
@@ -83,10 +83,10 @@ asDate = JE.withString (maybe (Left "expecting %F") Right . parseTime defaultTim
 asRelease :: IngestM (Maybe Release)
 asRelease = JE.perhaps JE.fromAesonParser
 
-asCategory :: IngestM RecordCategory
+asCategory :: IngestM Category
 asCategory =
-  JE.withIntegral (err . getRecordCategory . Id) `catchError` \_ -> do
-    JE.withText (\n -> err $ find ((n ==) . recordCategoryName) allRecordCategories)
+  JE.withIntegral (err . getCategory . Id) `catchError` \_ -> do
+    JE.withText (\n -> err $ find ((n ==) . categoryName) allCategories)
   where err = maybe (Left "category not found") Right
 
 asSegment :: IngestM Segment
@@ -214,7 +214,7 @@ ingestJSON vol jdata run overwrite = runExceptT $ do
           throwPE "id mismatch"
         _ <- JE.key "category" $ do
           category <- asCategory
-          category' <- (category <$) <$> on check recordCategoryName (recordCategory $ recordRow r) category
+          category' <- (category <$) <$> on check categoryName (recordCategory $ recordRow r) category
           Fold.forM_ category' $ \c -> lift $ changeRecord r
             { recordRow = (recordRow r)
               { recordCategory = c

@@ -658,26 +658,19 @@ COMMENT ON TABLE "keyword_use" IS 'Special "keyword" tags editable as volume dat
 
 ----------------------------------------------------------- records
 
-CREATE TABLE "record_category" (
+CREATE TABLE "category" (
 	"id" smallserial NOT NULL Primary Key,
 	"name" varchar(64) NOT NULL Unique,
 	"description" text
 );
-ALTER TABLE "record_category"
+ALTER TABLE "category"
 	ALTER "name" SET STORAGE EXTERNAL;
-COMMENT ON TABLE "record_category" IS 'Types of records that are relevant for data organization.';
-INSERT INTO "record_category" ("id", "name", "description") VALUES (-500, 'participant', 'An individual subject depicted, represented, or otherwise contributing data');
-INSERT INTO "record_category" ("id", "name", "description") VALUES (-200, 'group', 'A grouping determined by an aspect of the data (participant ability, age, experience, longitudinal visit, measurements used/available)');
-INSERT INTO "record_category" ("id", "name", "description") VALUES (-800, 'pilot', 'Indicates that the methods used were not finalized or were non-standard');
-INSERT INTO "record_category" ("id", "name", "description") VALUES (-700, 'exclusion', 'Indicates that data were not usable for a study');
-INSERT INTO "record_category" ("id", "name", "description") VALUES (-400, 'condition', 'An experimenter-determined manipulation (within or between sessions)');
-INSERT INTO "record_category" ("id", "name", "description") VALUES (-300, 'task', 'A particular task, activity, or phase of the session or study');
-INSERT INTO "record_category" ("id", "name", "description") VALUES (-100, 'context', 'A particular setting or other variable aspect of where/when/how data were collected');
+COMMENT ON TABLE "category" IS 'Types of records that are relevant for data organization.';
 
 CREATE TABLE "record" (
 	"id" serial NOT NULL Primary Key,
 	"volume" integer NOT NULL References "volume",
-	"category" smallint NOT NULL References "record_category" ON UPDATE CASCADE ON DELETE SET NULL
+	"category" smallint NOT NULL References "category" ON UPDATE CASCADE
 );
 CREATE INDEX ON "record" ("volume");
 COMMENT ON TABLE "record" IS 'Sets of metadata measurements organized into or applying to a single cohesive unit.  These belong to the object(s) they''re attached to, which are expected to be within a single volume.';
@@ -689,62 +682,76 @@ COMMENT ON TYPE data_type IS 'Types of measurement data corresponding to measure
 
 CREATE TABLE "metric" (
 	"id" serial NOT NULL Primary Key,
-	"name" varchar(64) NOT NULL Unique,
+	"category" smallint NOT NULL References "category" ON UPDATE CASCADE,
+	"name" varchar(64) NOT NULL,
 	"release" release,
 	"type" data_type NOT NULL,
 	"options" text[],
 	"assumed" text,
-	"description" text
+	"description" text,
+	"required" boolean,
+	Unique ("category", "name")
 );
 ALTER TABLE "metric"
 	ALTER "name" SET STORAGE EXTERNAL;
 COMMENT ON TABLE "metric" IS 'Types of measurements for data stored in measure_$type tables.';
 COMMENT ON COLUMN "metric"."options" IS '(Suggested) options for text enumerations, not enforced.';
-INSERT INTO "metric" ("id", "name", "release", "type") VALUES (-1000, 'indicator', 'PUBLIC', 'void');
-INSERT INTO "metric" ("id", "name", "release", "type", "description") VALUES (-900, 'ID', 'PUBLIC', 'text', 'A primary, unique, anonymized identifier, label, or name');
-INSERT INTO "metric" ("id", "name", "release", "type", "options", "description") VALUES (-700, 'reason', 'PUBLIC', 'text', ARRAY['Did not meet inclusion criteria','Procedural/experimenter error','Withdrew/fussy/tired','Outlier'], 'A reason for a label (often for an exclusion)');
-INSERT INTO "metric" ("id", "name", "release", "type", "description") VALUES (-600, 'description', 'PUBLIC', 'text', 'A longer explanation or description of this label');
-INSERT INTO "metric" ("id", "name", "type", "description") VALUES (-590, 'birthdate', 'date', 'The date of birth of an individual, or start/inception date for other labels (used with session date to calculate age)');
-INSERT INTO "metric" ("id", "name", "release", "type", "options", "description") VALUES (-580, 'gender', 'PUBLIC', 'text', ARRAY['Female','Male'], '"Male", "Female", or any other relevant gender label');
-INSERT INTO "metric" ("id", "name", "release", "type", "options", "description") VALUES (-550, 'race', 'PUBLIC', 'text', ARRAY['American Indian or Alaska Native','Asian','Native Hawaiian or Other Pacific Islander','Black or African American','White','Multiple'], 'Usually as categorized by NIH');
-INSERT INTO "metric" ("id", "name", "release", "type", "options", "description") VALUES (-540, 'ethnicity', 'PUBLIC', 'text', ARRAY['Not Hispanic or Latino','Hispanic or Latino'], 'Usually as categorized by NIH (Hispanic/Non-Hispanic)');
-INSERT INTO "metric" ("id", "name", "release", "type", "description") VALUES (-530, 'gestational age', 'PUBLIC', 'numeric', 'Pregnancy age in weeks between last menstrual period and birth (or pre-natal observation)');
-INSERT INTO "metric" ("id", "name", "type", "assumed", "description") VALUES (-520, 'disability', 'text', 'typical', 'Any developmental, physical, or mental disability');
-INSERT INTO "metric" ("id", "name", "release", "type", "assumed", "description") VALUES (-510, 'language', 'PUBLIC', 'text', 'English', 'Primary language relevant to this label, spoken by this participant, or used in this context');
-INSERT INTO "metric" ("id", "name", "release", "type", "options", "description") VALUES (-180, 'setting', 'PUBLIC', 'text', ARRAY['Lab','Home','Classroom','Outdoor','Clinic'], 'The physical context of this label');
-INSERT INTO "metric" ("id", "name", "release", "type", "assumed", "description") VALUES (-150, 'country', 'PUBLIC', 'text', 'US', 'Relevant country of origin, setting, or otherwise');
-INSERT INTO "metric" ("id", "name", "release", "type", "options", "description") VALUES (-140, 'state', 'PUBLIC', 'text', ARRAY['AL','AK','AZ','AR','CA','CO','CT','DE','DC','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','MD','MA','MI','MN','MS','MO','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY'], 'Relevant state/territory, usually within specified country');
-INSERT INTO "metric" ("id", "name", "release", "type", "description") VALUES (-90, 'info', 'PUBLIC', 'text', 'Other information or alternate identifier for this label');
+COMMENT ON COLUMN "metric"."required" IS 'Indicates the default status of this field in volume designs: on by default (not null), or required on (true).';
 
-CREATE TABLE "record_template" (
-	"category" smallint NOT NULL References "record_category" ON UPDATE CASCADE ON DELETE CASCADE,
-	"metric" integer NOT NULL References "metric" ON UPDATE CASCADE ON DELETE CASCADE,
-	"ident" boolean NOT NULL Default false,
-	Primary Key ("category", "metric")
-);
-COMMENT ON TABLE "record_template" IS 'Default set of measures defining a given record category.';
-INSERT INTO "record_template" VALUES (-500, -590);
-INSERT INTO "record_template" VALUES (-500, -580);
-INSERT INTO "record_template" VALUES (-500, -550);
-INSERT INTO "record_template" VALUES (-500, -540);
-INSERT INTO "record_template" VALUES (-500, -520);
-INSERT INTO "record_template" VALUES (-500, -510);
-INSERT INTO "record_template" VALUES (-300, -600);
-INSERT INTO "record_template" VALUES (-500, -900, true);
-INSERT INTO "record_template" VALUES (-200, -900, true);
-INSERT INTO "record_template" VALUES (-400, -900, true);
-INSERT INTO "record_template" VALUES (-300, -900, true);
-INSERT INTO "record_template" VALUES (-700, -700, true);
-INSERT INTO "record_template" VALUES (-100, -180, true);
-INSERT INTO "record_template" VALUES (-100, -140, true);
-INSERT INTO "record_template" VALUES (-100, -150, true);
-INSERT INTO "record_template" VALUES (-800, -1000);
+
+INSERT INTO "category" ("name", "description") VALUES ('participant', 'An individual human subject whose data are used or represented');
+INSERT INTO "metric" ("category", "name", "release", "type", "description", "required")			VALUES (currval('category_id_seq'), 'ID', 'PUBLIC', 'text', 'A unique, anonymized, primary identifier, such as participant ID', true);
+INSERT INTO "metric" ("category", "name", "release", "type", "description")				VALUES (currval('category_id_seq'), 'info', 'PUBLIC', 'text', 'Other information or alternate identifier');
+INSERT INTO "metric" ("category", "name", "release", "type", "description")				VALUES (currval('category_id_seq'), 'description', 'PUBLIC', 'text', 'A longer explanation or description');
+INSERT INTO "metric" ("category", "name", "type", "description", "required")				VALUES (currval('category_id_seq'), 'birthdate', 'date', 'Date of birth (used with session date to calculate age; you can also use the group category to designate age groups)', false);
+INSERT INTO "metric" ("category", "name", "release", "type", "options", "description", "required")	VALUES (currval('category_id_seq'), 'gender', 'PUBLIC', 'text', ARRAY['Female','Male'], '"Male", "Female", or any other relevant gender', false);
+INSERT INTO "metric" ("category", "name", "release", "type", "options", "description", "required")	VALUES (currval('category_id_seq'), 'race', 'PUBLIC', 'text', ARRAY['American Indian or Alaska Native','Asian','Native Hawaiian or Other Pacific Islander','Black or African American','White','Multiple'], 'As classified by NIH, or user-defined classification', false);
+INSERT INTO "metric" ("category", "name", "release", "type", "options", "description", "required")	VALUES (currval('category_id_seq'), 'ethnicity', 'PUBLIC', 'text', ARRAY['Not Hispanic or Latino','Hispanic or Latino'], 'As classified by NIH (Hispanic/Non-Hispanic), or user-defined classification', false);
+INSERT INTO "metric" ("category", "name", "release", "type", "description")				VALUES (currval('category_id_seq'), 'gestational age', 'PUBLIC', 'numeric', 'Pregnancy age in weeks between last menstrual period and birth (or pre-natal observation)');
+INSERT INTO "metric" ("category", "name", "release", "type", "options", "description")			VALUES (currval('category_id_seq'), 'pregnancy term', 'PUBLIC', 'text', Array['Full term', 'Preterm'], '"Full term", "Preterm", or other gestational term');
+INSERT INTO "metric" ("category", "name", "type", "assumed", "description", "required")			VALUES (currval('category_id_seq'), 'disability', 'text', 'typical', 'Any developmental, physical, or mental disability or disabilities', false);
+INSERT INTO "metric" ("category", "name", "release", "type", "assumed", "description", "required")	VALUES (currval('category_id_seq'), 'language', 'PUBLIC', 'text', 'English', 'Primary language(s) spoken by and to participant', false);
+INSERT INTO "metric" ("category", "name", "release", "type", "assumed", "description")			VALUES (currval('category_id_seq'), 'country', 'PUBLIC', 'text', 'US', 'Country where participant was born');
+INSERT INTO "metric" ("category", "name", "release", "type", "options", "description")			VALUES (currval('category_id_seq'), 'state', 'PUBLIC', 'text', ARRAY['AL','AK','AZ','AR','CA','CO','CT','DE','DC','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','MD','MA','MI','MN','MS','MO','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY'], 'State/territory where participant was born');
+INSERT INTO "metric" ("category", "name", "release", "type", "options", "description", "required")	VALUES (currval('category_id_seq'), 'setting', 'PUBLIC', 'text', ARRAY['Lab','Home','Classroom','Outdoor','Clinic'], 'The physical context of the participant (please do not use for new data: see the context category instead)', true);
+
+INSERT INTO "category" ("name", "description") VALUES ('pilot', 'Indicates that the methods used were not finalized or were non-standard');
+INSERT INTO "metric" ("category", "name", "release", "type", "required")				VALUES (currval('category_id_seq'), 'pilot', 'PUBLIC', 'void', false);
+INSERT INTO "metric" ("category", "name", "release", "type", "description")				VALUES (currval('category_id_seq'), 'name', 'PUBLIC', 'text', 'A label or identifier referring to the pilot method');
+INSERT INTO "metric" ("category", "name", "release", "type", "description")				VALUES (currval('category_id_seq'), 'description', 'PUBLIC', 'text', 'A longer explanation or description of the pilot method');
+
+INSERT INTO "category" ("name", "description") VALUES ('exclusion', 'Indicates that data were not usable');
+INSERT INTO "metric" ("category", "name", "release", "type")						VALUES (currval('category_id_seq'), 'excluded', 'PUBLIC', 'void');
+INSERT INTO "metric" ("category", "name", "release", "type", "description")				VALUES (currval('category_id_seq'), 'name', 'PUBLIC', 'text', 'A label or identifier referring to the exclusion criterion');
+INSERT INTO "metric" ("category", "name", "release", "type", "options", "description", "required")	VALUES (currval('category_id_seq'), 'reason', 'PUBLIC', 'text', ARRAY['Did not meet inclusion criteria','Procedural/experimenter error','Withdrew/fussy/tired','Outlier'], 'The reason for excluding these data', false);
+INSERT INTO "metric" ("category", "name", "release", "type", "description")				VALUES (currval('category_id_seq'), 'description', 'PUBLIC', 'text', 'A longer explanation or description of the reason for excluding data');
+
+INSERT INTO "category" ("name", "description") VALUES ('condition', 'An experimenter-determined manipulation (within or between sessions)');
+INSERT INTO "metric" ("category", "name", "release", "type", "description", "required")			VALUES (currval('category_id_seq'), 'name', 'PUBLIC', 'text', 'A label or identifier for the condition', true);
+INSERT INTO "metric" ("category", "name", "release", "type", "description")				VALUES (currval('category_id_seq'), 'description', 'PUBLIC', 'text', 'A longer explanation or description of the condition');
+INSERT INTO "metric" ("category", "name", "release", "type", "description")				VALUES (currval('category_id_seq'), 'info', 'PUBLIC', 'text', 'Other information or alternate identifier');
+
+INSERT INTO "category" ("name", "description") VALUES ('group', 'A grouping determined by an aspect of the data (participant ability, age, grade level, experience, longitudinal visit, measurements used/available)');
+INSERT INTO "metric" ("category", "name", "release", "type", "description", "required")			VALUES (currval('category_id_seq'), 'name', 'PUBLIC', 'text', 'A label or identifier for the grouping', true);
+INSERT INTO "metric" ("category", "name", "release", "type", "description")				VALUES (currval('category_id_seq'), 'description', 'PUBLIC', 'text', 'A longer explanation or description of the grouping');
+INSERT INTO "metric" ("category", "name", "release", "type", "description")				VALUES (currval('category_id_seq'), 'info', 'PUBLIC', 'text', 'Other information or alternate identifier');
+
+INSERT INTO "category" ("name", "description") VALUES ('task', 'A particular task, activity, or phase of the session or study');
+INSERT INTO "metric" ("category", "name", "release", "type", "description", "required")			VALUES (currval('category_id_seq'), 'name', 'PUBLIC', 'text', 'A label or identifier for the task', true);
+INSERT INTO "metric" ("category", "name", "release", "type", "description", "required")			VALUES (currval('category_id_seq'), 'description', 'PUBLIC', 'text', 'A longer explanation or description of the task', false);
+INSERT INTO "metric" ("category", "name", "release", "type", "description")				VALUES (currval('category_id_seq'), 'info', 'PUBLIC', 'text', 'Other information or alternate identifier');
+
+INSERT INTO "category" ("name", "description") VALUES ('context', 'A particular setting or other aspect of where/when/how data were collected');
+INSERT INTO "metric" ("category", "name", "release", "type", "description")				VALUES (currval('category_id_seq'), 'name', 'PUBLIC', 'text', 'A label or identifier for the context');
+INSERT INTO "metric" ("category", "name", "release", "type", "options", "description", "required")	VALUES (currval('category_id_seq'), 'setting', 'PUBLIC', 'text', ARRAY['Lab','Home','Classroom','Outdoor','Clinic'], 'The physical context', true);
+INSERT INTO "metric" ("category", "name", "release", "type", "assumed", "description")			VALUES (currval('category_id_seq'), 'language', 'PUBLIC', 'text', 'English', 'Language used in this context');
+INSERT INTO "metric" ("category", "name", "release", "type", "assumed", "description", "required")	VALUES (currval('category_id_seq'), 'country', 'PUBLIC', 'text', 'US', 'Country of data collection', false);
+INSERT INTO "metric" ("category", "name", "release", "type", "options", "description", "required")	VALUES (currval('category_id_seq'), 'state', 'PUBLIC', 'text', ARRAY['AL','AK','AZ','AR','CA','CO','CT','DE','DC','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','MD','MA','MI','MN','MS','MO','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY'], 'State/territory of data collection', false);
 
 CREATE TABLE "volume_metric" (
 	"volume" integer NOT NULL References "volume",
-	"category" smallint NOT NULL References "record_category" ON UPDATE CASCADE ON DELETE CASCADE,
 	"metric" integer NOT NULL References "metric" ON UPDATE CASCADE ON DELETE CASCADE,
-	Primary Key ("volume", "category", "metric")
+	Primary Key ("volume", "metric")
 );
 
 CREATE TABLE "measure_abstract" ( -- ABSTRACT
