@@ -484,8 +484,8 @@ app.directive 'spreadsheet', [
               v = info.metric.options[v]
             else
               if info.metric.type == 'void' && info.d
-                cell.className = 'icon ' + if Editing && Key.id != info.c then 'trash clickable' else 'bullet'
-                v = ''
+                cell.className = 'clickable' if Editing && Key.id != info.c
+                v = info.metric.name
           if info.metric.long
             cell.classList.add('long')
           if v?
@@ -518,7 +518,7 @@ app.directive 'spreadsheet', [
             td.classList.add('add')
             td.classList.add('clickable')
             td.id = ID + '-add_' + info.i + '_' + info.c
-            td.appendChild(document.createTextNode("add " + info.category.name))
+            td.appendChild(document.createTextNode(info.category.not))
 
         generateMultiple = (info) ->
           t = info.count
@@ -952,15 +952,16 @@ app.directive 'spreadsheet', [
                 $location.url(info.slot.editRoute({asset:info.d.id}))
                 return
               m = info.metric
-              if m.type == 'void'
-                # trash/bullet: remove
-                setRecord(info, null) if info.category != Key
-                return
               return if m.readonly
               editScope.type = m.type
               mi = m.id
               editScope.options = m.options
-              if info.c == 'slot'
+              if m.type == 'void'
+                editScope.type = 'record'
+                editScope.options =
+                  remove: info.category.not
+                editScope.options[v = info.d.id] = m.name
+              else if info.c == 'slot'
                 return if info.slot?.top && (mi == 'date' || mi == 'release')
                 v = info.slot?[mi]
                 v = !!v if mi == 'top' && info.slot
@@ -1040,13 +1041,14 @@ app.directive 'spreadsheet', [
 
         unselect = ->
           styles.clear()
-          unedit()
+          unedit(false)
           return
 
         $scope.$on '$destroy', unselect
 
         select = (info) ->
-          unselect()
+          styles.clear()
+          unedit()
           expand(info)
           if !info.t
             for c in info.cell.classList when c.startsWith('ss-')
@@ -1214,7 +1216,7 @@ app.directive 'spreadsheet', [
 
         $scope.filter =
           update: (f) ->
-            unedit()
+            unedit(false)
             setFilter(f)
             fill()
             return
@@ -1278,7 +1280,7 @@ app.directive 'spreadsheet', [
           return
 
         setKey = (key) ->
-          unedit()
+          unselect()
           Key = $scope.key = key? && getCategory(key) || pseudoCategory.slot
           populate()
           $scope.filter.key = Key.id
