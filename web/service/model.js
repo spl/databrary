@@ -1033,11 +1033,12 @@ app.factory('modelService', [
       get: function () {
         var cat = constants.category[this.category];
         var met = constants.metric[this.volume.metrics[cat.id][0]];
-        var val = (met.type === 'void' ? met.name : this.measures[met.id]);
+        if (met.type === 'void')
+          return met.name;
+        var val = this.measures[met.id];
         if (val)
           return cat.name + ' ' + val;
-        else
-          return cat.name;
+        return cat.name;
       }
     });
 
