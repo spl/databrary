@@ -7,7 +7,7 @@ module Databrary.Controller.Authorize
   ) where
 
 import Control.Applicative ((<|>))
-import Control.Monad (when, liftM2, mfilter)
+import Control.Monad (when, liftM3, mfilter)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Char8 as BSC
@@ -65,6 +65,9 @@ partyDelegates p =
 authorizeAddr :: Static -> [Either BS.ByteString Account]
 authorizeAddr = return . Left . staticAuthorizeAddr
 
+authorizeTitle :: Permission -> Messages -> T.Text
+authorizeTitle site = getMessage $ C.Path ["auth", "site", BSC.pack (show site), "title"]
+
 postAuthorize :: ActionRoute (API, PartyTarget, AuthorizeTarget)
 postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarget) $ \arg@(api, i, AuthorizeTarget app oi) -> withAuth $ do
   p <- getParty (Just PermissionADMIN) i
@@ -105,7 +108,7 @@ postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarge
       maybe (Fold.mapM_ removeAuthorize c) changeAuthorize a
       let site = Fold.foldMap accessSite a
       when (PermissionPUBLIC < site && Fold.all ((PermissionPUBLIC >=) . accessSite) c) $ do
-        sitemsg <- peeks $ getMessage $ C.Path ["auth", "site", BSC.pack (show site), "title"]
+        sitemsg <- peeks $ authorizeTitle site
         sendMail (maybe id (:) (Right <$> partyAccount child) authaddr)
           "Databrary authorization approved"
           $ BSL.fromChunks
@@ -150,11 +153,14 @@ postAuthorizeNotFound :: ActionRoute (API, PartyTarget)
 postAuthorizeNotFound = action POST (pathAPI </> pathPartyTarget </< "notfound") $ \(_, i) -> withAuth $ do
   p <- getParty (Just PermissionADMIN) i
   agent <- peeks $ fmap accountEmail . partyAccount
-  (name, info) <- runForm Nothing $ liftM2 (,)
+  (name, perm, info) <- runForm Nothing $ liftM3 (,,)
     ("name" .:> deform)
+    ("permission" .:> deform)
     ("info" .:> deformNonEmpty deform)
   authaddr <- peeks authorizeAddr
+  title <- peeks $ authorizeTitle perm
   sendMail authaddr
     ("Databrary authorization request from " <> partyName (partyRow p))
-    $ BSL.fromChunks [TE.encodeUtf8 (partyName $ partyRow p), " <", Fold.fold agent, "> has requested to be authorized by ", TE.encodeUtf8 name, maybe "" (\it -> " (" <> TE.encodeUtf8 it <> ")") info, ".\n"]
+    $ BSL.fromChunks [TE.encodeUtf8 (partyName $ partyRow p), " <", Fold.fold agent, ">", mbt (partyAffiliation $ partyRow p), " has requested to be authorized as an ", TE.encodeUtf8 title, " by ", TE.encodeUtf8 name, mbt info, ".\n"]
   return $ emptyResponse noContent204 []
+  where mbt = maybe "" $ \t -> " (" <> TE.encodeUtf8 t <> ")"

@@ -1,8 +1,8 @@
 'use strict';
 
 app.directive('authApplyForm', [
-  'modelService', 'messageService', 'displayService',
-  function (models, messages, display) {
+  'constantService', 'modelService', 'messageService', 'displayService',
+  function (constants, models, messages, display) {
     var link = function ($scope) {
       var party = $scope.party || models.Login.user;
       var auth = $scope.auth;
@@ -33,7 +33,8 @@ app.directive('authApplyForm', [
       var saveQuery = function () {
         messages.clear(form);
         party.authorizeNotFound(angular.extend({
-          name: auth.query
+          name: auth.query,
+          permission: constants.permission[auth.principal ? 'READ' : 'EDIT']
         }, form.data)).then(function () {
           form.validator.server({});
           form.$setPristine();

@@ -95,6 +95,7 @@ app.controller('party/register', [
         step.$scope.authSearchNotFoundFn = function (query) {
           delete $scope.auth.party;
           $scope.auth.query = query;
+          $scope.auth.principal = form.principal;
           $scope.proceed();
         };
       },
