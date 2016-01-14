@@ -68,7 +68,7 @@ INSERT INTO "metric" ("category", "name", "release", "type", "assumed", "descrip
 SELECT update_metric(-150);
 INSERT INTO "metric" ("category", "name", "release", "type", "options", "description")			VALUES (currval('category_id_seq'), 'state', 'PUBLIC', 'text', ARRAY['AL','AK','AZ','AR','CA','CO','CT','DE','DC','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','MD','MA','MI','MN','MS','MO','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY'], 'State/territory where participant was born');
 SELECT update_metric(-140);
-INSERT INTO "metric" ("category", "name", "release", "type", "options", "description", "required")	VALUES (currval('category_id_seq'), 'setting', 'PUBLIC', 'text', ARRAY['Lab','Home','Classroom','Outdoor','Clinic'], 'The physical context of the participant (please do not use for new data: see the context category instead)', true);
+INSERT INTO "metric" ("category", "name", "release", "type", "options", "description")	                VALUES (currval('category_id_seq'), 'setting', 'PUBLIC', 'text', ARRAY['Lab','Home','Classroom','Outdoor','Clinic'], 'The physical context of the participant (please do not use for new data: see the context category instead)');
 SELECT update_metric(-180);
 
 UPDATE category SET id = nextval('category_id_seq'), description = 'Indicates that the methods used were not finalized or were non-standard' WHERE name = 'pilot';
