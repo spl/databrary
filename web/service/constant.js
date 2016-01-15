@@ -25,8 +25,9 @@ app.factory('constantService', [
         data[data[i]] = i;
     }
 
-    constants.release['undefined'] = 'DEFAULT';
     constants.releases = Object.keys(constants.release);
+    constants.release['undefined'] = 'DEFAULT';
+    constants.releases.unshift('undefined');
     invertArray(constants.permission);
     invertArray(constants.release);
     constants.categories = _.sortBy(constants.category, 'id');
