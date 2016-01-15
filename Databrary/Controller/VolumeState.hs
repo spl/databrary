@@ -4,7 +4,6 @@ module Databrary.Controller.VolumeState
   , deleteVolumeState
   ) where
 
-import Control.Applicative ((<$>))
 import Data.Maybe (fromMaybe)
 import Network.HTTP.Types (StdMethod(PUT, DELETE), noContent204)
 

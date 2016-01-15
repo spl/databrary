@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell, RecordWildCards, OverloadedStrings, ScopedTypeVariables #-}
+{-# LANGUAGE TemplateHaskell, RecordWildCards, OverloadedStrings, ScopedTypeVariables, DataKinds #-}
 module Databrary.Model.VolumeAccess
   ( module Databrary.Model.VolumeAccess.Types
   , lookupVolumeAccess

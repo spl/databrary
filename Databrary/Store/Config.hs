@@ -15,7 +15,7 @@ module Databrary.Store.Config
 
 import Prelude hiding (lookup)
 
-import Control.Applicative ((*>), (<*), (<|>))
+import Control.Applicative ((<|>))
 import Control.Arrow (first)
 import Control.Exception (Exception, throw)
 import Control.Monad ((<=<))
@@ -24,7 +24,7 @@ import qualified Data.ByteString.Char8 as BSC
 import Data.Foldable (fold)
 import qualified Data.HashMap.Strict as HM
 import Data.Maybe (fromMaybe)
-import Data.Monoid (Monoid(..))
+import Data.Monoid ((<>))
 import Data.String (IsString(..))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE

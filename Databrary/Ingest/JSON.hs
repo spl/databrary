@@ -4,7 +4,7 @@ module Databrary.Ingest.JSON
   ) where
 
 import Control.Arrow (left)
-import Control.Monad (join, when, unless, void, mfilter)
+import Control.Monad (join, when, unless, void, mfilter, forM_)
 import Control.Monad.Except (ExceptT(..), runExceptT, mapExceptT, catchError, throwError)
 import Control.Monad.IO.Class (MonadIO(liftIO))
 import Control.Monad.Trans.Class (lift)
@@ -59,8 +59,8 @@ loadSchema = do
   r <- lift $ withBinaryFile schema ReadMode (\h ->
     P.parseWith (BS.hGetSome h defaultChunkSize) J.json' BS.empty)
   js <- ExceptT . return . left (return . T.pack) $ J.eitherJSON =<< P.eitherResult r
-  let rs = JS.RawSchema "" js
-  g <- ExceptT $ left return <$> JS.fetchReferencedSchemas JS.draft4 rs mempty
+  let rs = JS.RawSchema Nothing js
+  g <- ExceptT $ left return <$> JS.fetchReferencedSchemas JS.draft4 mempty rs
   ExceptT $ return $ left (map (T.pack . show)) $ JS.compileDraft4 g rs
 
 throwPE :: T.Text -> IngestM a

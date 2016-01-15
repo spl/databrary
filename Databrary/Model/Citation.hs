@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell, ScopedTypeVariables #-}
+{-# LANGUAGE TemplateHaskell, ScopedTypeVariables, DataKinds #-}
 module Databrary.Model.Citation
   ( module Databrary.Model.Citation.Types
   , lookupVolumeCitation

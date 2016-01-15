@@ -19,7 +19,6 @@ import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
 import Database.PostgreSQL.Typed.Query (pgSQL)
 
-import Databrary.Ops
 import Databrary.Has
 import Databrary.Service.DB
 import Databrary.Service.Types

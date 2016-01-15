@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell, QuasiQuotes #-}
+{-# LANGUAGE TemplateHaskell, QuasiQuotes, DataKinds #-}
 module Databrary.Model.AssetRevision
   ( module Databrary.Model.AssetRevision.Types
   , replaceAsset
@@ -9,7 +9,6 @@ module Databrary.Model.AssetRevision
 
 import Database.PostgreSQL.Typed.Query (pgSQL)
 
-import Databrary.Ops
 import Databrary.Has
 import Databrary.Service.DB
 import Databrary.Model.SQL

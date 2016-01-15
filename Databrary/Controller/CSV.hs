@@ -4,7 +4,6 @@ module Databrary.Controller.CSV
   , volumeCSV
   ) where
 
-import Control.Applicative ((<$>))
 import Control.Arrow (second)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as BSB

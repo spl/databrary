@@ -6,7 +6,6 @@ module Databrary.Controller.IdSet
   , idSetQuery
   ) where
 
-import Control.Applicative ((<$>))
 import qualified Data.ByteString.Char8 as BSC
 import Data.List (foldl')
 import Data.Maybe (mapMaybe)
