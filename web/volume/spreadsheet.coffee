@@ -1179,12 +1179,6 @@ app.directive 'spreadsheet', [
           Limit = Infinity
           fill()
 
-        if Editing
-          $document.on 'click', ($event) ->
-            if editCell && editCell.parentNode != $event.target && !$.contains(editCell.parentNode, $event.target)
-              $scope.$applyAsync(unedit)
-            return
-
         $scope.tabOptionsClick = false
         $scope.tabOptionsToggle = ($event) ->
           $scope.tabOptionsClick = !$scope.tabOptionsClick
