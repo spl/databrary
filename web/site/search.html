@@ -36,7 +36,7 @@
         </div>
         <div class="search-filter">
           Contains tag
-          <input-completer input-name="tag" ng-model="fields.tag_name" completer="tagSearch($input)" ng-pattern="/^[a-zA-Z][a-zA-Z -]{1,30}[a-zA-Z]$/" submit="searchVolumes()"></input-completer>
+          <input-completer input-name="tag" ng-model="fields.tag_name" completer="tagSearch($input)" pattern="[a-zA-Z][a-zA-Z -]{1,30}[a-zA-Z]" submit="searchVolumes()"></input-completer>
         </div>
         <div class="search-filter">
           Contains files of type
