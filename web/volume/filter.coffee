@@ -23,7 +23,6 @@ app.directive 'slotFilter', [
         lt: (o,x) -> join(o, '||', 'v>='+JSON.stringify(x))
         le: (o,x) -> join(o, '||', 'v>'+JSON.stringify(x))
         contains: (o,x) -> join(o, '||', '!(v&&v.includes('+JSON.stringify(x)+'))')
-      indicator = constants.metricName.indicator.id
 
       makeFilter = (key) ->
         exp = ['var v,i,c']
@@ -41,12 +40,12 @@ app.directive 'slotFilter', [
         return unless any
 
         indicate = (mets, any) ->
-          mets[indicator] = ops[if any then 'two' else 'any'](mets[indicator])
+          mets.indicator = ops[if any then 'two' else 'any'](mets.indicator)
           any
 
         record = (mets, rv, age, brk) ->
           any = false
-          for m, e of mets when e && m != '$index' && `m != indicator`
+          for m, e of mets when e && m != '$index' && m != 'indicator'
             any = true
             if m == 'age'
               exp.push('v='+age)
@@ -62,12 +61,12 @@ app.directive 'slotFilter', [
             exp.push('if(x){')
             exp.push('v='+(if record(mets, 'x', 'undefined', 'return') then 2 else 1))
             exp.push('}else v=0',
-              'if('+mets[indicator]+')return')
+              'if('+mets.indicator+')return')
           if Object.keys(mets = cats.slot).length
             exp.push('c=0',
               'for(i=0;i<y.length;i++){c=1')
             any = false
-            for m, e of mets when e && `m != indicator`
+            for m, e of mets when e && m != 'indicator'
               any = true
               exp.push('v=y[i].'+m,
                 'if('+e+')continue')
@@ -75,7 +74,7 @@ app.directive 'slotFilter', [
               exp.push('c=2', 'break')
             exp.push('}',
               'v=c',
-              'if('+mets[indicator]+')return')
+              'if('+mets.indicator+')return')
         else
           for m, e of cats.slot when e
             exp.push('v=x.'+m,
@@ -91,7 +90,7 @@ app.directive 'slotFilter', [
             exp.push('}}')
             for c, mets of cats when c != 'slot'
               exp.push('v=c['+mets.$index+']',
-                'if('+mets[indicator]+')return')
+                'if('+mets.indicator+')return')
         exp.push('return true;')
         exp = exp.join(';')
         console.log(exp) if DEBUG

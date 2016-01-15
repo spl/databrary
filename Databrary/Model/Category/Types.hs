@@ -16,9 +16,9 @@ import Databrary.Model.Id.Types
 type instance IdType Category = Int16
 
 data Category = Category
-  { categoryId :: Id Category
-  , categoryName :: T.Text
-  , categoryDescription :: Maybe T.Text
+  { categoryId :: !(Id Category)
+  , categoryName :: !T.Text
+  , categoryDescription :: !(Maybe T.Text)
   }
 
 instance Kinded Category where

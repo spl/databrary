@@ -77,7 +77,7 @@ postRegister = action POST (pathAPI </< "user" </< "register") $ \api -> without
       "Thank you for registering with Databrary. Please use this link to complete your registration:\n\n"
       <> url <> "\n\n\
       \By clicking the above link, you also indicate that you have read and understand the Databrary Access agreement, which you can download here: http://databrary.org/policies/agreement.pdf\n\n\
-      \Once you've validated your e-mail, you will be able to request authorization in order to be granted full access to Databrary.\n"
+      \Once you've validated your e-mail, you will be able to request authorization to be granted full access to Databrary.\n"
   focusIO $ staticSendInvestigator (view auth)
   return $ okResponse [] $ "Your confirmation email has been sent to '" <> accountEmail reg <> "'."
 

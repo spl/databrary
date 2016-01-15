@@ -434,7 +434,6 @@ app.factory('modelService', [
       links: false,
       funding: false,
       tags: false,
-      metrics: false,
       state: false,
       // consumers: false,
       // producers: false,
@@ -464,6 +463,8 @@ app.factory('modelService', [
         this.excerpts = excerptMakeArray(this, init.excerpts);
       if ('comments' in init)
         this.comments = commentMakeArray(this, init.comments);
+      if ('metrics' in init)
+        this.metrics = _.groupBy(init.metrics, function (m) { return constants.metric[m].category; });
     };
 
     function volumeMake(init) {
@@ -653,7 +654,7 @@ app.factory('modelService', [
       return router.http(m == null ?
           on ? router.controllers.addVolumeCategory : router.controllers.deleteVolumeCategory :
           on ? router.controllers.addVolumeMetric   : router.controllers.deleteVolumeMetric,
-          this.id, c, m)
+          this.id, m == null ? c : m)
         .then(function (res) {
           var d = res.data;
           if ('metrics' in v) {
@@ -1031,13 +1032,13 @@ app.factory('modelService', [
     Object.defineProperty(Record.prototype, 'displayName', {
       get: function () {
         var cat = constants.category[this.category];
-        var idents = cat.ident || [constants.metricName.ID.id];
-        var ident = [];
-        for (var i = 0; i < idents.length; i ++)
-          if (idents[i] in this.measures)
-            ident.push(this.measures[idents[i]]);
-
-        return cat.name + ' ' + ident.join(', ');
+        var met = constants.metric[this.volume.metrics[cat.id][0]];
+        if (met.type === 'void')
+          return met.name;
+        var val = this.measures[met.id];
+        if (val)
+          return cat.name + ' ' + val;
+        return cat.name;
       }
     });
 

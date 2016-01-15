@@ -7,8 +7,6 @@ app.directive 'volumePivot', [
     link: ($scope, $element) ->
       pivot = $scope.pivot
 
-      indicator = constants.metricName.indicator.id
-
       pivot.run = (rows, opts) ->
         cols = $scope.groups
         head = []
@@ -35,10 +33,11 @@ app.directive 'volumePivot', [
               v / agediv
             when 'top'
               m.options[v]
-            when indicator
-              true
             else
-              $sanitize(v)
+              if m.type == 'void'
+                true
+              else
+                $sanitize(v)
 
         for row in rows when row.filt && row.key
           data.push(d = [])

@@ -16,7 +16,7 @@
       <input type="text" name="{{$index}}.head" ng-model="link.head" placeholder="Title/description">
     </validator>
     <validator class="col-desktop-7 col-tablet-4 col-mobile-2" name="{{$index}}.url">
-      <input type="text" name="{{$index}}.url" ng-model="link.url" placeholder="URL or DOI" ng-pattern="/^((doi:)?10\.[\.0-9]+|ftp:/|http:/|https:/)//" ng-change="volumeEditLinksForm.change()">
+      <input type="text" name="{{$index}}.url" ng-model="link.url" placeholder="URL or DOI" ng-pattern="/^((doi:|hdl:)?10\.[\.0-9]+|ftp:/|http:/|https:/)//" ng-change="volumeEditLinksForm.change()">
     </validator>
     <button class="col-desktop-1 col-tablet-1 col-mobile-1 mini icon trash" ng-if="$index < volumeEditLinksForm.data.length-1" ng-click="volumeEditLinksForm.remove(link)"></button>
   </fieldset>

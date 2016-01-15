@@ -36,7 +36,7 @@
         </div>
         <div class="search-filter">
           Contains tag
-          <input-completer input-name="tag" ng-model="fields.tag_name" completer="tagSearch($input)" ng-pattern="/^[a-zA-Z][a-zA-Z -]{1,30}[a-zA-Z]$/" submit="searchVolumes()"></input-completer>
+          <input-completer input-name="tag" ng-model="fields.tag_name" completer="tagSearch($input)" pattern="[a-zA-Z][a-zA-Z -]{1,30}[a-zA-Z]" submit="searchVolumes()"></input-completer>
         </div>
         <div class="search-filter">
           Contains files of type
@@ -50,20 +50,6 @@
           <div ui-slider="{range:true}" min="{{::ageRange[0]}}" max="{{::ageRange[1]}}" use-decimals step="0.01" ng-model="ageSlider" ng-model-options="{getterSetter:true}"></div>
           <input-age ng-model="fields.record_age[0]" class="inline-block"></input-age> - 
           <input-age ng-model="fields.record_age[1]" class="inline-block"></input-age>
-        </div>
-        <div class="search-filter" ng-repeat="(mi, v) in metrics" ng-if="metrics[mi] !== undefined" ng-init="m=page.constants.metric[mi]">
-          <span class="icon trash clickable" ng-click="removeMetric(mi)"></span>
-          <span ng-bind="::m.name"></span>
-          <input-completer ng-if="::m.options" input-name="metric" ng-model="metrics[mi]" completer="optionsCompleter(m, $input)" min="0" submit="searchVolumes()"></input-completer>
-          <input type="text" ng-if="::m.type==='text' && !m.options" ng-model="metrics[mi]" key-enter="search()"/>
-          <span ng-if="::m.type==='numeric'">
-            <input type="number" ng-model="metrics[mi][0]"/> &ndash; <input type="number" ng-model="metrics[mi][1]"/>
-          </span>
-        </div>
-        <div class="search-filter additional-filters">
-          <select ng-model="addMetric.id" ng-options="m.id as m.name for m in availableMetrics() track by m.id||m" ng-change="addMetric()">
-            <option value="">Additional filters by field</option>
-          </select>
         </div>
         <div class="search-filter">
           <button class="mini green" ng-disabled="searchForm.$pristine || searchForm.$invalid" ng-click="searchVolumes()">Apply filters</button>

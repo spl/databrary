@@ -38,6 +38,7 @@
                 <li>Respect participants' wishes about sharing their data just as you do in your lab.</li>
                 <li>Take care in authorizing other people (affiliates and collaborators) and take responsibility for their conduct and use of Databrary data, just as you do in your own lab.</li>
               </ol>
+              <p>Read the <a href="http://databrary.org/access/policies/agreement.html" target="_blank">Databrary Access Agreement</a>. You can also download the <a href=\"http://databrary.org/policies/agreement.pdf\" target=\"_blank\">full agreement as pdf</a>.</p>
             </div>
 
             <p>
@@ -47,7 +48,7 @@
               </label>
             </p>
 
-            <button class="green" ng-click="proceed()" ng-disabled="registerForm.$pristine || registerForm.$invalid || !registerForm.data.agreement">Agree and register</button>
+            <button class="green" ng-click="proceed()" ng-disabled="registerForm.$pristine || registerForm.$invalid || !registerForm.data.agreement">I agree</button>
           </wizard-step>
 
           <wizard-step name="email">
@@ -75,7 +76,7 @@
               <div>
                 <input type="radio" ng-model="authSearchForm.principal" ng-value="'principal'">
                 <label class="option">
-                  <strong>Authorized Investigator</strong> (Researchers that are eligible to conduct independent research at their institution may become Authorized Investigators and may also authorize and manage Affiliates.)
+                  <strong>Authorized Investigator</strong> (Researchers who are eligible to conduct independent research at their institution may become Authorized Investigators and may also authorize and manage Affiliates.)
                 </label>
               </div>
 

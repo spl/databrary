@@ -9,7 +9,7 @@ app.directive 'inputCompleter', [
       value: '=ngModel'
       completer: '&'
       placeholder: '@'
-      pattern: '@ngPattern'
+      pattern: '@'
       submit: '&'
     link:
       pre: ($scope, $element, $attrs) ->

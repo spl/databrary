@@ -47,45 +47,58 @@ app.directive 'spreadsheet', [
             a[f] = 1
             0
 
+        Birthdate = constants.categoryName.participant.metricName.birthdate
         pseudoMetric =
-          top: # slot
+          indicator:
+            id: 'indicator'
+            name: 'indicator'
+            type: 'void'
+            sort: 0
+            assumed: true
+          top:
             id: 'top'
+            category: 'slot'
             name: 'type'
             type: 'top'
-            sort: -10000
+            sort: 1
             options:
               false: 'session'
               true: 'materials'
-          name: # slot, asset
+          name:
             id: 'name'
+            #category: 'slot', 'asset'
             name: 'name'
             type: 'text'
-            sort: -9000
-          date: # slot
+            sort: 2
+          date:
             id: 'date'
+            category: 'slot'
             name: 'test date'
             type: 'date'
             description: 'Date on which this session was acquired'
-            sort: -8000
-          release: # slot
+            sort: 3
+          release:
             id: 'release'
+            category: 'slot'
             name: 'release'
             type: 'release'
             description: 'Level of data release to which depicted participant(s) consented'
-            sort: -7000
+            sort: 4
           age: # record
             id: 'age'
+            category: Birthdate.category.id
             name: 'age'
             type: 'age'
             release: constants.release.EXCERPTS
-            sort: constants.metricName.birthdate.id + 0.5
+            sort: Birthdate.id + 0.5
             description: 'Time between birthdate and test date'
             readonly: true
-          summary: # slot
+          summary:
             id: 'summary'
+            category: 'slot'
             name: 'summary'
             type: 'text'
-            sort: 10000
+            sort: Infinity
             readonly: true
         constants.deepFreeze(pseudoMetric)
         getMetric = (m) ->
@@ -96,13 +109,13 @@ app.directive 'spreadsheet', [
             id: 'slot'
             name: 'folder'
             not: 'No folders'
-            metrics: ['top', 'name', 'date', 'release']
+            template: ['top', 'name', 'date', 'release']
             fixed: true
           asset:
             id: 'asset'
             name: 'file'
             not: 'No files'
-            metrics: ['name']
+            template: ['name']
             description: 'Files included in this folder'
             fixed: true
         constants.deepFreeze(pseudoCategory)
@@ -326,9 +339,8 @@ app.directive 'spreadsheet', [
             cats = [Key, pseudoCategory.slot]
 
           $scope.groups = Groups = cats.map (category) ->
-            metrics = (category.metrics || volume.metrics[category.id] || []).map(getMetric)
-            metrics.push(constants.metricName.ID) unless metrics.length
-            if !Editing && constants.metricName.birthdate in metrics
+            metrics = (category.template || volume.metrics[category.id]).map(getMetric)
+            if !Editing && Birthdate in metrics
               (slot || metrics).push(pseudoMetric.age)
             if slot && category.id == 'slot'
               metrics.push.apply metrics, slot
@@ -472,8 +484,8 @@ app.directive 'spreadsheet', [
               v = info.metric.options[v]
             else
               if info.metric.type == 'void' && info.d
-                cell.className = 'icon ' + if Editing && Key.id != info.c then 'trash clickable' else 'bullet'
-                v = ''
+                cell.className = 'clickable' if Editing && Key.id != info.c
+                v = info.metric.name
           if info.metric.long
             cell.classList.add('long')
           if v?
@@ -506,7 +518,7 @@ app.directive 'spreadsheet', [
             td.classList.add('add')
             td.classList.add('clickable')
             td.id = ID + '-add_' + info.i + '_' + info.c
-            td.appendChild(document.createTextNode("add " + info.category.name))
+            td.appendChild(document.createTextNode(info.category.not))
 
         generateMultiple = (info) ->
           t = info.count
@@ -940,18 +952,20 @@ app.directive 'spreadsheet', [
                 $location.url(info.slot.editRoute({asset:info.d.id}))
                 return
               m = info.metric
-              if m.name == 'indicator'
-                # trash/bullet: remove
-                setRecord(info, null) if info.category != Key
-                return
               return if m.readonly
               editScope.type = m.type
               mi = m.id
               editScope.options = m.options
-              if info.c == 'slot'
+              if m.type == 'void'
+                editScope.type = 'record'
+                editScope.options =
+                  remove: info.category.not
+                editScope.options[v = info.d.id] = m.name
+              else if info.c == 'slot'
                 return if info.slot?.top && (mi == 'date' || mi == 'release')
                 v = info.slot?[mi]
                 v = !!v if mi == 'top' && info.slot
+                v = v+'' if mi == 'release'
               else if info.c == 'asset' # not reached
                 v = info.asset[mi]
               else
@@ -1028,13 +1042,14 @@ app.directive 'spreadsheet', [
 
         unselect = ->
           styles.clear()
-          unedit()
+          unedit(false)
           return
 
         $scope.$on '$destroy', unselect
 
         select = (info) ->
-          unselect()
+          styles.clear()
+          unedit()
           expand(info)
           if !info.t
             for c in info.cell.classList when c.startsWith('ss-')
@@ -1064,7 +1079,7 @@ app.directive 'spreadsheet', [
             while true
               c = if event.shiftKey then c.previousSibling else c.nextSibling
               return unless c && i = parseId(c)
-              break unless i.category?.id == 'asset' || i.metric?.name == 'indicator' # skip "delete" actions
+              break unless i.category?.id == 'asset' || i.metric?.type == 'void' # skip "delete" actions
             select(i)
 
           return
@@ -1164,12 +1179,6 @@ app.directive 'spreadsheet', [
           Limit = Infinity
           fill()
 
-        if Editing
-          $document.on 'click', ($event) ->
-            if editCell && editCell.parentNode != $event.target && !$.contains(editCell.parentNode, $event.target)
-              $scope.$applyAsync(unedit)
-            return
-
         $scope.tabOptionsClick = false
         $scope.tabOptionsToggle = ($event) ->
           $scope.tabOptionsClick = !$scope.tabOptionsClick
@@ -1202,7 +1211,7 @@ app.directive 'spreadsheet', [
 
         $scope.filter =
           update: (f) ->
-            unedit()
+            unedit(false)
             setFilter(f)
             fill()
             return
@@ -1221,7 +1230,7 @@ app.directive 'spreadsheet', [
               @list.push(last)
             @list.push
               category: info.category
-              metric: info.metric || constants.metricName.indicator
+              metric: if info.metric && info.metric.type != 'void' then info.metric else pseudoMetric.indicator
               value: if info.metric?.type == 'numeric' then parseFloat(info.v) else info.v
             return
           count: 0
@@ -1266,7 +1275,7 @@ app.directive 'spreadsheet', [
           return
 
         setKey = (key) ->
-          unedit()
+          unselect()
           Key = $scope.key = key? && getCategory(key) || pseudoCategory.slot
           populate()
           $scope.filter.key = Key.id

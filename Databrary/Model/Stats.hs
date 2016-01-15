@@ -18,9 +18,9 @@ useTDB
 lookupSiteStats :: MonadDB c m => m SiteStats
 lookupSiteStats = do
   ac <- dbQuery [pgSQL|SELECT site, count(child) FROM authorize_view WHERE parent = 0 AND child > 4 GROUP BY site|]
-  v <- dbQuery1' [pgSQL|SELECT count(id) FROM volume|]
-  vs <- dbQuery1' [pgSQL|SELECT count(volume) FROM volume_access WHERE party = 0 AND children >= 'PUBLIC'|]
-  (a, ad, ab) <- dbQuery1' [pgSQL|SELECT count(id), sum(duration), sum(size) FROM asset JOIN slot_asset ON asset = id|]
+  v <- dbQuery1' [pgSQL|SELECT count(id) FROM volume WHERE id > 0|]
+  vs <- dbQuery1' [pgSQL|SELECT count(volume) FROM volume_access WHERE volume > 0 AND party = 0 AND children >= 'PUBLIC'|]
+  (a, ad, ab) <- dbQuery1' [pgSQL|SELECT count(id), sum(duration), sum(size) FROM asset JOIN slot_asset ON asset = id WHERE volume > 0|]
   rc <- dbQuery [pgSQL|SELECT category, count(id) FROM record GROUP BY category ORDER BY category|]
   return SiteStats
     { statsAuthorizedSite = A.accumArray (+) 0 (minBound, maxBound) $ l ac
