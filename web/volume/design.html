@@ -48,7 +48,7 @@
     <table class="spreadsheet-table">
       <thead>
         <tr class="spreadsheet-head-groups">
-          <th class="metric-col">folder</th>
+          <th class="metric-col"><span class="spreadsheet-tab-name">folder</span></th>
           <th class="metric-col" ng-repeat="c in ::page.constants.categories track by c.id" ng-if="volume.metrics[c.id]" ng-class="{selected: c===selected}">
             <span class="spreadsheet-tab-name" ng-bind="::c.name"></span>
           </th>
