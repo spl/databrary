@@ -2,6 +2,7 @@
   <ng-include src="'party/overview.html'"></ng-include>
   <panel id="panel_browser" panel-title="profile.title" fold ng-if="::party.volumes || page.models.Login.isAuthorized()" class="profile">
 
+
     <section id="profile-volumes" class="profile-volumes col-desktop-9 col-tablet-5 col-mobile-6">
       <legend class="hide-desktop hide-tablet foot-2" message="volumes.title"></legend>
       <div ng-repeat="vl in ::volumes" ng-if="::vl.length">
@@ -14,7 +15,7 @@
         </div>
         <ul class="flat">
           <li ng-repeat="v in ::vl" ng-class="{'profile-highlight': !!v.selected}">
-            <div class="profile-left-icons hide-mobile">
+            <div class="profile-left-icons clickable hide-mobile">
               <span ng-click="v.select()" class="icon" ng-class="v.class()" tooltip="'Click to highlight ' + ('profile.volumes.selected' | message:'this volume')"></span>
             </div>
             <div class="profile-right-icons">
@@ -43,7 +44,7 @@
         </div>
         <ul>
           <li ng-repeat="p in ::parties.parents" ng-class="{'profile-highlight': !!p.selected}">
-            <div class="profile-left-icons hide-mobile">
+            <div class="profile-left-icons clickable hide-mobile">
               <span ng-click="p.select()" class="icon" ng-class="p.class()" tooltip="'Click to highlight ' + ('profile.parties.selected' | message:'this individual')"></span>
             </div>
 
@@ -75,7 +76,7 @@
           </div>
           <ul>
             <li ng-repeat="p in cl" ng-class="{'profile-highlight': !!p.selected}">
-              <div class="profile-left-icons hide-mobile">
+              <div class="profile-left-icons clickable hide-mobile">
                 <span ng-click="p.select()" class="icon" ng-class="p.class()" tooltip="'Click to highlight ' + ('profile.parties.selected' | message:'this individual')"></span>
               </div>
               <div class="profile-right-icons">
@@ -99,7 +100,7 @@
         </div>
         <ul>
           <li ng-repeat="p in ::parties.collaborators" ng-class="{'profile-highlight': !!p.selected}">
-            <div class="profile-left-icons hide-mobile">
+            <div class="profile-left-icons clickable hide-mobile">
               <span ng-click="p.select()" class="icon" ng-class="p.class()" tooltip="'Click to highlight ' + ('profile.parties.selected' | message:'this individual')"></span>
             </div>
 
