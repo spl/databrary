@@ -16,10 +16,17 @@
   .view-title-buttons
   	margin-left b2 
     
-  .view-title-buttons > button
+  .view-title-buttons > button:not(.view-title-text)
+  .view-title-buttons > .button:not(.view-title-text)
     position relative
-    top -7px
-       
+    vertical-align top
+    top 10px
+    
+  .view-title-text
+    line-height b2
+    padding-height 5px
+    vertical-align top
+    margin-top 10px       
 
 .view-link
   display inline-block
