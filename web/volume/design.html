@@ -6,7 +6,7 @@
         <small>Choose the categories by which you wish to label and organize your data</small>
       </div>
       <ul class="volume-design-categories flat">
-        <li ng-repeat="c in ::page.constants.categories track by c.id" ng-class="{selected: c===selected}" ng-click="select(c.id)">
+        <li ng-repeat="c in ::page.constants.categories track by c.id" ng-class="{selected: c===selected}" ng-click="select(c.id)" class="clickable">
           <input type="checkbox" ng-model="volumeDesign.category[c.id]" ng-change="change(c.id)">
           <span ng-bind="::c.name" class="b"></span>: 
           <span class="small" ng-bind="::c.description"></span>
