@@ -60,6 +60,7 @@ SELECT update_metric(-540);
 INSERT INTO "metric" ("category", "name", "release", "type", "description")				VALUES (currval('category_id_seq'), 'gestational age', 'PUBLIC', 'numeric', 'Pregnancy age in weeks between last menstrual period and birth (or pre-natal observation)');
 SELECT update_metric(-530);
 INSERT INTO "metric" ("category", "name", "release", "type", "options", "description")			VALUES (currval('category_id_seq'), 'pregnancy term', 'PUBLIC', 'text', Array['Full term', 'Preterm'], '"Full term", "Preterm", or other gestational term');
+INSERT INTO "metric" ("category", "name", "release", "type", "description")				VALUES (currval('category_id_seq'), 'birth weight', 'PUBLIC', 'numeric', 'Weight at birth (in grams, e.g., 3250)');
 INSERT INTO "metric" ("category", "name", "type", "assumed", "description", "required")			VALUES (currval('category_id_seq'), 'disability', 'text', 'typical', 'Any developmental, physical, or mental disability or disabilities', false);
 SELECT update_metric(-520);
 INSERT INTO "metric" ("category", "name", "release", "type", "assumed", "description", "required")	VALUES (currval('category_id_seq'), 'language', 'PUBLIC', 'text', 'English', 'Primary language(s) spoken by and to participant', false);
