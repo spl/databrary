@@ -23,7 +23,7 @@
 
           <div ng-if="::auth.member">
             <div class="permission-auth-heading">
-              <span message="auth.member.view"></span>&nbsp;<span ng-bind="::'auth.member.title' | message:'their'"></span>
+              <span ng-bind="::'auth.member.title' | message:'their'"></span>
             </div>
             <div class="permission-auth-member">
               <strong message="auth.member.{{page.constants.permission[auth.member]}}.title"></strong>: 
@@ -33,7 +33,7 @@
 
           <div ng-if="::auth.site">
             <div class="permission-auth-heading">
-              <span message="auth.site.view"></span>&nbsp;<span ng-bind="::'auth.site.title' | message:'their'"></span>
+              <span ng-bind="::'auth.site.title' | message:'their'"></span>
             </div>
             <div class="permission-auth-site">
               <strong message="auth.site.{{page.constants.permission[auth.site]}}.title"></strong>: 
