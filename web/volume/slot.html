@@ -15,8 +15,8 @@
             <span ng-if="::slot.date" ng-bind="::' (' + slot.date + ')'"></span>
             <span ng-if="::slot.release != null" class="release icon" ng-class="::[page.constants.release[slot.release], 'hint-release-'+page.constants.release[slot.release]]"></span>
             <div ng-if="::volume.checkPermission(page.permission.EDIT)" class="view-title-buttons inline-block">
-              <button ng-class="::editing ? 'white' : 'green selected'" ng-disabled="::!editing" ng-click="toggleEdit()" class="button icon view-icon"></button>
-              <button ng-class="::editing ? 'green selected' : 'white'" ng-disabled="::editing" ng-click="toggleEdit()" class="button icon edit"></button>
+              <button ng-class="::editing ? 'white' : 'green selected'" ng-disabled="::!editing" ng-click="toggleEdit()" class="icon view-icon"></button>
+              <button ng-class="::editing ? 'green selected' : 'white'" ng-disabled="::editing" ng-click="toggleEdit()" class="icon edit"></button>
               <a ng-href="{{::page.router.slotActivity([volume.id, slot.id])}}" class="button mini white view-title-text">{{::slot.top? 'Materials' : 'Session'}} history</a>
             </div>
           </h3>

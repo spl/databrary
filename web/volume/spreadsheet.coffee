@@ -712,7 +712,7 @@ app.directive 'spreadsheet', [
           row
 
         createSlot = (info) ->
-          saveRun info.cell, volume.createContainer(false).then (slot) ->
+          saveRun info.cell, volume.createContainer().then (slot) ->
             arr(slot, 'records')
             addRow(populateSlot(slot))
 
@@ -793,7 +793,11 @@ app.directive 'spreadsheet', [
         updateDatum = (info, v) ->
           info.v = v
           info.d[info.metric.id] = v
-          if info.category.fixed
+          if info.metric.id == 'top'
+            collapse()
+            generateRow(info.i)
+            expand(info)
+          else if info.category.fixed
             generateText(info)
           else
             for li in TBody.getElementsByClassName(info.p + info.d.id + '_' + info.metric.id)
@@ -914,6 +918,7 @@ app.directive 'spreadsheet', [
             return unless value
             createNew(info).then (row) ->
               saveDatum(new Info(row.tr.firstChild), value)
+              return
           else
             saveDatum(info, value)
           return
