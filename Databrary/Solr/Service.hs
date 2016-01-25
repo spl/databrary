@@ -64,6 +64,7 @@ initSolr fg conf = do
     , Proc.std_err = out
     , Proc.close_fds = True
     , Proc.env = Just $ env ++ [("SOLR_PID_DIR", home), ("LOG4J_PROPS", dir </> "log4j.properties")]
+    , Proc.create_group = True
     }
 
   req <- HC.parseUrl $ "http://" ++ host ++ "/solr/" ++ core ++ "/"
@@ -82,6 +83,7 @@ initSolr fg conf = do
 
 finiSolr :: Solr -> IO ()
 finiSolr Solr{ solrProcess = Just ph } = do
+  Proc.interruptProcessGroupOf ph
   -- this timeout doesn't actually seem to work:
   r <- timeout 10000000 $ Proc.waitForProcess ph
   when (isNothing r) $ do
