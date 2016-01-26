@@ -21,16 +21,6 @@
             <span ng-if="::!(auth.member || auth.site)" message="auth.pending" class="permission-auth-pending"></span>
           </div>
 
-          <div ng-if="::auth.member">
-            <div class="permission-auth-heading">
-              <span message="auth.member.view"></span>&nbsp;<span ng-bind="::'auth.member.title' | message:'their'"></span>
-            </div>
-            <div class="permission-auth-member">
-              <strong message="auth.member.{{page.constants.permission[auth.member]}}.title"></strong>: 
-              {{'auth.member.'+page.constants.permission[auth.member]+'.description' | message:'their'}}
-            </div>
-          </div>
-
           <div ng-if="::auth.member || auth.site">
             <div class="permission-auth-heading">
               <span message="auth.site.view"></span>&nbsp;<span ng-bind="::'auth.site.title' | message:'their'"></span>
@@ -38,6 +28,16 @@
             <div class="permission-auth-site">
               <strong message="auth.site.{{page.constants.permission[auth.site]}}.title"></strong>: 
               {{'auth.site.'+page.constants.permission[auth.site]+'.description' | message:'their'}}
+            </div>
+          </div>
+
+          <div ng-if="::auth.member">
+            <div class="permission-auth-heading">
+              <span message="auth.member.view"></span>&nbsp;<span ng-bind="::'auth.member.title' | message:'their'"></span>
+            </div>
+            <div class="permission-auth-member">
+              <strong message="auth.member.{{page.constants.permission[auth.member]}}.title"></strong>: 
+              {{'auth.member.'+page.constants.permission[auth.member]+'.description' | message:'their'}}
             </div>
           </div>
 
