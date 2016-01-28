@@ -1,4 +1,4 @@
-<ng-form name="volumeAssist" class="volumeAssist">
+<ng-form name="volumeAssist" class="volumeAssist" flow-init="flowOptions">
   <fieldset>
     <div>
       <input type="checkbox" ng-model="wantAssist"/>
@@ -8,10 +8,23 @@
   <fieldset ng-if="wantAssist">
     Provide some info about your data. If preexisting spreadsheet or file that contains metadata about the dataset, upload in section below.
     <textarea></textarea>
+    <button class="green">Save</button>
+    <button class="yellow">Revert</button>
   </fieldset>
-  <div class="player-drop">
-    <span class="icon line add"></span>
-    <span class="dropzone-message" message="asset.add-drop{{::current.asset ? '.replace' : '.new'}}"></span>
-    <span class="dropzone-message">See our <a ng-href="{{::page.router.helpFormats()}}" target="_blank">list of accepted file types</a>.</span>
-  </div>
+
+  
+  <fieldset>
+    Uploaded files
+    <ul>
+      <li ng-repeat="file in placeholderFiles">
+          <span>{{file}}</span>
+          <upload-progress class="upload-progress-info" progress-value=""></upload-progress>
+      </li>
+    </ul>
+    <div flow-drop flow-btn flow-drag-enter="dropClasses['over-zone'] = true" flow-drag-leave="dropClasses['over-zone'] = false" class="player-drop">
+      <span class="icon line add"></span>
+      <span class="dropzone-message" message="asset.add-drop{{::current.asset ? '.replace' : '.new'}}"></span>
+      <span class="dropzone-message">See our <a ng-href="{{::page.router.helpFormats()}}" target="_blank">list of accepted file types</a>.</span>
+    </div>
+  </fieldset>
 </ng-form>
