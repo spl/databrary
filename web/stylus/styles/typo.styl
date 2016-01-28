@@ -269,7 +269,12 @@ ul
       &:before
         content: none
         display: none
-
+        
+  &.striped
+    padding-left 0
+    > li:nth-child(odd)
+      background-color neutral51
+      
 // dl, dt, dd
 
 dl
