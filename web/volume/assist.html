@@ -5,13 +5,13 @@
       I want assistance blah blah. Checking this gives Staff account read/write access. May uncheck this option anytime.
     </div>
   </fieldset>
-  <fieldset ng-if="!wantAssist">
+  <fieldset ng-if="wantAssist">
     Provide some info about your data. If preexisting spreadsheet or file that contains metadata about the dataset, upload in section below.
     <textarea></textarea>
   </fieldset>
   <div class="player-drop">
     <span class="icon line add"></span>
     <span class="dropzone-message" message="asset.add-drop{{::current.asset ? '.replace' : '.new'}}"></span>
-    <span class="dropzone-message">See our <a ng-href="{{::page.router.helpFormats()}}" target="_blank">list of accepted file types</a>.</span>    
+    <span class="dropzone-message">See our <a ng-href="{{::page.router.helpFormats()}}" target="_blank">list of accepted file types</a>.</span>
   </div>
 </ng-form>
