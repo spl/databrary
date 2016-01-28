@@ -26,6 +26,7 @@
 
       <div class="col" ng-if="::!!(volume || owners.length)">
         <wizard name="volume-edit">
+
           <volume-meter volume="volume">
           </volume-meter>
 
@@ -35,6 +36,10 @@
 
           <wizard-page name="access" wizard-disabled="!volume.checkPermission(page.permission.ADMIN)">
             <volume-edit-access-form></volume-edit-access-form>
+          </wizard-page>
+
+          <wizard-page name="assist" wizard-disabled="!volume">
+            <volume-assist></volume-assist>
           </wizard-page>
 
           <wizard-page name="design" wizard-disabled="!volume">
