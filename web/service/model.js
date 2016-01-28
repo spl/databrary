@@ -1295,7 +1295,7 @@ app.factory('modelService', [
     function AssetSegment(context, init) {
       this.asset =
         context instanceof Asset ? context :
-        new assetMake(context, init.asset);
+        assetMake(context, init.asset);
       AssetSlot.call(this, init);
     }
 
