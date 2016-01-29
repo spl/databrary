@@ -3,6 +3,7 @@ module Databrary.Model.Party
   ( module Databrary.Model.Party.Types
   , nobodyParty
   , rootParty
+  , staffParty
   , partyName
   , partyEmail
   , lookupParty
@@ -56,9 +57,10 @@ import Databrary.Model.Party.Types
 import Databrary.Model.Party.SQL
 import Databrary.Model.Party.Boot
 
-nobodyParty, rootParty :: Party
+nobodyParty, rootParty, staffParty :: Party
 nobodyParty = $(loadParty (Id (-1)) PermissionREAD)
 rootParty = $(loadParty (Id 0) PermissionSHARED)
+staffParty = $(loadParty (Id 2) PermissionPUBLIC)
 
 partyName :: PartyRow -> T.Text
 partyName PartyRow{ partyPreName = Just p, partySortName = n } = p <> T.cons ' ' n

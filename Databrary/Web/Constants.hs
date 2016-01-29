@@ -34,6 +34,7 @@ constantsJSON = JSON.Object $ JSON.object
   , "party" JSON..= JSON.object
     [ "nobody" JSON..= partyJSON nobodyParty
     , "root" JSON..= partyJSON rootParty
+    , "staff" JSON..= partyJSON staffParty
     ]
   , "version" JSON..= showVersion version
 #ifdef DEVEL
