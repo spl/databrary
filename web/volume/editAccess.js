@@ -22,10 +22,7 @@ app.directive('volumeEditAccessForm', [
           return;
         form.$setSubmitted();
         $q.all(constants.accessPreset[form.preset].map(function (a, pi) {
-          volume.accessSave(constants.accessPreset.parties[pi], {
-            individual: a,
-            children: a,
-          });
+          volume.accessSave(constants.accessPreset.parties[pi], a);
         })).then(function () {
           messages.add({
             body: constants.message('access.preset.save.success'),

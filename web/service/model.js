@@ -607,6 +607,8 @@ app.factory('modelService', [
 
     Volume.prototype.accessSave = function (target, data) {
       var v = this;
+      if (typeof data !== 'object')
+        data = {individual:data, children: data};
       return router.http(router.controllers.postVolumeAccess, this.id, target, data)
         .then(function (res) {
           subPartyUpdate(v.access, res.data);

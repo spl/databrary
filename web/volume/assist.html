@@ -1,19 +1,18 @@
-<ng-form name="volumeAssist" class="volumeAssist" flow-init="flowOptions">
+<ng-form name="volumeAssist" class="volumeAssist">
   <fieldset>
     <div>
-      <input type="checkbox" ng-model="wantAssist"/>
+      <input type="checkbox" ng-model="volumeAssist.staff" ng-disabled="staff===undefined" ng-change="setStaff(volumeAssist.staff)"/>
       I want assistance blah blah. Checking this gives Staff account read/write access. May uncheck this option anytime.
     </div>
   </fieldset>
-  <fieldset ng-if="wantAssist">
+  <fieldset ng-if="staff">
     Provide some info about your data. If preexisting spreadsheet or file that contains metadata about the dataset, upload in section below.
     <textarea></textarea>
     <button class="green">Save</button>
     <button class="yellow">Revert</button>
   </fieldset>
-
   
-  <fieldset>
+  <fieldset flow-init="flowOptions" ng-if="staff">
     Uploaded files
     <ul class="striped flat">
       <li ng-repeat="file in placeholderFiles">
