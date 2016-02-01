@@ -43,13 +43,8 @@ app.directive 'volumeAssist', [
 
       $scope.fileAdded = (file) ->
         $scope.uploads.push(file)
-        router.http(router.controllers.uploadStart, volume.id,
-            filename: file.name
-            size: file.size
-          ).then (res) ->
-            file.uniqueIdentifier = res.data
+        uploads.upload(volume, file).then (res) ->
             file.progressValue = 0
-            file.resume()
             return
           , (res) ->
             messages.addError
@@ -57,7 +52,6 @@ app.directive 'volumeAssist', [
               body: constants.message('asset.upload.rejected', {sce:$sce.HTML}, file.name)
               report: res
               owner: this
-            file.cancel()
             $scope.uploads.remove(file)
             false
         return
@@ -86,6 +80,7 @@ app.directive 'volumeAssist', [
 
       $scope.fileProgress = (file) ->
         file.progressValue = file.progress()
+
       $scope.fileError = (file, message) ->
         messages.addError
           type: 'red'
@@ -94,5 +89,6 @@ app.directive 'volumeAssist', [
         file.cancel()
         $scope.uploads.remove(file)
         return
+
       return
 ]

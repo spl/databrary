@@ -641,12 +641,7 @@ app.controller('volume/slot', [
         @progress = 0
         file.store = this
 
-        router.http(router.controllers.uploadStart, slot.volume.id,
-            filename: file.name
-            size: file.size
-          ).then (res) =>
-            file.uniqueIdentifier = res.data
-            file.resume()
+        uploads.upload(slot.volume, file).then () =>
             @data.name ||= file.file.name
             return
           , (res) =>
@@ -655,7 +650,6 @@ app.controller('volume/slot', [
               body: constants.message('asset.upload.rejected', {sce:$sce.HTML}, @name)
               report: res
               owner: this
-            file.cancel()
             delete @file
             delete @progress
             false

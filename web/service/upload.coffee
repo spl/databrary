@@ -17,4 +17,16 @@ app.factory('uploadService', [
       progressCallbacksInterval: 500
       prioritizeFirstAndLastChunk: false
       headers: {'x-csverf': router.http.csverf}
+
+    upload: (volume, file) ->
+      router.http(router.controllers.uploadStart, volume.id,
+          filename: file.name
+          size: file.size
+        ).then (res) ->
+          file.uniqueIdentifier = res.data
+          file.resume()
+          return
+        , (res) ->
+          file.cancel()
+          res
 ])
