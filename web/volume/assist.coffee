@@ -1,8 +1,8 @@
 'use strict'
 
 app.directive 'volumeAssist', [
-  'constantService', 'uploadService', 'messageService',
-  (constants, uploads, messages) ->
+  'constantService', 'uploadService', 'messageService', 'routerService',
+  (constants, uploads, messages, router) ->
     restrict: 'E'
     templateUrl: 'volume/assist.html'
     link: ($scope) ->
@@ -37,6 +37,62 @@ app.directive 'volumeAssist', [
                 owner: form
               return
 
-      $scope.placeholderFiles = [1,2,3]
+      slot = volume.top
+      $scope.assets = slot.assets
+      $scope.uploads = []
+
+      $scope.fileAdded = (file) ->
+        $scope.uploads.push(file)
+        router.http(router.controllers.uploadStart, volume.id,
+            filename: file.name
+            size: file.size
+          ).then (res) ->
+            file.uniqueIdentifier = res.data
+            file.progressValue = 0
+            file.resume()
+            return
+          , (res) ->
+            messages.addError
+              type: 'red'
+              body: constants.message('asset.upload.rejected', {sce:$sce.HTML}, file.name)
+              report: res
+              owner: this
+            file.cancel()
+            $scope.uploads.remove(file)
+            false
+        return
+
+      $scope.fileSuccess = (file) ->
+        file.progressValue = 1
+        slot.createAsset(
+            upload: file.uniqueIdentifier
+            name: file.name
+            position: null
+            classification: null
+          ).then (asset) ->
+              file.cancel()
+              $scope.uploads.remove(file)
+              return
+            , (res) ->
+              messages.addError
+                type: 'red'
+                body: constants.message('asset.update.error', file.name)
+                report: res
+                owner: this
+              file.cancel()
+              file.progressValue = null
+              return
+        $scope.uploads.remove(file)
+
+      $scope.fileProgress = (file) ->
+        file.progressValue = file.progress()
+      $scope.fileError = (file, message) ->
+        messages.addError
+          type: 'red'
+          body: constants.message('asset.upload.error', file.name, message || 'unknown error')
+          owner: this
+        file.cancel()
+        $scope.uploads.remove(file)
+        return
       return
 ]

@@ -1265,8 +1265,10 @@ app.factory('modelService', [
         data.position = this.segment.l;
       return router.http(router.controllers.createAsset, this.volume.id, data)
         .then(function (res) {
-          s.clear('assets');
-          return assetMake(s.container, res.data);
+          var a = assetMake(s.container, res.data);
+          if ('assets' in s)
+            s.assets[a.id] = a;
+          return a;
         });
     };
 

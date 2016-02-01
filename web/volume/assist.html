@@ -5,6 +5,7 @@
       I want assistance blah blah. Checking this gives Staff account read/write access. May uncheck this option anytime.
     </div>
   </fieldset>
+
   <fieldset ng-if="staff">
     Provide some info about your data. If preexisting spreadsheet or file that contains metadata about the dataset, upload in section below.
     <textarea></textarea>
@@ -12,17 +13,26 @@
     <button class="yellow">Revert</button>
   </fieldset>
   
-  <fieldset flow-init="flowOptions" ng-if="staff">
+  <fieldset ng-if="staff" flow-init="flowOptions"
+    flow-file-added="fileAdded($file, $event)" 
+    flow-file-success="fileSuccess($file)" 
+    flow-file-progress="fileProgress($file)" 
+    flow-file-error="fileError($file, $message)"
+    mouse-drag-region>
     Uploaded files
     <ul class="striped flat">
-      <li ng-repeat="file in placeholderFiles">
-          <span>{{file}}</span>
-          <upload-progress class="upload-progress-info" progress-value=""></upload-progress>
+      <li ng-repeat="asset in assets">
+        <img ng-src="{{asset.icon}}" ng-class="'hint-format-'+asset.format.extension">
+        <span ng-bind="::asset.name"></span>
+      </li>
+      <li ng-repeat="upload in uploads">
+        <span ng-bind="::upload.name"></span>
+        <upload-progress class="upload-progress-info" progress-value="upload.progressValue"></upload-progress>
       </li>
     </ul>
-    <div flow-drop flow-btn flow-drag-enter="dropClasses['over-zone'] = true" flow-drag-leave="dropClasses['over-zone'] = false" class="player-drop">
+    <div flow-drop flow-btn flow-drag-enter="dropClasses['over-zone'] = true" flow-drag-leave="dropClasses['over-zone'] = false" class="player-drop" ng-class="dropClasses">
       <span class="icon line add"></span>
-      <span class="dropzone-message" message="asset.add-drop{{::current.asset ? '.replace' : '.new'}}"></span>
+      <span class="dropzone-message" message="asset.add-drop.new"></span>
       <span class="dropzone-message">See our <a ng-href="{{::page.router.helpFormats()}}" target="_blank">list of accepted file types</a>.</span>
     </div>
   </fieldset>
