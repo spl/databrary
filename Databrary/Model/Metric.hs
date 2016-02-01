@@ -51,3 +51,7 @@ metricJSON m@Metric{..} = JSON.record metricId $ catMaybes
   , ("description" JSON..=) <$> metricDescription
   , ("required" JSON..=) <$> metricRequired
   ]
+
+{- schema synchronization:
+20160201-nih_race
+-}
