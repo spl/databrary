@@ -636,7 +636,6 @@ app.controller('volume/slot', [
         blank = undefined if this == blank
         messages.clear(this)
         return if @file
-        file.pause()
         @file = file
         @progress = 0
         file.store = this

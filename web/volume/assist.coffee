@@ -1,8 +1,8 @@
 'use strict'
 
 app.directive 'volumeAssist', [
-  'constantService', 'uploadService', 'messageService', 'routerService',
-  (constants, uploads, messages, router) ->
+  '$sce', 'constantService', 'uploadService', 'messageService', 'routerService',
+  ($sce, constants, uploads, messages, router) ->
     restrict: 'E'
     templateUrl: 'volume/assist.html'
     link: ($scope) ->
@@ -49,18 +49,18 @@ app.directive 'volumeAssist', [
           , (res) ->
             messages.addError
               type: 'red'
-              body: constants.message('asset.upload.rejected', {sce:$sce.HTML}, file.name)
+              body: constants.message('asset.upload.rejected', {sce:$sce.HTML}, file.relativePath)
               report: res
               owner: this
             $scope.uploads.remove(file)
-            false
+            return
         return
 
       $scope.fileSuccess = (file) ->
         file.progressValue = 1
         slot.createAsset(
             upload: file.uniqueIdentifier
-            name: file.name
+            name: file.relativePath
             position: null
             classification: null
           ).then (asset) ->
@@ -70,21 +70,23 @@ app.directive 'volumeAssist', [
             , (res) ->
               messages.addError
                 type: 'red'
-                body: constants.message('asset.update.error', file.name)
+                body: constants.message('asset.update.error', file.relativePath)
                 report: res
                 owner: this
               file.cancel()
               file.progressValue = null
               return
         $scope.uploads.remove(file)
+        return
 
       $scope.fileProgress = (file) ->
         file.progressValue = file.progress()
+        return
 
       $scope.fileError = (file, message) ->
         messages.addError
           type: 'red'
-          body: constants.message('asset.upload.error', file.name, message || 'unknown error')
+          body: constants.message('asset.upload.error', file.relativePath, message || 'unknown error')
           owner: this
         file.cancel()
         $scope.uploads.remove(file)

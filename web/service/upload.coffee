@@ -1,8 +1,8 @@
 'use strict'
 
 app.factory('uploadService', [
-  'routerService',
-  (router) ->
+  '$q', 'routerService',
+  ($q, router) ->
     removedAsset: undefined
 
     flowOptions: () ->
@@ -19,6 +19,7 @@ app.factory('uploadService', [
       headers: {'x-csverf': router.http.csverf}
 
     upload: (volume, file) ->
+      file.pause()
       router.http(router.controllers.uploadStart, volume.id,
           filename: file.name
           size: file.size
@@ -28,5 +29,5 @@ app.factory('uploadService', [
           return
         , (res) ->
           file.cancel()
-          res
+          $q.reject(res)
 ])
