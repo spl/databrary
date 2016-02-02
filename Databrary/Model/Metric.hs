@@ -54,4 +54,5 @@ metricJSON m@Metric{..} = JSON.record metricId $ catMaybes
 
 {- schema synchronization:
 20160201-nih_race
+20160202-context_language
 -}
