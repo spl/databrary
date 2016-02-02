@@ -1,8 +1,8 @@
 'use strict'
 
 app.directive 'volumePivot', [
-  '$sanitize', 'constantService', 'displayService',
-  ($sanitize, constants, display) ->
+  'constantService', 'displayService',
+  (constants, display) ->
     restrict: 'E'
     link: ($scope, $element) ->
       pivot = $scope.pivot
@@ -37,7 +37,7 @@ app.directive 'volumePivot', [
               if m.type == 'void'
                 true
               else
-                $sanitize(v)
+                v
 
         for row in rows when row.filt && row.key
           data.push(d = [])
@@ -46,7 +46,7 @@ app.directive 'volumePivot', [
             switch l.length
               when 0
                 for m in g.metrics when m.id != 'summary'
-                  d.push('<em>none</em>')
+                  d.push('\u2043none\u2043')
               when 1
                 r = l[0]
                 for m in g.metrics when m.id != 'summary'
@@ -60,7 +60,7 @@ app.directive 'volumePivot', [
                     when 1
                       d.push(disp(m, a[0]))
                     else
-                      d.push('<em>multiple</em>')
+                      d.push('\u2043multiple\u2043')
                 
         $element.pivotUI(data, opts, opts?)
         @active = true
