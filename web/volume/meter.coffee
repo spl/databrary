@@ -60,6 +60,16 @@ app.directive 'volumeMeter', [
         share: new Metric ->
           volume.accessPreset
 
+      addCategory = (c) ->
+        cat = constants.categoryName[c]
+        def = (m for m in cat.metrics when m.required?)
+        metrics[c] = new Metric ->
+          design = volume.metrics[cat.id] || []
+          !(@metrics = (m.name for m in def when !(m.id in design))).length
+
+      for c in ['participant', 'context']
+        addCategory(c)
+
       $scope.goto = (step, target, message...) ->
         wizard.activateStep(step)
         display.scrollTo(target) if target

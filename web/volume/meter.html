@@ -16,29 +16,29 @@
       <span ng-if="::!metrics.name.done">: Create your volume and give it a title.</span>
     </div>
 
-    <div class="volume-meter-category col-desktop-15 col-tablet-9 col-mobile-6" ng-class="{'volume-meter-done': !!metrics.description.done && !!metrics.citation.done && !!metrics.keywords.done}">
+    <div class="volume-meter-category col-desktop-15 col-tablet-9 col-mobile-6" ng-class="{'volume-meter-done': metrics.description.done && metrics.citation.done && metrics.keywords.done}">
       <div class="icon done-not">
-        <span ng-if="::!!metrics.description.done && !!metrics.citation.done && !!metrics.keywords.done" class="icon done"></span>
+        <span ng-if="::metrics.description.done && metrics.citation.done && metrics.keywords.done" class="icon done"></span>
       </div>
       <h5>Add more volume information</h5>
       <p>Make it easier for others to find your volume.</p>
       <ul ng-if="::!metrics.description.done || !metrics.citation.done || !metrics.keywords.done">
         <li ng-class="{'volume-meter-done': metrics.description.done}">
-          <span ng-if="::!!metrics.description.done">
+          <span ng-if="::metrics.description.done">
             <span class="icon done"></span>
             Description added
           </span>
           <span ng-click="goto('overview', '#body')" ng-if="::!metrics.description.done" class="clickable">Add a description of at least 500 characters. <br><small> This will summarize what your volume contains and how the data were collected (e.g., the abstract of a corresponding publication).</small></span>
         </li>
         <li ng-class="{'volume-meter-done': metrics.citation.done}">
-          <span ng-if="::!!metrics.citation.done">
+          <span ng-if="::metrics.citation.done">
             <span class="icon done"></span>
             Publication linked
           </span>
           <span ng-click="goto('overview', '#citation','<p class=\'message-title\'>Link volume to corresponding publication:</p><p>(1/1) Select yes to whether this volume corresponds to a published paper or resource. Additional fields for DOI and citation will appear.</p>')" ng-if="::!metrics.citation.done" class="clickable">Link your volume to any corresponding publication by adding a DOI or citation.</span>
         </li>
         <li ng-class="{'volume-meter-done': metrics.keywords.done}">
-          <span ng-if="::!!metrics.keywords.done">
+          <span ng-if="::metrics.keywords.done">
             <span class="icon done"></span>
             Keywords added
           </span>
@@ -47,22 +47,22 @@
       </ul>
     </div>
 
-    <div class="volume-meter-category col-desktop-15 col-tablet-9 col-mobile-6" ng-class="{'volume-meter-done': !!metrics.design.done && !!metrics.session.done && !!metrics.record.done}">
+    <div class="volume-meter-category col-desktop-15 col-tablet-9 col-mobile-6" ng-class="{'volume-meter-done': metrics.design.done && metrics.session.done && metrics.record.done && metrics.participant.done && metrics.context.done}">
       <div class="icon done-not">
-        <span ng-if="::!!metrics.design.done && !!metrics.session.done && !!metrics.record.done" class="icon done"></span>
+        <span ng-if="::metrics.design.done && metrics.session.done && metrics.record.done && metrics.participant.done && metrics.context.done" class="icon done"></span>
       </div> 
       <h5>Study design and data spreadsheet</h5>
       <p>Define your study design, then start creating and describing sessions in the data spreadsheet.</p>
-      <ul ng-if="::!metrics.design.done || !metrics.session.done || !metrics.record.done">
+      <ul ng-if="::!(metrics.design.done && metrics.session.done && metrics.record.done && metrics.participant.done && metrics.context.done)">
         <li ng-class="metrics.design.done? 'volume-meter-done' : 'clickable'">
-          <span ng-if="::!!metrics.design.done">
+          <span ng-if="::metrics.design.done">
             <span class="icon done"></span> 
             Study design defined
           </span>
           <span ng-click="goto('design')" ng-if="::!metrics.design.done">Select the categories and fields by which you will describe your sessions.</span>
         </li> 
         <li ng-class="metrics.session.done? 'volume-meter-done' : 'clickable'">
-          <span ng-if="::!!metrics.session.done">
+          <span ng-if="::metrics.session.done">
             <span class="icon done"></span>
             Created a study session
           </span>
@@ -70,26 +70,50 @@
           </span>
         </li>
         <li ng-class="metrics.record.done? 'volume-meter-done' : 'clickable'">
-          <span ng-if="::!!metrics.record.done">
+          <span ng-if="::metrics.record.done">
             <span class="icon done"></span>
             Described a session
           </span>
           <span ng-click="goto('data')" ng-if="::!metrics.record.done">
           Fill out the fields for a session category such as participant, task, condition, etc.</span>
         </li>
+        <li ng-class="metrics.participant.done? 'volume-meter-done' : 'clickable'">
+          <span ng-if="::metrics.participant.done">
+            <span class="icon done"></span>
+            Included participant information
+          </span>
+          <span ng-click="goto('design')" ng-if="::!metrics.participant.done">
+            Include information in your study design about participants: 
+            <ul class="comma inline">
+              <li class="strong" ng-repeat="m in ::metrics.participant.metrics" ng-bind="::m"></li>
+            </ul>
+          </span>
+        </li>
+        <li ng-class="metrics.context.done? 'volume-meter-done' : 'clickable'">
+          <span ng-if="::metrics.context.done">
+            <span class="icon done"></span>
+            Included context information
+          </span>
+          <span ng-click="goto('design')" ng-if="::!metrics.context.done">
+            Include information in your study design about context: 
+            <ul class="comma inline">
+              <li class="strong" ng-repeat="m in ::metrics.context.metrics" ng-bind="::m"></li>
+            </ul>
+          </span>
+        </li>
       </ul>
     </div>
 
     <div class="volume-meter-category col-desktop-15 col-tablet-9 col-mobile-6" ng-click="goto('data',undefined,['Upload at least one file. Start by clicking add file in the right end of the spreadsheet.'])" ng-class="metrics.asset.done? 'volume-meter-done' : 'clickable'">
       <div class="icon done-not">
-        <span ng-if="::!!metrics.asset.done" class="icon done"></span>
+        <span ng-if="::metrics.asset.done" class="icon done"></span>
       </div> 
       <h5>Upload a file</h5>
     </div>
 
-    <div class="volume-meter-category col-desktop-15 col-tablet-9 col-mobile-6" ng-class="{'volume-meter-done': !!metrics.excerpts.done && !!metrics.thumbnail.done}">
+    <div class="volume-meter-category col-desktop-15 col-tablet-9 col-mobile-6" ng-class="{'volume-meter-done': metrics.excerpts.done && metrics.thumbnail.done}">
       <div class="icon done-not">
-        <span ng-if="::!!metrics.excerpts.done && !!metrics.thumbnail.done" class="icon done"></span>
+        <span ng-if="::metrics.excerpts.done && metrics.thumbnail.done" class="icon done"></span>
       </div>
       <h5>Highlight data that represents your study</h5>
       <p ng-if="::!metrics.excerpts.done || !metrics.thumbnail.done">
@@ -98,7 +122,7 @@
       </p>
       <ul ng-if="::!metrics.excerpts.done || !metrics.thumbnail.done">
         <li ng-class="{'volume-meter-done':metrics.excerpts.done}">
-          <span ng-if="::!!metrics.excerpts.done">
+          <span ng-if="::metrics.excerpts.done">
             <span class="icon done"></span>
             Highlights selected
           </span>
@@ -107,7 +131,7 @@
           </span>
         </li>
         <li ng-class="{'volume-meter-done':metrics.thumbnail.done}">
-          <span ng-if="::!!metrics.thumbnail.done">
+          <span ng-if="::metrics.thumbnail.done">
             <span class="icon done"></span>
             Thumbnail chosen
           </span>
@@ -120,7 +144,7 @@
 
     <div class="volume-meter-category col-desktop-15 col-tablet-9 col-mobile-6" ng-click="goto('access', '#preset')" ng-class="metrics.share.done ? 'volume-meter-done' : 'clickable'">
       <div class="icon done-not">
-        <span ng-if="::!!metrics.share.done" class="icon done"></span>
+        <span ng-if="::metrics.share.done" class="icon done"></span>
       </div> 
       <h5>Share your volume</h5>
       <p ng-if="::!metrics.share.done">Share your volume with other Databrary users.</p>
