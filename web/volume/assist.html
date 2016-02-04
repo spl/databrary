@@ -19,13 +19,15 @@
     flow-file-progress="fileProgress($file)" 
     flow-file-error="fileError($file, $message)"
     mouse-drag-region>
-    Uploaded files
-    <ul class="striped flat">
-      <li ng-repeat="asset in assets">
+    
+    <legend>Uploaded files</legend>
+    <ul class="striped flat" class="volume-assist-list">
+      <li ng-if="uploads.length + filesCount < 1" class="volume-assist-list-item"><i>No files yet</i></li>
+      <li ng-repeat="asset in assets" class="volume-assist-list-item">
         <img ng-src="{{asset.icon}}" ng-class="'hint-format-'+asset.format.extension">
         <span ng-bind="::asset.name"></span>
       </li>
-      <li ng-repeat="upload in uploads">
+      <li ng-repeat="upload in uploads" class="volume-assist-list-item">
         <span ng-bind="::upload.name"></span>
         <upload-progress class="upload-progress-info" progress-value="upload.progressValue"></upload-progress>
       </li>

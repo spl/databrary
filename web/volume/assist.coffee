@@ -92,5 +92,7 @@ app.directive 'volumeAssist', [
         $scope.uploads.remove(file)
         return
 
+      $scope.filesCount = Object.keys($scope.assets).length
+
       return
 ]
