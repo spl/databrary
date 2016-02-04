@@ -20,9 +20,17 @@
     flow-file-error="fileError($file, $message)"
     mouse-drag-region>
     
-    <legend>Uploaded files</legend>
-    <ul class="striped flat" class="volume-assist-list">
-      <li ng-if="uploads.length + filesCount < 1" class="volume-assist-list-item"><i>No files yet</i></li>
+    <legend>Upload files</legend>
+    <div flow-drop flow-btn flow-drag-enter="dropClasses['over-zone'] = true" flow-drag-leave="dropClasses['over-zone'] = false" class="player-drop foot" ng-class="dropClasses">
+      <span class="icon line add"></span>
+      <span class="dropzone-message" message="asset.add-drop.new"></span>
+      <span class="dropzone-message">See our <a ng-href="{{::page.router.helpFormats()}}" target="_blank">list of accepted file types</a>.</span>
+    </div>
+    <div>
+      <strong>Uploaded Files</strong><br>
+      <small>Files listed here won't show up in your spreadsheet until our staff has made contact</small>
+    </div>
+    <ul class="striped flat volume-assist-list">
       <li ng-repeat="asset in assets" class="volume-assist-list-item">
         <img ng-src="{{asset.icon}}" ng-class="'hint-format-'+asset.format.extension">
         <span ng-bind="::asset.name"></span>
@@ -32,10 +40,6 @@
         <upload-progress class="upload-progress-info" progress-value="upload.progressValue"></upload-progress>
       </li>
     </ul>
-    <div flow-drop flow-btn flow-drag-enter="dropClasses['over-zone'] = true" flow-drag-leave="dropClasses['over-zone'] = false" class="player-drop" ng-class="dropClasses">
-      <span class="icon line add"></span>
-      <span class="dropzone-message" message="asset.add-drop.new"></span>
-      <span class="dropzone-message">See our <a ng-href="{{::page.router.helpFormats()}}" target="_blank">list of accepted file types</a>.</span>
-    </div>
+
   </fieldset>
 </ng-form>
