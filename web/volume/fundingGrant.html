@@ -5,7 +5,7 @@
         <span ng-bind="::funding.funder.name"></span>
       </div>
     </fieldset>
-    <label>Grant #</label>
+    <label>Award # or description</label>
 
     <div ng-repeat="award in fundingGrantForm.data.awards track by $index" ng-show="award !== null">
       <validator name="funding.awards[{{$index}}]" noclientval>
