@@ -1,4 +1,4 @@
-<ng-form name="volumeAssist" class="volumeAssist">
+<ng-form name="volumeAssist">
   <fieldset>
     <div>
       <input type="checkbox" ng-model="volumeAssist.staff" ng-disabled="staff===undefined" ng-change="setStaff(volumeAssist.staff)"/>
@@ -8,9 +8,8 @@
 
   <fieldset ng-if="staff">
     Provide some info about your data. If preexisting spreadsheet or file that contains metadata about the dataset, upload in section below.
-    <textarea></textarea>
-    <button class="green">Save</button>
-    <button class="yellow">Revert</button>
+    <textarea ng-model="volumeAssist.data.description"></textarea>
+    <button ng-click="volumeAssist.submit()" class="green" ng-disabled="volumeAssist.$pristine || volumeAssist.$invalid || volumeAssist.$submitted">Submit</button>
   </fieldset>
   
   <fieldset ng-if="staff" flow-init="flowOptions"
