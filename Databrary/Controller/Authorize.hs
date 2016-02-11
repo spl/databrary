@@ -83,7 +83,7 @@ postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarge
         dl <- partyDelegates parent
         agent <- peeks $ fmap accountEmail . partyAccount
         req <- peek
-        sendMail (map Right dl ++ authaddr)
+        sendMail (map Right dl ++ authaddr) []
           ("Databrary authorization request from " <> partyName (partyRow child))
           $ BSL.fromChunks [TE.encodeUtf8 (partyName $ partyRow child), " <", Fold.fold agent, "> has requested to be authorized by ", TE.encodeUtf8 (partyName $ partyRow parent), ". \
             \To approve or reject this authorization request, go to:\n\n" ] <>
@@ -109,7 +109,7 @@ postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarge
       let site = Fold.foldMap accessSite a
       when (PermissionPUBLIC < site && Fold.all ((PermissionPUBLIC >=) . accessSite) c) $ do
         sitemsg <- peeks $ authorizeTitle site
-        sendMail (maybe id (:) (Right <$> partyAccount child) authaddr)
+        sendMail (maybe id (:) (Right <$> partyAccount child) authaddr) []
           "Databrary authorization approved"
           $ BSL.fromChunks
           [ "Dear ", TE.encodeUtf8 (partyName $ partyRow child), ",\n\n\
@@ -159,7 +159,7 @@ postAuthorizeNotFound = action POST (pathAPI </> pathPartyTarget </< "notfound")
     ("info" .:> deformNonEmpty deform)
   authaddr <- peeks authorizeAddr
   title <- peeks $ authorizeTitle perm
-  sendMail authaddr
+  sendMail authaddr []
     ("Databrary authorization request from " <> partyName (partyRow p))
     $ BSL.fromChunks [TE.encodeUtf8 (partyName $ partyRow p), " <", Fold.fold agent, ">", mbt (partyAffiliation $ partyRow p), " has requested to be authorized as an ", TE.encodeUtf8 title, " by ", TE.encodeUtf8 name, mbt info, ".\n"]
   return $ emptyResponse noContent204 []
