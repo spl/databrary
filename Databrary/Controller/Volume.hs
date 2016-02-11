@@ -312,7 +312,7 @@ postVolumeAssist = action POST (pathJSON >/> pathId </< "assist") $ \vi -> withA
   addr <- peeks assistAddr
   body <- getRequestTextContent
   sendMail addr [Right user] ("Databrary upload assistance request for volume " <> T.pack (show vi)) $ BSL.fromChunks
-    [ TE.encodeUtf8 $ partyName $ partyRow $ accountParty user, " has requested curation assistance for ", TE.encodeUtf8 $ volumeName $ volumeRow v, "\n\n", body ]
+    [ TE.encodeUtf8 $ partyName $ partyRow $ accountParty user, " has requested curation assistance for ", TE.encodeUtf8 $ volumeName $ volumeRow v, "\n\n", body, "\n" ]
   return $ emptyResponse noContent204 []
 
 volumeSearchForm :: DeformActionM f VolumeFilter

@@ -72,7 +72,7 @@ app.directive 'volumeAssist', [
                 type: 'red'
                 body: constants.message('asset.update.error', file.relativePath)
                 report: res
-                owner: this
+                owner: form
               file.cancel()
               file.progressValue = null
               return
@@ -87,12 +87,48 @@ app.directive 'volumeAssist', [
         messages.addError
           type: 'red'
           body: constants.message('asset.upload.error', file.relativePath, message || 'unknown error')
-          owner: this
+          owner: form
         file.cancel()
         $scope.uploads.remove(file)
         return
 
       $scope.filesCount = Object.keys($scope.assets).length
+
+      form.questions =
+        [
+          text: "Are you using the Databrary release?"
+        ,
+          text: "If not, are you using an equivalent consent/media release (see our user guide)?"
+        ,
+          text: "Is data collection in progress or complete?"
+          options: ["In progress", "Complete"]
+        ,
+          text: "Are you ready to share now or not?"
+        ]
+
+      form.submit = () ->
+        body = ""
+        for q in form.questions when q.answer
+          body += q.text + " " + q.answer + "\n"
+        body += "\n" + form.additional
+
+        router.http(router.controllers.postVolumeAssist, [volume.id], body, {headers:{'Content-Type':"text/plain"}}).then () ->
+              # TODO: reset/clear form
+              form.$setPristine()
+              messages.add
+                type: 'green'
+                body: 'Your request has been submitted, and you will receive a copy by email'
+                owner: form
+              return
+          , (res) ->
+              form.$setUnsubmitted()
+              messages.addError
+                type: 'red'
+                body: 'An error occured sending the request; please try again'
+                report: res
+                owner: form
+              return
+        return
 
       return
 ]
