@@ -47,23 +47,23 @@
 
   <fieldset ng-if="staff">
     <div>Are you using the Databrary release?</div>
-    <label class="line-option"><input type="radio" name="released" ng-value="true"/>Yes</label>
-    <label class="line-option"><input type="radio" name="released" ng-value="false"/>No</label>
+    <label class="line-option"><input type="radio" name="released" ng-value="true" ng-model="volumeAssist.data.released"/>Yes</label>
+    <label class="line-option"><input type="radio" name="released" ng-value="false" ng-model="volumeAssist.data.released"/>No</label>
 
     <div>If not, are you using an equivalent consent/media release (see our user guide)</div>
-    <label class="line-option"><input type="radio" name="equivalent" ng-value="true"/>Yes</label>
-    <label class="line-option"><input type="radio" name="equivalent" ng-value="false"/>No</label>
+    <label class="line-option"><input type="radio" name="equivalent" ng-value="true" ng-model="volumeAssist.data.equivalent"/>Yes</label>
+    <label class="line-option"><input type="radio" name="equivalent" ng-value="false" ng-model="volumeAssist.data.equivalent"/>No</label>
 
     <div>Is data collection in progress or complete?</div>
-    <label class="line-option"><input type="radio" name="complete" ng-value="in progress"/>In progress</label>
-    <label class="line-option"><input type="radio" name="complete" ng-value="complete"/>Complete</label>
+    <label class="line-option"><input type="radio" name="complete" ng-value="in progress" ng-model="volumeAssist.data.complete"/>In progress</label>
+    <label class="line-option"><input type="radio" name="complete" ng-value="complete" ng-model="volumeAssist.data.complete"/>Complete</label>
 
     <div>Are you ready to share now or not?</div>
-    <label class="line-option"><input type="radio" name="share" ng-value="true"/>Yes</label>
-    <label class="line-option"><input type="radio" name="share" ng-value="false"/>No</label>
+    <label class="line-option"><input type="radio" name="share" ng-value="true" ng-model="volumeAssist.data.share"/>Yes</label>
+    <label class="line-option"><input type="radio" name="share" ng-value="false" ng-model="volumeAssist.data.share"/>No</label>
 
     <div>Any other information you wish to provide about your data goes here.</div>
-    <textarea></textarea>
+    <textarea ng-model="volumeAssist.data.additional"></textarea>
 
     <button ng-click="volumeAssist.submit()" class="green" ng-disabled="volumeAssist.$pristine || volumeAssist.$invalid || volumeAssist.$submitted">Submit</button>
 
