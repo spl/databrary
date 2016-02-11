@@ -26,8 +26,12 @@
       </fieldset>
     </scroll-float>
     <article ng-repeat="access in volumeEditAccessForm.data | orderBy:['-individual','sort'] track by access.party.id" id="access-{{::access.party.id}}" class="access-grant cf anchor">
-      <div class="row">
+      <div class="row" ng-if="access.party.id!=page.constants.party.STAFF">
         <access-grant-form></access-grant-form>
+      </div>
+      <div class="row" ng-if="access.party.id==page.constants.party.STAFF">
+        <span ng-bind="'access.'+page.constants.permission[access.children] | message:'Databrary Staff'"></span>. 
+        You can change this on the <span message="wizard.volume-edit-assist.name"></span> tab.
       </div>
     </article>
   </fieldset>
