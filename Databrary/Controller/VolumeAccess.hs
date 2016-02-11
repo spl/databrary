@@ -12,6 +12,7 @@ import Databrary.Model.Permission
 import Databrary.Model.Identity
 import Databrary.Model.Volume
 import Databrary.Model.VolumeAccess
+import Databrary.Model.Party
 import Databrary.HTTP.Form.Deform
 import Databrary.HTTP.Path.Parser
 import Databrary.Action
@@ -28,7 +29,7 @@ viewVolumeAccess = action GET (pathHTML >/> pathId </> pathVolumeAccessTarget) $
 
 postVolumeAccess :: ActionRoute (API, (Id Volume, VolumeAccessTarget))
 postVolumeAccess = action POST (pathAPI </> pathId </> pathVolumeAccessTarget) $ \(api, arg@(vi, VolumeAccessTarget ap)) -> withAuth $ do
-  v <- getVolume PermissionADMIN vi
+  v <- getVolume (if ap == partyId (partyRow staffParty) then PermissionEDIT else PermissionADMIN) vi
   a <- maybeAction =<< lookupVolumeAccessParty v ap
   u <- peek
   let su = identityAdmin u
