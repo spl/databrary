@@ -6,12 +6,6 @@
     </div>
   </fieldset>
 
-  <fieldset ng-if="staff">
-    Provide some info about your data. If preexisting spreadsheet or file that contains metadata about the dataset, upload in section below.
-    <textarea ng-model="volumeAssist.data.description"></textarea>
-    <button ng-click="volumeAssist.submit()" class="green" ng-disabled="volumeAssist.$pristine || volumeAssist.$invalid || volumeAssist.$submitted">Submit</button>
-  </fieldset>
-  
   <fieldset ng-if="staff" flow-init="flowOptions"
     flow-file-added="fileAdded($file, $event)" 
     flow-file-success="fileSuccess($file)" 
@@ -20,10 +14,20 @@
     mouse-drag-region>
     
     <legend>Upload files</legend>
-    <div flow-drop flow-btn flow-drag-enter="dropClasses['over-zone'] = true" flow-drag-leave="dropClasses['over-zone'] = false" class="player-drop foot" ng-class="dropClasses">
+    <div flow-drop flow-btn flow-drag-enter="dropClasses['over-zone'] = true" flow-drag-leave="dropClasses['over-zone'] = false" class="volume-assist-drop player-drop foot" ng-class="dropClasses">
       <span class="icon line add"></span>
       <span class="dropzone-message" message="asset.add-drop.new"></span>
-      <span class="dropzone-message">See our <a ng-href="{{::page.router.helpFormats()}}" target="_blank">list of accepted file types</a>.</span>
+      <span class="dropzone-message">Please upload the following if you have them. Also see our <a ng-href="{{::page.router.helpFormats()}}" target="_blank">list of accepted file types</a>.</span>
+
+      <div class="volume-assist-drop-suggestions">
+        <ul>
+          <li>Videos (required)</li>
+          <li>Blank consent document</li>
+          <li>Procedure, protocol, or study description</li>
+          <li>Spreadsheet including details about your sessions and participants (see our <a ng-href="" target="_blank">template</a> for example)</li>
+        </ul>
+      </div>
+
     </div>
     <div>
       <strong>Uploaded Files</strong><br>
@@ -39,6 +43,30 @@
         <upload-progress class="upload-progress-info" progress-value="upload.progressValue"></upload-progress>
       </li>
     </ul>
+  </fieldset>
+
+  <fieldset ng-if="staff">
+    <div>Are you using the Databrary release?</div>
+    <label class="line-option"><input type="radio" name="released" ng-value="true"/>Yes</label>
+    <label class="line-option"><input type="radio" name="released" ng-value="false"/>No</label>
+
+    <div>If not, are you using an equivalent consent/media release (see our user guide)</div>
+    <label class="line-option"><input type="radio" name="equivalent" ng-value="true"/>Yes</label>
+    <label class="line-option"><input type="radio" name="equivalent" ng-value="false"/>No</label>
+
+    <div>Is data collection in progress or complete?</div>
+    <label class="line-option"><input type="radio" name="complete" ng-value="in progress"/>In progress</label>
+    <label class="line-option"><input type="radio" name="complete" ng-value="complete"/>Complete</label>
+
+    <div>Are you ready to share now or not?</div>
+    <label class="line-option"><input type="radio" name="share" ng-value="true"/>Yes</label>
+    <label class="line-option"><input type="radio" name="share" ng-value="false"/>No</label>
+
+    <div>Any other information you wish to provide about your data goes here.</div>
+    <textarea></textarea>
+
+    <button ng-click="volumeAssist.submit()" class="green" ng-disabled="volumeAssist.$pristine || volumeAssist.$invalid || volumeAssist.$submitted">Submit</button>
 
   </fieldset>
+  
 </ng-form>
