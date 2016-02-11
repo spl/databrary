@@ -46,10 +46,11 @@
   </fieldset>
 
   <fieldset ng-if="staff">
+    <legend>Contact Databrary curator</legend>
     <div ng-repeat="q in ::volumeAssist.questions">
       <div ng-bind="::q.text"></div>
       <label ng-repeat="o in ::q.options||['Yes','No']" class="line-option">
-        <input type="radio" name="released" ng-value="::o" ng-model="q.answer">{{::o}}
+        <input type="radio" name="{{::q.name}}" ng-value="::o" ng-model="q.answer">{{::o}}
       </input>
     </div>
 

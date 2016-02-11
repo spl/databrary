@@ -96,13 +96,17 @@ app.directive 'volumeAssist', [
 
       form.questions =
         [
+          name: 'released'
           text: "Are you using the Databrary release?"
         ,
+          name: 'equivalent'
           text: "If not, are you using an equivalent consent/media release (see our user guide)?"
         ,
+          name: 'complete'
           text: "Is data collection in progress or complete?"
           options: ["In progress", "Complete"]
         ,
+          name: 'share'
           text: "Are you ready to share now or not?"
         ]
 
