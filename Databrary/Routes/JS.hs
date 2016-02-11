@@ -112,6 +112,7 @@ jsRoutes =
   , jsRoute "postVolumeFunding" postVolumeFunding (volume, funder)
   , jsRoute "postVolumeLinks" postVolumeLinks (JSON, volume)
   , jsRoute "deleteVolumeFunder" deleteVolumeFunder (volume, funder)
+  , jsRoute "postVolumeAssist" postVolumeAssist (volume)
   , jsRoute "getVolumeActivity" viewVolumeActivity (JSON, volume)
 
   , jsRoute "postSearch" postSearch (JSON)

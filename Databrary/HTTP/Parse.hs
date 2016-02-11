@@ -3,6 +3,7 @@ module Databrary.HTTP.Parse
   ( Content(..)
   , FileContent
   , parseRequestContent
+  , getRequestTextContent
   ) where
 
 import Control.Applicative ((<$>))
@@ -141,3 +142,11 @@ parseRequestContent ff = do
     Just ("application/json", _) ->
       parseJSONContent
     _ -> return ContentUnknown
+
+getRequestTextContent :: ActionM BS.ByteString
+getRequestTextContent = do
+  ct <- peeks $ lookupRequestHeader hContentType
+  case fmap parseContentType ct of
+    Just ("text/plain", _) ->
+      limitRequestChunks maxTextSize id
+    _ -> result $ response unsupportedMediaType415 [] (mempty :: BSB.Builder)

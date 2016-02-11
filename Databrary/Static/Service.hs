@@ -16,6 +16,7 @@ import qualified Databrary.Store.Config as C
 
 data Static = Static
   { staticAuthorizeAddr :: BS.ByteString
+  , staticAssistAddr :: BS.ByteString
   , staticInvestigator :: Maybe HC.Request
   , staticKey :: BS.ByteString -> HMAC Hash.SHA256
   }
@@ -24,15 +25,13 @@ initStatic :: C.Config -> IO Static
 initStatic conf = do
   fillin <- Trav.mapM HC.parseUrl $ conf C.! "fillin"
   return $ Static
-    { staticAuthorizeAddr = authaddr
+    { staticAuthorizeAddr = conf C.! "authorize"
+    , staticAssistAddr = conf C.! "assist"
     , staticInvestigator = fmap (\f -> f
       { HC.method = methodPost
       , HC.requestHeaders = (hContentType, "application/x-www-form-urlencoded") : HC.requestHeaders f
       , HC.cookieJar = Nothing
       , HC.redirectCount = 0
       }) fillin
-    , staticKey = hmac key
+    , staticKey = hmac $ fromMaybe ("databrary" :: BS.ByteString) $ conf C.! "key"
     }
-  where
-  authaddr = conf C.! "authorize"
-  key = fromMaybe ("databrary" :: BS.ByteString) $ conf C.! "key"
