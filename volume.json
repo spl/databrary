@@ -107,6 +107,7 @@
         },
         "position": {"$ref": "#/definitions/segment"},
         "ID": {"type": "string"},
+        "name": {"type": "string"},
         "reason": {"type": "string",
           "enum": ["Did not meet inclusion criteria","Procedural/experimenter error","Withdrew/fussy/tired","Outlier"]
         },
