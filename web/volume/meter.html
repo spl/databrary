@@ -51,15 +51,15 @@
       <div class="icon done-not">
         <span ng-if="::metrics.design.done && metrics.session.done && metrics.record.done && metrics.participant.done && metrics.context.done" class="icon done"></span>
       </div> 
-      <h5>Study design and data spreadsheet</h5>
-      <p>Define your study design, then start creating and describing sessions in the data spreadsheet.</p>
+      <h5>Design spreadsheet and enter data</h5>
+      <p>Describe the components of your study, then start creating and describing sessions in the data spreadsheet.</p>
       <ul ng-if="::!(metrics.design.done && metrics.session.done && metrics.record.done && metrics.participant.done && metrics.context.done)">
         <li ng-class="metrics.design.done? 'volume-meter-done' : 'clickable'">
           <span ng-if="::metrics.design.done">
             <span class="icon done"></span> 
-            Study design defined
+            Designed spreadsheet
           </span>
-          <span ng-click="goto('design')" ng-if="::!metrics.design.done">Select the categories and fields by which you will describe your sessions.</span>
+          <span ng-click="goto('design')" ng-if="::!metrics.design.done">Select the categories and fields that will describe your sessions.</span>
         </li> 
         <li ng-class="metrics.session.done? 'volume-meter-done' : 'clickable'">
           <span ng-if="::metrics.session.done">
@@ -83,7 +83,7 @@
             Included participant information
           </span>
           <span ng-click="goto('design')" ng-if="::!metrics.participant.done">
-            Include information in your study design about participants: 
+            Include information in your study spreadsheet design about participants: 
             <ul class="comma inline">
               <li class="strong" ng-repeat="m in ::metrics.participant.metrics" ng-bind="::m"></li>
             </ul>
@@ -95,9 +95,9 @@
             Included context information
           </span>
           <span ng-click="goto('design')" ng-if="::!metrics.context.done">
-            Include information in your study design about context: 
+            Include the following information in your study spreadsheet design about context: 
             <ul class="comma inline">
-              <li class="strong" ng-repeat="m in ::metrics.context.metrics" ng-bind="::m"></li>
+              <li ng-repeat="m in ::metrics.context.metrics" ng-bind="::m"></li>
             </ul>
           </span>
         </li>
