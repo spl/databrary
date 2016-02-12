@@ -14,7 +14,7 @@
 
   <div ng-switch-when="video" ng-class="{'no-preview':!asset.duration}">
     <span ng-if="::!asset.duration" message="asset.untranscoded"></span>
-    <video controls preload="metadata" seek="clip">
+    <video controls preload="metadata" seek="clip" height="480">
       <source ng-src="{{::asset.downloadRoute(true)}}" type="{{::asset.format.mimetype}}">
     </video>
   </div>
