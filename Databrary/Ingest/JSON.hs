@@ -16,7 +16,7 @@ import qualified Data.Foldable as Fold
 import Data.Function (on)
 import qualified Data.JsonSchema as JS
 import Data.List (find)
-import Data.Maybe (isJust, fromMaybe)
+import Data.Maybe (isJust, fromMaybe, isNothing)
 import Data.Monoid (mempty, (<>))
 import Data.Time.Format (parseTime)
 import qualified Data.Text as T
@@ -93,8 +93,8 @@ asSegment :: IngestM Segment
 asSegment = JE.fromAesonParser
 
 data StageFile = StageFile
-  { stageFileRel :: FilePath
-  , stageFileAbs :: FilePath
+  { stageFileRel :: !FilePath
+  , stageFileAbs :: !FilePath
   }
 
 asStageFile :: FilePath -> IngestM StageFile
@@ -121,8 +121,9 @@ ingestJSON vol jdata run overwrite = runExceptT $ do
     _ <- JE.keyMay "name" $ do
       name <- check (volumeName $ volumeRow vol) =<< JE.asText
       Fold.forM_ name $ \n -> lift $ changeVolume vol{ volumeRow = (volumeRow vol){ volumeName = n } }
-    JE.key "containers" $ JE.eachInArray (container dir)
-  container dir = do
+    top <- lift (lookupVolumeTopContainer vol)
+    JE.key "containers" $ JE.eachInArray (container top dir)
+  container topc dir = do
     cid <- JE.keyMay "id" $ Id <$> JE.asIntegral
     key <- JE.key "key" $ asKey
     c' <- lift (lookupIngestContainer vol key)
@@ -179,10 +180,10 @@ ingestJSON vol jdata run overwrite = runExceptT $ do
       _ <- JE.key "assets" $ JE.eachInArray $ do
         (a, probe) <- asset dir
         inObj a $ do
-          as' <- lift $ lookupAssetAssetSlot a
-          seg <- JE.keyOrDefault "position" (maybe fullSegment slotSegment $ assetSlot as') $
+          as' <- lift $ mfilter (((/=) `on` containerId . containerRow) topc . slotContainer) . assetSlot <$> lookupAssetAssetSlot a
+          seg <- JE.keyOrDefault "position" (maybe fullSegment slotSegment as') $
             JE.withTextM (\t -> if t == "auto"
-              then maybe (Right . Segment . Range.point <$> probeAutoPosition c probe) (return . Right . slotSegment) $ mfilter (((==) `on` containerId . containerRow) c . slotContainer) (assetSlot as')
+              then maybe (Right . Segment . Range.point <$> probeAutoPosition c probe) (return . Right . slotSegment) $ mfilter (((==) `on` containerId . containerRow) c . slotContainer) as'
               else return $ Left "invalid asset position")
               `catchError` \_ -> asSegment
           let seg'
@@ -190,7 +191,7 @@ ingestJSON vol jdata run overwrite = runExceptT $ do
                 , Just d <- assetDuration (assetRow a) = Segment $ Range.bounded p (p + d)
                 | otherwise = seg
               ss = Slot c seg'
-          u <- maybe (return True) (\s' -> isJust <$> on check slotId s' ss) $ assetSlot as'
+          u <- maybe (return True) (\s' -> isJust <$> on check slotId s' ss) as'
           when u $ do
             o <- lift $ changeAssetSlot $ AssetSlot a $ Just ss
             unless o $ throwPE "asset link failed"
@@ -229,31 +230,22 @@ ingestJSON vol jdata run overwrite = runExceptT $ do
         Fold.forM_ datum $ lift . changeRecordMeasure . Measure r metric
     return r
   asset dir = do
-    (file, probe) <- JE.key "file" $ do
-      file <- asStageFile dir
-      either throwPE (return . (,) file)
-        =<< lift (probeFile (toRawFilePath $ stageFileRel file) (toRawFilePath $ stageFileAbs file))
+    sa <- fromMaybeM
+      (JE.key "file" $ do
+        file <- asStageFile dir
+        (,) . Just . (,) file
+          <$> (either throwPE return
+            =<< lift (probeFile (toRawFilePath $ stageFileRel file) (toRawFilePath $ stageFileAbs file)))
+          <*> lift (lookupIngestAsset vol $ stageFileRel file))
+      =<< (JE.keyMay "id" $ do
+        maybe (throwPE "asset not found") (return . (,) Nothing . Just) =<< lift . lookupVolumeAsset vol . Id =<< JE.asIntegral)
+    when (isNothing $ fst sa) $ noKey "file"
     orig <- JE.keyMay "replace" $
       let err = fmap $ maybe (Left "asset not found") Right in
       JE.withIntegralM (err . lookupVolumeAsset vol . Id) `catchError` \_ ->
         JE.withStringM (err . lookupIngestAsset vol)
-    ae <- lift $ lookupIngestAsset vol $ stageFileRel file
-    a <- maybe
-      (do
-        release <- JE.key "release" asRelease
-        name <- JE.keyMay "name" JE.asText
-        let ba = blankAsset vol
-        a <- lift $ addAsset ba
-          { assetRow = (assetRow ba)
-            { assetFormat = probeFormat probe
-            , assetRelease = release
-            , assetName = name
-            }
-          } (Just $ toRawFilePath $ stageFileAbs file)
-        lift $ addIngestAsset a (stageFileRel file)
-        Fold.forM_ orig $ \o -> lift $ replaceAsset o a -- FIXME
-        return a)
-      (\a -> inObj a $ do
+    a <- case sa of
+      (_, Just a) -> inObj a $ do
         unless (assetBacked a) $ throwPE "ingested asset incomplete"
         -- compareFiles file =<< getAssetFile -- assume correct
         release <- fmap join . JE.keyMay "release" $ check (assetRelease $ assetRow a) =<< asRelease
@@ -267,14 +259,23 @@ ingestJSON vol jdata run overwrite = runExceptT $ do
             } Nothing
           else return a
         Fold.forM_ orig $ \o -> lift $ replaceSlotAsset o a'
-        return a')
-      ae
-    inObj a $ case probe of
-      ProbePlain _ -> do
-        noKey "clip"
-        noKey "options"
-        return (a, probe)
-      ProbeAV{} -> do
+        return a'
+      (~(Just (file, probe)), Nothing) -> do
+        release <- JE.key "release" asRelease
+        name <- JE.keyMay "name" JE.asText
+        let ba = blankAsset vol
+        a <- lift $ addAsset ba
+          { assetRow = (assetRow ba)
+            { assetFormat = probeFormat probe
+            , assetRelease = release
+            , assetName = name
+            }
+          } (Just $ toRawFilePath $ stageFileAbs file)
+        lift $ addIngestAsset a (stageFileRel file)
+        Fold.forM_ orig $ \o -> lift $ replaceAsset o a -- FIXME
+        return a
+    inObj a $ case sa of
+      (Just (_, probe@ProbeAV{}), ae) -> do
         clip <- JE.keyOrDefault "clip" fullSegment asSegment
         opts <- JE.keyOrDefault "options" defaultTranscodeOptions $ JE.eachInArray JE.asString
         t <- lift $ fromMaybeM
@@ -283,4 +284,8 @@ ingestJSON vol jdata run overwrite = runExceptT $ do
             _ <- startTranscode t
             return t)
           =<< flatMapM (\_ -> findTranscode a clip opts) ae
-        return (transcodeAsset t, probe)
+        return (transcodeAsset t, Just probe)
+      _ -> do
+        noKey "clip"
+        noKey "options"
+        return (a, Nothing)

@@ -607,6 +607,8 @@ app.factory('modelService', [
 
     Volume.prototype.accessSave = function (target, data) {
       var v = this;
+      if (typeof data !== 'object')
+        data = {individual:data, children: data};
       return router.http(router.controllers.postVolumeAccess, this.id, target, data)
         .then(function (res) {
           subPartyUpdate(v.access, res.data);
@@ -1263,8 +1265,10 @@ app.factory('modelService', [
         data.position = this.segment.l;
       return router.http(router.controllers.createAsset, this.volume.id, data)
         .then(function (res) {
-          s.clear('assets');
-          return assetMake(s.container, res.data);
+          var a = assetMake(s.container, res.data);
+          if ('assets' in s)
+            s.assets[a.id] = a;
+          return a;
         });
     };
 
@@ -1295,7 +1299,7 @@ app.factory('modelService', [
     function AssetSegment(context, init) {
       this.asset =
         context instanceof Asset ? context :
-        new assetMake(context, init.asset);
+        assetMake(context, init.asset);
       AssetSlot.call(this, init);
     }
 

@@ -35,11 +35,11 @@ import Databrary.View.Register
 
 resetPasswordMail :: Either BS.ByteString SiteAuth -> T.Text -> (Maybe BSL.ByteString -> BSL.ByteString) -> ActionM ()
 resetPasswordMail (Left email) subj body =
-  sendMail [Left email] subj (body Nothing)
+  sendMail [Left email] [] subj (body Nothing)
 resetPasswordMail (Right auth) subj body = do
   tok <- loginTokenId =<< createLoginToken auth True
   req <- peek
-  sendMail [Right $ view auth] subj
+  sendMail [Right $ view auth] [] subj
     (body $ Just $ BSB.toLazyByteString $ actionURL (Just req) viewLoginToken (HTML, tok) [])
 
 viewRegister :: ActionRoute ()
@@ -70,7 +70,7 @@ postRegister = action POST (pathAPI </< "user" </< "register") $ \api -> without
           , accountEmail = email
           }
     return a
-  auth <- maybe (SiteAuth <$> addAccount reg <$- Nothing <$- mempty) return =<< lookupSiteAuthByEmail False (accountEmail reg)
+  auth <- maybe (SiteAuth <$> addAccount reg <*- Nothing <*- mempty) return =<< lookupSiteAuthByEmail False (accountEmail reg)
   resetPasswordMail (Right auth) 
     "Databrary account created"
     $ \(Just url) ->

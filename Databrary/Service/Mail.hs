@@ -46,10 +46,11 @@ mailFooter = "\n\
   \contact@databrary.org\n\
   \databrary.org\n"
 
-sendMail :: MonadIO m => [Either BS.ByteString Account] -> T.Text -> BSL.ByteString -> m ()
-sendMail to subj body =
+sendMail :: MonadIO m => [Either BS.ByteString Account] -> [Either BS.ByteString Account] -> T.Text -> BSL.ByteString -> m ()
+sendMail to cc subj body =
   liftIO $ renderSendMail $ addPart [Part "text/plain; charset=utf-8" None Nothing [] (mailHeader <> wrapMailText body <> mailFooter)] $ baseMail
     { mailTo = map addr to
+    , mailCc = map addr cc
     , mailHeaders = [("Subject", subj)]
     }
   where

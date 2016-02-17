@@ -8,24 +8,28 @@ module Databrary.Controller.Volume
   , createVolume
   , viewVolumeLinks
   , postVolumeLinks
+  , postVolumeAssist
   , queryVolumes
   , thumbVolume
   , volumeDownloadName
   , volumeJSONQuery
   ) where
 
-import Control.Applicative ((<*>), (<|>), optional)
+import Control.Applicative ((<|>), optional)
 import Control.Arrow ((&&&), (***))
 import Control.Monad (mfilter, guard, void, when)
 import Control.Monad.Trans.Class (lift)
 import Control.Monad.Trans.State.Lazy (StateT(..), evalStateT, get, put)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
+import qualified Data.ByteString.Lazy as BSL
 import qualified Data.HashMap.Lazy as HML
 import qualified Data.HashMap.Strict as HM
 import Data.Maybe (fromMaybe, isNothing)
 import Data.Monoid (Monoid(..), (<>), mempty)
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
+import Network.HTTP.Types (noContent204)
 import qualified Network.Wai as Wai
 
 import Databrary.Ops
@@ -52,6 +56,9 @@ import Databrary.Model.Tag
 import Databrary.Model.Comment
 import Databrary.Model.VolumeState
 import Databrary.Store.Filename
+import Databrary.Static.Service
+import Databrary.Service.Mail
+import Databrary.HTTP.Parse
 import Databrary.HTTP.Form.Deform
 import Databrary.HTTP.Path.Parser
 import Databrary.Action.Route
@@ -214,7 +221,7 @@ volumeCitationForm v = do
     <$> ("head" .:> deform)
     <*> ("url" .:> deformNonEmpty deform)
     <*> ("year" .:> deformNonEmpty deform)
-    <$- Nothing
+    <*- Nothing
   look <- flatMapM (lift . focusIO . lookupCitation) $
     guard (T.null (volumeName $ volumeRow vol) || T.null (citationHead cite) || isNothing (citationYear cite)) >> citationURL cite
   let fill = maybe cite (cite <>) look
@@ -288,12 +295,25 @@ postVolumeLinks = action POST (pathAPI </> pathId </< "link") $ \arg@(api, vi) -
     withSubDeforms $ \_ -> Citation
       <$> ("head" .:> deform)
       <*> ("url" .:> (Just <$> deform))
-      <$- Nothing
-      <$- Nothing
+      <*- Nothing
+      <*- Nothing
   changeVolumeLinks v links'
   case api of
     JSON -> return $ okResponse [] $ volumeJSON v JSON..+ ("links" JSON..= links')
     HTML -> peeks $ otherRouteResponse [] viewVolume arg
+
+assistAddr :: Static -> [Either BS.ByteString Account]
+assistAddr = return . Left . staticAssistAddr
+
+postVolumeAssist :: ActionRoute (Id Volume)
+postVolumeAssist = action POST (pathJSON >/> pathId </< "assist") $ \vi -> withAuth $ do
+  user <- authAccount
+  v <- getVolume PermissionEDIT vi
+  addr <- peeks assistAddr
+  body <- getRequestTextContent
+  sendMail addr [Right user] ("Databrary upload assistance request for volume " <> T.pack (show vi)) $ BSL.fromChunks
+    [ TE.encodeUtf8 $ partyName $ partyRow $ accountParty user, " has requested curation assistance for ", TE.encodeUtf8 $ volumeName $ volumeRow v, "\n\n", body, "\n" ]
+  return $ emptyResponse noContent204 []
 
 volumeSearchForm :: DeformActionM f VolumeFilter
 volumeSearchForm = VolumeFilter

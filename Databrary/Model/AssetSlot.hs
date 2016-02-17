@@ -15,7 +15,6 @@ module Databrary.Model.AssetSlot
   , assetSlotJSON
   ) where
 
-import Control.Applicative ((<*>))
 import Control.Monad (when, guard)
 import qualified Data.Foldable as Fold
 import Data.Maybe (fromMaybe, isNothing, catMaybes)

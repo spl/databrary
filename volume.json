@@ -148,6 +148,7 @@
       "description": "Assets reflecting files in primary storage.",
       "type": "object",
       "properties": {
+        "id": {"type": "integer"},
         "release": {"$ref": "#/definitions/release"},
         "name": {"type": "string"},
         "position": {"anyOf": [
@@ -174,7 +175,6 @@
           "description": "Original file staging path or asset id to replace."
         }
       },
-      "required": ["release", "file"],
       "additionalProperties": false
     }
   },
