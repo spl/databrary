@@ -4,7 +4,6 @@ module Databrary.Controller.Ingest
   , postIngest
   ) where
 
-import Control.Applicative ((<*>))
 import Control.Arrow (right)
 import Control.Monad (unless)
 import Network.HTTP.Types (badRequest400)
