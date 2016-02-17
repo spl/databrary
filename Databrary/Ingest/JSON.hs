@@ -16,7 +16,7 @@ import qualified Data.Foldable as Fold
 import Data.Function (on)
 import qualified Data.JsonSchema as JS
 import Data.List (find)
-import Data.Maybe (isJust, fromMaybe)
+import Data.Maybe (isJust, fromMaybe, isNothing)
 import Data.Monoid (mempty, (<>))
 import Data.Time.Format (parseTime)
 import qualified Data.Text as T
@@ -237,8 +237,8 @@ ingestJSON vol jdata run overwrite = runExceptT $ do
             =<< lift (probeFile (toRawFilePath $ stageFileRel file) (toRawFilePath $ stageFileAbs file)))
           <*> lift (lookupIngestAsset vol $ stageFileRel file))
       =<< (JE.keyMay "id" $ do
-        noKey "file"
         maybe (throwPE "asset not found") (return . (,) Nothing . Just) =<< lift . lookupVolumeAsset vol . Id =<< JE.asIntegral)
+    when (isNothing $ fst sa) $ noKey "file"
     orig <- JE.keyMay "replace" $
       let err = fmap $ maybe (Left "asset not found") Right in
       JE.withIntegralM (err . lookupVolumeAsset vol . Id) `catchError` \_ ->
