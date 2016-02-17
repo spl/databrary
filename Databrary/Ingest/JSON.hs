@@ -121,8 +121,9 @@ ingestJSON vol jdata run overwrite = runExceptT $ do
     _ <- JE.keyMay "name" $ do
       name <- check (volumeName $ volumeRow vol) =<< JE.asText
       Fold.forM_ name $ \n -> lift $ changeVolume vol{ volumeRow = (volumeRow vol){ volumeName = n } }
-    JE.key "containers" $ JE.eachInArray (container dir)
-  container dir = do
+    top <- lift (lookupVolumeTopContainer vol)
+    JE.key "containers" $ JE.eachInArray (container top dir)
+  container topc dir = do
     cid <- JE.keyMay "id" $ Id <$> JE.asIntegral
     key <- JE.key "key" $ asKey
     c' <- lift (lookupIngestContainer vol key)
@@ -179,10 +180,10 @@ ingestJSON vol jdata run overwrite = runExceptT $ do
       _ <- JE.key "assets" $ JE.eachInArray $ do
         (a, probe) <- asset dir
         inObj a $ do
-          as' <- lift $ lookupAssetAssetSlot a
-          seg <- JE.keyOrDefault "position" (maybe fullSegment slotSegment $ assetSlot as') $
+          as' <- lift $ mfilter (((/=) `on` containerId . containerRow) topc . slotContainer) . assetSlot <$> lookupAssetAssetSlot a
+          seg <- JE.keyOrDefault "position" (maybe fullSegment slotSegment as') $
             JE.withTextM (\t -> if t == "auto"
-              then maybe (Right . Segment . Range.point <$> probeAutoPosition c probe) (return . Right . slotSegment) $ mfilter (((==) `on` containerId . containerRow) c . slotContainer) (assetSlot as')
+              then maybe (Right . Segment . Range.point <$> probeAutoPosition c probe) (return . Right . slotSegment) $ mfilter (((==) `on` containerId . containerRow) c . slotContainer) as'
               else return $ Left "invalid asset position")
               `catchError` \_ -> asSegment
           let seg'
@@ -190,7 +191,7 @@ ingestJSON vol jdata run overwrite = runExceptT $ do
                 , Just d <- assetDuration (assetRow a) = Segment $ Range.bounded p (p + d)
                 | otherwise = seg
               ss = Slot c seg'
-          u <- maybe (return True) (\s' -> isJust <$> on check slotId s' ss) $ assetSlot as'
+          u <- maybe (return True) (\s' -> isJust <$> on check slotId s' ss) as'
           when u $ do
             o <- lift $ changeAssetSlot $ AssetSlot a $ Just ss
             unless o $ throwPE "asset link failed"
