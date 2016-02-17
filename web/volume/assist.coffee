@@ -81,6 +81,7 @@ app.directive 'volumeAssist', [
 
       $scope.fileProgress = (file) ->
         file.progressValue = file.progress()
+        $scope.progress = file.flowObj.progress()
         return
 
       $scope.fileError = (file, message) ->
