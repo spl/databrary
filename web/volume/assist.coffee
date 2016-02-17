@@ -40,6 +40,11 @@ app.directive 'volumeAssist', [
       slot = volume.top
       $scope.assets = slot.assets
       $scope.uploads = []
+      $scope.progress = 0
+
+      remove = (file) ->
+        $scope.uploads.remove(file)
+        $scope.progress = file.flowObj.progress()
 
       $scope.fileAdded = (file) ->
         $scope.uploads.push(file)
@@ -52,7 +57,7 @@ app.directive 'volumeAssist', [
               body: constants.message('asset.upload.rejected', {sce:$sce.HTML}, file.relativePath)
               report: res
               owner: this
-            $scope.uploads.remove(file)
+            remove(file)
             return
         return
 
@@ -65,7 +70,7 @@ app.directive 'volumeAssist', [
             classification: null
           ).then (asset) ->
               file.cancel()
-              $scope.uploads.remove(file)
+              remove(file)
               return
             , (res) ->
               messages.addError
@@ -76,7 +81,7 @@ app.directive 'volumeAssist', [
               file.cancel()
               file.progressValue = null
               return
-        $scope.uploads.remove(file)
+        remove(file)
         return
 
       $scope.fileProgress = (file) ->
@@ -90,10 +95,8 @@ app.directive 'volumeAssist', [
           body: constants.message('asset.upload.error', file.relativePath, message || 'unknown error')
           owner: form
         file.cancel()
-        $scope.uploads.remove(file)
+        remove(file)
         return
-
-      $scope.filesCount = Object.keys($scope.assets).length
 
       form.questions =
         [
