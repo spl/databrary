@@ -12,7 +12,7 @@ module Databrary.Store.AV
   , avFrame
   ) where
 
-import Control.Applicative ((<*>), (<|>))
+import Control.Applicative ((<|>))
 import Control.Arrow (first)
 import Control.Concurrent.MVar (MVar, newMVar, takeMVar, putMVar)
 import Control.Exception (Exception, throwIO, bracket, bracket_, finally, onException)

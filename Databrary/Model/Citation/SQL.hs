@@ -27,7 +27,7 @@ selectVolumeCitation :: Selector -- ^ @Maybe 'T.Text' -> 'Citation'@
 selectVolumeCitation = citationRow
 
 makeVolumeCitation :: Volume -> Maybe (Maybe T.Text -> Citation) -> (Volume, Maybe Citation)
-makeVolumeCitation v cf = (v, cf <$- Just (volumeName $ volumeRow v))
+makeVolumeCitation v cf = (v, cf <*- Just (volumeName $ volumeRow v))
 
 selectCitation :: TH.Name -- ^ @'Identity'@
   -> Selector -- ^ @('Volume', Maybe 'Citation')@

@@ -13,7 +13,7 @@ module Databrary.Controller.Party
   , adminParties
   ) where
 
-import Control.Applicative ((<*>), pure, optional)
+import Control.Applicative (pure, optional)
 import Control.Monad (unless, when)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC

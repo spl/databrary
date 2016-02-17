@@ -3,7 +3,7 @@ module Databrary.Model.Citation.CrossRef
   ( lookupCitation
   ) where
 
-import Control.Applicative ((<*>), optional)
+import Control.Applicative (optional)
 import Control.Exception (handle)
 import Control.Monad.Trans.Class (lift)
 import Control.Monad.Trans.Maybe (MaybeT(..), runMaybeT)
