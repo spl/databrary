@@ -163,7 +163,7 @@ processAsset api target = do
         p <- fromMaybe (lowerBound . segmentRange =<< seg) <$> deformOptional (deformNonEmpty deform)
         Slot c . maybe fullSegment
           (\l -> Segment $ Range.bounded l (l + fromMaybe 0 ((segmentLength =<< seg) <|> dur)))
-          <$> orElseM p (Trav.mapM (lift . probeAutoPosition c . fileUploadProbe) (guard (isNothing s && isJust dur) >> up)))
+          <$> orElseM p (Trav.mapM (lift . probeAutoPosition c . Just . fileUploadProbe) (guard (isNothing s && isJust dur) >> up)))
     return
       ( as
         { slotAsset = a
