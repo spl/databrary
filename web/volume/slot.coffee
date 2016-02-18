@@ -347,7 +347,7 @@ app.controller('volume/slot', [
           d = viewportMinHeight
         playerImgHeightStyle = styles.set('.player-viewport .asset-display img{max-height:'+d+'px}', playerImgHeightStyle)
         playerVideoHeightStyle = styles.set('.player-viewport .asset-display video{height:'+d+'px}', playerVideoHeightStyle)
-        playerDropHeightStyle = styles.set('.file-drop{height:'+(d-30)+'px}', playerDropHeightStyle)        
+        playerDropHeightStyle = styles.set('.file-drop{height:'+(d-30)+'px}', playerDropHeightStyle)
         playerPDFHeightStyle = styles.set('.player-viewport .asset-display object{height:'+ (d - 10) + 'px}', playerPDFHeightStyle)
         return
       return

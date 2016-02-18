@@ -10,11 +10,11 @@
     flow-file-added="fileAdded($file, $event)" 
     flow-file-success="fileSuccess($file)" 
     flow-file-progress="fileProgress($file)" 
-    flow-file-error="fileError($file, $message)"
+    flow-file-error="fileError($file, $message)" 
     mouse-drag-region>
-    
+
     <legend>Upload files</legend>
-    <small>See our <a ng-href="{{::page.router.helpFormats()}}" target="_blank">list of accepted file types</a>.</small>    
+    <small>See our <a ng-href="{{::page.router.helpFormats()}}" target="_blank">list of accepted file types</a>.</small>
     <div flow-drop flow-btn flow-drag-enter="dropClasses['over-zone'] = true" flow-drag-leave="dropClasses['over-zone'] = false" class="volume-assist-drop file-drop foot" ng-class="dropClasses">
       <span class="icon line add"></span>
       <span class="dropzone-message" message="asset.add-drop.new"></span><br>
@@ -66,5 +66,5 @@
     <button ng-click="volumeAssist.submit()" class="green" ng-disabled="volumeAssist.$pristine || volumeAssist.$invalid || volumeAssist.$submitted">Submit</button>
 
   </fieldset>
-  
+
 </ng-form>
