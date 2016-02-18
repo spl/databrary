@@ -202,30 +202,31 @@ input[type='text'].slot-timeline-time, .slot-timeline-control > button
   overflow hidden
   height 100%
 
-  .classification-info,.upload-progress-info
-    position absolute
-    top b3
-    right b8
-
   progress
     @media screen and (max-width: 640px)
       width 100px
 
+  .classification-info
+  .upload-progress-info
+    float right
+    margin-top b8
+    margin-right b8
+
 .slot-track-asset-info-name
-  display inline-block
+  display flex
   font-size 12px
   padding-left b2
   padding-right b1+b3
-  word-break break-word
+
   .track-status
     color red
-  &.uploading 
-    @media screen and (max-width: grid-mobile-width)
-      margin-right 100px  
-    @media screen and (min-width: grid-mobile-width+1)
-      margin-right 300px
+    
   &.excerpt
     color green13
+    
+.slot-track-asset-info-name-name
+  overflow hidden
+  text-overflow ellipsis    
 
 .slot-track-asset-thumb
   height b2+b3
