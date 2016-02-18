@@ -33,16 +33,19 @@
       <strong>Uploaded Files</strong><br>
       <small>Files listed here won't show up in your spreadsheet until after our staff has made contact</small>
     </div>
-    <ul class="striped flat volume-assist-list">
-      <li ng-repeat="asset in assets" class="volume-assist-list-item">
-        <img ng-src="{{asset.icon}}" ng-class="'hint-format-'+asset.format.extension">
-        <span ng-bind="::asset.name"></span>
-      </li>
-      <li ng-repeat="upload in uploads" class="volume-assist-list-item">
-        <span ng-bind="::upload.name"></span>
-        <upload-progress class="upload-progress-info" progress-value="upload.progressValue"></upload-progress>
-      </li>
-    </ul>
+    <div class="volume-assist-list-container">
+      <upload-progress progress-value="progress"></upload-progress>
+      <ul class="striped flat volume-assist-list">
+        <li ng-repeat="asset in assets" class="volume-assist-list-item">
+          <img ng-src="{{asset.icon}}" ng-class="'hint-format-'+asset.format.extension">
+          <span ng-bind="::asset.name" class="volume-assist-list-item-name"></span>
+        </li>
+        <li ng-repeat="upload in uploads" class="volume-assist-list-item">
+          <span ng-bind="::upload.name"></span>
+          <upload-progress class="upload-progress-info" progress-value="upload.progressValue"></upload-progress>
+        </li>
+      </ul>
+    </div>
   </fieldset>
 
   <fieldset ng-if="staff">

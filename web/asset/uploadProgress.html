@@ -1,7 +1,8 @@
 <div ng-if="progressFloat && progressFloat < 1">
+  <span>[</span>
   <span class="hide-mobile">Progress: </span>
   <span><progress max="1" ng-value="progressFloat"></progress>&#32;</span>
-  <span>({{(progressFloat*100).toFixed(1)+'%'}})</span>
+  <span>{{(progressFloat*100).toFixed(1)+'%'}}]</span>
 </div>
 <div ng-if="progressFloat >= 1">
   <span message="asset.upload.completing"></span>
