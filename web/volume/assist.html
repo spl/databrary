@@ -45,14 +45,16 @@
         <upload-progress progress-value="progress" progress-text="'Overall Progress'" class="upload-progress-info"></upload-progress>
         <ul class="striped flat volume-assist-list">
           <li ng-repeat="asset in assets" class="volume-assist-list-item">
+            <a ng-click="remove(asset)" class="icon trash2 button volume-assist-item-remove"></a>          
             <img ng-src="{{asset.icon}}" ng-class="'hint-format-'+asset.format.extension">
-            <span ng-bind="::asset.name" class="volume-assist-list-item-name"></span>
-            <a ng-click="remove(asset)" class="icon trash2 button volume-assist-list-item-remove"></a>
+            <span ng-bind="::asset.name"></span>
           </li>
           <li ng-repeat="upload in uploads" class="volume-assist-list-item">
+            <div class="volume-assist-uploading">
+              <upload-progress class="upload-progress-info" progress-value="upload.progressValue"></upload-progress>
+              <a ng-click="cancel(upload)" class="icon trash button volume-assist-item-remove"></a>
+            </div>          
             <span ng-bind="::upload.name"></span>
-            <upload-progress class="upload-progress-info" progress-value="upload.progressValue"></upload-progress>
-            <a ng-click="cancel(upload)" class="icon trash button volume-assist-list-item-remove"></a>
           </li>
         </ul>
       </div>
