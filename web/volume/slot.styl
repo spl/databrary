@@ -200,15 +200,12 @@ input[type='text'].slot-timeline-time, .slot-timeline-control > button
 .slot-track-asset-info
   padding b6
   overflow hidden
-  position relative
+  height 100%
 
   .classification-info,.upload-progress-info
     position absolute
     top b3
     right b8
-
-  .upload-progress-info
-    margin-right b1+b3
 
   progress
     @media screen and (max-width: 640px)
@@ -216,16 +213,17 @@ input[type='text'].slot-timeline-time, .slot-timeline-control > button
 
 .slot-track-asset-info-name
   display inline-block
-  overflow hidden
-  text-overflow ellipsis
   font-size 12px
-  width 95%
   padding-left b2
   padding-right b1+b3
+  word-break break-word
   .track-status
     color red
-  &.uploading
-    width 40%
+  &.uploading 
+    @media screen and (max-width: grid-mobile-width)
+      margin-right 100px  
+    @media screen and (min-width: grid-mobile-width+1)
+      margin-right 300px
   &.excerpt
     color green13
 
