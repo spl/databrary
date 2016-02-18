@@ -63,9 +63,9 @@
 
   <fieldset ng-if="staff">
     <legend>Contact Databrary</legend>
-    <div class="foot">Provide us additional information about your study. Answer the questions below and click submit. </div>
+    <div class="foot">Provide us additional information about your study. Answer the questions below and submit the form. Databrary staff will be in touch. </div>
     <div ng-repeat="q in ::volumeAssist.questions" class="foot-2">
-      <div ng-bind="::q.text"></div>
+      <div ng-bind-html="::q.text"></div>
       <label ng-repeat="o in ::q.options||['Yes','No']" class="line-option">
         <input type="radio" name="{{::q.name}}" ng-value="::o" ng-model="q.answer">{{::o}}
       </input>
