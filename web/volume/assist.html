@@ -35,7 +35,7 @@
       <small>Files listed here won't show up in your spreadsheet until after our staff has made contact</small>
     </div>
     <div class="volume-assist-list-container">
-      <upload-progress progress-value="progress"></upload-progress>
+      <upload-progress progress-value="progress" progress-text="'Overall Progress'" class="upload-progress-info"></upload-progress>
       <ul class="striped flat volume-assist-list">
         <li ng-repeat="asset in assets" class="volume-assist-list-item">
           <img ng-src="{{asset.icon}}" ng-class="'hint-format-'+asset.format.extension">
