@@ -591,6 +591,7 @@ app.controller('volume/slot', [
               body: constants.message('asset.remove.error', @name)
               report: res
               owner: this
+            return
         return
 
       save: ->

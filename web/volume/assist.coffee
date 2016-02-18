@@ -39,6 +39,7 @@ app.directive 'volumeAssist', [
 
       slot = volume.top
       $scope.assets = slot.assets
+      $scope.anyAssets = !$.isEmptyObject($scope.assets)
       $scope.uploads = []
       $scope.progress = 0
 
@@ -69,6 +70,7 @@ app.directive 'volumeAssist', [
             position: null
             classification: null
           ).then (asset) ->
+              $scope.anyAssets = true
               file.cancel()
               remove(file)
               return
@@ -94,6 +96,23 @@ app.directive 'volumeAssist', [
           type: 'red'
           body: constants.message('asset.upload.error', file.relativePath, message || 'unknown error')
           owner: form
+        file.cancel()
+        remove(file)
+        return
+
+      $scope.remove = (asset) ->
+        asset.remove().then (asset) ->
+            return
+          , (res) ->
+            messages.addError
+              type: 'red'
+              body: constants.message('asset.remove.error', @name)
+              report: res
+              owner: this
+            return
+        return
+
+      $scope.cancel = (file) ->
         file.cancel()
         remove(file)
         return

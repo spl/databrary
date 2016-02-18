@@ -1287,8 +1287,8 @@ app.factory('modelService', [
       var a = this;
       return router.http(router.controllers.deleteAsset, this.id)
         .then(function (res) {
-          if (a.container)
-            a.container.clear('assets');
+          if (a.container && a.container.assets)
+            delete a.container.assets[a.id];
           return a.update(res.data);
         });
     };
