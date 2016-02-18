@@ -2,7 +2,7 @@
   <fieldset>
     <div>
       <input type="checkbox" ng-model="volumeAssist.staff" ng-disabled="staff===undefined" ng-change="setStaff(volumeAssist.staff)"/>
-      I want assistance blah blah. Checking this gives Staff account read/write access. May uncheck this option anytime.
+      I want help. Checking this box gives Databrary read/write access to this volume. You may uncheck this option at any time.
     </div>
   </fieldset>
 
@@ -14,25 +14,37 @@
     mouse-drag-region>
     
     <legend>Upload files</legend>
-    <small>See our <a ng-href="{{::page.router.helpFormats()}}" target="_blank">list of accepted file types</a>.</small>    
+    <div class="foot">You can upload videos and other files in bulk to help us get you started. See our <a ng-href="{{::page.router.helpFormats()}}" target="_blank">list of accepted file types</a>.</div>    
     <div flow-drop flow-btn flow-drag-enter="dropClasses['over-zone'] = true" flow-drag-leave="dropClasses['over-zone'] = false" class="volume-assist-drop file-drop foot" ng-class="dropClasses">
       <span class="icon line add"></span>
       <span class="dropzone-message" message="asset.add-drop.new"></span><br>
-      <span class="dropzone-message">Please upload the following if you have them.</span>
+      <span class="dropzone-message">Please upload the following:</span>
 
       <div class="volume-assist-drop-suggestions">
         <ul>
-          <li>Videos (required)</li>
-          <li>Blank consent document</li>
-          <li>Procedure, protocol, or study description</li>
-          <li>Spreadsheet including details about your sessions and participants</li>
+          <li>
+            <small>Videos </small>
+            <small>(required)</small>
+          </li>
+          <li>
+            <small>Spreadsheets used to track data collection </small>
+            <small>(e.g., test date, participant demographics, groups, conditions, tasks, exclusion or attrition information, so that we can label your data accurately)</small>
+          </li>
+          <li>
+            <small>Study protocol, description of procedures and tasks </small>
+            <small>(will help us to organize your data)</small>
+          </li>
+          <li>
+            <small>Blank video sharing release form </small>
+            <small>(will help us to advise you about Databrary permission levels)</small>
+          </li>          
         </ul>
       </div>
 
     </div>
-    <div>
-      <strong>Uploaded Files</strong><br>
-      <small>Files listed here won't show up in your spreadsheet until after our staff has made contact</small>
+    <div ng-if="assets || uploads.length">
+      <strong>Uploaded Files </strong>
+      <span>(Files uploaded here won't show up in your spreadsheet until after our staff has processed them)</span>
     </div>
     <div class="volume-assist-list-container">
       <upload-progress progress-value="progress" progress-text="'Overall Progress'" class="upload-progress-info"></upload-progress>
@@ -50,8 +62,9 @@
   </fieldset>
 
   <fieldset ng-if="staff">
-    <legend>Contact Databrary curator</legend>
-    <div ng-repeat="q in ::volumeAssist.questions">
+    <legend>Contact Databrary</legend>
+    <div class="foot">Provide us additional information about your study. Answer the questions below and click submit. </div>
+    <div ng-repeat="q in ::volumeAssist.questions" class="foot-2">
       <div ng-bind="::q.text"></div>
       <label ng-repeat="o in ::q.options||['Yes','No']" class="line-option">
         <input type="radio" name="{{::q.name}}" ng-value="::o" ng-model="q.answer">{{::o}}
@@ -64,7 +77,6 @@
     </div>
 
     <button ng-click="volumeAssist.submit()" class="green" ng-disabled="volumeAssist.$pristine || volumeAssist.$invalid || volumeAssist.$submitted">Submit</button>
-
   </fieldset>
   
 </ng-form>
