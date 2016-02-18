@@ -335,6 +335,7 @@ app.controller('volume/slot', [
 
     playerImgHeightStyle = undefined
     playerVideoHeightStyle = undefined
+    playerDropHeightStyle = undefined
     playerPDFHeightStyle = undefined
     updatePlayerHeight = () ->
       $timeout ->
@@ -345,8 +346,9 @@ app.controller('volume/slot', [
         if d < viewportMinHeight
           d = viewportMinHeight
         playerImgHeightStyle = styles.set('.player-viewport .asset-display img{max-height:'+d+'px}', playerImgHeightStyle)
-        playerVideoHeightStyle = styles.set('.player-viewport .asset-display video,.player-drop{height:'+d+'px}', playerVideoHeightStyle)
-        playerPDFHeightStyle = styles.set('.player-viewport .asset-display object,.player-drop{height:'+ (d - 10) + 'px}', playerPDFHeightStyle)
+        playerVideoHeightStyle = styles.set('.player-viewport .asset-display video{height:'+d+'px}', playerVideoHeightStyle)
+        playerDropHeightStyle = styles.set('.file-drop{height:'+(d-30)+'px}', playerDropHeightStyle)        
+        playerPDFHeightStyle = styles.set('.player-viewport .asset-display object{height:'+ (d - 10) + 'px}', playerPDFHeightStyle)
         return
       return
     setPlayerHeight = () ->
