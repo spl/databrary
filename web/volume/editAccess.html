@@ -14,6 +14,11 @@
     </div>
   </fieldset>
 
+      <div class="row" ng-if="volume.accessStaff">
+        <span ng-bind="'access.'+page.constants.permission[volume.accessStaff] | message:'Databrary Staff'"></span>. 
+        You can change this on the <span message="wizard.volume-edit-assist.name"></span> tab.
+      </div>
+
   <fieldset>
     <legend message="access.grant.legend"></legend>
     <scroll-float>
@@ -26,12 +31,8 @@
       </fieldset>
     </scroll-float>
     <article ng-repeat="access in volumeEditAccessForm.data | orderBy:['-individual','sort'] track by access.party.id" id="access-{{::access.party.id}}" class="access-grant cf anchor">
-      <div class="row" ng-if="access.party.id!=page.constants.party.STAFF">
+      <div class="row">
         <access-grant-form></access-grant-form>
-      </div>
-      <div class="row" ng-if="access.party.id==page.constants.party.STAFF">
-        <span ng-bind="'access.'+page.constants.permission[access.children] | message:'Databrary Staff'"></span>. 
-        You can change this on the <span message="wizard.volume-edit-assist.name"></span> tab.
       </div>
     </article>
   </fieldset>

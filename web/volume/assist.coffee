@@ -11,14 +11,9 @@ app.directive 'volumeAssist', [
 
       $scope.flowOptions = uploads.flowOptions()
 
-      staffPerm = constants.permission.EDIT
+      staffPerm = constants.accessPreset.staff
       updateStaff = () ->
-        staff = volume.access.find((a) -> a.party.id == constants.party.STAFF)?.children
-        if !staff
-          $scope.staff = false
-        else if staff == staffPerm
-          $scope.staff = true
-        form.staff = $scope.staff
+        form.staff = !!volume.accessStaff
         return
       updateStaff()
 

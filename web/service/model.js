@@ -587,10 +587,13 @@ app.factory('modelService', [
       if (!volume.access)
         return;
       var p = [];
+      var staff = false;
       var al = volume.access.filter(function (a) {
         var pi = constants.accessPreset.parties.indexOf(a.party.id);
         if (pi >= 0)
           p[pi] = a.children;
+        else if (a.party.id === constants.party.STAFF && a.children === constants.accessPreset.staff)
+          staff = a.children;
         else
           return true;
       });
@@ -601,6 +604,7 @@ app.factory('modelService', [
       });
       if (pi >= 0) {
         volume.access = al;
+        volume.accessStaff = staff;
         volume.accessPreset = pi;
       }
     }

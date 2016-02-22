@@ -72,6 +72,7 @@ app.factory('constantService', [
       constants.party.NOBODY,
       constants.party.ROOT
     ];
+    constants.accessPreset.staff = constants.permission.EDIT;
 
     constants.message = function (key /*, args...*/) {
       var msg = messages.get(key);
