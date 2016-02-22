@@ -947,7 +947,7 @@ app.controller('volume/slot', [
       @place = () ->
         t = []
         overlaps = (rr) -> rr.record.id != r.record.id && r.overlaps(rr)
-        for r in records
+        for r in records.sort((a, b) -> a.record.category-b.record.category || a.rec.id-b.rec.id)
           for o, i in t
             break unless o[0].record.category != r.record.category || o.some(overlaps)
           t[i] = [] unless i of t
