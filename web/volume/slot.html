@@ -218,7 +218,7 @@
             </div>
 
             <div class="slot-timeline-tracks">
-              <div ng-repeat="t in assets" class="slot-timeline-track slot-track" ng-class="{select: t.asset === asset, dirty: t.dirty, 'slot-track-positioned': t.asset && !t.full, 'slot-track-select': t === current, 'slot-track-empty': !(t.asset || t.file)}" ng-click="t.click($event)" ng-dblclick="t.select($event)" mouse-drag="dragSelection($down, $up, t)">
+              <div ng-repeat="t in assets" class="slot-timeline-track slot-track" ng-class="{select: asset ? t.asset === asset : t === current, dirty: t.dirty, 'slot-track-positioned': t.asset && !t.full, 'slot-track-select': t === current, 'slot-track-empty': !(t.asset || t.file)}" ng-click="t.click($event)" ng-dblclick="t.select($event)" mouse-drag="dragSelection($down, $up, t)">
                 <div class="slot-excerpt" ng-repeat="excerpt in t.excerpts" ng-if="editing !== 'asset' && !excerpt.excerpt.full" ng-style="excerpt.style()" ng-dblclick="excerpt.select($event)">
                 </div>
                 <div class="slot-track-asset-info">

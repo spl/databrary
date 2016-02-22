@@ -1,12 +1,13 @@
 <ng-form name="volumeAssist">
   <fieldset class="clean skinny-top volume-assist-enable">
     <div>
-      <input type="checkbox" ng-model="volumeAssist.staff" ng-disabled="staff===undefined" ng-change="setStaff(volumeAssist.staff)"/>
+      <input type="checkbox" ng-model="volumeAssist.staff" ng-disabled="volume.accessStaff===undefined" ng-change="setStaff(volumeAssist.staff)"/>
       I want help. Checking this box gives Databrary read/write access to this volume. You may uncheck this option at any time.
     </div>
   </fieldset>
 
-  <fieldset ng-if="staff" flow-init="flowOptions"
+  <div ng-if="volume.accessStaff">
+  <fieldset flow-init="flowOptions"
     flow-file-added="fileAdded($file, $event)" 
     flow-file-success="fileSuccess($file)" 
     flow-file-progress="fileProgress($file)" 
@@ -61,7 +62,7 @@
     </div>
   </fieldset>
 
-  <fieldset ng-if="staff">
+  <fieldset>
     <legend>Contact Databrary</legend>
     <div class="foot">Provide us additional information about your study. Answer the questions below and submit the form. Databrary staff will be in touch. </div>
     <div ng-repeat="q in ::volumeAssist.questions" class="foot-2">
@@ -78,5 +79,6 @@
 
     <button ng-click="volumeAssist.submit()" class="green" ng-disabled="volumeAssist.$pristine || volumeAssist.$invalid || volumeAssist.$submitted">Submit</button>
   </fieldset>
+  </div>
 
 </ng-form>
