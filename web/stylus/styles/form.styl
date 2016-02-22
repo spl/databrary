@@ -42,7 +42,6 @@ label
   font-weight bold
   text-transform uppercase
   font-size .75
-
   &.option
     font-weight normal
     display inline
@@ -50,6 +49,9 @@ label
     text-transform none
   &.disabled
     color neutral
+  &.line-option
+    margin-right 2
+    display inline
 
 .radio-set
   input[type="radio"]
@@ -62,10 +64,6 @@ label
   label.option
     display block
     margin-left f1
-
-  label.option.inline
-    display inline
-    margin-left 0
 
 ::-ms-clear
   display none
