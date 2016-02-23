@@ -41,6 +41,7 @@ app.directive 'volumeAssist', [
       remove = (file) ->
         $scope.uploads.remove(file)
         $scope.progress = file.flowObj.progress()
+        return
 
       $scope.fileAdded = (file) ->
         $scope.uploads.push(file)
@@ -76,9 +77,8 @@ app.directive 'volumeAssist', [
                 report: res
                 owner: form
               file.cancel()
-              file.progressValue = null
+              remove(file)
               return
-        remove(file)
         return
 
       $scope.fileProgress = (file) ->
