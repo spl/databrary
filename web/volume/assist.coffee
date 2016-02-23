@@ -33,8 +33,8 @@ app.directive 'volumeAssist', [
               return
 
       slot = volume.top
-      $scope.assets = slot.assets
-      $scope.anyAssets = !$.isEmptyObject($scope.assets)
+      $scope.assets = (asset for a, asset of slot.assets)
+      $scope.assets.sort((a,b) -> b.id-a.id)
       $scope.uploads = []
       $scope.progress = 0
 
@@ -44,7 +44,7 @@ app.directive 'volumeAssist', [
         return
 
       $scope.fileAdded = (file) ->
-        $scope.uploads.push(file)
+        $scope.uploads.unshift(file)
         uploads.upload(volume, file).then (res) ->
             file.progressValue = 0
             return
@@ -66,7 +66,7 @@ app.directive 'volumeAssist', [
             position: null
             classification: null
           ).then (asset) ->
-              $scope.anyAssets = true
+              $scope.assets.unshift(asset)
               file.cancel()
               remove(file)
               return
