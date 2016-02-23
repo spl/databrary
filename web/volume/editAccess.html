@@ -30,7 +30,7 @@
         <access-search-form ng-class="scrollFloating ? 'col-desktop-6 col-tablet-5 col-mobile-3' : 'col-desktop-14 col-tablet-8 col-mobile-6'" ></access-search-form>
       </fieldset>
     </scroll-float>
-    <article ng-repeat="access in volumeEditAccessForm.data | orderBy:['-individual','sort'] track by access.party.id" ng-if="::access.party.id != 308" id="access-{{::access.party.id}}" class="access-grant cf anchor">
+    <article ng-repeat="access in volumeEditAccessForm.data | orderBy:['-individual','sort'] track by access.party.id" id="access-{{::access.party.id}}" class="access-grant cf anchor">
       <div class="row">
         <access-grant-form></access-grant-form>
       </div>
