@@ -134,7 +134,9 @@ app.directive 'volumeAssist', [
         body += "\n" + form.additional
 
         router.http(router.controllers.postVolumeAssist, [volume.id], body, {headers:{'Content-Type':"text/plain"}}).then () ->
-              # TODO: reset/clear form
+              delete form.additional
+              for q in form.questions
+                delete q.answer
               form.$setPristine()
               messages.add
                 type: 'green'
