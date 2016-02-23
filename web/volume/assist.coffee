@@ -118,7 +118,7 @@ app.directive 'volumeAssist', [
           text: "Are you using the Databrary release?"
         ,
           name: 'equivalent'
-          text: $sce.trustAsHtml("If not, are you using an equivalent consent/media release <a href='//databrary.org/access/guide.html'>(see our user guide)</a>?")
+          text: $sce.trustAsHtml("If not, are you using an equivalent consent/media release <a href='//databrary.org/access/guide.html' target='_blank'>(see our user guide)</a>?")
         ,
           name: 'complete'
           text: "Is data collection completed?"
