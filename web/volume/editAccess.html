@@ -2,7 +2,7 @@
   <button ng-click="volumeEditAccessForm.saveAll()" class="green" ng-disabled="volumeEditAccessForm.$pristine || volumeEditAccessForm.$invalid || volumeEditAccessForm.$submitted">Save</button>
   <button ng-click="volumeEditAccessForm.resetAll()" ng-disabled="volumeEditAccessForm.$pristine || volumeEditAccessForm.$submitted" class="foot">Revert</button>
 
-  <fieldset class="radio-set volume-edit-access-radioset" ng-disabled="!page.models.Login.checkAuthorization(page.permission.EDIT)" ng-form="accessPresetForm">
+  <fieldset class="sub-bottom radio-set volume-edit-access-radioset" ng-disabled="!page.models.Login.checkAuthorization(page.permission.EDIT)" ng-form="accessPresetForm">
     <legend message="access.preset.legend"></legend>
     <div class="col message message-yellow message-content" ng-if="::!page.models.Login.checkAuthorization(page.permission.EDIT)" message="access.preset.restricted"></div>
     <div id="preset" ng-repeat="perms in page.constants.accessPreset track by $index">
@@ -14,10 +14,10 @@
     </div>
   </fieldset>
 
-      <div class="row" ng-if="volume.accessStaff">
-        <span ng-bind="'access.'+page.constants.permission[volume.accessStaff] | message:'Databrary Staff'"></span>. 
-        You can change this on the <span message="wizard.volume-edit-assist.name"></span> tab.
-      </div>
+    <div class="foot-15x i" ng-if="volume.accessStaff">
+      <span ng-bind="'access.'+page.constants.permission[volume.accessStaff] | message:'Databrary staff'"></span>. 
+      You can change this on the <span message="wizard.volume-edit-assist.name"></span> tab.
+    </div>
 
   <fieldset>
     <legend message="access.grant.legend"></legend>
@@ -30,7 +30,7 @@
         <access-search-form ng-class="scrollFloating ? 'col-desktop-6 col-tablet-5 col-mobile-3' : 'col-desktop-14 col-tablet-8 col-mobile-6'" ></access-search-form>
       </fieldset>
     </scroll-float>
-    <article ng-repeat="access in volumeEditAccessForm.data | orderBy:['-individual','sort'] track by access.party.id" id="access-{{::access.party.id}}" class="access-grant cf anchor">
+    <article ng-repeat="access in volumeEditAccessForm.data | orderBy:['-individual','sort'] track by access.party.id" ng-if="::access.party.id != 308" id="access-{{::access.party.id}}" class="access-grant cf anchor">
       <div class="row">
         <access-grant-form></access-grant-form>
       </div>
