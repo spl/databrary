@@ -118,7 +118,7 @@ app.directive 'volumeAssist', [
           text: "Are you using the Databrary release?"
         ,
           name: 'equivalent'
-          text: "If not, are you using an equivalent consent/media release (see http://databrary.org/access/guide.html)?"
+          text: "If not, are you using an equivalent consent/media release (see http://databrary.org/access/guide/investigators/release/grandfathering-data.html)?"
         ,
           name: 'complete'
           text: "Is data collection completed?"
