@@ -34,13 +34,13 @@ app.directive 'authSearchForm', [
           ''
 
       form.search = (val) ->
-        party.authorizeSearch(form.apply,
+        models.Party.search(
             query: val
             institution: form.principal == 'principal' || (if form.principal == 'affiliate' then false else undefined)
           ).then (data) ->
               form.validator.server {}
 
-              l = _.map data, (found) ->
+              l = for found in data when found.id != party.id
                 text: found.name
                 select: select(found)
 

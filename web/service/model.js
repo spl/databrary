@@ -250,11 +250,6 @@ app.factory('modelService', [
       return router.partyAvatar([this.id, size || 56], params);
     };
 
-    Party.prototype.authorizeSearch = function (apply, param) {
-      param.authorize = this.id;
-      return Party.search(param);
-    };
-
     function subPartyUpdate(list, auth) {
       if (!list)
         return;
@@ -577,10 +572,6 @@ app.factory('modelService', [
 
     Volume.prototype.csvRoute = function () {
       return router.volumeCSV([this.id]);
-    };
-
-    Volume.prototype.accessSearch = function (name) {
-      return Party.search({volume:this.id,query:name});
     };
 
     function volumeAccessPreset(volume) {

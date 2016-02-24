@@ -171,25 +171,21 @@ data PartyFilter = PartyFilter
   { partyFilterQuery :: Maybe String
   , partyFilterAuthorization :: Maybe Permission
   , partyFilterInstitution :: Maybe Bool
-  , partyFilterAuthorize :: Maybe (Id Party)
-  , partyFilterVolume :: Maybe Volume
   , partyFilterPaginate :: Paginate
   }
 
 instance Monoid PartyFilter where
-  mempty = PartyFilter Nothing Nothing Nothing Nothing Nothing def
-  mappend (PartyFilter q1 a1 i1 p1 v1 p) (PartyFilter q2 a2 i2 p2 v2 _) =
-    PartyFilter (q1 <> q2) (a1 <|> a2) (i1 <|> i2) (p1 <|> p2) (v1 <|> v2) p
+  mempty = PartyFilter Nothing Nothing Nothing def
+  mappend (PartyFilter q1 a1 i1 p) (PartyFilter q2 a2 i2 _) =
+    PartyFilter (q1 <> q2) (a1 <|> a2) (i1 <|> i2) p
 
 partyFilter :: PartyFilter -> Identity -> BS.ByteString
 partyFilter PartyFilter{..} ident = BS.concat
   [ withq partyFilterAuthorization (const " JOIN authorize_view ON party.id = child AND parent = 0")
-  , " WHERE id > 0"
+  , " WHERE id > 0 AND id != ", pgLiteralRep (partyId $ partyRow $ staffParty)
   , withq partyFilterQuery (\n -> " AND " <> queryVal <> " ILIKE " <> pgLiteralRep (wordPat n))
   , withq partyFilterAuthorization (\a -> " AND site = " <> pgSafeLiteral a)
   , withq partyFilterInstitution (\i -> if i then " AND account.id IS NULL" else " AND account.password IS NOT NULL")
-  , withq partyFilterAuthorize (\a -> let i = pgSafeLiteral a in " AND party.id <> " <> i <> " AND id NOT IN (SELECT child FROM authorize WHERE parent = " <> i <> " UNION SELECT parent FROM authorize WHERE child = " <> i <> ")")
-  , withq partyFilterVolume (\v -> " AND id NOT IN (SELECT party FROM volume_access WHERE volume = " <> pgSafeLiteral (volumeId $ volumeRow v) <> ")")
   , " ORDER BY name, prename "
   , paginateSQL partyFilterPaginate
   ]

@@ -9,7 +9,7 @@ app.directive 'partyEditApplyForm', [
       form = $scope.partyEditApplyForm
       form.data = $scope.party.parents.slice()
 
-      $scope.authSearchSelectFn = (found) ->
+      authSearchSelectFn = (found) ->
         form.data.push
           new: true
           party: found
@@ -44,9 +44,15 @@ app.directive 'partyEditApplyForm', [
       form.preSelect = (p) ->
         if form.data.some((auth) -> auth.party.id == p.id)
           display.scrollTo("#auth-"+p.id)
+        else if $scope.party.children.some((a) -> a.party.id == p.id)
+          messages.add
+            type: 'red'
+            body: constants.message('auth.apply.child')
         else
-          $scope.authSearchSelectFn(p)
+          authSearchSelectFn(p)
         return
+
+      $scope.authSearchSelectFn = form.preSelect
 
       $scope.$emit('partyEditApplyForm-init', form)
       return

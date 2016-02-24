@@ -1,8 +1,8 @@
 'use strict'
 
 app.directive 'accessSearchForm', [
-  'constantService',
-  (constants) ->
+  'constantService', 'modelService',
+  (constants, models) ->
     restrict: 'E'
     templateUrl: 'volume/accessSearch.html',
     link: ($scope, $element, $attrs) ->
@@ -15,7 +15,9 @@ app.directive 'accessSearchForm', [
         ''
 
       form.search = (val) ->
-        volume.accessSearch(val).then (data) ->
+        models.Party.search(
+            query: val
+          ).then (data) ->
               form.validator.server {}
               for found in data
                 text: found.name

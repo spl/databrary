@@ -13,7 +13,7 @@ module Databrary.Controller.Party
   , adminParties
   ) where
 
-import Control.Applicative (pure, optional)
+import Control.Applicative (optional)
 import Control.Monad (unless, when)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
@@ -208,8 +208,6 @@ partySearchForm = PartyFilter
   <$> ("query" .:> deformNonEmpty deform)
   <*> ("authorization" .:> optional deform)
   <*> ("institution" .:> deformNonEmpty deform)
-  <*> ("authorize" .:> optional deform)
-  <*> pure Nothing
   <*> paginateForm
 
 queryParties :: ActionRoute API
