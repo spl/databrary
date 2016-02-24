@@ -12,6 +12,7 @@
     flow-file-success="fileSuccess($file)" 
     flow-file-progress="fileProgress($file)" 
     flow-file-error="fileError($file, $message)" 
+    form-ctrl="volumeAssist.uploads"
     mouse-drag-region>
 
     <legend>Upload files</legend>
@@ -62,7 +63,7 @@
     </div>
   </fieldset>
 
-  <fieldset>
+  <ng-form name="volumeAssist.mail">
     <legend>Contact Databrary</legend>
     <div class="foot">Provide us additional information about your study. Answer the questions below and submit the form. Databrary staff will be in touch. </div>
     <div ng-repeat="q in ::volumeAssist.questions" class="foot-2">
@@ -77,8 +78,8 @@
       <textarea ng-model="volumeAssist.additional"></textarea>
     </div>
 
-    <button ng-click="volumeAssist.submit()" class="green" ng-disabled="volumeAssist.$pristine || volumeAssist.$invalid || volumeAssist.$submitted">Submit</button>
-  </fieldset>
+    <button ng-click="volumeAssist.submit()" class="green" ng-disabled="volumeAssist.mail.$pristine || volumeAssist.mail.$invalid || volumeAssist.mail.$submitted">Submit</button>
+  </ng-form>
   </div>
 
 </ng-form>

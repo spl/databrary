@@ -13,6 +13,7 @@
 /asset/display.js
 /asset/pdfViewer.js
 /asset/view.js
+/directive/formCtrl.js
 /directive/inputDate.js
 /directive/inputPosition.js
 /directive/message.js

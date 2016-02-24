@@ -8,6 +8,7 @@ app.directive 'volumeAssist', [
     link: ($scope) ->
       volume = $scope.volume
       form = $scope.volumeAssist
+      $flow = $scope.$flow # not really in this scope
 
       $scope.flowOptions = uploads.flowOptions()
 
@@ -40,11 +41,14 @@ app.directive 'volumeAssist', [
 
       remove = (file) ->
         $scope.uploads.remove(file)
+        form.uploads.$setPristine() unless $scope.uploads.length
         $scope.progress = file.flowObj.progress()
         return
 
       $scope.fileAdded = (file) ->
+        $flow = file.flowObj
         $scope.uploads.unshift(file)
+        form.uploads.$setDirty()
         uploads.upload(volume, file).then (res) ->
             file.progressValue = 0
             return
@@ -97,6 +101,7 @@ app.directive 'volumeAssist', [
 
       $scope.remove = (asset) ->
         asset.remove().then (asset) ->
+            $scope.assets.remove(asset)
             return
           , (res) ->
             messages.addError
@@ -137,20 +142,24 @@ app.directive 'volumeAssist', [
               delete form.additional
               for q in form.questions
                 delete q.answer
-              form.$setPristine()
+              form.mail.$setPristine()
               messages.add
                 type: 'green'
                 body: 'Your request has been submitted, and you will receive a copy by email'
-                owner: form
+                owner: form.mail
               return
           , (res) ->
-              form.$setUnsubmitted()
+              form.mail.$setUnsubmitted()
               messages.addError
                 type: 'red'
                 body: 'An error occured sending the request; please try again'
                 report: res
-                owner: form
+                owner: form.mail
               return
+        return
+
+      $scope.$on '$destroy', ->
+        $flow?.cancel()
         return
 
       return
