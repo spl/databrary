@@ -110,7 +110,7 @@ modificationTimestamp :: P.FileStatus -> Timestamp
 modificationTimestamp = posixSecondsToUTCTime . P.modificationTimeHiRes
 
 fileInfo :: IsFilePath a => a -> IO (Maybe (FileOffset, Timestamp))
-fileInfo f = 
+fileInfo f =
   (=<<) (liftM2 (?>) P.isRegularFile $ P.fileSize &&& modificationTimestamp)
   <$> catchDoesNotExist (getFileStatus f)
 
@@ -140,7 +140,7 @@ compareFiles f1 f2 = do
 hashFile :: (IsFilePath f, HashAlgorithm a) => f -> IO (Digest a)
 hashFile f =
   withBinaryFile (toFilePath f) ReadMode $ \h ->
-    allocaBytes z $ \b -> 
+    allocaBytes z $ \b ->
       run h b hashInit where
   run h b s = do
     n <- hGetBufSome h b z

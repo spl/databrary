@@ -1,5 +1,5 @@
 {-# LANGUAGE DataKinds, TemplateHaskell, TypeFamilies, UndecidableInstances, StandaloneDeriving, GeneralizedNewtypeDeriving #-}
-module Databrary.Model.Id.Types 
+module Databrary.Model.Id.Types
   ( IdType
   , Id(..)
   , Int32

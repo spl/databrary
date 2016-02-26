@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings, TemplateHaskell, QuasiQuotes, RecordWildCards #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
-module Databrary.Model.Permission 
+module Databrary.Model.Permission
   ( module Databrary.Model.Permission.Types
   , permissionVIEW
   , permissionPRIVATE

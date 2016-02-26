@@ -69,7 +69,7 @@ auditAssetSegmentDownload success AssetSegment{ segmentAsset = AssetSlot{ slotAs
     (\s -> dbExecute1' [pgSQL|$INSERT INTO audit.slot_asset (audit_action, audit_user, audit_ip, container, segment, asset) VALUES
       (${act}, ${auditWho ai}, ${auditIp ai}, ${containerId $ containerRow $ slotContainer s}, ${seg}, ${assetId $ assetRow a})|])
     as
-  where act | success = AuditActionOpen 
+  where act | success = AuditActionOpen
             | otherwise = AuditActionAttempt
 
 assetSegmentJSON :: AssetSegment -> JSON.Object

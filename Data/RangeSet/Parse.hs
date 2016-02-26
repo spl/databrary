@@ -28,7 +28,7 @@ instance (Show a, Eq a, Bounded a) => Show (RangeList a) where
     sr (a,b)
       | a == b = shows a
       | otherwise = (if a == minBound then id else shows a)
-        . showChar '-' . 
+        . showChar '-' .
         (if b == maxBound then id else shows b)
 
 showRangeSet :: (Show a, Eq a, Bounded a) => R.RSet a -> String

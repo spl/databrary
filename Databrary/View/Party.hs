@@ -128,6 +128,6 @@ htmlPartyAdmin pf pl req = htmlForm "party admin" adminParties ()
 htmlPartyDelete :: Party -> RequestContext -> FormHtml f
 htmlPartyDelete Party{ partyRow = pr@PartyRow{..}, ..} = htmlForm ("delete " <> partyName pr)
   deleteParty partyId
-  (return ())   
+  (return ())
   (\js -> void $ H.a H.! actionLink viewParty (HTML, TargetParty partyId) js
     $ H.text $ partyName pr)

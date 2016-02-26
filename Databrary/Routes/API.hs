@@ -52,7 +52,7 @@ data Type
 
 instance ToJSON Type where
   toJSON = String . T.pack . n . show where
-    n ('T':'y':'p':'e':c:r) = toLower c : r 
+    n ('T':'y':'p':'e':c:r) = toLower c : r
     n s = error ("toJSON Type: " ++ s)
 
 data DataType = DataType
@@ -120,7 +120,7 @@ queryParameter name dt empty desc = Parameter InQuery name dt
   ]
 
 formParameter :: T.Text -> DataType -> Bool -> T.Text -> Parameter
-formParameter name dt req desc = Parameter InData name dt 
+formParameter name dt req desc = Parameter InData name dt
   [ "required" .= req
   , "description" .= desc
   ]

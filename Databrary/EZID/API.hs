@@ -51,7 +51,7 @@ runEZIDM :: EZIDM a -> BackgroundContextM (Maybe a)
 runEZIDM f = ReaderT $ \ctx ->
   Trav.mapM (runReaderT (runCookiesT f) . EZIDContext ctx)
     (serviceEZID $ contextService $ backgroundContext ctx)
-  
+
 ezidCall :: BS.ByteString -> BS.ByteString -> ANVL.ANVL -> EZIDM (Maybe ANVL.ANVL)
 ezidCall path method body = do
   req <- peeks ezidRequest

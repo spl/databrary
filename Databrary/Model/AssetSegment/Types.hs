@@ -103,12 +103,12 @@ data Excerpt = Excerpt
   }
 
 newExcerpt :: AssetSlot -> Segment -> Maybe Release -> Excerpt
-newExcerpt a s r = e where 
+newExcerpt a s r = e where
   as = newAssetSegment a s (Just e)
   e = Excerpt as r
 
 excerptInSegment :: Excerpt -> Segment -> AssetSegment
-excerptInSegment e@Excerpt{ excerptAsset = AssetSegment{ segmentAsset = a, assetSegment = es } } s 
+excerptInSegment e@Excerpt{ excerptAsset = AssetSegment{ segmentAsset = a, assetSegment = es } } s
   | segmentOverlaps es s = as
   | otherwise = error "excerptInSegment: non-overlapping"
   where as = newAssetSegment a s (es `segmentContains` assetSegment as ?> e)

@@ -89,7 +89,7 @@ limitRequestChunks lim p = do
     _ -> liftIO $ limitChunks lim p $ requestBody rq
 
 data Content a
-  = ContentForm 
+  = ContentForm
     { contentFormParams :: [Param]
     , contentFormFiles :: [File a]
     }

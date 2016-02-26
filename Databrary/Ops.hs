@@ -34,7 +34,7 @@ f <*- a = f <*> pure a
 infixl 1 <?, <!?
 infixr 1 ?>, ?!>
 
--- |@'($>)' . guard@ 
+-- |@'($>)' . guard@
 (?>) :: Alternative f => Bool -> a -> f a
 False ?> _ = empty
 True ?> a = pure a
@@ -62,7 +62,7 @@ a <!? False = pure a
 infixl 1 <$?, <$!?
 infixr 1 ?$>, ?!$>
 
--- |@liftM . (?>)@ 
+-- |@liftM . (?>)@
 (?$>) :: (Applicative m, Alternative f) => Bool -> m a -> m (f a)
 False ?$> _ = pure empty
 True ?$> f = pure <$> f

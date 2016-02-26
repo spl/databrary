@@ -10,7 +10,7 @@ module Databrary.Iso
   , left
   , right
   , (+++)
-  
+
   , not
   , swap
   , constant

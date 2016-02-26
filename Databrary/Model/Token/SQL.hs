@@ -19,7 +19,7 @@ tokenRow table = selectColumns 'Token table ["token", "expires"]
 
 accountTokenRow :: String -- ^ table name
   -> Selector -- ^ @'AccountToken'@
-accountTokenRow table = selectJoin 'AccountToken 
+accountTokenRow table = selectJoin 'AccountToken
   [ tokenRow table
   , joinOn (table ++ ".account = account.id") selectSiteAuth
   ]

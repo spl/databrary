@@ -71,7 +71,7 @@ postRegister = action POST (pathAPI </< "user" </< "register") $ \api -> without
           }
     return a
   auth <- maybe (SiteAuth <$> addAccount reg <*- Nothing <*- mempty) return =<< lookupSiteAuthByEmail False (accountEmail reg)
-  resetPasswordMail (Right auth) 
+  resetPasswordMail (Right auth)
     "Databrary account created"
     $ \(Just url) ->
       "Thank you for registering with Databrary. Please use this link to complete your registration:\n\n"

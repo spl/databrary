@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell, OverloadedStrings, DeriveDataTypeable #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
-module Databrary.Model.Release.Types 
+module Databrary.Model.Release.Types
   ( Release(..)
   ) where
 

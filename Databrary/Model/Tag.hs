@@ -64,7 +64,7 @@ addTagUse t = either (const False) id <$> do
 removeTagUse :: MonadDB c m => TagUse -> m Int
 removeTagUse t =
   dbExecute
-    (if tagKeyword t 
+    (if tagKeyword t
       then $(deleteTagUse True 't)
       else $(deleteTagUse False 't))
 

@@ -226,7 +226,7 @@ volumeCitationForm v = do
     guard (T.null (volumeName $ volumeRow vol) || T.null (citationHead cite) || isNothing (citationYear cite)) >> citationURL cite
   let fill = maybe cite (cite <>) look
       empty = T.null (citationHead fill) && isNothing (citationURL fill) && isNothing (citationYear fill)
-      name 
+      name
         | Just title <- citationTitle fill
         , T.null (volumeName $ volumeRow vol) = title
         | otherwise = volumeName $ volumeRow vol

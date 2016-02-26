@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings, TemplateHaskell, TypeFamilies #-}
-module Databrary.Model.Party.Types 
+module Databrary.Model.Party.Types
   ( PartyRow(..)
   , Party(..)
   , Account(..)

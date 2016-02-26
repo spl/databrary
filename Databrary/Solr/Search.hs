@@ -74,7 +74,7 @@ search SearchQuery{..} = do
     , HC.checkStatus = \_ _ _ -> Nothing
     }
   where
-  query = 
+  query =
     [ ("q", BSL.toStrict $ B.toLazyByteString $ qp <> uw ql)
     , ("fq", "content_type:" <> ct)
     , ("start", BSC.pack $ show $ paginateOffset searchPaginate)

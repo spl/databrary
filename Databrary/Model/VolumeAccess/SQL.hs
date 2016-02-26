@@ -98,6 +98,6 @@ selectVolumeActivity :: TH.Name -- ^@'Identity'@
   -> Selector -- ^ @('Timestamp', 'Volume')@
 selectVolumeActivity ident = selectJoin '(,)
   [ selectAuditActivity "volume_access"
-  , joinOn "audit.volume = volume.id" 
+  , joinOn "audit.volume = volume.id"
     $ selectVolume ident
   ]

@@ -121,7 +121,7 @@ mergeActivityAssetAndSlot (ActivityAsset ar) (ActivityAssetSlot ai si) =
 mergeActivityAssetAndSlot _ _ = Nothing
 
 mergeAssetAndSlot :: [Activity] -> [Activity]
-mergeAssetAndSlot 
+mergeAssetAndSlot
   ( Activity{ activityAudit = a1, activityTarget = t1, activityPrev = p1, activityReplace = Nothing, activityTranscode = Nothing }
   : a@Activity{ activityAudit = a2, activityTarget = t2, activityPrev = p2 }
   : al)
@@ -177,7 +177,7 @@ activityTargetJSON ActivityAccount{..} =
 activityTargetJSON (ActivityAuthorize a) =
   ("authorize", ["party" JSON..= partyJSON (authorizeChild $ authorization a)],
     authorizeJSON a)
-activityTargetJSON (ActivityVolume v) = 
+activityTargetJSON (ActivityVolume v) =
   ("volume", [],
     volumeRowJSON v JSON..+?
       (("alias" JSON..=) <$> volumeAlias v))

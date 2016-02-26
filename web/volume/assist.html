@@ -12,11 +12,11 @@
     flow-file-success="fileSuccess($file)" 
     flow-file-progress="fileProgress($file)" 
     flow-file-error="fileError($file, $message)" 
-    form-ctrl="volumeAssist.uploads"
+    form-ctrl="volumeAssist.uploads" 
     mouse-drag-region>
 
     <legend>Upload files</legend>
-    <div class="foot">You can upload videos and other files in bulk to help us get you started. See our <a ng-href="{{::page.router.helpFormats()}}" target="_blank">list of accepted file types</a>.</div>    
+    <div class="foot">You can upload videos and other files in bulk to help us get you started. See our <a ng-href="{{::page.router.helpFormats()}}" target="_blank">list of accepted file types</a>.</div>
     <div flow-drop flow-btn flow-drag-enter="dropClasses['over-zone'] = true" flow-drag-leave="dropClasses['over-zone'] = false" class="volume-assist-drop file-drop foot" ng-class="dropClasses">
       <span class="icon line add"></span>
       <span class="dropzone-message" message="asset.add-drop.new"></span><br>
@@ -35,7 +35,7 @@
           </li>
           <li>
             <small>Blank video sharing release form (will help us to advise you about Databrary permission levels)</small>
-          </li>          
+          </li>
         </ul>
       </div>
 

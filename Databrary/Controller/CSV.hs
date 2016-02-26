@@ -108,7 +108,7 @@ csvVolume = action GET (pathId </< "csv") $ \vi -> withAuth $ do
   vol <- getVolume PermissionPUBLIC vi
   _:r <- lookupVolumeContainersRecords vol
   csv <- volumeCSV vol r
-  return $ okResponse 
+  return $ okResponse
     [ (hContentType, "text/csv;charset=utf-8")
     , ("content-disposition", "attachment; filename=" <> quoteHTTP (makeFilename (volumeDownloadName vol) <> ".csv"))
     ] csv

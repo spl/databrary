@@ -25,7 +25,7 @@ changeVolumeState :: (MonadDB c m) => VolumeState -> m ()
 changeVolumeState VolumeState{..} = void $ updateOrInsert
   [pgSQL|UPDATE volume_state SET value = ${volumeStateValue}, public = ${volumeStatePublic} WHERE volume = ${volumeId $ volumeRow stateVolume} AND key = ${volumeStateKey}|]
   [pgSQL|INSERT INTO volume_state (volume, key, value, public) VALUES (${volumeId $ volumeRow stateVolume}, ${volumeStateKey}, ${volumeStateValue}, ${volumeStatePublic})|]
-  
+
 removeVolumeState :: (MonadDB c m) => Volume -> VolumeStateKey -> m Bool
 removeVolumeState v k =
   dbExecute1 [pgSQL|DELETE FROM volume_state WHERE volume = ${volumeId $ volumeRow v} AND key = ${k}|]

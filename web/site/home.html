@@ -8,7 +8,7 @@
   </div>
   <div class="home-bigbuttons">
     <div class="bigbuttons-text">
-      <p>Databrary is a video data library for developmental science. 
+      <p>Databrary is a video data library for developmental science.
         <br>Share videos, audio files, and related metadata. Discover more, faster.
       </p>
       <div class="view-center-block">
@@ -24,8 +24,8 @@
           <li>
             <span class="home-stats-num">{{::stats.authorized[page.permission.ADMIN] | number:0}} </span>
             <small class="inline-block">institutions</small>
-          </li>  
-          <hr class="home-stats-split">    
+          </li>
+          <hr class="home-stats-split">
           <li>
             <span class="home-stats-num">{{::stats.volumes | number:0}} </span>
             <small class="inline-block">total<br>volumes </small>
@@ -33,12 +33,12 @@
           <li>
             <span class="home-stats-num">{{::stats.shared | number:0}} </span>
             <small class="inline-block">shared<br>volumes</small>
-          </li>        
+          </li>
           <li>
             <span class="home-stats-num">{{::stats.assets | number:0}} </span>
-            <small class="inline-block">files </small>     
+            <small class="inline-block">files </small>
           </li>
-          <li>      
+          <li>
             <span class="home-stats-num">{{::stats.duration/(1000*60*60) | number:0}} </span>
             <small class="inline-block">hours of <br>recordings </small>
           </li>
@@ -48,8 +48,8 @@
           </li>
           <hr>
         </ul>
-      </div>       
-    </div>   
+      </div>
+    </div>
     <div class="bigbuttons-container">
       <div class="bigbutton" ng-if="::!page.models.Login.isLoggedIn()">
         <img src="/web/icons/login.svg"/>

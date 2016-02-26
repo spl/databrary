@@ -63,7 +63,7 @@ lookupAuthorizeParent child parent = do
   dbQuery1 $ $(selectQuery (selectAuthorizeParent 'child 'ident) "$WHERE authorize.parent = ${parent} AND (expires IS NULL OR expires > CURRENT_TIMESTAMP)")
 
 lookupAuthorization :: (MonadDB c m, MonadHasIdentity c m) => Party -> Party -> m Authorization
-lookupAuthorization child parent 
+lookupAuthorization child parent
   | partyId (partyRow child) == partyId (partyRow parent) = return $ authorization $ selfAuthorize child
   | otherwise = do
     auth <- peek

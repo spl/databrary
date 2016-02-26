@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleInstances, FlexibleContexts, MultiParamTypeClasses, ConstraintKinds, DefaultSignatures, GeneralizedNewtypeDeriving, TypeFamilies, OverloadedStrings #-}
 module Databrary.Service.DB
-  ( DBPool 
+  ( DBPool
   , DBConn
   , initDB
   , finiDB

@@ -40,7 +40,7 @@ makeParty pr ac perm a = p where
   p = Party pr (fmap ($ p) ac) perm a
 
 selectPermissionParty :: Selector -- ^ @'Permission' -> Maybe 'Access' -> 'Party'@
-selectPermissionParty = selectJoin 'makeParty 
+selectPermissionParty = selectJoin 'makeParty
   [ selectPartyRow
   , maybeJoinUsing ["id"] accountRow
   ]
@@ -83,7 +83,7 @@ makeAccount pr ac perm ma = a where
   a = ac $ Party pr (Just a) perm ma
 
 selectPermissionAccount :: Selector -- ^ @'Permission' -> Maybe 'Access' -> 'Account'@
-selectPermissionAccount = selectJoin 'makeAccount 
+selectPermissionAccount = selectJoin 'makeAccount
   [ selectPartyRow
   , joinUsing ["id"] accountRow
   ]

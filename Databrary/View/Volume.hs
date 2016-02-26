@@ -52,7 +52,7 @@ htmlVolumeView v t req = htmlTemplate req Nothing $ \js -> do
       Fold.forM_ (volumeDOI $ volumeRow v) $ \d -> do
         H.dt "doi"
         H.dd H.! H.customAttribute "property" "alternateName" $ byteStringHtml d
-      H.dt "keywords" 
+      H.dt "keywords"
       H.dd $ H.ul H.! HA.class_ "comma" H.! H.customAttribute "property" "keywords" $ do
         forM_ t $ \n  -> do
           H.li $ byteStringHtml $ tagNameBS $ tagName n
@@ -79,16 +79,16 @@ htmlVolumeLinksEdit vol links = htmlForm "Edit volume links" postVolumeLinks (HT
   (const mempty)
 
 htmlVolumeList :: JSOpt -> [Volume] -> H.Html
-htmlVolumeList js vl = H.ul 
+htmlVolumeList js vl = H.ul
   H.! HA.class_ "flat"
-  $ forM_ vl $ \v -> H.li 
+  $ forM_ vl $ \v -> H.li
     $ H.article
       H.! HA.class_ "volume-list-result cf"
       $ do
         H.h1
           $ H.a H.! actionLink viewVolume (HTML, volumeId $ volumeRow v) js
           $ H.text $ volumeName $ volumeRow v
-        H.ul 
+        H.ul
           H.! HA.class_ "flat semicolon"
           $ forM_ (volumeOwners v) $ \(p, o) -> H.li $ do
             H.a H.! actionLink viewParty (HTML, TargetParty p) js

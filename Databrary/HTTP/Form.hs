@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings, RecordWildCards #-}
-module Databrary.HTTP.Form 
+module Databrary.HTTP.Form
   ( FormKey(..)
   , FormPath
   , formPathText
@@ -26,7 +26,7 @@ import Network.Wai.Parse (FileInfo)
 import Databrary.Has (Has(..))
 import Databrary.HTTP.Form.Data
 
-data FormKey 
+data FormKey
   = FormField !T.Text
   | FormIndex !Int
   deriving (Eq, Ord)

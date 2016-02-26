@@ -61,7 +61,7 @@ app.directive 'volumePivot', [
                       d.push(disp(m, a[0]))
                     else
                       d.push('\u2043multiple\u2043')
-                
+
         $element.pivotUI(data, opts, opts?)
         @active = true
         return

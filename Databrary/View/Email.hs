@@ -2,7 +2,7 @@
 module Databrary.View.Email
   ( emailNewlyAuthorized
 
-  ) where 
+  ) where
 
 import Control.Monad (void)
 import qualified Text.Blaze.Html5 as H
@@ -47,7 +47,7 @@ emailTemplate content = H.docTypeHtml $ do
         H.td H.! HA.class_ "footer" $ do
           htmlSocialMedia
 
-emailNewlyAuthorized :: H.Html 
+emailNewlyAuthorized :: H.Html
 emailNewlyAuthorized = emailTemplate $ do
   H.p "Dear Nothing,"
   H.p "You have been authorized for Databrary access by <SPONSOR> and can now access all the shared data in the library. You can see how to conduct procedures, find illustrative videos for teaching, increase citations to your work, and repurpose videos to ask new questions outside the scope of the original study. Databrary's unique \"upload-as-you-go\" data management functionality enables easy efficient data management. Moreover, Databrary ensures secure backup and long-term video preservation."

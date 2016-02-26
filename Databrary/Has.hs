@@ -89,6 +89,6 @@ makeHasRec tn fs = do
     return (fn, ft, [ st
       | TH.InstanceD _ (TH.ConT hs `TH.AppT` st `TH.AppT` ft') _ <- il
       , hs == ''Has
-      , ft' == ft 
+      , ft' == ft
       ]))
     fs

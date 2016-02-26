@@ -35,7 +35,7 @@ assetFile = fmap sf . BS.uncons <=< assetSHA1 . assetRow where
 getAssetFile :: MonadStorage c m => Asset -> m (Maybe RawFilePath)
 getAssetFile a = do
   s <- peek
-  let 
+  let
     mf Nothing p = return $ storageMaster s </> p
     mf (Just sf) p = do
       me <- fileExist m

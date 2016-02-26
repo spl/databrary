@@ -41,7 +41,7 @@ selectAssetContainerAssetSegment :: TH.Name -- ^ @'Segment'@
   -> Selector -- ^ @'Asset' -> 'Container' -> 'AssetSegment'@
 selectAssetContainerAssetSegment seg = selectJoin 'makeAssetSegment
   [ slotAssetRow
-  , crossJoin 
+  , crossJoin
     $ selector ("LATERAL (VALUES (slot_asset.segment * ${" ++ nameRef seg ++ "})) AS asset_segment (segment)")
       $ SelectColumn "asset_segment" "segment"
   , maybeJoinOn "slot_asset.asset = excerpt.asset AND asset_segment.segment <@ excerpt.segment"

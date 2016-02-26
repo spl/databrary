@@ -27,7 +27,7 @@ listFiles dir = loop "" where
     (t, f) <- readDirEnt dh
     if BS.null f
       then return []
-      else ap 
+      else ap
         (if     BSC.head f == '.'
           then return id
         else if t == dtDir

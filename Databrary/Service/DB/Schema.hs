@@ -86,7 +86,7 @@ updateDBSchema dir = do
   case diffs sl dl of
     (l, []) -> mapM_ apply l
     (_, e) -> schemaError $ "Inconsistent schema, missing: " ++ unwords (map show e)
-  
+
   return ()
   where
   file = (dir </>) . (<.> ".sql")

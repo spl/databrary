@@ -46,7 +46,7 @@ auditQuery action ident tablef stmt =
 
 auditInsert :: TH.Name -> String -> [(String, String)] -> Maybe SelectOutput -> TH.ExpQ
 auditInsert ident table args =
-  auditQuery AuditActionAdd ident table 
+  auditQuery AuditActionAdd ident table
     ('(' : intercalate "," (map fst args) ++ ") VALUES (" ++ intercalate "," (map snd args) ++ ")")
 
 auditDelete :: TH.Name -> String -> String -> Maybe SelectOutput -> TH.ExpQ

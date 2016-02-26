@@ -46,7 +46,7 @@ deriveLiftMany [''VolumeRow, ''Volume]
 
 blankVolume :: Volume
 blankVolume = Volume
-  { volumeRow = VolumeRow 
+  { volumeRow = VolumeRow
     { volumeId = error "blankVolume"
     , volumeName = ""
     , volumeAlias = Nothing

@@ -93,7 +93,7 @@ app.factory 'tooltipService', [
           @out()
 
         super()
-      
+
       @prototype.live = true
 
       Object.defineProperty @prototype, 'id',

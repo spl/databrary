@@ -44,7 +44,7 @@ probeLength ProbeAV{ probeAV = av } = avProbeLength av
 probeLength _ = Nothing
 
 probeFile :: BS.ByteString -> RawFilePath -> ActionM (Either T.Text Probe)
-probeFile n f = runExceptT $ maybe 
+probeFile n f = runExceptT $ maybe
   (throwE $ "unknown or unsupported format: " <> TE.decodeLatin1 (takeExtension n))
   (\fmt -> case formatTranscodable fmt of
     Nothing -> return $ ProbePlain fmt

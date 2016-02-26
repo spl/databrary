@@ -33,7 +33,7 @@ import Databrary.View.Token
 lookupPasswordResetAccount :: BS.ByteString -> ActionM (Maybe SiteAuth)
 lookupPasswordResetAccount email =
 #if !defined(DEVEL) && !defined(SANDBOX)
-  mfilter ((PermissionADMIN >) . accessMember) <$> 
+  mfilter ((PermissionADMIN >) . accessMember) <$>
 #endif
   lookupSiteAuthByEmail True email
 

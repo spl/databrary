@@ -66,7 +66,7 @@ null _ = False
 
 lookup :: Path -> PathMap a -> Maybe (PathElements, a)
 lookup [] (PathMap n _ _) = (,) [] <$> n
-lookup (e:p) m@(PathMap _ f d) 
+lookup (e:p) m@(PathMap _ f d)
   | Just m' <- HM.lookup e f = first (PathElementFixed e :) <$> lookup p m'
   | T.null e = lookup p m
   | otherwise = ld (M.toList d) where

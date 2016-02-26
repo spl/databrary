@@ -35,7 +35,7 @@ instance Kinded Record where
   kindOf _ = "record"
 
 data Measure = Measure
-  { measureRecord :: Record 
+  { measureRecord :: Record
   , measureMetric :: Metric
   , measureDatum :: !MeasureDatum
   }

@@ -7,7 +7,7 @@ module Databrary.HTTP.Form.Deform
   , withSubDeforms
   , deformOptional
   , deformNonEmpty
-  , Deform(..) 
+  , Deform(..)
   , deformError
   , deformError'
   , deformMaybe'

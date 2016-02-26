@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings, TemplateHaskell, QuasiQuotes, RecordWildCards, ScopedTypeVariables #-}
-module Databrary.Model.Volume 
+module Databrary.Model.Volume
   ( module Databrary.Model.Volume.Types
   , coreVolume
   , lookupVolume

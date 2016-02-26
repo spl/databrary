@@ -76,11 +76,11 @@ genVideoClip _ src (Just clip) _ dst | Nothing <- Range.getPoint clip =
   sb = (showFixed True :: Milli -> String) . offsetMilli
 genVideoClip av src frame sz dst =
   avFrame src (offsetDiffTime <$> (Range.getPoint =<< frame)) sz Nothing (rightJust dst) av
-    >>= Fold.mapM_ (\b -> send b >> send BS.empty) 
+    >>= Fold.mapM_ (\b -> send b >> send BS.empty)
   where send = either id (const $ const $ return ()) dst
 
 getAssetSegmentStore :: AssetSegment -> Maybe Word16 -> ActionM (Either (Stream -> IO ()) RawFilePath)
-getAssetSegmentStore as sz 
+getAssetSegmentStore as sz
   | aimg && isJust sz || not (assetSegmentFull as) && isJust (assetDuration $ assetRow a) && isJust (formatSample afmt) = do
   Just af <- getAssetFile a
   av <- peek

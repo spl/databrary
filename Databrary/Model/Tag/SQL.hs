@@ -83,7 +83,7 @@ makeTagWeight w t = TagWeight t w
 selectTagWeight :: String -> Selector -- ^ @'TagCoverage'@
 selectTagWeight q = selectJoin '($)
   [ selectTagGroup "tag_weight" q 'makeTagWeight tagWeightColumns
-  , joinOn "tag_weight.tag = tag.id" selectTag 
+  , joinOn "tag_weight.tag = tag.id" selectTag
   ]
 
 makeTagCoverage :: Int32 -> [Maybe Segment] -> [Maybe Segment] -> [Maybe Segment] -> Tag -> Container -> TagCoverage
@@ -109,5 +109,5 @@ selectSlotTagCoverage :: TH.Name -- ^ @'Party'@
   -> Selector -- ^ @'TagCoverage'@
 selectSlotTagCoverage acct slot = selectMap (`TH.AppE` (TH.VarE 'slotContainer `TH.AppE` TH.VarE slot)) $ selectJoin '($)
   [ selectTagCoverage acct $ "WHERE container = ${containerId $ containerRow $ slotContainer " ++ ss ++ "} AND segment && ${slotSegment " ++ ss ++ "}"
-  , joinOn "tag_coverage.tag = tag.id" selectTag 
+  , joinOn "tag_coverage.tag = tag.id" selectTag
   ] where ss = nameRef slot

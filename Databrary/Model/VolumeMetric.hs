@@ -26,7 +26,7 @@ lookupVolumeMetrics v =
 addVolumeCategory :: (MonadDB c m) => Volume -> Id Category -> m [Id Metric]
 addVolumeCategory v c =
   dbQuery [pgSQL|INSERT INTO volume_metric SELECT ${volumeId $ volumeRow v}, id FROM metric WHERE category = ${c} AND required IS NOT NULL RETURNING metric|]
-  
+
 addVolumeMetric :: (MonadDB c m) => Volume -> Id Metric -> m Bool
 addVolumeMetric v m = liftDBM $
   handleJust (guard . isUniqueViolation) (const $ return False) $

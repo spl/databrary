@@ -1444,7 +1444,7 @@ app.factory('modelService', [
     };
 
     /////////////////////////////////
-    
+
     function makeActivity (a, volume) {
       for (var i = 0; i < a.length; i++) {
         if (a[i].party)

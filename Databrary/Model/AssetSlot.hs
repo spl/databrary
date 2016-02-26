@@ -84,7 +84,7 @@ changeAssetSlotDuration a
   | otherwise = return False
 
 fixAssetSlotDuration :: AssetSlot -> AssetSlot
-fixAssetSlotDuration as 
+fixAssetSlotDuration as
   | Just dur <- assetDuration $ assetRow $ slotAsset as = as{ assetSlot = (\s -> s{ slotSegment = segmentSetDuration dur (slotSegment s) }) <$> assetSlot as }
   | otherwise = as
 

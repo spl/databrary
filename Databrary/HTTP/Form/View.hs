@@ -3,7 +3,7 @@ module Databrary.HTTP.Form.View
   ( FormViewT
   , runFormView
   , blankFormView
-  , (.:>) 
+  , (.:>)
   , withSubFormsViews
   , formViewErrors
   , allFormViewErrors
@@ -86,7 +86,7 @@ infixr 2 .:>
 (.:>) = withSubFormView . FormField
 
 formViewErrors :: Monad m => FormViewT f m [FormErrorMessage]
-formViewErrors = state $ \e -> (formErrors e, e{ formErrors = [] }) 
+formViewErrors = state $ \e -> (formErrors e, e{ formErrors = [] })
 
 allFormViewErrors :: Monad m => FormViewT f m [(FormPath, FormErrorMessage)]
 allFormViewErrors = state $ \e -> (allFormErrors e, mempty)

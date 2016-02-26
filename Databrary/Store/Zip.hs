@@ -115,7 +115,7 @@ data ZipSize = ZipSize
 instance Monoid ZipSize where
   mempty = ZipSize 0 0 0
   mappend (ZipSize a1 b1 c1) (ZipSize a2 b2 c2) = ZipSize (a1+a2) (b1+b2) (c1+c2)
-  mconcat l = ZipSize (sum $ map zipSizeCount l) (sum $ map zipSizeData l) (sum $ map zipSizeDirectory l) 
+  mconcat l = ZipSize (sum $ map zipSizeCount l) (sum $ map zipSizeData l) (sum $ map zipSizeDirectory l)
 
 sizeZip :: [ZipEntry] -> Word64
 sizeZip entries = len + (z64 ?= 76) + 22 where

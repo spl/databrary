@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings, TemplateHaskell, QuasiQuotes, DeriveDataTypeable #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
-module Databrary.Model.Permission.Types 
+module Databrary.Model.Permission.Types
   ( Permission(..)
   , Access(..), accessPermission'
   , accessSite, accessMember, accessPermission

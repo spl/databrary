@@ -82,7 +82,7 @@ parseFundRef = JSON.withObject "fundref" $ \j -> do
         Just (JSON.Array v) -> V.toList v
         Just o -> [o]
         Nothing -> []
-      geo = do 
+      geo = do
         r <- JSON.parseMaybe ((JSON..: "country") >=> (JSON..: "resource")) j
         g <- parseGeoNameRef r
         guard (g /= geoNameId geoNameUS)

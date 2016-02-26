@@ -50,7 +50,7 @@
     <div class="volume-meter-category col-desktop-15 col-tablet-9 col-mobile-6" ng-class="{'volume-meter-done': metrics.design.done && metrics.session.done && metrics.record.done && metrics.participant.done && metrics.context.done}">
       <div class="icon done-not">
         <span ng-if="::metrics.design.done && metrics.session.done && metrics.record.done && metrics.participant.done && metrics.context.done" class="icon done"></span>
-      </div> 
+      </div>
       <h5>Design spreadsheet and enter data</h5>
       <p>Describe the components of your study, then start creating and describing sessions in the data spreadsheet.</p>
       <ul ng-if="::!(metrics.design.done && metrics.session.done && metrics.record.done && metrics.participant.done && metrics.context.done)">
@@ -60,7 +60,7 @@
             Designed spreadsheet
           </span>
           <span ng-click="goto('design')" ng-if="::!metrics.design.done">Select the categories and fields that will describe your sessions.</span>
-        </li> 
+        </li>
         <li ng-class="metrics.session.done? 'volume-meter-done' : 'clickable'">
           <span ng-if="::metrics.session.done">
             <span class="icon done"></span>
@@ -107,7 +107,7 @@
     <div class="volume-meter-category col-desktop-15 col-tablet-9 col-mobile-6" ng-click="goto('data',undefined,['Upload at least one file. Start by clicking add file in the right end of the spreadsheet.'])" ng-class="metrics.asset.done? 'volume-meter-done' : 'clickable'">
       <div class="icon done-not">
         <span ng-if="::metrics.asset.done" class="icon done"></span>
-      </div> 
+      </div>
       <h5>Upload a file</h5>
     </div>
 
@@ -145,7 +145,7 @@
     <div class="volume-meter-category col-desktop-15 col-tablet-9 col-mobile-6" ng-click="goto('access', '#preset')" ng-class="metrics.share.done ? 'volume-meter-done' : 'clickable'">
       <div class="icon done-not">
         <span ng-if="::metrics.share.done" class="icon done"></span>
-      </div> 
+      </div>
       <h5>Share your volume</h5>
       <p ng-if="::!metrics.share.done">Share your volume with other Databrary users.</p>
     </div>

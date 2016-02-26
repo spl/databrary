@@ -19,7 +19,7 @@ import Databrary.Iso.Types
 
 split :: Eq a => [a] -> [a] -> [[a]]
 split _ [] = []
-split t s@(c:r) 
+split t s@(c:r)
   | Just s' <- stripPrefix t s = [] : split t s'
   | p:l <- split t r = (c:p):l
   | otherwise = [s]

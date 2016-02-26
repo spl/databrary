@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings, TemplateHaskell, QuasiQuotes, RecordWildCards #-}
-module Databrary.Model.Party 
+module Databrary.Model.Party
   ( module Databrary.Model.Party.Types
   , nobodyParty
   , rootParty

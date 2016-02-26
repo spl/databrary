@@ -40,7 +40,7 @@ viewSiteActivity = action GET (pathAPI </< "activity") $ \api -> withAuth $ do
   ss <- focusIO $ readIORef . serviceStats
   vl <- map (second $ ("volume" JSON..=) . volumeJSON) . nubBy ((==) `on` volumeId . volumeRow . snd) <$> lookupVolumeShareActivity 8
   al <- map (second $ ("party"  JSON..=) . partyJSON)  . nubBy ((==) `on` partyId  . partyRow  . snd) <$> lookupAuthorizeActivity 8
-  case api of 
+  case api of
     JSON -> return $ okResponse [] $ JSON.object
       [ "stats" JSON..= ss
       , "activity" JSON..= map ent (take 12 $ mergeBy ((fo .) . comparing fst) vl al)

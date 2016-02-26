@@ -25,7 +25,7 @@ angularAnalytics = do
   pr (Left _) = []
   pr (Right (JSON.Array l)) = mapMaybe ar $ V.toList l
   pr (Right j) = maybeToList $ ar j
-  ar (JSON.Object o) = Analytic 
+  ar (JSON.Object o) = Analytic
     <$> (JSON.parseMaybe JSON.parseJSON =<< HM.lookup "action" o)
     <*> (JSON.parseMaybe JSON.parseJSON =<< HM.lookup "route" o)
     <*> return (HM.lookup "data" o)

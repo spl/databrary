@@ -89,7 +89,7 @@ dataCiteXML DataCite{..} =
   q = XML.unqual
   ur t u = "relatedIdentifier" <.>
     first (("relationType" =. t :) . return . ("relatedIdentifierType" =.))
-      (case uriScheme u of 
+      (case uriScheme u of
         "doi:" -> ("DOI", uriPath u)
         "hdl:" -> ("Handle", uriPath u)
         _ -> ("URL", show u))

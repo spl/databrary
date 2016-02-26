@@ -43,7 +43,7 @@ htmlAngular debug nojs auth = H.docTypeHtml H.! ngAttribute "app" "databraryModu
     H.meta
       H.! HA.httpEquiv "X-UA-Compatible"
       H.! HA.content "IE=edge"
-    H.meta 
+    H.meta
       H.! HA.name "viewport"
       H.! HA.content "width=device-width, initial-scale=1.0, minimum-scale=1.0"
     H.title
@@ -92,7 +92,7 @@ htmlAngular debug nojs auth = H.docTypeHtml H.! ngAttribute "app" "databraryModu
       H.! HA.id "loading"
       H.! HA.class_ "loading"
       H.! HA.style "display:none"
-      H.! ngAttribute "show" "page.display.loading" $ 
+      H.! ngAttribute "show" "page.display.loading" $
       H.div H.! HA.class_ "loading-animation" $ do
         H.div H.! HA.class_ "loading-spinner" $
           H.div H.! HA.class_ "loading-mask" $

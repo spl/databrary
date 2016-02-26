@@ -35,7 +35,7 @@ baseMail = emptyMail (Address (Just "Databrary") "help@databrary.org")
 mailHeader :: BSL.ByteString
 mailHeader = mempty
 
-mailFooter :: BSL.ByteString 
+mailFooter :: BSL.ByteString
 mailFooter = "\n\
   \Sincerely,\n\
   \The Databrary Team\n\

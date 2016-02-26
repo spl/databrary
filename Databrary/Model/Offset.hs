@@ -59,7 +59,7 @@ instance Show Offset where
       (s, f) = properFraction a
       (m, s') = divMod s 60
       (h, m') = divMod m 60
-      pads x 
+      pads x
         | x < 10 = ('0' :)
         | otherwise = id
 
