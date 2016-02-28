@@ -3,7 +3,6 @@ module Databrary.View.Comment
   ( htmlCommentForm
   ) where
 
-import Data.Monoid (mempty)
 import qualified Data.Text as T
 
 import Databrary.Action

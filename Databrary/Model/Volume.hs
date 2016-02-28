@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, TemplateHaskell, QuasiQuotes, RecordWildCards, ScopedTypeVariables #-}
+{-# LANGUAGE OverloadedStrings, TemplateHaskell, QuasiQuotes, RecordWildCards, ScopedTypeVariables, DataKinds #-}
 module Databrary.Model.Volume
   ( module Databrary.Model.Volume.Types
   , coreVolume
@@ -18,12 +18,11 @@ import Control.Applicative ((<|>))
 import Control.Monad (guard)
 import qualified Data.ByteString as BS
 import Data.Maybe (catMaybes)
-import Data.Monoid (Monoid(..), (<>))
+import Data.Monoid ((<>))
 import qualified Data.Text as T
 import Database.PostgreSQL.Typed.Query (pgSQL, unsafeModifyQuery)
 import Database.PostgreSQL.Typed.Dynamic (pgLiteralRep)
 
-import Databrary.Ops
 import Databrary.Has (peek, view)
 import Databrary.Service.DB
 import qualified Databrary.JSON as JSON

@@ -5,7 +5,7 @@ module Databrary.Action.Types
   , runActionM
   ) where
 
-import Control.Applicative (Applicative, Alternative)
+import Control.Applicative (Alternative)
 import Control.Monad (MonadPlus)
 import Control.Monad.Base (MonadBase)
 import Control.Monad.IO.Class (MonadIO)

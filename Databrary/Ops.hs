@@ -1,7 +1,6 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving, ViewPatterns #-}
 module Databrary.Ops
-  ( (<$>) ,  (<*>), (<*-)
-  , (<$)  ,   ($>)
+  ( (<*-)
   , (<?)  ,   (?>)
   , (<!?) ,  (?!>)
   , (<$?) ,  (?$>)
@@ -25,7 +24,6 @@ import Control.Applicative
 import Control.Arrow
 import Data.Functor
 import Data.Maybe (catMaybes)
-import Data.Monoid
 
 infixl 4 <*-
 (<*-) :: Applicative f => f (a -> b) -> a -> f b

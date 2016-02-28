@@ -14,14 +14,12 @@ module Databrary.Controller.Party
   ) where
 
 import Control.Applicative (optional)
-import Control.Monad (unless, when)
+import Control.Monad (unless, when, forM)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
-import qualified Data.Foldable as Fold
 import Data.Maybe (fromMaybe)
-import Data.Monoid ((<>), mempty)
+import Data.Monoid ((<>))
 import qualified Data.Text.Encoding as TE
-import qualified Data.Traversable as Trav
 import Network.HTTP.Types (badRequest400)
 import qualified Network.Wai as Wai
 import Network.Wai.Parse (FileInfo(..))
@@ -134,7 +132,7 @@ processParty api p = do
         , partyURL = url
         }
       }, avatar)
-  a' <- Trav.forM a $ Trav.mapM $ \(af, fmt) -> do
+  a' <- forM a $ mapM $ \(af, fmt) -> do
     let ba = blankAsset coreVolume
     a' <- addAsset ba
       { assetRow = (assetRow ba)
@@ -166,7 +164,7 @@ postParty = multipartAction $ action POST (pathAPI </> pathPartyTarget) $ \(api,
   p <- getParty (Just PermissionEDIT) i
   (p', a) <- processParty api (Just p)
   changeParty p'
-  Fold.mapM_ (changeAvatar p') a
+  mapM_ (changeAvatar p') a
   case api of
     JSON -> return $ okResponse [] $ partyJSON p'
     HTML -> peeks $ otherRouteResponse [] viewParty (api, i)
@@ -176,7 +174,7 @@ createParty = multipartAction $ action POST (pathAPI </< "party") $ \api -> with
   checkMemberADMIN
   (bp, a) <- processParty api Nothing
   p <- addParty bp
-  Fold.mapM_ (changeAvatar p) a
+  mapM_ (changeAvatar p) a
   case api of
     JSON -> return $ okResponse [] $ partyJSON p
     HTML -> peeks $ otherRouteResponse [] viewParty (api, TargetParty $ partyId $ partyRow p)

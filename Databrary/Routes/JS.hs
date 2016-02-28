@@ -102,7 +102,7 @@ jsRoutes =
   , jsRoute "postAuthorize" postAuthorize (JSON, TargetParty party, AuthorizeTarget False party)
   , jsRoute "deleteAuthorize" deleteAuthorize (JSON, TargetParty party, AuthorizeTarget False party)
   , jsRoute "deleteAuthorizeParent" deleteAuthorize (JSON, TargetParty party, AuthorizeTarget True party)
-  , jsRoute "postAuthorizeNotFound" postAuthorizeNotFound (JSON, TargetParty party)
+  , jsRoute "postAuthorizeNotFound" postAuthorizeNotFound (TargetParty party)
 
   , jsRoute "getVolume" viewVolume (JSON, volume)
   , jsRoute "postVolume" postVolume (JSON, volume)

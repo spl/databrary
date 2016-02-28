@@ -3,7 +3,6 @@ module Databrary.View.Authorize
   ( htmlAuthorizeForm
   ) where
 
-import Data.Monoid (mempty)
 import qualified Data.Text as T
 
 import Databrary.Action

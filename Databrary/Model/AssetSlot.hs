@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, TemplateHaskell, QuasiQuotes, RecordWildCards #-}
+{-# LANGUAGE OverloadedStrings, TemplateHaskell, QuasiQuotes, RecordWildCards, DataKinds #-}
 module Databrary.Model.AssetSlot
   ( module Databrary.Model.AssetSlot.Types
   , lookupAssetSlot
@@ -16,7 +16,6 @@ module Databrary.Model.AssetSlot
   ) where
 
 import Control.Monad (when, guard)
-import qualified Data.Foldable as Fold
 import Data.Maybe (fromMaybe, isNothing, catMaybes)
 import qualified Data.Text as T
 import Database.PostgreSQL.Typed (pgSQL)
@@ -93,7 +92,7 @@ findAssetContainerEnd c = fromMaybe 0 <$>
   dbQuery1' [pgSQL|SELECT max(upper(segment))+'1s' FROM slot_asset WHERE container = ${containerId $ containerRow c}|]
 
 assetSlotName :: AssetSlot -> Maybe T.Text
-assetSlotName a = guard (Fold.any (containerTop . containerRow . slotContainer) (assetSlot a) || dataPermission a > PermissionNONE) >> assetName (assetRow $ slotAsset a)
+assetSlotName a = guard (any (containerTop . containerRow . slotContainer) (assetSlot a) || dataPermission a > PermissionNONE) >> assetName (assetRow $ slotAsset a)
 
 assetSlotJSON :: AssetSlot -> JSON.Object
 assetSlotJSON as@AssetSlot{..} = assetJSON slotAsset JSON..++ catMaybes
@@ -101,7 +100,7 @@ assetSlotJSON as@AssetSlot{..} = assetJSON slotAsset JSON..++ catMaybes
   -- , ("release" JSON..=) <$> (view as :: Maybe Release)
   , ("name" JSON..=) <$> assetSlotName as
   , Just $ "permission" JSON..= p
-  , p > PermissionNONE && Fold.any (0 <=) z ?> "size" JSON..= z
+  , p > PermissionNONE && any (0 <=) z ?> "size" JSON..= z
   ] where
   p = dataPermission as
   z = assetSize $ assetRow slotAsset

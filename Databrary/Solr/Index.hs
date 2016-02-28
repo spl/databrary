@@ -13,7 +13,7 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy as BSL
-import qualified Data.Foldable as Fold
+import Data.Foldable (fold)
 import Data.Maybe (isNothing)
 import Data.Monoid ((<>))
 import Data.Time.Clock (getCurrentTime, diffUTCTime)
@@ -169,7 +169,7 @@ writeBlock = lift . give
 writeDocuments :: [SolrDocument] -> SolrM ()
 writeDocuments [] = return ()
 writeDocuments d =
-  writeBlock $ BSL.toStrict $ BSB.toLazyByteString $ Fold.foldMap (("},\"add\":{\"doc\":" <>) . JSON.encodeToBuilder . JSON.toJSON) d
+  writeBlock $ BSL.toStrict $ BSB.toLazyByteString $ foldMap (("},\"add\":{\"doc\":" <>) . JSON.encodeToBuilder . JSON.toJSON) d
 
 writeUpdate :: SolrM () -> SolrM ()
 writeUpdate f = do
@@ -215,7 +215,7 @@ updateIndex = do
         , HC.method = methodPost
         , HC.requestBody = HC.RequestBodyStreamChunked $ \wf -> do
           w <- runInvert $ runReaderT (writeUpdate writeAllDocuments) ctx
-          wf $ Fold.fold <$> w
+          wf $ fold <$> w
         , HC.requestHeaders = (hContentType, "application/json") : HC.requestHeaders req
         , HC.responseTimeout = Just 100000000
         }

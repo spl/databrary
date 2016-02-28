@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, TemplateHaskell, RecordWildCards #-}
+{-# LANGUAGE OverloadedStrings, TemplateHaskell, RecordWildCards, DataKinds #-}
 module Databrary.Model.Excerpt
   ( lookupAssetExcerpts
   , lookupSlotExcerpts
@@ -12,7 +12,6 @@ module Databrary.Model.Excerpt
 
 import Control.Monad (guard)
 
-import Databrary.Ops
 import Databrary.Has (view)
 import qualified Databrary.JSON as JSON
 import Databrary.Service.DB

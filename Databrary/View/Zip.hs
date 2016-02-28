@@ -7,14 +7,12 @@ import Control.Monad (void, unless, forM_)
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Char8 as BSC
 import Data.Char (toLower)
-import qualified Data.Foldable as Fold
 import Data.Maybe (fromMaybe)
-import Data.Monoid ((<>), mempty)
+import Data.Monoid ((<>))
 import Data.String (fromString)
-import Data.Time.Format (formatTime)
+import Data.Time.Format (formatTime, defaultTimeLocale)
 import System.FilePath ((<.>))
 import System.Posix.FilePath ((</>))
-import System.Locale (defaultTimeLocale)
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as HA
 import qualified Text.Blaze.Html4.Strict.Attributes as H4A
@@ -60,7 +58,7 @@ htmlVolumeDescription inzip Volume{ volumeRow = VolumeRow{..}, ..} cite fund cs 
       H.em "Databrary"
       void " Volume "
       H.toMarkup (unId volumeId)
-      Fold.forM_ volumeDOI $ \doi -> do
+      forM_ volumeDOI $ \doi -> do
         void " DOI "
         byteStringHtml doi
     H.h1 $
@@ -71,7 +69,7 @@ htmlVolumeDescription inzip Volume{ volumeRow = VolumeRow{..}, ..} cite fund cs 
         H.a H.! HA.href (link viewParty (HTML, TargetParty i)) $
           H.text n
     H.h2 "Volume description"
-    Fold.mapM_ (H.p . H.text) volumeBody
+    mapM_ (H.p . H.text) volumeBody
     unless (null fund) $ do
       H.h3 "Funded by"
       H.dl $ forM_ fund $ \Funding{..} -> do
@@ -82,7 +80,7 @@ htmlVolumeDescription inzip Volume{ volumeRow = VolumeRow{..}, ..} cite fund cs 
       H.ul $ forM_ cite $ \Citation{..} -> H.li $
         maybe id (\u -> H.a H.! HA.href (H.toValue u)) citationURL $ do
           H.text citationHead
-          Fold.forM_ citationYear $ \y ->
+          forM_ citationYear $ \y ->
             " (" >> H.toMarkup (fromIntegral y :: Int) >> ")"
     H.h2 "Package information"
     H.dl $ do
@@ -139,8 +137,8 @@ htmlVolumeDescription inzip Volume{ volumeRow = VolumeRow{..}, ..} cite fund cs 
       H.td H.! rs $ H.a !? (inzip ?> HA.href (byteStringValue fn)) $
         byteStringHtml dn
       H.td H.! rs $ H.a H.! HA.href (link viewContainer (HTML, (Just volumeId, containerId $ containerRow c))) $ do
-        Fold.mapM_ H.string $ formatContainerDate c
-        Fold.mapM_ H.text $ containerName $ containerRow c
+        mapM_ H.string $ formatContainerDate c
+        mapM_ H.text $ containerName $ containerRow c
       arow fn a
       mapM_ (H.tr . arow fn) l
     abody al

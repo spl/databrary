@@ -4,9 +4,8 @@ module Data.RangeSet.Parse
   , parseRangeSet
   ) where
 
-import Control.Applicative ((<$>), optional)
+import Control.Applicative (optional)
 import Data.Maybe (fromMaybe)
-import Data.Monoid (Monoid(..))
 import qualified Data.RangeSet.List as R
 import qualified Text.ParserCombinators.ReadP as RP
 import qualified Text.ParserCombinators.ReadPrec as RP (lift, readPrec_to_P, minPrec)

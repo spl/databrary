@@ -10,12 +10,10 @@ import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Char8 as BSC
 import Data.Default.Class (def)
 import Data.Maybe (isJust)
-import Data.Monoid (mempty, (<>))
-import qualified Data.Foldable as Fold
+import Data.Monoid ((<>))
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as HA
 
-import Databrary.Ops
 import Databrary.Has (view)
 import Databrary.Service.Types
 import Databrary.Model.Identity
@@ -61,7 +59,7 @@ htmlAngular debug nojs auth = H.docTypeHtml H.! ngAttribute "app" "databraryModu
     H.script $ do
       H.preEscapedString "window.$play={user:"
       H.unsafeLazyByteString $ JSON.encode $ identityJSON (view auth)
-      Fold.forM_ (serviceDown (view auth)) $ \msg -> do
+      forM_ (serviceDown (view auth)) $ \msg -> do
         H.preEscapedString ",down:"
         H.unsafeLazyByteString $ JSON.encode msg
       H.preEscapedString "};"

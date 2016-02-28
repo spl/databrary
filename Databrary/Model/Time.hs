@@ -9,13 +9,11 @@ module Databrary.Model.Time
   , maskedYear
   ) where
 
-import Control.Applicative ((<$>))
 import qualified Data.Aeson as JSON
 import Data.Fixed (Fixed(..))
 import Data.Time (Day(..), UTCTime(..), DiffTime, toGregorian, fromGregorian)
-import Data.Time.Format (FormatTime(..), formatTime)
+import Data.Time.Format (FormatTime(..), formatTime, defaultTimeLocale, dateFmt)
 import Language.Haskell.TH.Lift (deriveLiftMany)
-import System.Locale (defaultTimeLocale, dateFmt)
 
 import Databrary.Has (Has(..))
 

@@ -14,7 +14,6 @@ import qualified Data.ByteArray as BA
 import Data.ByteArray.Encoding (convertToBase, convertFromBase, Base(Base64URLUnpadded))
 import qualified Data.ByteString as BS
 import Data.Monoid ((<>))
-import qualified Data.Traversable as Trav
 
 import Databrary.Ops
 import Databrary.Has
@@ -47,7 +46,7 @@ sign msg = do
 
 unSign :: (MonadHas Secret c m) => BS.ByteString -> m (Maybe BS.ByteString)
 unSign sigmsg = do
-  sig' <- Trav.mapM (peeks . signature . (msg <>)) nonce
+  sig' <- mapM (peeks . signature . (msg <>)) nonce
   return $ msg <$ mfilter (BA.constEq sig) sig'
   where
   (sig, noncemsg) = BS.splitAt hmacLength sigmsg

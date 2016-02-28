@@ -8,7 +8,6 @@ import qualified Crypto.Hash.Algorithms as Hash
 import Crypto.MAC.HMAC (HMAC, hmac)
 import qualified Data.ByteString as BS
 import Data.Maybe (fromMaybe)
-import qualified Data.Traversable as Trav
 import qualified Network.HTTP.Client as HC
 import Network.HTTP.Types (methodPost, hContentType)
 
@@ -23,7 +22,7 @@ data Static = Static
 
 initStatic :: C.Config -> IO Static
 initStatic conf = do
-  fillin <- Trav.mapM HC.parseUrl $ conf C.! "fillin"
+  fillin <- mapM HC.parseUrl $ conf C.! "fillin"
   return $ Static
     { staticAuthorizeAddr = conf C.! "authorize"
     , staticAssistAddr = conf C.! "assist"

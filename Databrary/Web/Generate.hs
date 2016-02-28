@@ -8,13 +8,11 @@ module Databrary.Web.Generate
 import Control.Monad (when, unless)
 import Control.Monad.Except (throwError)
 import Control.Monad.IO.Class (liftIO)
-import qualified Data.Foldable as Fold
 import System.Directory (createDirectoryIfMissing)
 import System.FilePath (splitFileName, takeDirectory)
 import System.Posix.Files (createLink, rename)
 
 import Paths_databrary (getDataFileName)
-import Databrary.Ops
 import Databrary.Files
 import Databrary.Model.Time
 import Databrary.Web
@@ -50,13 +48,13 @@ webRegenerate g fs ws (f, o) = do
   wr <- mapM (generateWebFile False) ws
   ft <- liftIO $ maybe (fmap snd <$> fileInfo f) (return . Just . webFileTimestamp) o
   fr <- maybe (return False) (\t -> anyM $ map (fileNewerThan t) fs) ft
-  liftIO $ whether (Fold.all (\t -> fr || any ((t <) . webFileTimestamp) wr) ft) g
+  liftIO $ whether (all (\t -> fr || any ((t <) . webFileTimestamp) wr) ft) g
 
 staticWebGenerate :: (FilePath -> IO ()) -> WebGenerator
 staticWebGenerate g (w, _) = liftIO $ do
   g t
   c <- catchDoesNotExist $ compareFiles f t
-  if Fold.or c
+  if or c
     then False <$ removeLink t
     else True <$ rename t f
   where

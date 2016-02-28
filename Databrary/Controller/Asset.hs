@@ -23,7 +23,6 @@ import qualified Data.ByteString as BS
 import Data.Maybe (fromMaybe, isNothing, isJust, catMaybes, maybeToList)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
-import qualified Data.Traversable as Trav
 import qualified Database.PostgreSQL.Typed.Range as Range
 import Network.HTTP.Types (StdMethod(DELETE), conflict409)
 import qualified Network.Wai as Wai
@@ -127,7 +126,7 @@ data FileUpload = FileUpload
   }
 
 deformLookup :: (Monad m, Functor m, Deform f a) => FormErrorMessage -> (a -> m (Maybe b)) -> DeformT f m (Maybe b)
-deformLookup e l = Trav.mapM (deformMaybe' e <=< lift . l) =<< deformNonEmpty deform
+deformLookup e l = mapM (deformMaybe' e <=< lift . l) =<< deformNonEmpty deform
 
 detectUpload :: FileUploadFile -> DeformActionM TempFile FileUpload
 detectUpload u =
@@ -151,19 +150,19 @@ processAsset api target = do
         | AssetTargetAsset _ <- target -> return Nothing
         | otherwise -> Nothing <$ deformError "File or upload required."
       _ -> Nothing <$ deformError "Conflicting uploaded files found."
-    up <- Trav.mapM detectUpload upfile
+    up <- mapM detectUpload upfile
     let fmt = maybe (assetFormat $ assetRow a) (probeFormat . fileUploadProbe) up
     name <- "name" .:> maybe (assetName $ assetRow a) (TE.decodeUtf8 . dropFormatExtension fmt <$>) <$> deformOptional (deformNonEmpty deform)
     classification <- "classification" .:> fromMaybe (assetRelease $ assetRow a) <$> deformOptional (deformNonEmpty deform)
     slot <-
       "container" .:> (<|> slotContainer <$> s) <$> deformLookup "Container not found." (lookupVolumeContainer (assetVolume a))
-      >>= Trav.mapM (\c -> "position" .:> do
+      >>= mapM (\c -> "position" .:> do
         let seg = slotSegment <$> s
             dur = maybe (assetDuration $ assetRow a) (probeLength . fileUploadProbe) up
         p <- fromMaybe (lowerBound . segmentRange =<< seg) <$> deformOptional (deformNonEmpty deform)
         Slot c . maybe fullSegment
           (\l -> Segment $ Range.bounded l (l + fromMaybe 0 ((segmentLength =<< seg) <|> dur)))
-          <$> orElseM p (Trav.mapM (lift . probeAutoPosition c . Just . fileUploadProbe) (guard (isNothing s && isJust dur) >> up)))
+          <$> orElseM p (mapM (lift . probeAutoPosition c . Just . fileUploadProbe) (guard (isNothing s && isJust dur) >> up)))
     return
       ( as
         { slotAsset = a

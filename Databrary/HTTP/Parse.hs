@@ -6,7 +6,6 @@ module Databrary.HTTP.Parse
   , getRequestTextContent
   ) where
 
-import Control.Applicative ((<$>))
 import Control.Monad (when, unless)
 import Control.Monad.IO.Class (liftIO)
 import qualified Data.Aeson as JSON
@@ -14,7 +13,6 @@ import qualified Data.Attoparsec.ByteString as AP
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as BSB
 import Data.IORef (newIORef, readIORef, writeIORef)
-import Data.Monoid (mempty)
 import Data.Word (Word64)
 import Network.HTTP.Types (requestEntityTooLarge413, unsupportedMediaType415, hContentType)
 import Network.Wai

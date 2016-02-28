@@ -15,9 +15,8 @@ import qualified Data.ByteString.Char8 as BSC
 import Data.Char (isSpace, isControl)
 import Data.Monoid ((<>))
 import qualified Data.Text as T
-import Data.Time.Format (formatTime, parseTime)
+import Data.Time.Format (formatTime, parseTimeM, defaultTimeLocale)
 import Network.HTTP.Types (Query, encodePathSegments, renderQueryBuilder)
-import System.Locale (defaultTimeLocale)
 
 import Databrary.Model.Time
 
@@ -65,4 +64,4 @@ formatHTTPTimestamp :: Timestamp -> BS.ByteString
 formatHTTPTimestamp = BSC.pack . formatTime defaultTimeLocale defaultDateFmt
 
 parseHTTPTimestamp :: BS.ByteString -> Maybe Timestamp
-parseHTTPTimestamp b = msum $ map (\f -> parseTime defaultTimeLocale f s) dateFmts where s = BSC.unpack b
+parseHTTPTimestamp b = msum $ map (\f -> parseTimeM True defaultTimeLocale f s) dateFmts where s = BSC.unpack b

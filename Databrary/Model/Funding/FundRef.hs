@@ -9,7 +9,7 @@ import Control.Monad ((<=<), (>=>), guard, mfilter)
 import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.Trans.Class (lift)
 import Control.Monad.Trans.Maybe (MaybeT(..), runMaybeT)
-import qualified Data.Foldable as Fold
+import Data.Foldable (fold)
 import Data.Function (on)
 import qualified Data.HashMap.Strict as HM
 import Data.List (stripPrefix, sortBy, nubBy)
@@ -104,7 +104,7 @@ lookupFunderRef fi = do
   f <- lookupFunder fi
   f `orElseM` do
     r <- focusIO $ lookupFundRef fi
-    Fold.mapM_ addFunder r
+    mapM_ addFunder r
     return r
 
 parseFundRefs :: JSON.Value -> JSON.Parser [Funder]
@@ -117,7 +117,7 @@ parseFundRefs = JSON.withArray "fundrefs" $
     name <- j JSON..: "value"
     alts <- j JSON..:? "other_names"
     country <- j JSON..:? "country"
-    return $ annotateFunder (Funder i name) (Fold.fold alts) country
+    return $ annotateFunder (Funder i name) (fold alts) country
 
 fundRefReq :: HC.Request
 fundRefReq = (fromJust $ HC.parseUrl "http://search.crossref.org/funders")
@@ -126,5 +126,5 @@ fundRefReq = (fromJust $ HC.parseUrl "http://search.crossref.org/funders")
 searchFundRef :: T.Text -> HTTPClient -> IO [Funder]
 searchFundRef q hcm = do
   j <- httpRequestJSON req hcm
-  return $ Fold.fold $ JSON.parseMaybe parseFundRefs =<< j
+  return $ fold $ JSON.parseMaybe parseFundRefs =<< j
   where req = HC.setQueryString [("q", Just $ TE.encodeUtf8 q)] fundRefReq

@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TemplateHaskell, DataKinds #-}
 module Databrary.Model.Category.Boot
   ( loadCategories
   ) where

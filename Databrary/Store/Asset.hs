@@ -13,7 +13,6 @@ import Data.ByteArray (convert)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Lazy as BSL
-import qualified Data.Traversable as Trav
 import Data.Word (Word64)
 import System.Posix.FilePath (takeDirectory)
 import System.Posix.Files.ByteString (fileSize, createLink)
@@ -47,7 +46,7 @@ getAssetFile a = do
       where
       m = storageMaster s </> p
       f = sf </> p
-  Trav.mapM (liftIO . mf (storageFallback s)) $ assetFile a
+  mapM (liftIO . mf (storageFallback s)) $ assetFile a
 
 storeAssetFile :: MonadStorage c m => Asset -> RawFilePath -> m Asset
 storeAssetFile ba@Asset{ assetRow = bar } fp = peeks storageMaster >>= \sm -> liftIO $ do

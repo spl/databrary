@@ -8,7 +8,6 @@ import Databrary.Web
 import Databrary.Web.Types
 
 #ifdef DEVEL
-import Control.Applicative ((<$>))
 import Control.Arrow (first, right)
 import Control.Concurrent.MVar (modifyMVar)
 import Control.Monad.Trans.Except (runExceptT)

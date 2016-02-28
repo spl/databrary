@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, TemplateHaskell #-}
+{-# LANGUAGE OverloadedStrings, TemplateHaskell, DataKinds #-}
 module Databrary.Model.Measure
   ( getRecordMeasures
   , getMeasure

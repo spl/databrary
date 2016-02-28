@@ -10,7 +10,7 @@ module Databrary.Controller.Register
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Lazy as BSL
-import Data.Monoid ((<>), mempty)
+import Data.Monoid ((<>))
 import qualified Data.Text as T
 
 import Databrary.Ops

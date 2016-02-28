@@ -19,7 +19,6 @@ module Databrary.Model.SQL.Select
   , nameRef
   ) where
 
-import Control.Applicative ((<$>))
 import Control.Arrow (second)
 import Control.Monad.State (StateT(..))
 import Control.Monad.Trans.Class (lift)
@@ -167,7 +166,7 @@ takeWhileEnd p = fst . foldr go ([], False) where
 makeQuery :: QueryFlags -> (String -> String) -> SelectOutput -> TH.ExpQ
 makeQuery flags sql output = do
   _ <- useTDB
-  nl <- mapM (TH.newName . colVar) cols
+  nl <- mapM (TH.newName . ('v':) . colVar) cols
   (parse, []) <- runStateT (outputParser output) nl
   TH.AppE (TH.VarE 'fmap `TH.AppE` TH.LamE [TH.TupP $ map TH.VarP nl] parse)
     <$> makePGQuery flags (sql $ intercalate "," cols)

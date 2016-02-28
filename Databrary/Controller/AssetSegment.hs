@@ -13,7 +13,6 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy as BSL
-import Data.Foldable (foldMap)
 import Data.Maybe (isJust, fromJust, listToMaybe)
 import Data.Monoid ((<>))
 import qualified Data.Text as T

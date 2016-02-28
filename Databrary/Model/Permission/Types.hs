@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, TemplateHaskell, QuasiQuotes, DeriveDataTypeable #-}
+{-# LANGUAGE OverloadedStrings, TemplateHaskell, QuasiQuotes, DeriveDataTypeable, DataKinds #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Databrary.Model.Permission.Types
   ( Permission(..)
@@ -6,7 +6,6 @@ module Databrary.Model.Permission.Types
   , accessSite, accessMember, accessPermission
   ) where
 
-import Data.Monoid (Monoid(..))
 import Language.Haskell.TH.Lift (deriveLiftMany)
 
 import Databrary.Has (Has(..))

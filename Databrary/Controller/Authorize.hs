@@ -13,9 +13,9 @@ import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy as BSL
 import qualified Data.ByteString.Lazy.Char8 as BSLC
-import qualified Data.Foldable as Fold
+import Data.Foldable (fold)
 import Data.Maybe (fromMaybe, isNothing, mapMaybe)
-import Data.Monoid (mempty, (<>))
+import Data.Monoid ((<>))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Time (UTCTime(..), fromGregorian, addGregorianYearsRollOver)
@@ -85,7 +85,7 @@ postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarge
         req <- peek
         sendMail (map Right dl ++ authaddr) []
           ("Databrary authorization request from " <> partyName (partyRow child))
-          $ BSL.fromChunks [TE.encodeUtf8 (partyName $ partyRow child), " <", Fold.fold agent, "> has requested to be authorized by ", TE.encodeUtf8 (partyName $ partyRow parent), ". \
+          $ BSL.fromChunks [TE.encodeUtf8 (partyName $ partyRow child), " <", fold agent, "> has requested to be authorized by ", TE.encodeUtf8 (partyName $ partyRow parent), ". \
             \To approve or reject this authorization request, go to:\n\n" ] <>
             BSB.toLazyByteString (actionURL (Just req) viewPartyEdit (TargetParty $ partyId $ partyRow parent) [("page", Just "grant")]) <> "#auth-" <> BSLC.pack (show $ partyId $ partyRow child) <> "\n\n\
             \Find more information about authorizing and managing affiliates here: \
@@ -102,12 +102,12 @@ postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarge
         delete ?!$> do
           site <- "site" .:> deform
           member <- "member" .:> deform
-          expires <- "expires" .:> (deformCheck "Expiration must be within two years." (Fold.all (\e -> su || e > minexp && e <= maxexp))
+          expires <- "expires" .:> (deformCheck "Expiration must be within two years." (all (\e -> su || e > minexp && e <= maxexp))
             =<< (<|> (su ?!> maxexp)) <$> deformNonEmpty deform)
           return $ Authorize (Authorization (Access site member) child parent) $ fmap (`UTCTime` 43210) expires
-      maybe (Fold.mapM_ removeAuthorize c) changeAuthorize a
-      let site = Fold.foldMap accessSite a
-      when (PermissionPUBLIC < site && Fold.all ((PermissionPUBLIC >=) . accessSite) c) $ do
+      maybe (mapM_ removeAuthorize c) changeAuthorize a
+      let site = foldMap accessSite a
+      when (PermissionPUBLIC < site && all ((PermissionPUBLIC >=) . accessSite) c) $ do
         sitemsg <- peeks $ authorizeTitle site
         sendMail (maybe id (:) (Right <$> partyAccount child) authaddr) []
           "Databrary authorization approved"
@@ -136,7 +136,7 @@ postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarge
           ]
       return a
   case api of
-    JSON -> return $ okResponse [] $ JSON.Object $ Fold.foldMap authorizeJSON a JSON..+ ("party" JSON..= partyJSON o)
+    JSON -> return $ okResponse [] $ JSON.Object $ foldMap authorizeJSON a JSON..+ ("party" JSON..= partyJSON o)
     HTML -> peeks $ otherRouteResponse [] viewAuthorize arg
 
 deleteAuthorize :: ActionRoute (API, PartyTarget, AuthorizeTarget)
@@ -149,8 +149,8 @@ deleteAuthorize = action DELETE (pathAPI </>> pathPartyTarget </> pathAuthorizeT
     JSON -> return $ okResponse [] $ JSON.object ["party" JSON..= partyJSON o]
     HTML -> peeks $ otherRouteResponse [] viewAuthorize arg
 
-postAuthorizeNotFound :: ActionRoute (API, PartyTarget)
-postAuthorizeNotFound = action POST (pathAPI </> pathPartyTarget </< "notfound") $ \(_, i) -> withAuth $ do
+postAuthorizeNotFound :: ActionRoute (PartyTarget)
+postAuthorizeNotFound = action POST (pathJSON >/> pathPartyTarget </< "notfound") $ \i -> withAuth $ do
   p <- getParty (Just PermissionADMIN) i
   agent <- peeks $ fmap accountEmail . partyAccount
   (name, perm, info) <- runForm Nothing $ liftM3 (,,)
@@ -161,6 +161,6 @@ postAuthorizeNotFound = action POST (pathAPI </> pathPartyTarget </< "notfound")
   title <- peeks $ authorizeTitle perm
   sendMail authaddr []
     ("Databrary authorization request from " <> partyName (partyRow p))
-    $ BSL.fromChunks [TE.encodeUtf8 (partyName $ partyRow p), " <", Fold.fold agent, ">", mbt (partyAffiliation $ partyRow p), " has requested to be authorized as an ", TE.encodeUtf8 title, " by ", TE.encodeUtf8 name, mbt info, ".\n"]
+    $ BSL.fromChunks [TE.encodeUtf8 (partyName $ partyRow p), " <", fold agent, ">", mbt (partyAffiliation $ partyRow p), " has requested to be authorized as an ", TE.encodeUtf8 title, " by ", TE.encodeUtf8 name, mbt info, ".\n"]
   return $ emptyResponse noContent204 []
   where mbt = maybe "" $ \t -> " (" <> TE.encodeUtf8 t <> ")"

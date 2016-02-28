@@ -5,7 +5,6 @@ module Databrary.Controller.Tag
   , deleteTag
   ) where
 
-import Control.Applicative ((<$>))
 import Control.Monad (unless)
 import qualified Data.Text as T
 import Network.HTTP.Types (StdMethod(DELETE), conflict409)

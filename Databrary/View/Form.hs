@@ -22,14 +22,12 @@ import Control.Monad.Trans.Class (lift)
 import Control.Monad.Trans.Control (liftWith)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
-import qualified Data.Foldable as Fold
-import Data.Monoid (mempty)
+import Data.Foldable (fold)
 import qualified Data.Text as T
-import Data.Time.Format (formatTime)
+import Data.Time.Format (formatTime, defaultTimeLocale)
 import qualified Text.Blaze.Internal as M
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as HA
-import System.Locale (defaultTimeLocale)
 
 import Databrary.Ops
 import Databrary.Has (view)
@@ -103,7 +101,7 @@ inputTextarea :: H.ToMarkup a => Maybe a -> Field
 inputTextarea val ref dat = H.textarea
   H.! HA.id    ref
   H.! HA.name  ref
-  $ Fold.fold $ fmap byteStringHtml dat <|> fmap H.toHtml val
+  $ fold $ fmap byteStringHtml dat <|> fmap H.toHtml val
 
 inputPassword :: Field
 inputPassword ref _ = H.input
@@ -124,7 +122,7 @@ inputSelect val choices ref dat = H.select
   H.! HA.name ref
   $ mapM_ (\(v, c) -> H.option
     H.!  HA.value (byteStringValue v)
-    H.!? (Fold.any (v ==) (dat <|> val), HA.selected "selected")
+    H.!? (any (v ==) (dat <|> val), HA.selected "selected")
     $ H.toHtml c) choices
 
 inputEnum :: forall a . DBEnum a => Bool -> Maybe a -> Field

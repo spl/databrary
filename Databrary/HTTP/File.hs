@@ -7,7 +7,6 @@ module Databrary.HTTP.File
 import Control.Monad (when)
 import Control.Monad.IO.Class (liftIO)
 import qualified Data.ByteString as BS
-import qualified Data.Foldable as Fold
 import Data.Monoid ((<>))
 import Network.HTTP.Types (ResponseHeaders, hLastModified, hContentType, hCacheControl, hIfModifiedSince, notModified304, hIfRange)
 import System.Posix.Types (FileOffset)
@@ -34,12 +33,12 @@ fileResponse file fmt save etag = do
   req <- peek
   let ifnm = map unquoteHTTP $ (splitHTTP =<<) $ lookupRequestHeaders "if-none-match" req
       notmod
-        | null ifnm = Fold.any (mt <=) $ (parseHTTPTimestamp =<<) $ lookupRequestHeader hIfModifiedSince req
+        | null ifnm = any (mt <=) $ (parseHTTPTimestamp =<<) $ lookupRequestHeader hIfModifiedSince req
         | otherwise = any (\m -> m == "*" || m == etag) ifnm
   when notmod $ result $ emptyResponse notModified304 fh
   return (fh,
     -- allow range detection or force full file:
-    Fold.any ((etag /=) . unquoteHTTP) (lookupRequestHeader hIfRange req) ?> sz)
+    any ((etag /=) . unquoteHTTP) (lookupRequestHeader hIfRange req) ?> sz)
 
 serveFile :: RawFilePath -> Format -> Maybe BS.ByteString -> BS.ByteString -> ActionM Response
 serveFile file fmt save etag = do

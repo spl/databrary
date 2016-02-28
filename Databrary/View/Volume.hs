@@ -7,12 +7,10 @@ module Databrary.View.Volume
   ) where
 
 import Control.Monad (when, forM_)
-import qualified Data.Foldable as Fold
-import Data.Monoid ((<>), mempty)
+import Data.Monoid ((<>))
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as HA
 
-import Databrary.Ops
 import Databrary.Has (view)
 import Databrary.Action
 import Databrary.Model.Permission
@@ -40,16 +38,16 @@ htmlVolumeView v t req = htmlTemplate req Nothing $ \js -> do
     H.img
       H.! HA.src (builderValue $ actionURL Nothing thumbVolume (volumeId $ volumeRow v) [])
     H.dl $ do
-      Fold.forM_ (getVolumeAlias v) $ \a -> do
+      forM_ (getVolumeAlias v) $ \a -> do
         H.dt "alias"
         H.dd H.! H.customAttribute "property" "alternateName" $ H.text a
       forM_ (volumeOwners v) $ \(p, n) -> do
         H.dt "owner"
         H.dd H.! H.customAttribute "property" "creator" $ H.a H.! actionLink viewParty (HTML, TargetParty p) js $ H.text n
-      Fold.forM_ (volumeBody $ volumeRow v) $ \b -> do
+      forM_ (volumeBody $ volumeRow v) $ \b -> do
         H.dt "body"
         H.dd H.! H.customAttribute "property" "description" $ H.text b -- format
-      Fold.forM_ (volumeDOI $ volumeRow v) $ \d -> do
+      forM_ (volumeDOI $ volumeRow v) $ \d -> do
         H.dt "doi"
         H.dd H.! H.customAttribute "property" "alternateName" $ byteStringHtml d
       H.dt "keywords"
@@ -93,7 +91,7 @@ htmlVolumeList js vl = H.ul
           $ forM_ (volumeOwners v) $ \(p, o) -> H.li $ do
             H.a H.! actionLink viewParty (HTML, TargetParty p) js
               $ H.text o
-        Fold.mapM_ (H.p . H.text) $ volumeBody $ volumeRow v
+        mapM_ (H.p . H.text) $ volumeBody $ volumeRow v
 
 htmlVolumeSearch :: VolumeFilter -> [Volume] -> RequestContext -> FormHtml f
 htmlVolumeSearch VolumeFilter{..} vl req = htmlForm "Volume search" queryVolumes HTML

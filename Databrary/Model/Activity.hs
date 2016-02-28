@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, TemplateHaskell, RecordWildCards #-}
+{-# LANGUAGE OverloadedStrings, TemplateHaskell, RecordWildCards, DataKinds #-}
 module Databrary.Model.Activity
   ( lookupPartyActivity
   , lookupVolumeActivity

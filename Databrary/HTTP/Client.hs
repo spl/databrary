@@ -24,15 +24,14 @@ import qualified Data.Attoparsec.ByteString as P
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.CaseInsensitive as CI
-import qualified Data.Foldable as Fold
+import Data.Foldable (fold)
 import Data.Function (on)
-import Data.Monoid ((<>), mempty)
+import Data.Monoid ((<>))
 import qualified Network.HTTP.Client as HC
 import Network.HTTP.Client.TLS (tlsManagerSettings)
 import Network.HTTP.Types (ResponseHeaders, hAccept, hContentType, Status, statusIsSuccessful)
 
 import Databrary.Has
-import Databrary.Ops
 
 type HTTPClient = HC.Manager
 
@@ -64,7 +63,7 @@ contentTypeEq = (==) `on` f where
 checkContentOk :: BS.ByteString -> Status -> ResponseHeaders -> HC.CookieJar -> Maybe SomeException
 checkContentOk ct s h cj
   | not $ statusIsSuccessful s = Just $ toException $ HC.StatusCodeException s h cj
-  | not $ Fold.any (contentTypeEq ct) ht = Just $ toException $ HC.InvalidHeader $ CI.original hContentType <> ": " <> Fold.fold ht
+  | not $ any (contentTypeEq ct) ht = Just $ toException $ HC.InvalidHeader $ CI.original hContentType <> ": " <> fold ht
   | otherwise = Nothing
   where ht = lookup hContentType h
 

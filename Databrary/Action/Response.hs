@@ -9,7 +9,6 @@ module Databrary.Action.Response
   , proxyResponse
   ) where
 
-import Control.Applicative ((<$>))
 import Control.Exception (Exception, throwIO, handle)
 import Control.Monad (join)
 import Control.Monad.IO.Class (MonadIO, liftIO)

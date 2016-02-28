@@ -30,7 +30,6 @@ import Data.Maybe (catMaybes, listToMaybe)
 import Data.Monoid ((<>))
 import System.Posix.FilePath (RawFilePath, splitExtension, takeExtension, addExtension)
 
-import Databrary.Ops
 import qualified Databrary.JSON as JSON
 import Databrary.Model.Id
 import Databrary.Model.Format.Types

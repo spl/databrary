@@ -9,14 +9,12 @@ module Databrary.HTTP.Form.View
   , allFormViewErrors
   ) where
 
-import Control.Applicative (Applicative(..), (<$>))
 import Control.Arrow (first, second)
 import Control.Monad (ap, join, liftM)
 import Control.Monad.Reader (MonadReader(..))
 import Control.Monad.State (MonadState(..))
 import Control.Monad.Trans.Class (MonadTrans(..))
 import Control.Monad.Trans.Control (MonadTransControl(..))
-import Data.Monoid (mempty)
 import qualified Data.Text as T
 
 import Databrary.HTTP.Form

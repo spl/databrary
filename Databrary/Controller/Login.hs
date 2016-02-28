@@ -14,7 +14,6 @@ import Control.Monad (when, unless)
 import Control.Monad.Trans.Class (lift)
 import qualified Crypto.BCrypt as BCrypt
 import qualified Data.ByteString as BS
-import qualified Data.Foldable as Fold
 import Data.Maybe (fromMaybe)
 
 import Databrary.Ops
@@ -53,7 +52,7 @@ viewLogin = action GET ("user" >/> "login") $ \() -> withAuth $ do
     (const $ peeks $ otherRouteResponse [] viewParty (HTML, TargetProfile))
 
 checkPassword :: BS.ByteString -> SiteAuth -> Bool
-checkPassword p = Fold.any (`BCrypt.validatePassword` p) . accountPasswd
+checkPassword p = any (`BCrypt.validatePassword` p) . accountPasswd
 
 postLogin :: ActionRoute API
 postLogin = action POST (pathAPI </< "user" </< "login") $ \api -> withoutAuth $ do
@@ -63,9 +62,9 @@ postLogin = action POST (pathAPI </< "user" </< "login") $ \api -> withoutAuth $
     superuser <- "superuser" .:> deform
     auth <- lift $ lookupSiteAuthByEmail True email
     let p = view <$> auth
-        su = superuser && Fold.any ((PermissionADMIN ==) . accessMember) auth
+        su = superuser && any ((PermissionADMIN ==) . accessMember) auth
     attempts <- lift $ maybe (return 0) recentAccountLogins p
-    let pass = checkPassword password `Fold.any` auth
+    let pass = checkPassword password `any` auth
         block = attempts > 4
     lift $ auditAccountLogin pass (fromMaybe nobodyParty p) email
     when block $ "email" .:> deformError "Too many login attempts. Try again later."

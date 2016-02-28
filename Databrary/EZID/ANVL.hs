@@ -4,15 +4,14 @@ module Databrary.EZID.ANVL
   , parse
   ) where
 
-import Control.Applicative ((<$>), (<*>), (<*), (<|>))
+import Control.Applicative ((<|>))
 import qualified Data.Attoparsec.ByteString.Char8 as P
 import Data.Bits (shiftL, (.|.))
 import qualified Data.ByteString.Builder as B
 import qualified Data.ByteString.Builder.Prim as BP
 import Data.ByteString.Internal (c2w)
 import Data.Char (isHexDigit, digitToInt)
-import Data.Foldable (foldMap)
-import Data.Monoid ((<>), mconcat)
+import Data.Monoid ((<>))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Word (Word8)

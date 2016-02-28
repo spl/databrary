@@ -3,11 +3,10 @@ module Databrary.Warp
   ( runWarp
   ) where
 
-import Control.Applicative ((<$>), (<|>))
+import Control.Applicative ((<|>))
 import qualified Data.ByteString.Char8 as BSC
 import Data.Monoid ((<>))
 import Data.Time (getCurrentTime)
-import qualified Data.Traversable as Trav
 import Data.Version (showVersion)
 import qualified Network.Wai as Wai
 import qualified Network.Wai.Handler.Warp as Warp
@@ -26,7 +25,7 @@ runWarp conf rc app =
     $ Warp.setServerName (BSC.pack $ "databrary/" ++ showVersion version)
     $ Warp.setOnException (\req e -> do
       t <- getCurrentTime
-      msg <- Trav.mapM (\q -> requestLog t q Nothing $ Warp.exceptionResponseForDebug e) req
+      msg <- mapM (\q -> requestLog t q Nothing $ Warp.exceptionResponseForDebug e) req
       logMsg t (maybe id (\m -> (<>) (m <> "\n")) msg $ toLogStr $ show e) (serviceLogs rc))
     $ Warp.setHTTP2Disabled
     $ Warp.defaultSettings)

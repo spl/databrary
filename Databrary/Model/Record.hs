@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, TemplateHaskell, RecordWildCards #-}
+{-# LANGUAGE OverloadedStrings, TemplateHaskell, RecordWildCards, DataKinds #-}
 module Databrary.Model.Record
   ( module Databrary.Model.Record.Types
   , blankRecord
@@ -11,7 +11,6 @@ module Databrary.Model.Record
   , recordJSON
   ) where
 
-import Control.Applicative ((<$>))
 import Control.Monad (guard)
 import Data.Either (isRight)
 

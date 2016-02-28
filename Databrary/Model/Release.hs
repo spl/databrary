@@ -1,10 +1,9 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TemplateHaskell, DataKinds #-}
 module Databrary.Model.Release
   ( module Databrary.Model.Release.Types
   , changeRelease
   ) where
 
-import Control.Applicative ((<$>))
 import Control.Monad (guard)
 
 import Databrary.Service.DB

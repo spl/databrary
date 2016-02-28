@@ -9,7 +9,6 @@ import Control.Monad.Trans.Class (lift)
 import Control.Monad.Trans.Maybe (MaybeT(..), runMaybeT)
 import qualified Data.Attoparsec.ByteString as P
 import qualified Data.ByteString.Char8 as BSC
-import qualified Data.Foldable as Fold
 import Data.Maybe (fromJust)
 import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.Encoding as TLE
@@ -55,7 +54,7 @@ lookupCitation uri hcm = runMaybeT $ do
   -- empirically this is UTF-8, but does not say so:
   lift $ handle
     (\(_ :: HC.HttpException) -> return cite)
-    $ (\h -> cite{ citationHead = TL.toStrict $ Fold.foldMap TLE.decodeUtf8 h }) <$>
+    $ (\h -> cite{ citationHead = TL.toStrict $ foldMap TLE.decodeUtf8 h }) <$>
       HC.httpLbs (requestAcceptContent "text/x-bibliography;style=apa" req) hcm
   where
   may = MaybeT . return

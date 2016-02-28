@@ -7,6 +7,7 @@ import Data.Function (on)
 import Data.Int (Int16)
 import Data.Ord (comparing)
 import qualified Data.Text as T
+import Instances.TH.Lift ()
 import Language.Haskell.TH.Lift (deriveLift)
 
 import Databrary.Has (makeHasRec)

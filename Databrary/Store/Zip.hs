@@ -21,10 +21,9 @@ import qualified Data.ByteString.Builder.Extra as B (defaultChunkSize)
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy as BSL
 import Data.Digest.CRC32 (crc32, crc32Update)
-import qualified Data.Foldable as Fold
 import Data.List (foldl')
 import Data.Maybe (isJust, fromMaybe)
-import Data.Monoid (Monoid(..), (<>))
+import Data.Monoid ((<>))
 import Data.Time.Calendar (toGregorian)
 import Data.Time.Clock (UTCTime(..), getCurrentTime)
 import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
@@ -206,7 +205,7 @@ streamZip entries comment write = do
             <> B.word16LE el
             <> B.byteString path
             <> (if z64 then zip64Ext <> B.word16LE 16 <> twice (B.word64LE s) else mempty)
-          Fold.mapM_ (uncurry $ central True) desc
+          mapM_ (uncurry $ central True) desc
           where
           known = isJust desc
           (c, s) = fromMaybe (0, 0) desc

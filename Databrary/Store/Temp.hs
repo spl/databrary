@@ -7,7 +7,6 @@ module Databrary.Store.Temp
   , renameTempFile
   ) where
 
-import Control.Applicative ((<$))
 import Control.Exception (bracket)
 import Control.Monad (void)
 import Control.Monad.Trans.Resource (InternalState, runInternalState, ReleaseKey, allocate, release, unprotect)

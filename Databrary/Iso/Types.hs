@@ -5,6 +5,7 @@ module Databrary.Iso.Types
   , (<$>)
   ) where
 
+import Prelude hiding ((<$>))
 import qualified Control.Category as Cat
 
 -- see also invariant package

@@ -26,7 +26,7 @@ import qualified Data.ByteString.Lazy as BSL
 import qualified Data.HashMap.Lazy as HML
 import qualified Data.HashMap.Strict as HM
 import Data.Maybe (fromMaybe, isNothing)
-import Data.Monoid (Monoid(..), (<>), mempty)
+import Data.Monoid ((<>))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Network.HTTP.Types (noContent204)

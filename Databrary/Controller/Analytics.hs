@@ -3,7 +3,6 @@ module Databrary.Controller.Analytics
   ( angularAnalytics
   ) where
 
-import Control.Applicative ((<$>), (<*>))
 import Control.Monad (when)
 import qualified Data.Attoparsec.ByteString as P
 import qualified Data.HashMap.Strict as HM

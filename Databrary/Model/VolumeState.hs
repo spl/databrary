@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell, QuasiQuotes, RecordWildCards #-}
+{-# LANGUAGE TemplateHaskell, QuasiQuotes, RecordWildCards, DataKinds #-}
 module Databrary.Model.VolumeState
   ( module Databrary.Model.VolumeState.Types
   , lookupVolumeState
@@ -9,7 +9,6 @@ module Databrary.Model.VolumeState
 import Control.Monad (void)
 import Database.PostgreSQL.Typed.Query (pgSQL)
 
-import Databrary.Ops
 import Databrary.Service.DB
 import Databrary.Model.SQL
 import Databrary.Model.Permission.Types

@@ -5,7 +5,6 @@ module Databrary.Model.Id.Types
   , Int32
   ) where
 
-import Control.Applicative ((<$>))
 import Control.Arrow (first)
 import qualified Data.Aeson as JSON
 import Data.Hashable (Hashable(..))

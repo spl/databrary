@@ -5,7 +5,6 @@ module Databrary.View.Login
   ) where
 
 import qualified Data.ByteString.Char8 as BSC
-import Data.Monoid (mempty)
 
 import Databrary.Model.Party.Types
 import Databrary.HTTP.Form.View

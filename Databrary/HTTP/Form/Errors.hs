@@ -17,7 +17,6 @@ import Control.Arrow (first)
 import qualified Data.Aeson as JSON
 import qualified Data.HashMap.Strict as HM
 import qualified Data.Map.Strict as Map
-import Data.Monoid (Monoid(..))
 import qualified Data.Text as T
 
 import Databrary.Has (view)

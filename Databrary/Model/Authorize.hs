@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell, RecordWildCards, OverloadedStrings, ScopedTypeVariables #-}
+{-# LANGUAGE TemplateHaskell, RecordWildCards, OverloadedStrings, ScopedTypeVariables, DataKinds #-}
 module Databrary.Model.Authorize
   ( module Databrary.Model.Authorize.Types
   , selfAuthorize
@@ -15,11 +15,10 @@ module Databrary.Model.Authorize
   , lookupAuthorizeActivity
   ) where
 
-import Control.Applicative ((<$>))
 import Control.Monad (when)
 import Data.Int (Int64)
 import Data.Maybe (fromMaybe)
-import Data.Monoid (mempty, (<>))
+import Data.Monoid ((<>))
 import Database.PostgreSQL.Typed.Query (PGQuery, unsafeModifyQuery)
 
 import Databrary.Has (peek, view)

@@ -4,7 +4,6 @@ module Databrary.Ingest.Service
   , initIngest
   ) where
 
-import Control.Applicative ((<$>))
 import Control.Concurrent (ThreadId)
 import Control.Concurrent.MVar (MVar, newMVar)
 import Data.Int (Int32)

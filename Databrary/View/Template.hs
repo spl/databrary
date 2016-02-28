@@ -7,7 +7,6 @@ module Databrary.View.Template
   ) where
 
 import Control.Monad (void, when, forM_)
-import qualified Data.Foldable as Fold
 import qualified Data.ByteString.Builder as BSB
 import Data.Monoid ((<>))
 import qualified Data.Text as T
@@ -34,7 +33,7 @@ import {-# SOURCE #-} Databrary.Controller.Web
 
 htmlHeader :: Maybe BSB.Builder -> JSOpt -> H.Html
 htmlHeader canon hasjs = do
-  Fold.forM_ canon $ \c ->
+  forM_ canon $ \c ->
     H.link
       H.! HA.rel "canonical"
       H.! HA.href (builderValue c)
@@ -98,7 +97,7 @@ htmlTemplate req title body = H.docTypeHtml $ do
       H.! HA.rel "stylesheet"
       H.! actionLink webFile (Just $ StaticPath "all.min.css") ([] :: Query)
     H.title $ do
-      Fold.mapM_ (\t -> H.toHtml t >> " || ") title
+      mapM_ (\t -> H.toHtml t >> " || ") title
       "Databrary"
   H.body H.! H.customAttribute "vocab" "http://schema.org" $ do
     H.section
@@ -140,13 +139,13 @@ htmlTemplate req title body = H.docTypeHtml $ do
           $ H.div
             H.! HA.class_ "row"
             $ do
-              when (hasjs /= JSEnabled) $ Fold.forM_ canon $ \c -> H.div $ do
+              when (hasjs /= JSEnabled) $ forM_ canon $ \c -> H.div $ do
                 H.preEscapedString "Our site works best with modern browsers (Firefox, Chrome, Safari &ge;6, IE &ge;10, and others). \
                   \You are viewing the simple version of our site: some functionality may not be available. \
                   \Try switching to the "
                 H.a H.! HA.href (builderValue c) $ "modern version"
                 " to see if it will work on your browser."
-              Fold.mapM_ (H.h1 . H.toHtml) title
+              mapM_ (H.h1 . H.toHtml) title
                 H.! HA.class_ "view-title"
               r <- body hasjs
               htmlFooter

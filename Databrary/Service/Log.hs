@@ -11,19 +11,16 @@ module Databrary.Service.Log
   , logAccess
   ) where
 
-import Control.Applicative ((<$>), (<*>))
 import Control.Monad.IO.Class (MonadIO)
 import qualified Data.ByteString.Char8 as BSC
-import qualified Data.Foldable as Fold
 import Data.Maybe (fromMaybe, catMaybes)
 import Data.Monoid ((<>))
 import Data.Time.Clock (getCurrentTime, diffUTCTime)
-import Data.Time.Format (formatTime)
+import Data.Time.Format (formatTime, defaultTimeLocale)
 import Data.Time.LocalTime (ZonedTime, utcToLocalZonedTime)
 import qualified Network.HTTP.Types as HTTP
 import qualified Network.Socket as Net
 import qualified Network.Wai as Wai
-import System.Locale (defaultTimeLocale)
 import System.Log.FastLogger
 
 import Databrary.Has (MonadHas)
@@ -44,7 +41,7 @@ initLog def conf = do
     "stderr" -> Just <$> newStderrLoggerSet buf
     _ -> do
       check $ spec $ fromMaybe 0 num
-      Fold.mapM_ (rotate . spec) num
+      mapM_ (rotate . spec) num
       Just <$> newFileLoggerSet buf file
   where
   file = fromMaybe def $ conf C.! "file"
@@ -60,7 +57,7 @@ initLogs conf = Logs
 
 finiLogs :: Logs -> IO ()
 finiLogs (Logs lm la) =
-  Fold.mapM_ flushLogStr $ catMaybes [lm, la]
+  mapM_ flushLogStr $ catMaybes [lm, la]
 
 str :: ToLogStr a => a -> LogStr
 str = toLogStr

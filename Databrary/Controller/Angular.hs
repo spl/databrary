@@ -11,8 +11,6 @@ import Control.Monad.IO.Class (liftIO)
 #endif
 import qualified Data.ByteString.Builder as BSB
 import Data.Default.Class (Default(..))
-import qualified Data.Foldable as Fold
-import Data.Monoid (Monoid(..))
 import Network.HTTP.Types (hUserAgent, QueryLike(..))
 import qualified Network.Wai as Wai
 import qualified Text.Regex.Posix as Regex
@@ -64,7 +62,7 @@ browserBlacklist = Regex.makeRegex
 
 angularEnable :: JSOpt -> Wai.Request -> Bool
 angularEnable JSDisabled = const False
-angularEnable JSDefault = not . Fold.any (Regex.matchTest browserBlacklist) . lookupRequestHeader hUserAgent
+angularEnable JSDefault = not . any (Regex.matchTest browserBlacklist) . lookupRequestHeader hUserAgent
 angularEnable JSEnabled = const True
 
 angularRequest :: Wai.Request -> Maybe BSB.Builder
@@ -82,4 +80,4 @@ angularResult nojs auth = do
   result $ okResponse [] (htmlAngular debug nojs auth)
 
 angular :: ActionM ()
-angular = Fold.mapM_ (focusIO . angularResult) =<< peeks angularRequest
+angular = mapM_ (focusIO . angularResult) =<< peeks angularRequest

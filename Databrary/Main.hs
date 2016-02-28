@@ -1,7 +1,6 @@
 {-# LANGUAGE CPP, OverloadedStrings #-}
 module Main (main) where
 
-import Control.Applicative ((<$>))
 import Control.Exception (evaluate)
 import Control.Monad (void)
 #ifndef DEVEL
@@ -10,7 +9,6 @@ import Control.Monad.Reader (runReaderT)
 import qualified Data.Aeson.Encode as J (encodeToBuilder)
 import Data.ByteString.Builder (hPutBuilder)
 import Data.Either (partitionEithers)
-import Data.Monoid (mconcat)
 import qualified System.Console.GetOpt as Opt
 import System.Environment (getProgName, getArgs)
 import System.Exit (exitSuccess, exitFailure)

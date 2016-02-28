@@ -19,7 +19,7 @@ module Databrary.HTTP.Form.Deform
   , textInteger
   ) where
 
-import Control.Applicative (Applicative(..), Alternative(..), liftA2)
+import Control.Applicative (Alternative(..), liftA2)
 import Control.Arrow (first, second, (***), left)
 import Control.Monad (MonadPlus(..), liftM, mapAndUnzipM, guard)
 import Control.Monad.Reader (MonadReader(..), asks)
@@ -33,16 +33,16 @@ import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.UTF8 as BSU
 import qualified Data.HashMap.Strict as HM
 import Data.Int (Int64, Int32, Int16)
-import Data.Monoid (Monoid(..), (<>))
+import Data.Monoid ((<>))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.Text.Read as TR
-import Data.Time (fromGregorian, parseTime)
+import Data.Time (fromGregorian)
+import Data.Time.Format (parseTimeM, defaultTimeLocale)
 import qualified Data.Vector as V
 import qualified Database.PostgreSQL.Typed.Range as Range (Range(Empty))
 import qualified Network.URI as URI
 import Network.Wai.Parse (FileInfo)
-import System.Locale (defaultTimeLocale)
 import Text.Read (readEither)
 
 import Databrary.Ops
@@ -305,7 +305,7 @@ instance Deform f Int16 where
 instance Deform f Date where
   deform = maybe (deformErrorWith (Just (fromGregorian 1900 1 1)) "Invalid date (please use YYYY-MM-DD)") return . pd =<< deform where
     pd t = pf "%Y-%-m-%-d" t <|> pf "%-m/%-d/%y" t
-    pf = parseTime defaultTimeLocale
+    pf = parseTimeM True defaultTimeLocale
 
 instance Deform f Offset where
   deform = deformParseJSON 0

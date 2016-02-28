@@ -13,7 +13,6 @@ module Databrary.Has
   , makeHasRec
   ) where
 
-import Control.Applicative (Applicative, (<$>))
 import Control.Monad (unless, liftM, liftM2)
 import Control.Monad.Base (MonadBase(..))
 import Control.Monad.IO.Class (MonadIO(..))

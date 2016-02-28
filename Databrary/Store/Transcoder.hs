@@ -5,7 +5,6 @@ module Databrary.Store.Transcoder
   , transcodeEnabled
   ) where
 
-import Control.Applicative ((<$>))
 import Data.Maybe (isJust)
 import Data.Version (showVersion)
 import System.Process (readProcessWithExitCode)

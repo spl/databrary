@@ -4,7 +4,7 @@ module Databrary.Ingest.JSON
   ) where
 
 import Control.Arrow (left)
-import Control.Monad (join, when, unless, void, mfilter)
+import Control.Monad (join, when, unless, void, mfilter, forM_)
 import Control.Monad.Except (ExceptT(..), runExceptT, mapExceptT, catchError, throwError)
 import Control.Monad.IO.Class (MonadIO(liftIO))
 import Control.Monad.Trans.Class (lift)
@@ -12,17 +12,15 @@ import qualified Data.Aeson.BetterErrors as JE
 import qualified Data.Attoparsec.ByteString as P
 import qualified Data.ByteString as BS
 import Data.ByteString.Lazy.Internal (defaultChunkSize)
-import qualified Data.Foldable as Fold
 import Data.Function (on)
 import qualified Data.JsonSchema as JS
 import Data.List (find)
 import Data.Maybe (isJust, fromMaybe, isNothing)
-import Data.Monoid (mempty, (<>))
-import Data.Time.Format (parseTime)
+import Data.Monoid ((<>))
+import Data.Time.Format (parseTimeM, defaultTimeLocale)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Database.PostgreSQL.Typed.Range as Range
-import System.Locale (defaultTimeLocale)
 import System.IO (withBinaryFile, IOMode(ReadMode))
 
 import Paths_databrary
@@ -61,7 +59,7 @@ loadSchema = do
   r <- lift $ withBinaryFile schema ReadMode (\h ->
     P.parseWith (BS.hGetSome h defaultChunkSize) J.json' BS.empty)
   js <- ExceptT . return . left (return . T.pack) $ J.eitherJSON =<< P.eitherResult r
-  let rs = JS.RawSchema mempty js
+  let rs = JS.RawSchema Nothing js
   g <- ExceptT $ left return <$> JS.fetchReferencedSchemas JS.draft4 mempty rs
   ExceptT $ return $ left (map (T.pack . show)) $ JS.compileDraft4 g rs
 
@@ -78,7 +76,7 @@ asKey :: IngestM IngestKey
 asKey = JE.asText
 
 asDate :: IngestM Date
-asDate = JE.withString (maybe (Left "expecting %F") Right . parseTime defaultTimeLocale "%F")
+asDate = JE.withString (maybe (Left "expecting %F") Right . parseTimeM True defaultTimeLocale "%F")
 
 asRelease :: IngestM (Maybe Release)
 asRelease = JE.perhaps JE.fromAesonParser
@@ -120,7 +118,7 @@ ingestJSON vol jdata run overwrite = runExceptT $ do
     dir <- JE.keyOrDefault "directory" "" $ stageFileRel <$> asStageFile ""
     _ <- JE.keyMay "name" $ do
       name <- check (volumeName $ volumeRow vol) =<< JE.asText
-      Fold.forM_ name $ \n -> lift $ changeVolume vol{ volumeRow = (volumeRow vol){ volumeName = n } }
+      forM_ name $ \n -> lift $ changeVolume vol{ volumeRow = (volumeRow vol){ volumeName = n } }
     top <- lift (lookupVolumeTopContainer vol)
     JE.key "containers" $ JE.eachInArray (container top dir)
   container topc dir = do
@@ -148,7 +146,7 @@ ingestJSON vol jdata run overwrite = runExceptT $ do
         inObj c $ lift $ addIngestContainer c key
         return c)
       (\c -> inObj c $ do
-        unless (Fold.all (containerId (containerRow c) ==) cid) $ do
+        unless (all (containerId (containerRow c) ==) cid) $ do
           throwPE "id mismatch"
         top <- fmap join . JE.keyMay "top" $ check (containerTop $ containerRow c) =<< JE.asBool
         name <- fmap join . JE.keyMay "name" $ check (containerName $ containerRow c) =<< JE.perhaps JE.asText
@@ -166,7 +164,7 @@ ingestJSON vol jdata run overwrite = runExceptT $ do
     inObj c $ do
       _ <- JE.keyMay "release" $ do
         release <- maybe (return . fmap Just) (check . containerRelease) c' =<< asRelease
-        Fold.forM_ release $ \r -> do
+        forM_ release $ \r -> do
           o <- lift $ changeRelease s r
           unless o $ throwPE "update failed"
       _ <- JE.key "records" $ JE.eachInArray $ do
@@ -174,7 +172,7 @@ ingestJSON vol jdata run overwrite = runExceptT $ do
         inObj r $ do
           rs' <- lift $ lookupRecordSlotRecords r s
           segs <- (if null rs' then return . Just else check (map (slotSegment . recordSlot) rs')) . return =<< JE.keyOrDefault "position" fullSegment asSegment
-          Fold.forM_ segs $ \[seg] -> do
+          forM_ segs $ \[seg] -> do
             o <- lift $ moveRecordSlot (RecordSlot r $ Slot c (if null rs' then emptySegment else fullSegment)) seg
             unless o $ throwPE "record link failed"
       _ <- JE.key "assets" $ JE.eachInArray $ do
@@ -211,12 +209,12 @@ ingestJSON vol jdata run overwrite = runExceptT $ do
         inObj r $ lift $ addIngestRecord r key
         return r)
       (\r -> inObj r $ do
-        unless (Fold.all (recordId (recordRow r) ==) rid) $ do
+        unless (all (recordId (recordRow r) ==) rid) $ do
           throwPE "id mismatch"
         _ <- JE.key "category" $ do
           category <- asCategory
           category' <- (category <$) <$> on check categoryName (recordCategory $ recordRow r) category
-          Fold.forM_ category' $ \c -> lift $ changeRecord r
+          forM_ category' $ \c -> lift $ changeRecord r
             { recordRow = (recordRow r)
               { recordCategory = c
               }
@@ -227,7 +225,7 @@ ingestJSON vol jdata run overwrite = runExceptT $ do
       unless (mn `elem` ["id", "key", "category", "position"]) $ do
         metric <- fromMaybeM (throwPE "metric not found") $ find (\m -> mn == metricName m && recordCategory (recordRow r) == metricCategory m) allMetrics
         datum <- maybe (return . Just) (check . measureDatum) (getMeasure metric (recordMeasures r)) . TE.encodeUtf8 =<< JE.asText
-        Fold.forM_ datum $ lift . changeRecordMeasure . Measure r metric
+        forM_ datum $ lift . changeRecordMeasure . Measure r metric
     return r
   asset dir = do
     sa <- fromMaybeM
@@ -258,7 +256,7 @@ ingestJSON vol jdata run overwrite = runExceptT $ do
               }
             } Nothing
           else return a
-        Fold.forM_ orig $ \o -> lift $ replaceSlotAsset o a'
+        forM_ orig $ \o -> lift $ replaceSlotAsset o a'
         return a'
       (~(Just (file, probe)), Nothing) -> do
         release <- JE.key "release" asRelease
@@ -272,7 +270,7 @@ ingestJSON vol jdata run overwrite = runExceptT $ do
             }
           } (Just $ toRawFilePath $ stageFileAbs file)
         lift $ addIngestAsset a (stageFileRel file)
-        Fold.forM_ orig $ \o -> lift $ replaceAsset o a -- FIXME
+        forM_ orig $ \o -> lift $ replaceAsset o a -- FIXME
         return a
     inObj a $ case sa of
       (Just (_, probe@ProbeAV{}), ae) -> do

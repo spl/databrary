@@ -4,7 +4,6 @@ module Databrary.Controller.Format
   , formatIcon
   ) where
 
-import Control.Applicative ((<$>))
 import Control.Monad.Reader (asks)
 import Data.Monoid ((<>))
 import System.Posix.FilePath (splitFileName, splitExtension)

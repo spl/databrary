@@ -6,7 +6,6 @@ import Control.Applicative ((<|>))
 import qualified Data.Aeson as JSON
 import qualified Data.ByteString as BS
 import qualified Data.Map.Strict as Map
-import Data.Monoid (Monoid(..))
 import Network.Wai.Parse (FileInfo)
 
 data FormData a = FormData
