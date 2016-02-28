@@ -18,14 +18,12 @@ import Control.Concurrent.MVar (MVar, newMVar, takeMVar, putMVar)
 import Control.Exception (Exception, throwIO, bracket, bracket_, finally, onException)
 import Control.Monad ((<=<), void, when, forM, forM_)
 import qualified Data.ByteString as BS
-import qualified Data.Foldable as Fold
 import Data.Int (Int32, Int64)
 import Data.Maybe (isNothing)
 import Data.Ratio (Ratio, (%), numerator, denominator)
 import Data.Time.Clock (DiffTime)
 import Data.Time.Format (parseTimeM, defaultTimeLocale)
 import Data.Time.LocalTime (ZonedTime)
-import qualified Data.Traversable as Trav
 import Data.Typeable (Typeable)
 import Data.Word (Word16, Word32)
 import Foreign.C.Error (throwErrnoIfNull)
@@ -431,7 +429,7 @@ avProbe f AV = withAVInput f Nothing $ \ic -> do
 
 avSeekStream :: Ptr AVFormatContext -> Ptr AVStream -> Ptr AVFrame -> Maybe DiffTime -> IO ()
 avSeekStream ctx s frame offset = do
-  off <- Trav.forM offset $ \o -> do
+  off <- forM offset $ \o -> do
     den :: CInt <- #{peek AVStream, time_base.den} s
     num :: CInt <- #{peek AVStream, time_base.num} s
     let off = floor $ o * (fromIntegral den) / (fromIntegral num)
@@ -452,7 +450,7 @@ avSeekStream ctx s frame offset = do
         gp <- peek gpp
         if gp == 0 then seek else do
           pts <- avFrameGetBestEffortTimestamp frame
-          if Fold.any (pts <) off then seek else
+          if any (pts <) off then seek else
             #{poke AVFrame, pts} frame pts -- done
   seek
 
