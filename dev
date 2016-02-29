@@ -4,6 +4,9 @@ while getopts 'fnpi' o ; do
 	opt[$o]=$OPTARG
 done
 shift $[OPTIND-1]
+if [[ -n ${opt[f]+set} ]] ; then
+	cabal install --only-dependencies --force-reinstalls
+fi
 setup=dist/setup/setup
 mkdir -p `dirname $setup`
 ghc -Wall -fwarn-tabs --make -odir dist/setup -hidir dist/setup -i. Setup.hs -o $setup
