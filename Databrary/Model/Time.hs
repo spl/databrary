@@ -12,7 +12,7 @@ module Databrary.Model.Time
 import qualified Data.Aeson as JSON
 import Data.Fixed (Fixed(..))
 import Data.Time (Day(..), UTCTime(..), DiffTime, toGregorian, fromGregorian)
-import Data.Time.Format (FormatTime(..), formatTime, defaultTimeLocale, dateFmt)
+import Data.Time.Format (FormatTime(..), formatTime, dateFmt)
 import Language.Haskell.TH.Lift (deriveLiftMany)
 
 import Databrary.Has (Has(..))
@@ -24,9 +24,6 @@ deriveLiftMany [''Fixed, ''DiffTime, ''Day, ''UTCTime]
 
 instance Has Day Timestamp where
   view = utctDay
-
-instance JSON.ToJSON Date where
-  toJSON = JSON.toJSON . formatTime defaultTimeLocale "%F"
 
 data MaskedDate
   = MaskedDate !Int
