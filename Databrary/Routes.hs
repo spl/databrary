@@ -77,6 +77,7 @@ routeMap = fromRouteList
   , route viewVolumeAccess
   , route postVolumeAccess
   , route viewVolumeLinks
+  , route postVolumeLinks
   , route postVolumeFunding
   , route deleteVolumeFunder
   , route postVolumeAssist
