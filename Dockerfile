@@ -20,8 +20,8 @@ RUN curl -L http://sourceforge.net/projects/opencore-amr/files/fdk-aac/fdk-aac-$
   cd fdk-aac-${fdkaac} && \
   ./configure && make install
 
-ARG ghc=7.10.3
-RUN curl -L https://www.haskell.org/ghc/dist/${ghc}/ghc-${ghc}-x86_64-unknown-linux-deb7.tar.xz | tar -xJf- && \
+ARG ghc=7.10.3b
+RUN curl -L https://www.haskell.org/ghc/dist/${ghc%[a-z]}/ghc-${ghc}-x86_64-deb7-linux.tar.xz | tar -xJf- && \
   cd ghc-${ghc} && \
   ./configure && make install
 
@@ -30,10 +30,10 @@ RUN curl -L http://hackage.haskell.org/package/cabal-install-${cabal}/cabal-inst
   cd cabal-install-${cabal} && \
   EXTRA_CONFIGURE_OPTS= ./bootstrap.sh --global
 
-RUN yum -y localinstall http://yum.postgresql.org/9.4/redhat/rhel-7-x86_64/pgdg-centos94-9.4-2.noarch.rpm
-RUN yum -y install postgresql94
+RUN yum -y localinstall http://yum.postgresql.org/9.5/redhat/rhel-7-x86_64/pgdg-centos95-9.5-2.noarch.rpm
+RUN yum -y install postgresql95
 
-ARG solr=5.4.1
+ARG solr=5.5.0
 RUN curl http://mirror.cc.columbia.edu/pub/software/apache/lucene/solr/${solr}/solr-${solr}.tgz | tar -xzf- && \
   ln -s ../src/solr-${solr}/bin/solr /usr/local/bin
 
