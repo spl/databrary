@@ -128,6 +128,7 @@ collectTranscode tc 0 sha1 logs = do
           , assetDuration = dur
           }
         } (Just $ tempFilePath f)
+      focusIO $ releaseTempFile f
       void $ changeAssetSlotDuration a
 collectTranscode tc e _ logs =
   void $ updateTranscode tc Nothing (Just $ "exit " ++ show e ++ '\n' : logs)
