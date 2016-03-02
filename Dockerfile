@@ -4,6 +4,7 @@ ENV container docker
 RUN yum -y update
 RUN yum -y install epel-release
 RUN yum -y install which file gmp-devel git yasm nginx npm cracklib-devel
+RUN echo 'fs.protected_hardlinks = 0' > /etc/sysctl.d/hardlinks.conf
 
 WORKDIR /usr/local/src
 ENV PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
