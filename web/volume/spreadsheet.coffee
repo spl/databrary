@@ -389,11 +389,7 @@ app.directive 'spreadsheet', [
           row = new Row()
           row.add('slot', populateSlotData(slot))
 
-          for rr in slot.records
-            record = rr.record
-            # temporary workaround for half-built volume inclusions:
-            continue unless record
-
+          for rr in slot.records when (record = rr.record)
             d = populateRecordData(record)
             if 'age' of rr
               d.age = rr.age
@@ -405,7 +401,11 @@ app.directive 'spreadsheet', [
           row
 
         populateSlots = ->
-          for ci, slot of volume.containers when slot != volume.top
+          for ci, slot of volume.containers
+            if slot == volume.top
+              for rr in slot.records when (record = rr.record)
+                record.top = true
+              continue
             populateSlot(slot)
 
         populateRecord = (record) ->
@@ -419,7 +419,11 @@ app.directive 'spreadsheet', [
             records[r] = populateRecord(record)
 
           nor = undefined
-          for ci, slot of volume.containers when slot != volume.top
+          for ci, slot of volume.containers
+            if slot == volume.top
+              for rr in slot.records when (record = rr.record)
+                record.top = true
+              continue
             recs = slot.records
             any = false
             for rr in recs when (row = records[rr.id])
@@ -981,7 +985,7 @@ app.directive 'spreadsheet', [
                   rs = []
                   mf = (r) -> (m) -> r.measures[m]
                   for ri, r of volume.records
-                    if r.category == info.c && !info.row.list(info.c).some((d) -> `d.id == ri`)
+                    if r.category == info.c && !info.row.list(info.c).some((d) -> `d.id == ri`) && !r.top
                       rs.push
                         r:r
                         v:(r.measures[mi] ? '').toLowerCase()
@@ -1007,7 +1011,7 @@ app.directive 'spreadsheet', [
                 new: 'Create new ' + c.name
                 remove: c.not
               for ri, r of volume.records
-                if r.category == c.id && (!info.row.list(info.c).some((d) -> d.id == ri) || ri == editInput.value)
+                if r.category == c.id && (!info.row.list(info.c).some((d) -> `d.id == ri`) || `ri == editInput.value`) && !r.top
                   editScope.options[ri] = r.displayName
               ms = info.cols.metrics
               # detect special cases: singleton or unitary records

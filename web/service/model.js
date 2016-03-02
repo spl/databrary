@@ -435,21 +435,22 @@ app.factory('modelService', [
     };
 
     Volume.prototype.init = function (init) {
+      var i, l;
       Model.prototype.init.call(this, init);
       if ('access' in init) {
         this.access = partyMakeSubArray(init.access);
         volumeAccessPreset(this);
       }
       if ('records' in init) {
-        var rl = init.records;
-        for (var ri = 0; ri < rl.length; ri ++)
-          recordMake(this, rl[ri]);
+        l = init.records;
+        for (i = 0; i < l.length; i ++)
+          recordMake(this, l[i]);
         delete this.records._PLACEHOLDER;
       }
       if ('containers' in init) {
-        var cl = init.containers;
-        for (var ci = 0; ci < cl.length; ci ++)
-          containerMake(this, cl[ci]);
+        l = init.containers;
+        for (i = 0; i < l.length; i ++)
+          containerMake(this, l[i]);
         delete this.containers._PLACEHOLDER;
       }
       if ('top' in init)
