@@ -1,16 +1,23 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, FunctionalDependencies #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Databrary.JSON
   ( module Data.Aeson
   , module Data.Aeson.Types
-  , object
-  , record
-  , recordMap
-  , (.+)
-  , (.+?)
-  , (.++)
+  , ToObject
+  , objectEncoding
+  , mapObjects
+  , ToNestedObject(..)
+  , (.=.)
+  , (.=?)
   , (.!)
   , (.!?)
+  , Record(..)
+  , (.<>)
+  , recordObject
+  , recordEncoding
+  , mapRecords
+  , (.=:)
+  , recordMap
   , eitherJSON
   , Query
   , jsonQuery
@@ -18,17 +25,16 @@ module Databrary.JSON
   , quoteByteString
   ) where
 
-import Control.Arrow ((***))
-import Data.Aeson hiding (object)
-import Data.Aeson.Types hiding (object)
+import Data.Aeson
+import Data.Aeson.Types
 import Data.Aeson.Encode (encodeToTextBuilder)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as B
 import qualified Data.ByteString.Builder.Prim as BP
 import Data.ByteString.Internal (c2w)
 import qualified Data.HashMap.Strict as HM
-import Data.List (foldl')
 import Data.Monoid ((<>))
+import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.Builder as TLB
@@ -36,29 +42,77 @@ import qualified Data.Vector as V
 import Data.Word (Word8)
 import Network.HTTP.Types (Query)
 
-import qualified Databrary.Store.Config as C
+newtype UnsafeEncoding = UnsafeEncoding Encoding
 
-object :: [Pair] -> Object
-object = HM.fromList
+instance KeyValue [Pair] where
+  k .= v = [k .= v]
 
-record :: ToJSON k => k -> [Pair] -> Object
-record k = object . (("id" .= k) :)
+instance KeyValue Object where
+  k .= v = HM.singleton k $ toJSON v
 
-recordMap :: [Object] -> Value
-recordMap = Object . HM.fromList . map (\o -> (tt $ o HM.! "id", Object o)) where
+class (Monoid o, KeyValue o) => ToObject o
+
+instance ToObject Series
+instance ToObject [Pair]
+instance ToObject Object
+
+objectEncoding :: Series -> Encoding
+objectEncoding = pairs
+
+mapObjects :: (Functor t, Foldable t) => (a -> Series) -> t a -> Encoding
+mapObjects f = foldable . fmap (UnsafeEncoding . pairs . f)
+
+class (ToObject o, ToJSON u) => ToNestedObject o u | o -> u where
+  nestObject :: ToJSON v => T.Text -> ((o -> u) -> v) -> o
+
+instance ToJSON UnsafeEncoding where
+  toJSON = error "toJSON UnsafeEncoding"
+  toEncoding (UnsafeEncoding e) = e
+
+instance ToNestedObject Series UnsafeEncoding where
+  nestObject k f = k .= f (UnsafeEncoding . pairs)
+
+instance ToNestedObject [Pair] Value where
+  nestObject k f = k .= f object
+
+instance ToNestedObject Object Value where
+  nestObject k f = k .= f Object
+
+infixr 8 .=.
+(.=.) :: ToNestedObject o u => T.Text -> o -> o
+k .=. v = nestObject k (\f -> f v)
+
+infixr 8 .=?
+(.=?) :: (ToObject o, ToJSON v) => T.Text -> Maybe v -> o
+_ .=? Nothing = mempty
+k .=? (Just v) = k .= v
+
+data Record k o = Record
+  { recordKey :: !k
+  , _recordObject :: o
+  }
+
+infixl 5 .<>
+(.<>) :: Monoid o => Record k o -> o -> Record k o
+Record k o .<> a = Record k $ o <> a
+
+recordObject :: (ToJSON k, ToObject o) => Record k o -> o
+recordObject (Record k o) = "id" .= k <> o
+
+recordEncoding :: ToJSON k => Record k Series -> Encoding
+recordEncoding = objectEncoding . recordObject
+
+mapRecords :: (Functor t, Foldable t, ToJSON k) => (a -> Record k Series) -> t a -> Encoding
+mapRecords = mapObjects . (recordObject .)
+
+infixr 8 .=:
+(.=:) :: (ToJSON k, ToNestedObject o u) => T.Text -> Record k o -> o
+(.=:) k = (.=.) k . recordObject
+
+recordMap :: (ToJSON k, ToNestedObject o u) => [Record k o] -> o
+recordMap = foldMap (\r -> tt (toJSON $ recordKey r) .=. recordObject r) where
   tt (String t) = t
   tt v = TL.toStrict $ TLB.toLazyText $ encodeToTextBuilder v
-
-infixl 4 .+, .+?, .++
-(.+) :: Object -> Pair -> Object
-o .+ (k, v) = HM.insert k v o
-
-(.+?) :: Object -> Maybe Pair -> Object
-o .+? Nothing = o
-o .+? Just p = o .+ p
-
-(.++) :: Object -> [Pair] -> Object
-(.++) = foldl' (.+)
 
 (.!) :: FromJSON a => Array -> Int -> Parser a
 a .! i = maybe (fail $ "index " ++ show i ++ " out of range") parseJSON $ a V.!? i
@@ -79,25 +133,11 @@ instance ToJSON BS.ByteString where
 instance FromJSON BS.ByteString where
   parseJSON = fmap TE.encodeUtf8 . parseJSON
 
-instance ToJSON C.Config where
-  toJSON = toJSON . C.configMap
-
-instance ToJSON C.ConfigMap where
-  toJSON = Object . object . map (TE.decodeUtf8 *** toJSON) . HM.toList
-
-instance ToJSON C.Value where
-  toJSON C.Empty = Null
-  toJSON (C.Boolean b) = Bool b
-  toJSON (C.String s) = String $ TE.decodeUtf8 s
-  toJSON (C.Integer i) = Number $ fromInteger i
-  toJSON (C.List l) = Array $ V.fromList $ map toJSON l
-  toJSON (C.Sub c) = toJSON c
-
-jsonQuery :: (Monad m) => Object -> (BS.ByteString -> Maybe BS.ByteString -> m (Maybe Value)) -> Query -> m Object
-jsonQuery j _ [] = return j
-jsonQuery j f ((k,v):q) = do
+jsonQuery :: Monad m => (BS.ByteString -> Maybe BS.ByteString -> m (Maybe Encoding)) -> Query -> m Series
+jsonQuery _ [] = return mempty
+jsonQuery f ((k,v):q) = do
   o <- f k v
-  jsonQuery (j .+? fmap ((,) (TE.decodeLatin1 k)) o) f q
+  maybe id ((<>) . (TE.decodeLatin1 k .=) . UnsafeEncoding) o <$> jsonQuery f q
 
 wordEscaped :: Char -> BP.BoundedPrim Word8
 wordEscaped q =

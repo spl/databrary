@@ -51,12 +51,12 @@ getAssetSegment :: Permission -> Maybe (Id Volume) -> Id Slot -> Id Asset -> Act
 getAssetSegment p mv s a =
   checkPermission p =<< maybeAction . maybe id (\v -> mfilter $ (v ==) . view) mv =<< lookupSlotAssetSegment s a
 
-assetSegmentJSONField :: AssetSegment -> BS.ByteString -> Maybe BS.ByteString -> ActionM (Maybe JSON.Value)
-assetSegmentJSONField a "asset" _ = return $ Just $ JSON.Object $ assetSlotJSON (segmentAsset a)
+assetSegmentJSONField :: AssetSegment -> BS.ByteString -> Maybe BS.ByteString -> ActionM (Maybe JSON.Encoding)
+assetSegmentJSONField a "asset" _ = return $ Just $ JSON.recordEncoding $ assetSlotJSON (segmentAsset a)
 assetSegmentJSONField a v o = assetJSONField (segmentAsset a) v o
 
-assetSegmentJSONQuery :: AssetSegment -> JSON.Query -> ActionM JSON.Object
-assetSegmentJSONQuery vol = JSON.jsonQuery (assetSegmentJSON vol) (assetSegmentJSONField vol)
+assetSegmentJSONQuery :: AssetSegment -> JSON.Query -> ActionM JSON.Series
+assetSegmentJSONQuery o q = (assetSegmentJSON o <>) <$> JSON.jsonQuery (assetSegmentJSONField o) q
 
 assetSegmentDownloadName :: AssetSegment -> [T.Text]
 assetSegmentDownloadName a =

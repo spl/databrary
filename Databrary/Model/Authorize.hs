@@ -94,9 +94,9 @@ authorizeExpired _ = const False
 authorizeActive :: Authorize -> Timestamp -> Bool
 authorizeActive a t = authorizationActive (authorization a) && not (authorizeExpired a t)
 
-authorizeJSON :: Authorize -> JSON.Object
+authorizeJSON :: JSON.ToObject o => Authorize -> o
 authorizeJSON Authorize{..} = accessJSON (authorizeAccess authorization)
-  JSON..+? (("expires" JSON..=) <$> authorizeExpires)
+  <> "expires" JSON..=? authorizeExpires
 
 lookupAuthorizeActivity :: (MonadDB c m, MonadHasIdentity c m) => Int -> m [(Timestamp, Party)]
 lookupAuthorizeActivity limit = do

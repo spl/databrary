@@ -6,7 +6,6 @@ module Databrary.Web.Constants
   , generateConstantsJS
   ) where
 
-import qualified Data.Aeson.Encode as JSON
 import qualified Data.ByteString.Builder as BSB
 import Data.Monoid ((<>))
 import Data.Version (showVersion)
@@ -24,33 +23,32 @@ import Databrary.Model.Party
 import Databrary.Web.Types
 import Databrary.Web.Generate
 
-constantsJSON :: JSON.Value
-constantsJSON = JSON.Object $ JSON.object
-  [ "permission" JSON..= enumValues PermissionPUBLIC
-  , "release" JSON..= enumValues ReleasePUBLIC
-  , "metric" JSON..= JSON.recordMap (map metricJSON allMetrics)
-  , "category" JSON..= JSON.recordMap (map categoryJSON allCategories)
-  , "format" JSON..= JSON.recordMap (map formatJSON allFormats)
-  , "party" JSON..= JSON.object
-    [ "nobody" JSON..= partyJSON nobodyParty
-    , "root" JSON..= partyJSON rootParty
-    , "staff" JSON..= partyJSON staffParty
-    ]
-  , "version" JSON..= showVersion version
+constantsJSON :: JSON.ToNestedObject o u => o
+constantsJSON =
+     "permission" JSON..= enumValues PermissionPUBLIC
+  <> "release" JSON..= enumValues ReleasePUBLIC
+  <> "metric" JSON..=. JSON.recordMap (map metricJSON allMetrics)
+  <> "category" JSON..=. JSON.recordMap (map categoryJSON allCategories)
+  <> "format" JSON..=. JSON.recordMap (map formatJSON allFormats)
+  <> "party" JSON..=.
+    (  "nobody" JSON..=: partyJSON nobodyParty
+    <> "root" JSON..=: partyJSON rootParty
+    <> "staff" JSON..=: partyJSON staffParty
+    )
+  <> "version" JSON..= showVersion version
 #ifdef DEVEL
-  , "devel" JSON..= True
+  <> "devel" JSON..= True
 #endif
 #ifdef SANDBOX
-  , "sandbox" JSON..= True
+  <> "sandbox" JSON..= True
 #endif
   -- TODO: url?
-  ]
   where
   enumValues :: forall a . DBEnum a => a -> [String]
   enumValues _ = map show $ enumFromTo minBound (maxBound :: a)
 
 constantsJSONB :: BSB.Builder
-constantsJSONB = JSON.encodeToBuilder constantsJSON
+constantsJSONB = JSON.fromEncoding $ JSON.objectEncoding constantsJSON
 
 constantsJS :: BSB.Builder
 constantsJS = BSB.string8 "app.constant('constantData'," <> constantsJSONB <> BSB.string8 ");"

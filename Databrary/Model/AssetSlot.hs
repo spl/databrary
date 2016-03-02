@@ -16,7 +16,8 @@ module Databrary.Model.AssetSlot
   ) where
 
 import Control.Monad (when, guard)
-import Data.Maybe (fromMaybe, isNothing, catMaybes)
+import Data.Maybe (fromMaybe, isNothing)
+import Data.Monoid ((<>))
 import qualified Data.Text as T
 import Database.PostgreSQL.Typed (pgSQL)
 
@@ -94,13 +95,13 @@ findAssetContainerEnd c = fromMaybe 0 <$>
 assetSlotName :: AssetSlot -> Maybe T.Text
 assetSlotName a = guard (any (containerTop . containerRow . slotContainer) (assetSlot a) || dataPermission a > PermissionNONE) >> assetName (assetRow $ slotAsset a)
 
-assetSlotJSON :: AssetSlot -> JSON.Object
-assetSlotJSON as@AssetSlot{..} = assetJSON slotAsset JSON..++ catMaybes
-  [ segmentJSON . slotSegment =<< assetSlot
-  -- , ("release" JSON..=) <$> (view as :: Maybe Release)
-  , ("name" JSON..=) <$> assetSlotName as
-  , Just $ "permission" JSON..= p
-  , p > PermissionNONE && any (0 <=) z ?> "size" JSON..= z
-  ] where
+assetSlotJSON :: JSON.ToObject o => AssetSlot -> JSON.Record (Id Asset) o
+assetSlotJSON as@AssetSlot{..} = assetJSON slotAsset JSON..<>
+  foldMap (segmentJSON . slotSegment) assetSlot
+  --  "release" JSON..=? (view as :: Maybe Release)
+  <> "name" JSON..=? assetSlotName as
+  <> "permission" JSON..= p
+  <> "size" JSON..=? (z <? p > PermissionNONE && any (0 <=) z)
+  where
   p = dataPermission as
   z = assetSize $ assetRow slotAsset

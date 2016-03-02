@@ -68,5 +68,5 @@ removeExcerpt e = do
   ident <- getAuditIdentity
   dbExecute1 $(deleteExcerpt 'ident 'e)
 
-excerptJSON :: Excerpt -> JSON.Object
+excerptJSON :: JSON.ToObject o => Excerpt -> o
 excerptJSON = assetSegmentJSON . excerptAsset

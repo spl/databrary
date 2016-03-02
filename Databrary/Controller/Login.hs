@@ -18,6 +18,7 @@ import Data.Maybe (fromMaybe)
 
 import Databrary.Ops
 import Databrary.Has
+import qualified Databrary.JSON as JSON
 import Databrary.Model.Id.Types
 import Databrary.Model.Party
 import Databrary.Model.Identity
@@ -41,7 +42,7 @@ loginAccount api auth su = do
   let Token (Id tok) ex = view sess
   cook <- setSignedCookie "session" tok ex
   case api of
-    JSON -> return $ okResponse [cook] $ identityJSON (Identified sess)
+    JSON -> return $ okResponse [cook] $ JSON.recordEncoding $ identityJSON (Identified sess)
     HTML -> peeks $ otherRouteResponse [cook] viewParty (HTML, TargetProfile)
 
 viewLogin :: ActionRoute ()
@@ -76,13 +77,13 @@ postLogout :: ActionRoute API
 postLogout = action POST (pathAPI </< "user" </< "logout") $ \api -> withAuth $ do
   _ <- maybeIdentity (return False) removeSession
   case api of
-    JSON -> return $ okResponse [cook] $ identityJSON NotIdentified
+    JSON -> return $ okResponse [cook] $ JSON.recordEncoding $ identityJSON NotIdentified
     HTML -> peeks $ otherRouteResponse [cook] viewRoot HTML
   where cook = clearCookie "session"
 
 viewUser :: ActionRoute ()
 viewUser = action GET (pathJSON </< "user") $ \() -> withAuth $
-  peeks $ okResponse [] . identityJSON
+  peeks $ okResponse [] . JSON.recordEncoding . identityJSON
 
 postUser :: ActionRoute API
 postUser = action POST (pathAPI </< "user") $ \api -> withAuth $ do
@@ -103,5 +104,5 @@ postUser = action POST (pathAPI </< "user") $ \api -> withAuth $ do
       }
   changeAccount auth'
   case api of
-    JSON -> return $ okResponse [] $ partyJSON $ accountParty $ siteAccount auth'
+    JSON -> return $ okResponse [] $ JSON.recordEncoding $ partyJSON $ accountParty $ siteAccount auth'
     HTML -> peeks $ otherRouteResponse [] viewParty (api, TargetProfile)

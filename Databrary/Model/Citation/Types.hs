@@ -5,7 +5,7 @@ module Databrary.Model.Citation.Types
 
 import Control.Applicative ((<|>))
 import Data.Int (Int16)
-import Data.Maybe (catMaybes)
+import Data.Monoid ((<>))
 import qualified Data.Text as T
 
 import qualified Databrary.JSON as JSON
@@ -32,10 +32,13 @@ instance Monoid Citation where
     , citationTitle = citationTitle a <|> citationTitle b
     }
 
+citationJSON :: JSON.ToObject o => Citation -> o
+citationJSON Citation{..} =
+     "head" JSON..= citationHead
+  <> "title" JSON..=? citationTitle
+  <> "url" JSON..=? citationURL
+  <> "year" JSON..=? citationYear
+
 instance JSON.ToJSON Citation where
-  toJSON Citation{..} = JSON.Object $ JSON.object $ catMaybes
-    [ Just $ "head" JSON..= citationHead
-    , ("title" JSON..=) <$> citationTitle
-    , ("url" JSON..=) <$> citationURL
-    , ("year" JSON..=) <$> citationYear
-    ]
+  toJSON = JSON.object . citationJSON
+  toEncoding = JSON.pairs . citationJSON

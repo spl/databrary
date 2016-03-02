@@ -12,7 +12,6 @@ module Databrary.Action.Response
 import Control.Exception (Exception, throwIO, handle)
 import Control.Monad (join)
 import Control.Monad.IO.Class (MonadIO, liftIO)
-import qualified Data.Aeson as JSON
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Lazy as BSL
@@ -29,6 +28,7 @@ import qualified Text.Blaze.Html as Html
 import qualified Text.Blaze.Html.Renderer.Utf8 as Html
 
 import Databrary.Files
+import qualified Databrary.JSON as JSON
 
 class ResponseData r where
   response :: Status -> ResponseHeaders -> r -> Response
@@ -79,8 +79,17 @@ instance ResponseData JSON.Value where
   response s h =
     response s ((hContentType, "application/json") : h) . JSON.encode
 
-instance ResponseData JSON.Object where
-  response s h = response s h . JSON.Object
+instance ResponseData JSON.Encoding where
+  response s h =
+    response s ((hContentType, "application/json") : h) . JSON.fromEncoding
+
+instance ResponseData JSON.Series where
+  response s h =
+    response s h . JSON.objectEncoding
+
+instance (JSON.ToJSON k, JSON.ToObject o, ResponseData o) => ResponseData (JSON.Record k o) where
+  response s h =
+    response s h . JSON.recordObject
 
 instance ResponseData Html.Html where
   response s h =

@@ -125,16 +125,16 @@ leftJoin _ [] [] = []
 leftJoin _ [] _ = error "leftJoin: leftovers"
 leftJoin p (a:al) b = uncurry (:) $ (,) a *** leftJoin p al $ span (p a) b
 
-volumeJSONField :: Volume -> BS.ByteString -> Maybe BS.ByteString -> VolumeCacheActionM (Maybe JSON.Value)
+volumeJSONField :: Volume -> BS.ByteString -> Maybe BS.ByteString -> VolumeCacheActionM (Maybe JSON.Encoding)
 volumeJSONField vol "access" ma = do
-  Just . JSON.toJSON . map volumeAccessPartyJSON
+  Just . JSON.mapObjects volumeAccessPartyJSON
     <$> cacheVolumeAccess vol (fromMaybe PermissionNONE $ readDBEnum . BSC.unpack =<< ma)
 volumeJSONField vol "citation" _ =
-  Just . JSON.toJSON <$> lookupVolumeCitation vol
+  Just . JSON.toEncoding <$> lookupVolumeCitation vol
 volumeJSONField vol "links" _ =
-  Just . JSON.toJSON <$> lookupVolumeLinks vol
+  Just . JSON.toEncoding <$> lookupVolumeLinks vol
 volumeJSONField vol "funding" _ =
-  Just . JSON.toJSON . map fundingJSON <$> lookupVolumeFunding vol
+  Just . JSON.mapObjects fundingJSON <$> lookupVolumeFunding vol
 volumeJSONField vol "containers" o = do
   cl <- if records
     then lookupVolumeContainersRecordIds vol
@@ -144,44 +144,46 @@ volumeJSONField vol "containers" o = do
     else return $ nope cl
   rm <- if records then snd <$> cacheVolumeRecords vol else return HM.empty
   let br = blankRecord undefined vol
-      rjs c (s, r) = recordSlotJSON $ RecordSlot (HML.lookupDefault br{ recordRow = (recordRow br){ recordId = r } } r rm) (Slot c s)
-      ajs c (a, SlotId _ s) = assetSlotJSON $ AssetSlot a (Just (Slot c s))
-  return $ Just $ JSON.toJSON $ map (\((c, rl), al) -> containerJSON c
-    JSON..+? (records ?> "records" JSON..= map (rjs c) rl)
-    JSON..+? (assets ?> "assets" JSON..= map (ajs c) al)) cl'
+      rjs c (s, r)          = JSON.recordObject $ recordSlotJSON $ RecordSlot (HML.lookupDefault br{ recordRow = (recordRow br){ recordId = r } } r rm) (Slot c s)
+      ajs c (a, SlotId _ s) = JSON.recordObject $ assetSlotJSON  $ AssetSlot a (Just (Slot c s))
+  return $ Just $ JSON.mapRecords (\((c, rl), al) ->
+      containerJSON c
+      JSON..<> (if records then JSON.nestObject "records" (\u -> map (u . rjs c) rl) else mempty)
+            <> (if assets  then JSON.nestObject "assets"  (\u -> map (u . ajs c) al) else mempty))
+    cl'
   where
   full = o == Just "all"
   assets = full || o == Just "assets"
   records = full || o == Just "records"
   nope = map (, [])
 volumeJSONField vol "top" _ =
-  Just . JSON.toJSON . containerJSON <$> cacheVolumeTopContainer vol
+  Just . JSON.recordEncoding . containerJSON <$> cacheVolumeTopContainer vol
 volumeJSONField vol "records" _ = do
   (l, _) <- cacheVolumeRecords vol
-  return $ Just $ JSON.toJSON $ map recordJSON l
+  return $ Just $ JSON.mapRecords recordJSON l
 volumeJSONField vol "metrics" _ = do
-  Just . JSON.toJSON <$> lookupVolumeMetrics vol
+  Just . JSON.toEncoding <$> lookupVolumeMetrics vol
 volumeJSONField o "excerpts" _ =
-  Just . JSON.toJSON . map (\e -> excerptJSON e JSON..+
-    "asset" JSON..= (assetSlotJSON (view e) JSON..+
-      "container" JSON..= (view e :: Id Container)))
+  Just . JSON.mapObjects (\e -> excerptJSON e
+    <> "asset" JSON..=: (assetSlotJSON (view e)
+      JSON..<> "container" JSON..= (view e :: Id Container)))
     <$> lookupVolumeExcerpts o
 volumeJSONField o "tags" n = do
   t <- cacheVolumeTopContainer o
   tc <- lookupSlotTagCoverage (containerSlot t) (maybe 64 fst $ BSC.readInt =<< n)
-  return $ Just $ JSON.toJSON $ map tagCoverageJSON tc
+  return $ Just $ JSON.mapRecords tagCoverageJSON tc
 volumeJSONField o "comments" n = do
   t <- cacheVolumeTopContainer o
   tc <- lookupSlotComments (containerSlot t) (maybe 64 fst $ BSC.readInt =<< n)
-  return $ Just $ JSON.toJSON $ map commentJSON tc
+  return $ Just $ JSON.mapRecords commentJSON tc
 volumeJSONField o "state" _ =
-  Just . JSON.toJSON . JSON.object . map (volumeStateKey &&& volumeStateValue) <$> lookupVolumeState o
+  Just . JSON.toEncoding . JSON.object . map (volumeStateKey &&& volumeStateValue) <$> lookupVolumeState o
 volumeJSONField o "filename" _ =
-  return $ Just $ JSON.toJSON $ makeFilename $ volumeDownloadName o
+  return $ Just $ JSON.toEncoding $ makeFilename $ volumeDownloadName o
 volumeJSONField _ _ _ = return Nothing
 
-volumeJSONQuery :: Volume -> JSON.Query -> ActionM JSON.Object
-volumeJSONQuery vol = runVolumeCache . JSON.jsonQuery (volumeJSON vol) (volumeJSONField vol)
+volumeJSONQuery :: Volume -> JSON.Query -> ActionM (JSON.Record (Id Volume) JSON.Series)
+volumeJSONQuery vol q = runVolumeCache $ (volumeJSON vol JSON..<>) <$> JSON.jsonQuery (volumeJSONField vol) q
 
 volumeDownloadName :: Volume -> [T.Text]
 volumeDownloadName v =
@@ -194,7 +196,7 @@ viewVolume = action GET (pathAPI </> pathId) $ \(api, vi) -> withAuth $ do
   when (api == HTML) angular
   v <- getVolume PermissionPUBLIC vi
   case api of
-    JSON -> okResponse [] <$> (volumeJSONQuery v =<< peeks Wai.queryString)
+    JSON -> okResponse [] . JSON.recordEncoding <$> (volumeJSONQuery v =<< peeks Wai.queryString)
     HTML -> do
       top <- lookupVolumeTopContainer v
       t <- lookupSlotKeywords $ containerSlot top
@@ -255,7 +257,7 @@ postVolume = action POST (pathAPI </> pathId) $ \arg@(api, vi) -> withAuth $ do
   changeVolume v'
   r <- changeVolumeCitation v' cite'
   case api of
-    JSON -> return $ okResponse [] $ volumeJSON v' JSON..+ "citation" JSON..= if r then cite' else cite
+    JSON -> return $ okResponse [] $ JSON.recordEncoding $ volumeJSON v' JSON..<> "citation" JSON..= if r then cite' else cite
     HTML -> peeks $ otherRouteResponse [] viewVolume arg
 
 createVolume :: ActionRoute API
@@ -277,7 +279,7 @@ createVolume = action POST (pathAPI </< "volume") $ \api -> withAuth $ do
   _ <- changeVolumeCitation v cite
   _ <- changeVolumeAccess $ VolumeAccess PermissionADMIN PermissionADMIN Nothing owner v
   case api of
-    JSON -> return $ okResponse [] $ volumeJSON v
+    JSON -> return $ okResponse [] $ JSON.recordEncoding $ volumeJSON v
     HTML -> peeks $ otherRouteResponse [] viewVolume (api, volumeId $ volumeRow v)
 
 viewVolumeLinks :: ActionRoute (Id Volume)
@@ -299,7 +301,7 @@ postVolumeLinks = action POST (pathAPI </> pathId </< "link") $ \arg@(api, vi) -
       <*- Nothing
   changeVolumeLinks v links'
   case api of
-    JSON -> return $ okResponse [] $ volumeJSON v JSON..+ ("links" JSON..= links')
+    JSON -> return $ okResponse [] $ JSON.recordEncoding $ volumeJSON v JSON..<> "links" JSON..= links'
     HTML -> peeks $ otherRouteResponse [] viewVolume arg
 
 assistAddr :: Static -> [Either BS.ByteString Account]
@@ -327,7 +329,7 @@ queryVolumes = action GET (pathAPI </< "volume") $ \api -> withAuth $ do
   vf <- runForm (api == HTML ?> htmlVolumeSearch mempty []) volumeSearchForm
   p <- findVolumes vf
   case api of
-    JSON -> return $ okResponse [] $ JSON.toJSON $ map volumeJSON p
+    JSON -> return $ okResponse [] $ JSON.mapRecords volumeJSON p
     HTML -> peeks $ blankForm . htmlVolumeSearch vf p
 
 thumbVolume :: ActionRoute (Id Volume)

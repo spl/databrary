@@ -39,4 +39,4 @@ deleteVolumeState :: ActionRoute (Id Volume, VolumeStateKey)
 deleteVolumeState = action DELETE (pathJSON >/> pathId </> "state" >/> PathParameter) $ \(vi, k) -> withAuth $ do
   v <- getVolume PermissionEDIT vi
   r <- removeVolumeState v k
-  return $ okResponse [] $ JSON.toJSON r
+  return $ okResponse [] $ JSON.toEncoding r

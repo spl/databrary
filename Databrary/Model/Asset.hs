@@ -13,7 +13,8 @@ module Databrary.Model.Asset
   ) where
 
 import Control.Arrow (first)
-import Data.Maybe (catMaybes, isNothing, isJust)
+import Data.Maybe (isNothing, isJust)
+import Data.Monoid ((<>))
 import qualified Data.Text as T
 import Database.PostgreSQL.Typed (pgSQL)
 
@@ -78,13 +79,12 @@ assetCreation :: MonadDB c m => Asset -> m (Maybe Timestamp, Maybe T.Text)
 assetCreation a = maybe (Nothing, Nothing) (first Just) <$>
   dbQuery1 [pgSQL|$SELECT audit_time, name FROM audit.asset WHERE id = ${assetId $ assetRow a} AND audit_action = 'add' ORDER BY audit_time DESC LIMIT 1|]
 
-assetRowJSON :: AssetRow -> JSON.Object
-assetRowJSON AssetRow{..} = JSON.record assetId $ catMaybes
-  [ Just $ "format" JSON..= formatId assetFormat
-  , ("classification" JSON..=) <$> assetRelease
-  , ("duration" JSON..=) <$> assetDuration
-  , ("pending" JSON..= isNothing assetSize) <? isNothing assetSHA1
-  ]
+assetRowJSON :: JSON.ToObject o => AssetRow -> JSON.Record (Id Asset) o
+assetRowJSON AssetRow{..} = JSON.Record assetId $
+     "format" JSON..= formatId assetFormat
+  <> "classification" JSON..=? assetRelease
+  <> "duration" JSON..=? assetDuration
+  <> "pending" JSON..=? (isNothing assetSize <? isNothing assetSHA1)
 
-assetJSON :: Asset -> JSON.Object
+assetJSON :: JSON.ToObject o => Asset -> JSON.Record (Id Asset) o
 assetJSON Asset{..} = assetRowJSON assetRow

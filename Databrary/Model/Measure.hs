@@ -79,8 +79,8 @@ decodeMeasure :: PGColumn t d => PGTypeName t -> Measure -> Maybe d
 decodeMeasure t Measure{ measureMetric = Metric{ metricType = m }, measureDatum = d } =
   pgTypeName t == show m ?> pgDecode t d
 
-measureJSONPair :: Measure -> JSON.Pair
+measureJSONPair :: JSON.KeyValue kv => Measure -> kv
 measureJSONPair m = T.pack (show (metricId (measureMetric m))) JSON..= measureDatum m
 
-measuresJSON :: Measures -> JSON.Object
-measuresJSON = JSON.object . map measureJSONPair
+measuresJSON :: JSON.ToObject o => Measures -> o
+measuresJSON = foldMap measureJSONPair

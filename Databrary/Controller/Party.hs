@@ -65,40 +65,42 @@ getParty _ mi = do
   unless (isme mi) $ result =<< peeks forbiddenResponse
   return u
 
-partyJSONField :: Party -> BS.ByteString -> Maybe BS.ByteString -> ActionM (Maybe JSON.Value)
+partyJSONField :: Party -> BS.ByteString -> Maybe BS.ByteString -> ActionM (Maybe JSON.Encoding)
 partyJSONField p "parents" o = do
   now <- peek
-  fmap (Just . JSON.toJSON) . mapM (\a -> do
+  fmap (Just . JSON.mapObjects id) . mapM (\a -> do
     let ap = authorizeParent (authorization a)
     acc <- if auth && authorizeActive a now then Just . accessSite <$> lookupAuthorization ap rootParty else return Nothing
     return $ (if admin then authorizeJSON a else mempty)
-      JSON..+ ("party" JSON..= (partyJSON ap JSON..+? (("authorization" JSON..=) <$> acc)))
-      JSON..+? (admin && authorizeExpired a now ?> "expired" JSON..= True))
+      <> "party" JSON..=: (partyJSON ap JSON..<> "authorization" JSON..=? acc)
+      <> "expired" JSON..=? (True <? admin && authorizeExpired a now))
     =<< lookupAuthorizedParents p admin
   where
   admin = view p >= PermissionADMIN
   auth = admin && o == Just "authorization"
 partyJSONField p "children" _ =
-  Just . JSON.toJSON . map (\a ->
+  Just . JSON.mapObjects (\a ->
     let ap = authorizeChild (authorization a) in
-    (if admin then authorizeJSON a else mempty) JSON..+ ("party" JSON..= partyJSON ap))
+    (if admin then authorizeJSON a else mempty) <> "party" JSON..=: partyJSON ap)
     <$> lookupAuthorizedChildren p admin
   where admin = view p >= PermissionADMIN
 partyJSONField p "volumes" o = (?$>) (view p >= PermissionADMIN) $
-  fmap JSON.toJSON . mapM vf =<< lookupPartyVolumes p PermissionREAD
+  fmap (JSON.mapRecords id) . mapM vf =<< lookupPartyVolumes p PermissionREAD
   where
   vf v
-    | o == Just "access" = (volumeJSON v JSON..+) . ("access" JSON..=) . map volumeAccessPartyJSON <$> lookupVolumeAccess v (succ PermissionNONE)
+    | o == Just "access" = do
+      a <- lookupVolumeAccess v (succ PermissionNONE)
+      return $ volumeJSON v JSON..<> JSON.nestObject "access" (\u -> map (u . volumeAccessPartyJSON) a)
     | otherwise = return $ volumeJSON v
 partyJSONField p "access" ma = do
-  Just . JSON.toJSON . map volumeAccessVolumeJSON
+  Just . JSON.mapObjects volumeAccessVolumeJSON
     <$> lookupPartyVolumeAccess p (fromMaybe PermissionEDIT $ readDBEnum . BSC.unpack =<< ma)
 partyJSONField p "authorization" _ = do
-  Just . JSON.toJSON . accessSite <$> lookupAuthorization p rootParty
+  Just . JSON.toEncoding . accessSite <$> lookupAuthorization p rootParty
 partyJSONField _ _ _ = return Nothing
 
-partyJSONQuery :: Party -> JSON.Query -> ActionM JSON.Object
-partyJSONQuery p = JSON.jsonQuery (partyJSON p) (partyJSONField p)
+partyJSONQuery :: Party -> JSON.Query -> ActionM (JSON.Record (Id Party) JSON.Series)
+partyJSONQuery p q = (partyJSON p JSON..<>) <$> JSON.jsonQuery (partyJSONField p) q
 
 viewParty :: ActionRoute (API, PartyTarget)
 viewParty = action GET (pathAPI </> pathPartyTarget) $ \(api, i) -> withAuth $ do
@@ -166,7 +168,7 @@ postParty = multipartAction $ action POST (pathAPI </> pathPartyTarget) $ \(api,
   changeParty p'
   mapM_ (changeAvatar p') a
   case api of
-    JSON -> return $ okResponse [] $ partyJSON p'
+    JSON -> return $ okResponse [] $ JSON.recordEncoding $ partyJSON p'
     HTML -> peeks $ otherRouteResponse [] viewParty (api, i)
 
 createParty :: ActionRoute API
@@ -176,7 +178,7 @@ createParty = multipartAction $ action POST (pathAPI </< "party") $ \api -> with
   p <- addParty bp
   mapM_ (changeAvatar p) a
   case api of
-    JSON -> return $ okResponse [] $ partyJSON p
+    JSON -> return $ okResponse [] $ JSON.recordEncoding $ partyJSON p
     HTML -> peeks $ otherRouteResponse [] viewParty (api, TargetParty $ partyId $ partyRow p)
 
 deleteParty :: ActionRoute (Id Party)
@@ -214,7 +216,7 @@ queryParties = action GET (pathAPI </< "party") $ \api -> withAuth $ do
   pf <- runForm (api == HTML ?> htmlPartySearch mempty []) partySearchForm
   p <- findParties pf
   case api of
-    JSON -> return $ okResponse [] $ JSON.toJSON $ map partyJSON p
+    JSON -> return $ okResponse [] $ JSON.mapRecords partyJSON p
     HTML -> peeks $ blankForm . htmlPartySearch pf p
 
 adminParties :: ActionRoute ()

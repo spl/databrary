@@ -10,6 +10,8 @@ module Databrary.Model.Permission
   , accessJSON
   ) where
 
+import Data.Monoid ((<>))
+
 import Databrary.Has (Has, view)
 import qualified Databrary.JSON as JSON
 import Databrary.Model.Release.Types
@@ -48,8 +50,7 @@ releasePermission r p
 dataPermission :: (Has Release a, Has Permission a) => a -> Permission
 dataPermission a = releasePermission (view a) (view a)
 
-accessJSON :: Access -> JSON.Object
-accessJSON Access{..} = JSON.object
-  [ "site" JSON..= accessSite'
-  , "member" JSON..= accessMember'
-  ]
+accessJSON :: JSON.ToObject o => Access -> o
+accessJSON Access{..} =
+     "site" JSON..= accessSite'
+  <> "member" JSON..= accessMember'

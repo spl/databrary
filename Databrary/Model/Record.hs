@@ -13,6 +13,7 @@ module Databrary.Model.Record
 
 import Control.Monad (guard)
 import Data.Either (isRight)
+import Data.Monoid ((<>))
 
 import Databrary.Has (peek, view)
 import Databrary.Service.DB
@@ -67,9 +68,8 @@ removeRecord r = do
   ident <- getAuditIdentity
   isRight <$> dbTryJust (guard . isForeignKeyViolation) (dbExecute1 $(deleteRecord 'ident 'r))
 
-recordJSON :: Record -> JSON.Object
-recordJSON r@Record{ recordRow = RecordRow{..}, ..} = JSON.record recordId
-  [ -- "volume" JSON..= volumeId recordVolume
-    "category" JSON..= categoryId recordCategory
-  , "measures" JSON..= JSON.Object (measuresJSON $ getRecordMeasures r)
-  ]
+recordJSON :: JSON.ToNestedObject o u => Record -> JSON.Record (Id Record) o
+recordJSON r@Record{ recordRow = RecordRow{..}, ..} = JSON.Record recordId $
+  -- "volume" JSON..= volumeId recordVolume
+     "category" JSON..= categoryId recordCategory
+  <> "measures" JSON..=. measuresJSON (getRecordMeasures r)

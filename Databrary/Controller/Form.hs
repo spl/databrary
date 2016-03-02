@@ -48,7 +48,7 @@ import Databrary.View.Form (FormHtml)
 type DeformActionM f a = DeformT f ActionM a
 
 jsonFormErrors :: FormErrors -> Response
-jsonFormErrors = response badRequest400 [] . JSON.toJSON
+jsonFormErrors = response badRequest400 [] . JSON.toEncoding
 
 htmlFormErrors :: (FormErrors -> Html.Html) -> FormErrors -> Response
 htmlFormErrors f = response badRequest400 [] . f

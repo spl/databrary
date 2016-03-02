@@ -132,8 +132,8 @@ segmentInterp f (Segment r)
   | otherwise = Segment (Range.point 0)
   where l = fromMaybe 0 $ lowerBound r
 
-segmentJSON :: Segment -> Maybe JSON.Pair
-segmentJSON s = segmentFull s ?!> "segment" JSON..= s
+segmentJSON :: JSON.ToObject o => Segment -> o
+segmentJSON s = "segment" JSON..=? (s <!? segmentFull s)
 
 segmentSetDuration :: Offset -> Segment -> Segment
 segmentSetDuration o (Segment (Range.Range lb@(Range.Lower (Range.Bounded _ l)) (Range.Upper ub))) =

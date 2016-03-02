@@ -10,7 +10,7 @@ import qualified Data.Text as T
 import Network.HTTP.Types (StdMethod(DELETE), conflict409)
 
 import Databrary.Has
-import Databrary.JSON (toJSON)
+import qualified Databrary.JSON as JSON
 import Databrary.Model.Permission
 import Databrary.Model.Id
 import Databrary.Model.Slot
@@ -30,10 +30,10 @@ _tagNameForm = deformMaybe' "Invalid tag name." . validateTag =<< deform
 
 queryTags :: ActionRoute (Maybe TagName)
 queryTags = action GET (pathJSON >/> "tags" >/> pathMaybe PathParameter) $ \t -> withoutAuth $
-  okResponse [] . toJSON <$> termTags t 16
+  okResponse [] . JSON.toEncoding <$> termTags t 16
 
 tagResponse :: API -> TagUse -> ActionM Response
-tagResponse JSON t = okResponse [] . tagCoverageJSON <$> lookupTagCoverage (useTag t) (containerSlot $ slotContainer $ tagSlot t)
+tagResponse JSON t = okResponse [] . JSON.recordEncoding . tagCoverageJSON <$> lookupTagCoverage (useTag t) (containerSlot $ slotContainer $ tagSlot t)
 tagResponse HTML t = peeks $ otherRouteResponse [] viewSlot (HTML, (Just (view t), slotId (tagSlot t)))
 
 postTag :: ActionRoute (API, Id Slot, TagId)

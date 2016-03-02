@@ -17,6 +17,7 @@ import Control.Arrow (first)
 import qualified Data.Aeson as JSON
 import qualified Data.HashMap.Strict as HM
 import qualified Data.Map.Strict as Map
+import Data.Monoid ((<>))
 import qualified Data.Text as T
 
 import Databrary.Has (view)
@@ -76,6 +77,9 @@ allFormErrors (FormErrors l m) =
 subToJSON :: JSON.Object -> Map.Map FormKey FormErrors -> JSON.Value
 subToJSON z = JSON.Object . Map.foldrWithKey (\k -> HM.insert (view k) . JSON.toJSON) z
 
+subToEncoding :: Map.Map FormKey FormErrors -> JSON.Series
+subToEncoding = Map.foldMapWithKey ((JSON..=) . view)
+
 topToJSON :: [FormErrorMessage] -> JSON.Value
 topToJSON [] = JSON.Null
 topToJSON [e] = JSON.toJSON e
@@ -87,4 +91,10 @@ instance JSON.ToJSON FormErrors where
   toJSON (FormErrors l m)
     | Map.null m = top
     | otherwise = subToJSON (HM.singleton "" top) m
+    where top = topToJSON l
+  toEncoding (FormErrors [] m) =
+    JSON.pairs $ subToEncoding m
+  toEncoding (FormErrors l m)
+    | Map.null m = JSON.toEncoding top
+    | otherwise = JSON.pairs $ "" JSON..= top <> subToEncoding m
     where top = topToJSON l

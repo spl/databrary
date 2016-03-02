@@ -49,7 +49,7 @@ viewAuthorize = action GET (pathAPI </>> pathPartyTarget </> pathAuthorizeTarget
   c <- lookupAuthorize child parent
   let c' = Authorize (Authorization mempty child parent) Nothing `fromMaybe` c
   case api of
-    JSON -> return $ okResponse [] $ JSON.Object $ authorizeJSON c'
+    JSON -> return $ okResponse [] $ JSON.objectEncoding $ authorizeJSON c'
     HTML
       | app -> return $ okResponse [] ("" :: T.Text) -- TODO
       | otherwise -> peeks $ blankForm . htmlAuthorizeForm c'
@@ -136,7 +136,7 @@ postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarge
           ]
       return a
   case api of
-    JSON -> return $ okResponse [] $ JSON.Object $ foldMap authorizeJSON a JSON..+ ("party" JSON..= partyJSON o)
+    JSON -> return $ okResponse [] $ JSON.objectEncoding $ foldMap authorizeJSON a <> "party" JSON..=: partyJSON o
     HTML -> peeks $ otherRouteResponse [] viewAuthorize arg
 
 deleteAuthorize :: ActionRoute (API, PartyTarget, AuthorizeTarget)
@@ -146,7 +146,7 @@ deleteAuthorize = action DELETE (pathAPI </>> pathPartyTarget </> pathAuthorizeT
   let (child, parent) = if app then (p, o) else (o, p)
   _ <- removeAuthorize $ Authorize (Authorization mempty child parent) Nothing
   case api of
-    JSON -> return $ okResponse [] $ JSON.object ["party" JSON..= partyJSON o]
+    JSON -> return $ okResponse [] $ JSON.objectEncoding $ "party" JSON..=: partyJSON o
     HTML -> peeks $ otherRouteResponse [] viewAuthorize arg
 
 postAuthorizeNotFound :: ActionRoute (PartyTarget)

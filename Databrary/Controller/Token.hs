@@ -43,9 +43,8 @@ viewLoginToken = action GET (pathAPI </> pathId) $ \(api, ti) -> withoutAuth $ d
   tok <- maybeAction =<< lookupLoginToken ti
   if loginPasswordToken tok
     then case api of
-      JSON -> return $ okResponse [] $ JSON.record ti
-        [ "reset" JSON..= isJust (accountPasswd (view tok))
-        ]
+      JSON -> return $ okResponse [] $ JSON.recordEncoding $ JSON.Record ti $
+        "reset" JSON..= isJust (accountPasswd (view tok))
       HTML -> peeks $ blankForm . htmlPasswordToken ti
     else do
       _ <- removeLoginToken tok

@@ -11,7 +11,8 @@ module Databrary.Model.Metric
 
 import qualified Data.IntMap.Strict as IntMap
 import Data.List (find)
-import Data.Maybe (catMaybes, fromJust)
+import Data.Maybe (fromJust)
+import Data.Monoid ((<>))
 
 import Databrary.Ops
 import qualified Databrary.JSON as JSON
@@ -39,18 +40,17 @@ metricLong = ("description" ==) . metricName
 birthdateMetric :: Metric--T MeasureTypeDate
 birthdateMetric = fromJust $ {- castMetric =<< -} find (("birthdate" ==) . metricName) allMetrics
 
-metricJSON :: Metric -> JSON.Object
-metricJSON m@Metric{..} = JSON.record metricId $ catMaybes
-  [ Just $ "category" JSON..= categoryId metricCategory
-  , Just $ "name" JSON..= metricName
-  , ("release" JSON..=) <$> metricRelease
-  , Just $ "type" JSON..= show metricType
-  , "options" JSON..= metricOptions <!? null metricOptions
-  , ("assumed" JSON..=) <$> metricAssumed
-  , "long" JSON..= True <? metricLong m
-  , ("description" JSON..=) <$> metricDescription
-  , ("required" JSON..=) <$> metricRequired
-  ]
+metricJSON :: JSON.ToObject o => Metric -> JSON.Record (Id Metric) o
+metricJSON m@Metric{..} = JSON.Record metricId $
+     "category" JSON..= categoryId metricCategory
+  <> "name" JSON..= metricName
+  <> "release" JSON..=? metricRelease
+  <> "type" JSON..= show metricType
+  <> "options" JSON..=? (metricOptions <!? null metricOptions)
+  <> "assumed" JSON..=? metricAssumed
+  <> "long" JSON..=? (True <? metricLong m)
+  <> "description" JSON..=? metricDescription
+  <> "required" JSON..=? metricRequired
 
 {- schema synchronization:
 20160201-nih_race

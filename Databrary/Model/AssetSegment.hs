@@ -10,7 +10,7 @@ module Databrary.Model.AssetSegment
   , assetSegmentInterp
   ) where
 
-import Data.Maybe (catMaybes)
+import Data.Monoid ((<>))
 import Database.PostgreSQL.Typed (pgSQL)
 
 import Databrary.Ops
@@ -72,14 +72,14 @@ auditAssetSegmentDownload success AssetSegment{ segmentAsset = AssetSlot{ slotAs
   where act | success = AuditActionOpen
             | otherwise = AuditActionAttempt
 
-assetSegmentJSON :: AssetSegment -> JSON.Object
-assetSegmentJSON as@AssetSegment{..} = JSON.object $ catMaybes $
-  [ Just $ ("segment" JSON..= assetSegment)
-  , view segmentAsset == fmt ?!> "format" JSON..= formatId fmt
-  -- , ("release" JSON..=) <$> (view as :: Maybe Release)
-  , Just $ "permission" JSON..= dataPermission as
-  , ("excerpt" JSON..=) . excerptRelease <$> assetExcerpt
-  ] where fmt = view as
+assetSegmentJSON :: JSON.ToObject o => AssetSegment -> o
+assetSegmentJSON as@AssetSegment{..} =
+     "segment" JSON..= assetSegment
+  <> "format" JSON..=? (formatId fmt <!? view segmentAsset == fmt)
+  -- "release" JSON..=? (view as :: Maybe Release)
+  <> "permission" JSON..= dataPermission as
+  <> "excerpt" JSON..=? (excerptRelease <$> assetExcerpt)
+  where fmt = view as
 
 assetSegmentInterp :: Float -> AssetSegment -> AssetSegment
 assetSegmentInterp f as = as{ assetSegment = segmentInterp f $ assetSegment as }

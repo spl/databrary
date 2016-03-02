@@ -29,6 +29,6 @@ auditSlotDownload success Slot{ slotContainer = c, slotSegment = seg } = do
   dbExecute1' [pgSQL|$INSERT INTO audit.slot (audit_action, audit_user, audit_ip, container, segment) VALUES
     (${if success then AuditActionOpen else AuditActionAttempt}, ${auditWho ai}, ${auditIp ai}, ${containerId $ containerRow c}, ${seg})|]
 
-slotJSON :: Slot -> JSON.Object
-slotJSON Slot{..} = containerJSON slotContainer JSON..+?
-  segmentJSON slotSegment
+slotJSON :: JSON.ToObject o => Slot -> JSON.Record (Id Container) o
+slotJSON Slot{..} = containerJSON slotContainer
+  JSON..<> segmentJSON slotSegment

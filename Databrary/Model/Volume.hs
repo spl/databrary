@@ -17,7 +17,6 @@ module Databrary.Model.Volume
 import Control.Applicative ((<|>))
 import Control.Monad (guard)
 import qualified Data.ByteString as BS
-import Data.Maybe (catMaybes)
 import Data.Monoid ((<>))
 import qualified Data.Text as T
 import Database.PostgreSQL.Typed.Query (pgSQL, unsafeModifyQuery)
@@ -64,20 +63,18 @@ auditVolumeDownload success vol = do
   dbExecute1' [pgSQL|$INSERT INTO audit.volume (audit_action, audit_user, audit_ip, id) VALUES
     (${if success then AuditActionOpen else AuditActionAttempt}, ${auditWho ai}, ${auditIp ai}, ${volumeId $ volumeRow vol})|]
 
-volumeRowJSON :: VolumeRow -> JSON.Object
-volumeRowJSON VolumeRow{..} = JSON.record volumeId $
-  [ "name" JSON..= volumeName
-  , "body" JSON..= volumeBody
-  ]
+volumeRowJSON :: JSON.ToObject o => VolumeRow -> JSON.Record (Id Volume) o
+volumeRowJSON VolumeRow{..} = JSON.Record volumeId $
+     "name" JSON..= volumeName
+  <> "body" JSON..= volumeBody
 
-volumeJSON :: Volume -> JSON.Object
-volumeJSON v@Volume{..} = volumeRowJSON volumeRow JSON..++ catMaybes
-  [ ("doi" JSON..=) <$> volumeDOI volumeRow
-  , ("alias" JSON..=) <$> getVolumeAlias v
-  , Just $ "creation" JSON..= volumeCreation
-  , Just $ "owners" JSON..= map (\(i, n) -> JSON.object ["id" JSON..= i, "name" JSON..= n]) volumeOwners
-  , Just $ "permission" JSON..= volumePermission
-  ]
+volumeJSON :: JSON.ToObject o => Volume -> JSON.Record (Id Volume) o
+volumeJSON v@Volume{..} = volumeRowJSON volumeRow JSON..<>
+     "doi" JSON..=? volumeDOI volumeRow
+  <> "alias" JSON..=? getVolumeAlias v
+  <> "creation" JSON..= volumeCreation
+  <> "owners" JSON..= map (\(i, n) -> JSON.Object $ "id" JSON..= i <> "name" JSON..= n) volumeOwners
+  <> "permission" JSON..= volumePermission
 
 data VolumeFilter = VolumeFilter
   { volumeFilterQuery :: Maybe String

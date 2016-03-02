@@ -78,7 +78,9 @@ Executable schemabrary
     parsec >= 3,
     resource-pool,
     network,
-    postgresql-typed
+    postgresql-typed,
+    vector,
+    aeson
 
 Executable databrary
   main-is: Databrary/Main.hs

@@ -1,8 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Databrary.View.Html
-  ( lazyByteStringHtml
+  ( unsafeBuilder
+  , lazyByteStringHtml
   , byteStringHtml
   , builderHtml
+  , unsafeBuilderValue
   , lazyByteStringValue
   , byteStringValue
   , builderValue
@@ -28,20 +30,26 @@ import Databrary.HTTP.Route
 
 import {-# SOURCE #-} Databrary.Controller.Angular
 
+unsafeBuilder :: BSB.Builder -> H.Markup
+unsafeBuilder = H.unsafeLazyByteString . BSB.toLazyByteString
+
 lazyByteStringHtml :: BSL.ByteString -> H.Markup
-lazyByteStringHtml = H.unsafeLazyByteString . BSB.toLazyByteString . fromHtmlEscapedLazyByteString
+lazyByteStringHtml = unsafeBuilder . fromHtmlEscapedLazyByteString
 
 byteStringHtml :: BS.ByteString -> H.Markup
-byteStringHtml = H.unsafeLazyByteString . BSB.toLazyByteString . fromHtmlEscapedByteString
+byteStringHtml = unsafeBuilder . fromHtmlEscapedByteString
 
 builderHtml :: BSB.Builder -> H.Markup
 builderHtml = lazyByteStringHtml . BSB.toLazyByteString
 
+unsafeBuilderValue :: BSB.Builder -> H.AttributeValue
+unsafeBuilderValue = H.unsafeLazyByteStringValue . BSB.toLazyByteString
+
 lazyByteStringValue :: BSL.ByteString -> H.AttributeValue
-lazyByteStringValue = H.unsafeLazyByteStringValue . BSB.toLazyByteString . fromHtmlEscapedLazyByteString
+lazyByteStringValue = unsafeBuilderValue . fromHtmlEscapedLazyByteString
 
 byteStringValue :: BS.ByteString -> H.AttributeValue
-byteStringValue = H.unsafeLazyByteStringValue . BSB.toLazyByteString . fromHtmlEscapedByteString
+byteStringValue = unsafeBuilderValue . fromHtmlEscapedByteString
 
 builderValue :: BSB.Builder -> H.AttributeValue
 builderValue = lazyByteStringValue . BSB.toLazyByteString

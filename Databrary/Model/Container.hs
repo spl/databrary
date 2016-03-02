@@ -17,7 +17,7 @@ module Databrary.Model.Container
 
 import Control.Monad (guard)
 import Data.Either (isRight)
-import Data.Maybe (catMaybes)
+import Data.Monoid ((<>))
 import Data.Time.Format (formatTime, defaultTimeLocale)
 import Database.PostgreSQL.Typed.Query (pgSQL)
 
@@ -89,15 +89,13 @@ getContainerDate c = maskDateIf (dataPermission c == PermissionNONE) <$> contain
 formatContainerDate :: Container -> Maybe String
 formatContainerDate c = formatTime defaultTimeLocale "%Y-%m-%d" <$> getContainerDate c
 
-containerRowJSON :: ContainerRow -> JSON.Object
-containerRowJSON ContainerRow{..} = JSON.record containerId $ catMaybes
-  [ "top" JSON..= containerTop <? containerTop
-  , ("name" JSON..=) <$> containerName
-  ]
+containerRowJSON :: JSON.ToObject o => ContainerRow -> JSON.Record (Id Container) o
+containerRowJSON ContainerRow{..} = JSON.Record containerId $
+     "top" JSON..=? (True <? containerTop)
+  <> "name" JSON..=? containerName
 
-containerJSON :: Container -> JSON.Object
-containerJSON c@Container{..} = containerRowJSON containerRow JSON..++ catMaybes
-  [ ("date" JSON..=) <$> formatContainerDate c
-  , ("release" JSON..=) <$> containerRelease
-  ]
+containerJSON :: JSON.ToObject o => Container -> JSON.Record (Id Container) o
+containerJSON c@Container{..} = containerRowJSON containerRow JSON..<>
+     "date" JSON..=? formatContainerDate c
+  <> "release" JSON..=? containerRelease
 

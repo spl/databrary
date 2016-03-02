@@ -12,6 +12,7 @@ import Data.Function (on)
 import Data.IORef (readIORef)
 import Data.List (nubBy)
 import Data.Maybe (isJust, mapMaybe)
+import Data.Monoid ((<>))
 import Data.Ord (comparing)
 
 import Databrary.Ops
@@ -38,16 +39,15 @@ import Databrary.View.Activity
 viewSiteActivity :: ActionRoute API
 viewSiteActivity = action GET (pathAPI </< "activity") $ \api -> withAuth $ do
   ss <- focusIO $ readIORef . serviceStats
-  vl <- map (second $ ("volume" JSON..=) . volumeJSON) . nubBy ((==) `on` volumeId . volumeRow . snd) <$> lookupVolumeShareActivity 8
-  al <- map (second $ ("party"  JSON..=) . partyJSON)  . nubBy ((==) `on` partyId  . partyRow  . snd) <$> lookupAuthorizeActivity 8
+  vl <- map (second $ ("volume" JSON..=:) . volumeJSON) . nubBy ((==) `on` volumeId . volumeRow . snd) <$> lookupVolumeShareActivity 8
+  al <- map (second $ ("party"  JSON..=:) . partyJSON)  . nubBy ((==) `on` partyId  . partyRow  . snd) <$> lookupAuthorizeActivity 8
   case api of
-    JSON -> return $ okResponse [] $ JSON.object
-      [ "stats" JSON..= ss
-      , "activity" JSON..= map ent (take 12 $ mergeBy ((fo .) . comparing fst) vl al)
-      ]
+    JSON -> return $ okResponse [] $ JSON.objectEncoding $
+         "stats" JSON..= ss
+      <> JSON.nestObject "activity" (\u -> map (u . ent) (take 12 $ mergeBy ((fo .) . comparing fst) vl al))
     HTML -> peeks $ okResponse [] . htmlSiteActivity ss
   where
-  ent (t, j) = JSON.object ["time" JSON..= t, j]
+  ent (t, j) = j <> "time" JSON..= t
   fo GT = LT
   fo _ = GT
 
@@ -57,7 +57,7 @@ viewPartyActivity = action GET (pathAPI </> pathPartyTarget </< "activity") $ \(
   v <- getParty (Just PermissionADMIN) p
   a <- lookupPartyActivity v
   return $ case api of
-    JSON -> okResponse [] $ JSON.toJSON $ mapMaybe activityJSON a
+    JSON -> okResponse [] $ JSON.toEncoding $ mapMaybe activityJSON a
 
 viewVolumeActivity :: ActionRoute (API, Id Volume)
 viewVolumeActivity = action GET (pathAPI </> pathId </< "activity") $ \(api, vi) -> withAuth $ do
@@ -65,7 +65,7 @@ viewVolumeActivity = action GET (pathAPI </> pathId </< "activity") $ \(api, vi)
   v <- getVolume PermissionEDIT vi
   a <- lookupVolumeActivity v
   return $ case api of
-    JSON -> okResponse [] $ JSON.toJSON $ mapMaybe activityJSON a
+    JSON -> okResponse [] $ JSON.toEncoding $ mapMaybe activityJSON a
 
 viewContainerActivity :: ActionRoute (API, (Maybe (Id Volume), Id Slot))
 viewContainerActivity = action GET (pathAPI </> pathMaybe pathId </> pathSlotId </< "activity") $ \(api, (vi, ci)) -> withAuth $ do
@@ -73,4 +73,4 @@ viewContainerActivity = action GET (pathAPI </> pathMaybe pathId </> pathSlotId 
   v <- getContainer PermissionEDIT vi ci True
   a <- lookupContainerActivity v
   return $ case api of
-    JSON -> okResponse [] $ JSON.toJSON $ mapMaybe activityJSON a
+    JSON -> okResponse [] $ JSON.toEncoding $ mapMaybe activityJSON a

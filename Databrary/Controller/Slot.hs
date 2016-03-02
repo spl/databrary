@@ -10,6 +10,7 @@ import Control.Monad (when, mfilter)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import Data.Maybe (isJust)
+import Data.Monoid ((<>))
 import qualified Data.Text as T
 import Network.HTTP.Types.Status (movedPermanently301)
 import qualified Network.Wai as Wai
@@ -43,25 +44,25 @@ getSlot :: Permission -> Maybe (Id Volume) -> Id Slot -> ActionM Slot
 getSlot p mv i =
   checkPermission p =<< maybeAction . maybe id (\v -> mfilter $ (v ==) . view) mv =<< lookupSlot i
 
-slotJSONField :: Slot -> BS.ByteString -> Maybe BS.ByteString -> ActionM (Maybe JSON.Value)
+slotJSONField :: Slot -> BS.ByteString -> Maybe BS.ByteString -> ActionM (Maybe JSON.Encoding)
 slotJSONField o "assets" _ =
-  Just . JSON.toJSON . map assetSlotJSON <$> lookupSlotAssets o
+  Just . JSON.mapRecords assetSlotJSON <$> lookupSlotAssets o
 slotJSONField o "records" _ =
-  Just . JSON.toJSON . map (\r -> recordSlotJSON r JSON..+ "record" JSON..= recordJSON (slotRecord r)) <$> lookupSlotRecords o
+  Just . JSON.mapRecords (\r -> recordSlotJSON r JSON..<> "record" JSON..=: recordJSON (slotRecord r)) <$> lookupSlotRecords o
 slotJSONField o "tags" n = do
   tc <- lookupSlotTagCoverage o (maybe 64 fst $ BSC.readInt =<< n)
-  return $ Just $ JSON.recordMap $ map tagCoverageJSON tc
+  return $ Just $ JSON.objectEncoding $ JSON.recordMap $ map tagCoverageJSON tc
 slotJSONField o "comments" n = do
   c <- lookupSlotComments o (maybe 64 fst $ BSC.readInt =<< n)
-  return $ Just $ JSON.toJSON $ map commentJSON c
+  return $ Just $ JSON.mapRecords commentJSON c
 slotJSONField o "excerpts" _ =
-  Just . JSON.toJSON . map (\e -> excerptJSON e JSON..+ "asset" JSON..= (view e :: Id Asset)) <$> lookupSlotExcerpts o
+  Just . JSON.mapObjects (\e -> excerptJSON e <> "asset" JSON..= (view e :: Id Asset)) <$> lookupSlotExcerpts o
 slotJSONField o "filename" _ =
-  return $ Just $ JSON.toJSON $ makeFilename $ slotDownloadName o
+  return $ Just $ JSON.toEncoding $ makeFilename $ slotDownloadName o
 slotJSONField _ _ _ = return Nothing
 
-slotJSONQuery :: Slot -> JSON.Query -> ActionM JSON.Object
-slotJSONQuery o = JSON.jsonQuery (slotJSON o) (slotJSONField o)
+slotJSONQuery :: Slot -> JSON.Query -> ActionM (JSON.Record (Id Container) JSON.Series)
+slotJSONQuery o q = (slotJSON o JSON..<>) <$> JSON.jsonQuery (slotJSONField o) q
 
 slotDownloadName :: Slot -> [T.Text]
 slotDownloadName s = containerDownloadName (slotContainer s)

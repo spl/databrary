@@ -17,6 +17,7 @@ import Network.HTTP.Types (StdMethod(DELETE), noContent204, conflict409)
 
 import Databrary.Ops
 import Databrary.Has
+import qualified Databrary.JSON as JSON
 import Databrary.Action.Route
 import Databrary.Action.Response
 import Databrary.Action
@@ -47,7 +48,7 @@ viewRecord :: ActionRoute (API, Id Record)
 viewRecord = action GET (pathAPI </> pathId) $ \(api, i) -> withAuth $ do
   rec <- getRecord PermissionPUBLIC i
   return $ case api of
-    JSON -> okResponse [] $ recordJSON rec
+    JSON -> okResponse [] $ JSON.recordEncoding $ recordJSON rec
     HTML -> okResponse [] $ T.pack $ show $ recordId $ recordRow rec -- TODO
 
 createRecord :: ActionRoute (API, Id Volume)
@@ -59,7 +60,7 @@ createRecord = action POST (pathAPI </> pathId </< "record") $ \(api, vi) -> wit
     return $ blankRecord cat vol
   rec <- addRecord br
   case api of
-    JSON -> return $ okResponse [] $ recordJSON rec
+    JSON -> return $ okResponse [] $ JSON.recordEncoding $ recordJSON rec
     HTML -> peeks $ otherRouteResponse [] viewRecord (api, recordId $ recordRow rec)
 
 postRecordMeasure :: ActionRoute (API, Id Record, Id Metric)
@@ -77,7 +78,7 @@ postRecordMeasure = action POST (pathAPI </>> pathId </> pathId) $ \(api, ri, mi
         when (isNothing r) $ deformError $ T.pack $ "Invalid " ++ show (metricType met) ++ (if metricType met == MeasureTypeDate then " (please use YYYY-MM-DD)" else "")
         return $ fromMaybe rec r)
   case api of
-    JSON -> return $ okResponse [] $ recordJSON rec'
+    JSON -> return $ okResponse [] $ JSON.recordEncoding $ recordJSON rec'
     HTML -> peeks $ otherRouteResponse [] viewRecord (api, recordId $ recordRow rec')
 
 deleteRecord :: ActionRoute (API, Id Record)
@@ -86,7 +87,7 @@ deleteRecord = action DELETE (pathAPI </> pathId) $ \(api, ri) -> withAuth $ do
   rec <- getRecord PermissionEDIT ri
   r <- removeRecord rec
   unless r $ result $ case api of
-    JSON -> response conflict409 [] (recordJSON rec)
+    JSON -> response conflict409 [] $ JSON.recordEncoding $ recordJSON rec
     HTML -> response conflict409 [] ("This record is still used" :: T.Text)
   case api of
     JSON -> return $ emptyResponse noContent204 []
@@ -103,8 +104,8 @@ postRecordSlot = action POST (pathAPI </>> pathSlotId </> pathId) $ \(api, si, r
   case api of
     HTML | r      -> peeks $ otherRouteResponse [] viewSlot (api, (Just (view slot), slotId slot))
       | otherwise -> peeks $ otherRouteResponse [] viewRecord (api, recordId $ recordRow rec)
-    JSON | r      -> return $ okResponse [] $ recordSlotJSON (RecordSlot rec slot)
-      | otherwise -> return $ okResponse [] $ recordJSON rec
+    JSON | r      -> return $ okResponse [] $ JSON.recordEncoding $ recordSlotJSON (RecordSlot rec slot)
+      | otherwise -> return $ okResponse [] $ JSON.recordEncoding $ recordJSON rec
 
 deleteRecordSlot :: ActionRoute (API, Id Slot, Id Record)
 deleteRecordSlot = action DELETE (pathAPI </>> pathSlotId </> pathId) $ \(api, si, ri) -> withAuth $ do
@@ -114,5 +115,5 @@ deleteRecordSlot = action DELETE (pathAPI </>> pathSlotId </> pathId) $ \(api, s
   r <- moveRecordSlot (RecordSlot rec slot) emptySegment
   case api of
     HTML | r -> peeks $ otherRouteResponse [] viewRecord (api, recordId $ recordRow rec)
-    JSON | r -> return $ okResponse [] $ recordJSON rec
+    JSON | r -> return $ okResponse [] $ JSON.recordEncoding $ recordJSON rec
     _ -> return $ emptyResponse noContent204 []

@@ -31,7 +31,7 @@ import Control.Monad (guard)
 import qualified Data.ByteString as BS
 import Data.Int (Int64)
 import Data.List (intercalate)
-import Data.Maybe (catMaybes, isNothing, fromMaybe)
+import Data.Maybe (isNothing, fromMaybe)
 import Data.Monoid ((<>))
 import qualified Data.Text as T
 import Database.PostgreSQL.Typed (pgSQL)
@@ -76,21 +76,19 @@ partyEmail :: Party -> Maybe BS.ByteString
 partyEmail p =
   guard (partyPermission p >= emailPermission) >> accountEmail <$> partyAccount p
 
-partyRowJSON :: PartyRow -> JSON.Object
-partyRowJSON PartyRow{..} = JSON.record partyId $ catMaybes
-  [ Just $ "sortname" JSON..= partySortName
-  , ("prename" JSON..=) <$> partyPreName
-  , ("orcid" JSON..=) . show <$> partyORCID
-  , ("affiliation" JSON..=) <$> partyAffiliation
-  , ("url" JSON..=) <$> partyURL
-  ]
+partyRowJSON :: JSON.ToObject o => PartyRow -> JSON.Record (Id Party) o
+partyRowJSON PartyRow{..} = JSON.Record partyId $
+     "sortname" JSON..= partySortName
+  <> "prename" JSON..=? partyPreName
+  <> "orcid" JSON..=? (show <$> partyORCID)
+  <> "affiliation" JSON..=? partyAffiliation
+  <> "url" JSON..=? partyURL
 
-partyJSON :: Party -> JSON.Object
-partyJSON p@Party{..} = partyRowJSON partyRow JSON..++ catMaybes
-  [ "institution" JSON..= True <? isNothing partyAccount
-  , ("email" JSON..=) <$> partyEmail p
-  , "permission" JSON..= partyPermission <? (partyPermission > PermissionREAD)
-  ]
+partyJSON :: JSON.ToObject o => Party -> JSON.Record (Id Party) o
+partyJSON p@Party{..} = partyRowJSON partyRow JSON..<>
+     "institution" JSON..=? (True <? isNothing partyAccount)
+  <> "email" JSON..=? partyEmail p
+  <> "permission" JSON..=? (partyPermission <? partyPermission > PermissionREAD)
 
 changeParty :: MonadAudit c m => Party -> m ()
 changeParty p = do

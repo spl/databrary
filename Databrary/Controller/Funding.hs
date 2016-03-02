@@ -33,7 +33,7 @@ queryFunder = action GET (pathJSON </< "funder") $ \() -> withAuth $ do
   r <- if a
     then focusIO $ searchFundRef q
     else findFunders q
-  return $ okResponse [] $ JSON.toJSON $ map funderJSON r
+  return $ okResponse [] $ JSON.mapObjects funderJSON r
 
 postVolumeFunding :: ActionRoute (Id Volume, Id Funder)
 postVolumeFunding = action POST (pathJSON >/> pathId </> pathId) $ \(vi, fi) -> withAuth $ do
@@ -44,11 +44,11 @@ postVolumeFunding = action POST (pathJSON >/> pathId </> pathId) $ \(vi, fi) -> 
     "awards" .:> filter (not . T.null) <$> withSubDeforms (\_ -> deform)
   let fa = Funding f a
   _ <- changeVolumeFunding v fa
-  return $ okResponse [] $ fundingJSON fa
+  return $ okResponse [] $ JSON.objectEncoding $ fundingJSON fa
 
 deleteVolumeFunder :: ActionRoute (Id Volume, Id Funder)
 deleteVolumeFunder = action DELETE (pathJSON >/> pathId </> pathId) $ \(vi, fi) -> withAuth $ do
   guardVerfHeader
   v <- getVolume PermissionEDIT vi
   _ <- removeVolumeFunder v fi
-  return $ okResponse [] $ volumeJSON v
+  return $ okResponse [] $ JSON.recordEncoding $ volumeJSON v

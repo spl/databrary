@@ -11,6 +11,7 @@ import Data.Maybe (isNothing)
 import qualified Data.Text as T
 
 import Databrary.Has
+import qualified Databrary.JSON as JSON
 import Databrary.Service.Types
 import Databrary.HTTP.Path.Parser
 import Databrary.Action
@@ -28,7 +29,7 @@ viewRoot = action GET pathAPI $ \api -> withAuth $ do
 
 viewConstants :: ActionRoute ()
 viewConstants = action GET (pathJSON >/> "constants") $ \() -> withoutAuth $
-  return $ okResponse [] constantsJSON
+  return $ okResponse [] $ JSON.objectEncoding constantsJSON
 
 viewRobotsTxt :: ActionRoute ()
 viewRobotsTxt = action GET "robots.txt" $ \() -> withoutAuth $

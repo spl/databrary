@@ -26,7 +26,7 @@ import qualified Data.ByteString.Char8 as BSC
 import Data.Char (toLower)
 import qualified Data.IntMap.Strict as IntMap
 import qualified Data.Map.Strict as Map
-import Data.Maybe (catMaybes, listToMaybe)
+import Data.Maybe (listToMaybe)
 import Data.Monoid ((<>))
 import System.Posix.FilePath (RawFilePath, splitExtension, takeExtension, addExtension)
 
@@ -124,11 +124,10 @@ formatSample f
   | f == videoFormat = Just imageFormat
   | otherwise = Nothing
 
-formatJSON :: Format -> JSON.Object
-formatJSON f = JSON.record (formatId f) $ catMaybes
-  [ Just $ "mimetype" JSON..= formatMimeType f
-  , ("extension" JSON..=) <$> listToMaybe (formatExtension f)
-  , Just $ "name" JSON..= formatName f
-  , ("transcodable" JSON..=) . formatId <$> formatTranscodable f
+formatJSON :: JSON.ToObject o => Format -> JSON.Record (Id Format) o
+formatJSON f = JSON.Record (formatId f) $
+     "mimetype" JSON..= formatMimeType f
+  <> "extension" JSON..=? listToMaybe (formatExtension f)
+  <> "name" JSON..= formatName f
+  <> "transcodable" JSON..=? (formatId <$> formatTranscodable f)
   -- TODO: description
-  ]

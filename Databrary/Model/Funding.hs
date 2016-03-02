@@ -11,6 +11,7 @@ module Databrary.Model.Funding
   , fundingJSON
   ) where
 
+import Data.Monoid ((<>))
 import qualified Data.Text as T
 import Database.PostgreSQL.Typed (pgSQL)
 
@@ -49,14 +50,12 @@ removeVolumeFunder :: MonadDB c m => Volume -> Id Funder -> m Bool
 removeVolumeFunder v f =
   dbExecute1 [pgSQL|DELETE FROM volume_funding WHERE volume = ${volumeId $ volumeRow v} AND funder = ${f}|]
 
-funderJSON :: Funder -> JSON.Object
-funderJSON Funder{..} = JSON.object
-  [ "id" JSON..= funderId
-  , "name" JSON..= funderName
-  ]
+funderJSON :: JSON.ToObject o => Funder -> o
+funderJSON Funder{..} =
+     "id" JSON..= funderId
+  <> "name" JSON..= funderName
 
-fundingJSON :: Funding -> JSON.Object
-fundingJSON Funding{..} = JSON.object
-  [ "funder" JSON..= funderJSON fundingFunder
-  , "awards" JSON..= fundingAwards
-  ]
+fundingJSON :: JSON.ToNestedObject o u => Funding -> o
+fundingJSON Funding{..} =
+     "funder" JSON..=. funderJSON fundingFunder
+  <> "awards" JSON..= fundingAwards

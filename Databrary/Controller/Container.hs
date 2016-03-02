@@ -17,6 +17,7 @@ import Network.HTTP.Types (StdMethod(DELETE), noContent204, movedPermanently301,
 import Databrary.Ops
 import qualified Databrary.Iso as I
 import Databrary.Has
+import qualified Databrary.JSON as JSON
 import Databrary.Model.Id
 import Databrary.Model.Permission
 import Databrary.Model.Volume
@@ -84,7 +85,7 @@ createContainer = action POST (pathAPI </> pathId </< "slot") $ \(api, vi) -> wi
   bc <- runForm (api == HTML ?> htmlContainerEdit (Left vol)) $ containerForm (blankContainer vol)
   c <- addContainer bc
   case api of
-    JSON -> return $ okResponse [] $ containerJSON c
+    JSON -> return $ okResponse [] $ JSON.recordEncoding $ containerJSON c
     HTML -> peeks $ otherRouteResponse [] viewContainer (api, (Just vi, containerId $ containerRow c))
 
 postContainer :: ActionRoute (API, Id Slot)
@@ -97,7 +98,7 @@ postContainer = action POST (pathAPI </> pathSlotId) $ \(api, ci) -> withAuth $ 
     unless r $
       result $ emptyResponse conflict409 []
   case api of
-    JSON -> return $ okResponse [] $ containerJSON c'
+    JSON -> return $ okResponse [] $ JSON.recordEncoding $ containerJSON c'
     HTML -> peeks $ otherRouteResponse [] viewSlot (api, (Just (view c'), ci))
 
 deleteContainer :: ActionRoute (API, Id Slot)
@@ -106,7 +107,7 @@ deleteContainer = action DELETE (pathAPI </> pathSlotId) $ \(api, ci) -> withAut
   c <- getContainer PermissionEDIT Nothing ci False
   r <- removeContainer c
   unless r $ result $ case api of
-    JSON -> response conflict409 [] (containerJSON c)
+    JSON -> response conflict409 [] $ JSON.recordEncoding $ containerJSON c
     HTML -> response conflict409 [] ("This container is not empty." :: T.Text)
   case api of
     JSON -> return $ emptyResponse noContent204 []

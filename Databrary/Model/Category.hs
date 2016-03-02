@@ -8,7 +8,7 @@ module Databrary.Model.Category
   ) where
 
 import qualified Data.IntMap.Strict as IntMap
-import Data.Maybe (catMaybes)
+import Data.Monoid ((<>))
 
 import qualified Databrary.JSON as JSON
 import Databrary.Model.Id
@@ -27,8 +27,7 @@ getCategory (Id i) = IntMap.lookup (fromIntegral i) categoriesById
 getCategory' :: Id Category -> Category
 getCategory' (Id i) = categoriesById IntMap.! fromIntegral i
 
-categoryJSON :: Category -> JSON.Object
-categoryJSON Category{..} = JSON.record categoryId $ catMaybes
-  [ Just $ "name" JSON..= categoryName
-  , ("description" JSON..=) <$> categoryDescription
-  ]
+categoryJSON :: JSON.ToObject o => Category -> JSON.Record (Id Category) o
+categoryJSON Category{..} = JSON.Record categoryId $
+     "name" JSON..= categoryName
+  <> "description" JSON..=? categoryDescription

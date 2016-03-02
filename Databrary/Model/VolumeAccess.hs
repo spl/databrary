@@ -14,7 +14,7 @@ module Databrary.Model.VolumeAccess
   ) where
 
 import Data.Int (Int64)
-import Data.Maybe (catMaybes)
+import Data.Monoid ((<>))
 
 import Databrary.Ops
 import Databrary.Has (peek, view)
@@ -67,18 +67,19 @@ volumeAccessProvidesADMIN VolumeAccess{ volumeAccessChildren   = PermissionADMIN
 volumeAccessProvidesADMIN VolumeAccess{ volumeAccessIndividual = PermissionADMIN, volumeAccessParty = p } = accessPermission p == PermissionADMIN
 volumeAccessProvidesADMIN _ = False
 
-volumeAccessJSON :: VolumeAccess -> JSON.Object
-volumeAccessJSON VolumeAccess{..} = JSON.object $ catMaybes
-  [ ("individual" JSON..= volumeAccessIndividual) <? (volumeAccessIndividual >= PermissionNONE)
-  , ("children"   JSON..= volumeAccessChildren)   <? (volumeAccessChildren   >= PermissionNONE)
-  , ("sort" JSON..=) <$> volumeAccessSort
-  ]
+volumeAccessJSON :: JSON.ToObject o => VolumeAccess -> o
+volumeAccessJSON VolumeAccess{..} =
+     "individual" JSON..=? (volumeAccessIndividual <? volumeAccessIndividual >= PermissionNONE)
+  <> "children"   JSON..=? (volumeAccessChildren   <? volumeAccessChildren   >= PermissionNONE)
+  <> "sort" JSON..=? volumeAccessSort
 
-volumeAccessPartyJSON :: VolumeAccess -> JSON.Object
-volumeAccessPartyJSON va@VolumeAccess{..} = volumeAccessJSON va JSON..+ ("party" JSON..= partyJSON volumeAccessParty)
+volumeAccessPartyJSON :: JSON.ToNestedObject o u => VolumeAccess -> o
+volumeAccessPartyJSON va@VolumeAccess{..} = volumeAccessJSON va
+  <> "party" JSON..=: partyJSON volumeAccessParty
 
-volumeAccessVolumeJSON :: VolumeAccess -> JSON.Object
-volumeAccessVolumeJSON va@VolumeAccess{..} = volumeAccessJSON va JSON..+ ("volume" JSON..= volumeJSON volumeAccessVolume)
+volumeAccessVolumeJSON :: JSON.ToNestedObject o u => VolumeAccess -> o
+volumeAccessVolumeJSON va@VolumeAccess{..} = volumeAccessJSON va
+  <> "volume" JSON..=: volumeJSON volumeAccessVolume
 
 lookupVolumeShareActivity :: (MonadDB c m, MonadHasIdentity c m) => Int -> m [(Timestamp, Volume)]
 lookupVolumeShareActivity limit = do

@@ -60,14 +60,23 @@ metricDatum Metric{ metricType = MeasureTypeDate } d = JSON.toJSON $ d <> "T12:0
 metricDatum Metric{ metricType = MeasureTypeVoid } _ = JSON.toJSON True
 metricDatum _ d = JSON.toJSON d
 
+measureKeyValue :: JSON.KeyValue kv => (Metric, MeasureDatum) -> kv
+measureKeyValue (m, d) = metricField m JSON..= metricDatum m d
+
 instance JSON.ToJSON SolrRecordMeasures where
   toJSON (SolrRecordMeasures ms) =
-    JSON.object $ map (\(m, d) -> metricField m JSON..= metricDatum m d) ms
+    JSON.object $ map measureKeyValue ms
+  toEncoding (SolrRecordMeasures ms) =
+    JSON.pairs $ foldr ((<>) . measureKeyValue) mempty ms
 
 newtype SolrSegment = SolrSegment Segment deriving (JSON.FromJSON)
 
+instance Show SolrSegment where
+  showsPrec _ (SolrSegment s) = showSegmentWith (shows . offsetMillis) s
+
 instance JSON.ToJSON SolrSegment where
-  toJSON (SolrSegment s) = JSON.String $ T.pack $ showSegmentWith (shows . offsetMillis) s ""
+  toJSON s = JSON.String $ T.pack $ show s
+  toEncoding s = JSON.toEncoding $ show s
 
 data SolrDocument
   = SolrParty
@@ -180,3 +189,4 @@ fixToJSON _ j = j
 
 instance JSON.ToJSON SolrDocument where
   toJSON s = fixToJSON s $ solrToJSON s
+  -- TODO: toEncoding (and cleanup fixToJSON)

@@ -10,7 +10,8 @@ module Databrary.Model.Comment
   ) where
 
 import Data.Int (Int64)
-import Data.Maybe (catMaybes, listToMaybe)
+import Data.Maybe (listToMaybe)
+import Data.Monoid ((<>))
 import Database.PostgreSQL.Typed (pgSQL)
 
 import Databrary.Ops
@@ -60,12 +61,12 @@ addComment c@Comment{..} = do
     , commentTime = t
     }
 
-commentJSON :: Comment -> JSON.Object
-commentJSON Comment{ commentSlot = Slot{..}, ..} = JSON.record commentId $ catMaybes
-  [ Just $ "container" JSON..= containerJSON slotContainer
-  , segmentJSON slotSegment
-  , Just $ "who" JSON..= partyJSON (accountParty commentWho)
-  , Just $ "time" JSON..= commentTime
-  , Just $ "text" JSON..= commentText
-  , null commentParents ?!> "parents" JSON..= commentParents
-  ]
+commentJSON :: JSON.ToNestedObject o u => Comment -> JSON.Record (Id Comment) o
+commentJSON Comment{ commentSlot = Slot{..}, ..} = JSON.Record commentId $
+     "container" JSON..=: containerJSON slotContainer
+  <> segmentJSON slotSegment
+  <> "who" JSON..=: partyJSON (accountParty commentWho)
+  <> "time" JSON..= commentTime
+  <> "text" JSON..= commentText
+  <> "parents" JSON..=? (commentParents <!? null commentParents)
+   

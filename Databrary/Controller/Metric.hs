@@ -24,10 +24,10 @@ postVolumeMetric = action PUT (pathJSON >/> pathId </> PathEither pathId pathId)
   r <- either (addVolumeCategory v) (\m -> do
     r <- addVolumeMetric v m
     return $ if r then [m] else []) cm
-  return $ okResponse [] $ JSON.toJSON r
+  return $ okResponse [] $ JSON.toEncoding r
 
 deleteVolumeMetric :: ActionRoute (Id Volume, Either (Id Category) (Id Metric))
 deleteVolumeMetric = action DELETE (pathJSON >/> pathId </> PathEither pathId pathId) $ \(vi, cm) -> withAuth $ do
   v <- getVolume PermissionEDIT vi
   r <- either (removeVolumeCategory v) (fmap fromEnum . removeVolumeMetric v) cm
-  return $ okResponse [] $ JSON.toJSON r
+  return $ okResponse [] $ JSON.toEncoding r

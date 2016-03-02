@@ -16,9 +16,10 @@ module Databrary.Store.Config
 import Prelude hiding (lookup)
 
 import Control.Applicative ((<|>))
-import Control.Arrow (first)
+import Control.Arrow (first, (***))
 import Control.Exception (Exception, throw)
 import Control.Monad ((<=<))
+import qualified Data.Aeson.Types as JSON
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import Data.Foldable (fold)
@@ -29,6 +30,7 @@ import Data.String (IsString(..))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Typeable (Typeable, TypeRep, typeRep)
+import qualified Data.Vector as V
 import qualified Text.Parsec as P
 import qualified Text.Parsec.ByteString.Lazy as P
 import qualified Text.Parsec.Token as PT
@@ -212,3 +214,22 @@ instance Configurable Int where
 infixl 9 !
 (!) :: Configurable a => Config -> Path -> a
 (!) = flip get
+
+instance JSON.ToJSON Config where
+  toJSON = JSON.toJSON . configMap
+  toEncoding = JSON.toEncoding . configMap
+
+instance JSON.ToJSON ConfigMap where
+  toJSON = JSON.object . map (TE.decodeUtf8 *** JSON.toJSON) . HM.toList
+  toEncoding = JSON.pairs . HM.foldrWithKey (\k v -> (TE.decodeUtf8 k JSON..= v <>)) mempty
+
+instance JSON.ToJSON Value where
+  toJSON Empty = JSON.Null
+  toJSON (Boolean b) = JSON.Bool b
+  toJSON (String s) = JSON.String $ TE.decodeUtf8 s
+  toJSON (Integer i) = JSON.Number $ fromInteger i
+  toJSON (List l) = JSON.Array $ V.fromList $ map JSON.toJSON l
+  toJSON (Sub c) = JSON.toJSON c
+  toEncoding (List l) = JSON.foldable l
+  toEncoding (Sub c) = JSON.toEncoding c
+  toEncoding v = JSON.toEncoding $ JSON.toJSON v

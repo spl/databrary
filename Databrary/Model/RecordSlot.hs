@@ -17,6 +17,7 @@ import Control.Arrow (second)
 import Control.Monad (guard, liftM2)
 import Data.Function (on)
 import Data.Maybe (catMaybes)
+import Data.Monoid ((<>))
 import qualified Database.PostgreSQL.Typed.Range as Range
 import Database.PostgreSQL.Typed.Types (PGTypeName(..))
 
@@ -88,8 +89,7 @@ recordSlotAge rs@RecordSlot{..} =
     | dataPermission rs == PermissionNONE = a `min` ageLimit
     | otherwise = a
 
-recordSlotJSON :: RecordSlot -> JSON.Object
-recordSlotJSON rs@RecordSlot{..} = JSON.record (recordId $ recordRow slotRecord) $ catMaybes
-  [ segmentJSON (slotSegment recordSlot)
-  , ("age" JSON..=) <$> recordSlotAge rs
-  ]
+recordSlotJSON :: JSON.ToObject o => RecordSlot -> JSON.Record (Id Record) o
+recordSlotJSON rs@RecordSlot{..} = JSON.Record (recordId $ recordRow slotRecord) $
+     segmentJSON (slotSegment recordSlot)
+  <> "age" JSON..=? recordSlotAge rs

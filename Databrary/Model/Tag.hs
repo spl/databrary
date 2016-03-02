@@ -19,7 +19,8 @@ module Databrary.Model.Tag
 import Control.Monad (guard)
 import qualified Data.ByteString.Char8 as BSC
 import Data.Int (Int64)
-import Data.Maybe (fromMaybe, catMaybes)
+import Data.Maybe (fromMaybe)
+import Data.Monoid ((<>))
 import Database.PostgreSQL.Typed (pgSQL)
 
 import Databrary.Ops
@@ -89,14 +90,12 @@ lookupSlotKeywords :: (MonadDB c m) => Slot -> m [Tag]
 lookupSlotKeywords Slot{..} =
   dbQuery $(selectQuery selectTag "JOIN keyword_use ON id = tag WHERE container = ${containerId $ containerRow slotContainer} AND segment = ${slotSegment}")
 
-tagWeightJSON :: TagWeight -> JSON.Object
-tagWeightJSON TagWeight{..} = JSON.record (tagName tagWeightTag) $
-  [ "weight" JSON..= tagWeightWeight
-  ]
+tagWeightJSON :: JSON.ToObject o => TagWeight -> JSON.Record TagName o
+tagWeightJSON TagWeight{..} = JSON.Record (tagName tagWeightTag) $
+  "weight" JSON..= tagWeightWeight
 
-tagCoverageJSON :: TagCoverage -> JSON.Object
-tagCoverageJSON TagCoverage{..} = tagWeightJSON tagCoverageWeight JSON..++ catMaybes
-  [ Just $ "coverage" JSON..= tagCoverageSegments
-  , null tagCoverageKeywords ?!> "keyword" JSON..= tagCoverageKeywords
-  , null tagCoverageVotes ?!> "vote" JSON..= tagCoverageVotes
-  ]
+tagCoverageJSON :: JSON.ToObject o => TagCoverage -> JSON.Record TagName o
+tagCoverageJSON TagCoverage{..} = tagWeightJSON tagCoverageWeight JSON..<>
+     "coverage" JSON..= tagCoverageSegments
+  <> "keyword" JSON..=? (tagCoverageKeywords <!? null tagCoverageKeywords)
+  <> "vote"    JSON..=? (tagCoverageVotes    <!? null tagCoverageVotes)

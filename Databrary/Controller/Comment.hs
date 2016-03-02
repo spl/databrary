@@ -7,6 +7,7 @@ import Data.Maybe (maybeToList)
 
 import Databrary.Ops
 import Databrary.Has
+import qualified Databrary.JSON as JSON
 import Databrary.Model.Permission
 import Databrary.Model.Id
 import Databrary.Model.Slot
@@ -34,5 +35,5 @@ postComment = action POST (pathAPI </> pathSlotId </< "comment") $ \(api, si) ->
       }
   c' <- addComment c
   case api of
-    JSON -> return $ okResponse [] $ commentJSON c'
+    JSON -> return $ okResponse [] $ JSON.recordEncoding $ commentJSON c'
     HTML -> peeks $ otherRouteResponse [] viewSlot (api, (Just (view c'), slotId (commentSlot c')))

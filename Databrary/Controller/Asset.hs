@@ -20,7 +20,8 @@ import Control.Applicative ((<|>))
 import Control.Monad ((<=<), void, guard, when)
 import Control.Monad.Trans.Class (lift)
 import qualified Data.ByteString as BS
-import Data.Maybe (fromMaybe, isNothing, isJust, catMaybes, maybeToList)
+import Data.Maybe (fromMaybe, isNothing, isJust, maybeToList)
+import Data.Monoid ((<>))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Database.PostgreSQL.Typed.Range as Range
@@ -71,21 +72,20 @@ getAsset :: Permission -> Id Asset -> ActionM AssetSlot
 getAsset p i =
   checkPermission p =<< maybeAction =<< lookupAssetSlot i
 
-assetJSONField :: AssetSlot -> BS.ByteString -> Maybe BS.ByteString -> ActionM (Maybe JSON.Value)
+assetJSONField :: AssetSlot -> BS.ByteString -> Maybe BS.ByteString -> ActionM (Maybe JSON.Encoding)
 assetJSONField a "container" _ =
-  return $ JSON.toJSON . containerJSON . slotContainer <$> assetSlot a
+  return $ JSON.recordEncoding . containerJSON . slotContainer <$> assetSlot a
 assetJSONField a "creation" _ | view a >= PermissionEDIT = do
   (t, n) <- assetCreation $ slotAsset a
-  return $ Just $ JSON.toJSON $ JSON.object $ catMaybes
-    [ ("date" JSON..=) <$> t
-    , ("name" JSON..=) <$> n
-    ]
+  return $ Just $ JSON.objectEncoding $
+       "date" JSON..=? t
+    <> "name" JSON..=? n
 assetJSONField a "excerpts" _ =
-  Just . JSON.toJSON . map excerptJSON <$> lookupAssetExcerpts a
+  Just . JSON.mapObjects excerptJSON <$> lookupAssetExcerpts a
 assetJSONField _ _ _ = return Nothing
 
-assetJSONQuery :: AssetSlot -> JSON.Query -> ActionM JSON.Object
-assetJSONQuery vol = JSON.jsonQuery (assetSlotJSON vol) (assetJSONField vol)
+assetJSONQuery :: AssetSlot -> JSON.Query -> ActionM (JSON.Record (Id Asset) JSON.Series)
+assetJSONQuery o q = (assetSlotJSON o JSON..<>) <$> JSON.jsonQuery (assetJSONField o) q
 
 assetDownloadName :: AssetRow -> [T.Text]
 assetDownloadName a = T.pack (show $ assetId a) : maybeToList (assetName a)
@@ -210,7 +210,7 @@ processAsset api target = do
   _ <- changeAsset (slotAsset as'') Nothing
   _ <- changeAssetSlot as''
   case api of
-    JSON -> return $ okResponse [] $ assetSlotJSON as''
+    JSON -> return $ okResponse [] $ JSON.recordEncoding $ assetSlotJSON as''
     HTML -> peeks $ otherRouteResponse [] viewAsset (api, assetId $ assetRow $ slotAsset as'')
 
 postAsset :: ActionRoute (API, Id Asset)
@@ -253,7 +253,7 @@ deleteAsset = action DELETE (pathAPI </> pathId) $ \(api, ai) -> withAuth $ do
   let asset' = asset{ assetSlot = Nothing }
   _ <- changeAssetSlot asset'
   case api of
-    JSON -> return $ okResponse [] $ assetSlotJSON asset'
+    JSON -> return $ okResponse [] $ JSON.recordEncoding $ assetSlotJSON asset'
     HTML -> peeks $ otherRouteResponse [] viewAsset (api, assetId $ assetRow $ slotAsset asset')
 
 downloadAsset :: ActionRoute (Id Asset, Segment)

@@ -4,7 +4,6 @@ module Databrary.View.Angular
   ) where
 
 import Control.Monad (forM_)
-import qualified Data.Aeson.Encode as JSON
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Char8 as BSC
@@ -15,6 +14,7 @@ import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as HA
 
 import Databrary.Has (view)
+import qualified Databrary.JSON as JSON
 import Databrary.Service.Types
 import Databrary.Model.Identity
 import Databrary.Action.Types
@@ -58,7 +58,7 @@ htmlAngular debug nojs auth = H.docTypeHtml H.! ngAttribute "app" "databraryModu
         H.! HA.href (webURL $ webFileRelRaw css)
     H.script $ do
       H.preEscapedString "window.$play={user:"
-      H.unsafeLazyByteString $ JSON.encode $ identityJSON (view auth)
+      unsafeBuilder $ JSON.fromEncoding $ JSON.recordEncoding $ identityJSON (view auth)
       forM_ (serviceDown (view auth)) $ \msg -> do
         H.preEscapedString ",down:"
         H.unsafeLazyByteString $ JSON.encode msg

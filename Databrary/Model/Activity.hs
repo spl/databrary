@@ -14,7 +14,6 @@ import Data.Function (on)
 import qualified Data.HashMap.Strict as HM
 import Data.List (foldl')
 import qualified Data.Map as Map
-import Data.Maybe (maybeToList, catMaybes)
 import Data.Monoid ((<>))
 import qualified Data.Text as T
 import Data.Time.Clock (diffUTCTime)
@@ -165,62 +164,56 @@ lookupContainerActivity cont = do
   return $ mergeAssetAndSlot $ mergeActivities (ca:ra:asa:cea:caa:oaa)
 
 -- EDIT permission assumed for all
-activityTargetJSON :: ActivityTarget -> (T.Text, [JSON.Pair], JSON.Object)
+activityTargetJSON :: ActivityTarget -> (T.Text, JSON.Object, JSON.Object)
 activityTargetJSON (ActivityParty p) =
-  ("party", [],
+  ("party", mempty, JSON.recordObject $
     partyRowJSON p)
 activityTargetJSON ActivityAccount{..} =
-  ("account", [], JSON.object
-    [ "email" JSON..= activityAccountEmail
-    , "password" JSON..= activityAccountPassword
-    ])
+  ("account", mempty,
+    "email" JSON..= activityAccountEmail <> "password" JSON..= activityAccountPassword)
 activityTargetJSON (ActivityAuthorize a) =
-  ("authorize", ["party" JSON..= partyJSON (authorizeChild $ authorization a)],
+  ("authorize", "party" JSON..=: partyJSON (authorizeChild $ authorization a),
     authorizeJSON a)
 activityTargetJSON (ActivityVolume v) =
-  ("volume", [],
-    volumeRowJSON v JSON..+?
-      (("alias" JSON..=) <$> volumeAlias v))
+  ("volume", mempty, JSON.recordObject $
+    volumeRowJSON v JSON..<>
+      "alias" JSON..=? volumeAlias v)
 activityTargetJSON (ActivityAccess a) =
-  ("access", ["party" JSON..= partyJSON (volumeAccessParty a)],
+  ("access", "party" JSON..=: partyJSON (volumeAccessParty a),
     volumeAccessJSON a)
 activityTargetJSON (ActivityContainer c) =
-  ("container", [],
-    containerRowJSON c JSON..+?
-      (("date" JSON..=) <$> containerDate c))
+  ("container", mempty, JSON.recordObject $
+    containerRowJSON c JSON..<>
+      "date" JSON..=? containerDate c)
 activityTargetJSON ActivityRelease{..} =
-  ("release", maybeToList $ segmentJSON $ slotSegmentId activitySlotId, JSON.object
-    [ "release" JSON..= activityRelease
-    ])
+  ("release", segmentJSON $ slotSegmentId activitySlotId,
+    "release" JSON..= activityRelease)
 activityTargetJSON (ActivityAsset a) =
-  ("asset", ["id" JSON..= assetId a], JSON.object $ catMaybes
-    [ ("classification" JSON..=) <$> assetRelease a
-    , ("name" JSON..=) <$> assetName a
-    ])
+  ("asset", "id" JSON..= assetId a,
+    "classification" JSON..=? assetRelease a <> "name" JSON..=? assetName a)
 activityTargetJSON (ActivityAssetSlot a s) =
-  ("asset", ["id" JSON..= a], JSON.object $ maybeToList
-    (segmentJSON $ slotSegmentId s))
-activityTargetJSON (ActivityAssetAndSlot a s) = (n, i, o JSON..+? segmentJSON (slotSegmentId s)) where
+  ("asset", "id" JSON..= a,
+    segmentJSON $ slotSegmentId s)
+activityTargetJSON (ActivityAssetAndSlot a s) = (n, i, o <> segmentJSON (slotSegmentId s)) where
   (n, i, o) = activityTargetJSON (ActivityAsset a)
 activityTargetJSON ActivityExcerpt{..} =
-  ("excerpt", ("id" JSON..= activityAssetId) : maybeToList (segmentJSON activitySegment), JSON.object $ maybeToList
-    (("excerpt" JSON..=) <$> activityExcerptRelease))
+  ("excerpt", "id" JSON..= activityAssetId <> segmentJSON activitySegment,
+    "excerpt" JSON..=? activityExcerptRelease)
 
 activityAssetJSON :: Asset -> JSON.Object
-activityAssetJSON a = assetJSON a JSON..+? (("name" JSON..=) <$> assetName (assetRow a))
+activityAssetJSON a = JSON.recordObject $ assetJSON a JSON..<> "name" JSON..=? assetName (assetRow a)
 
 activityJSON :: Activity -> Maybe JSON.Object
 activityJSON Activity{ activityAudit = Audit{..}, ..} = auditAction == AuditActionChange && HM.null new && HM.null old ?!>
-  new JSON..++ key ++ catMaybes
-    [ Just $ "when" JSON..= auditWhen
-    , Just $ "action" JSON..= show (auditAction)
-    , Just $ "ip" JSON..= show (auditIp auditIdentity)
-    , Just $ "user" JSON..= auditWho auditIdentity
-    , Just $ "type" JSON..= typ
-    , HM.null old ?!> "old" JSON..= old
-    , ("replace" JSON..=) . activityAssetJSON <$> activityReplace
-    , ("transcode" JSON..=) . activityAssetJSON <$> activityTranscode
-    ]
+  new <> key
+    <> "when" JSON..= auditWhen
+    <> "action" JSON..= show (auditAction)
+    <> "ip" JSON..= show (auditIp auditIdentity)
+    <> "user" JSON..= auditWho auditIdentity
+    <> "type" JSON..= typ
+    <> "old" JSON..=? (old <!? HM.null old)
+    <> "replace" JSON..=? (activityAssetJSON <$> activityReplace)
+    <> "transcode" JSON..=? (activityAssetJSON <$> activityTranscode)
   where
   (new, old)
     | auditAction == AuditActionRemove
