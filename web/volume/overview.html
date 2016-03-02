@@ -68,6 +68,14 @@
             <dt ng-if="::l.length" ng-repeat-start="(c, l) in ::volume.summary.categories">{{::c}}s</dt>
             <dd ng-if="::l.length" ng-repeat-end><ul class="comma inline"><li ng-repeat="i in ::l" ng-bind="::i"></li></ul></dd>
 
+            <dt ng-repeat-start="r in ::volume.top.records">{{::page.constants.category[volume.records[r.id].category].name}}</dt>
+            <dd ng-repeat-end>
+              <ul>
+                <li ng-repeat="(m, v) in ::volume.records[r.id].measures track by m">{{::page.constants.metric[m].name}}: {{::v}}</li>
+                <li ng-if="::r.age">age: <display-age value="::r.age"></display-age>
+              </ul>
+            </dd>
+
           </dl>
         </div>
       </div>
