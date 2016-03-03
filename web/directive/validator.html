@@ -4,7 +4,7 @@
   <div class="validator-input">
     <div class="validator-field">
       <aside class="validator-messages">
-        <div class="validator-message" ng-show="validator.show()">
+        <div ng-class="{'error':validator.serverErrors.length > 0 || validator.clientErrors.length > 0}" class="validator-message" ng-show="validator.show()">
           <div ng-if="validator.showServerErrors()">
             <div class="validator-server" ng-repeat="tip in validator.serverErrors" ng-bind-html="::tip"></div>
           </div>
