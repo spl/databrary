@@ -33,7 +33,7 @@
     </scroll-float>
     <article ng-repeat="access in volumeEditAccessForm.data | orderBy:['-individual','sort'] track by access.party.id" id="access-{{::access.party.id}}" class="access-grant cf anchor">
       <div class="row">
-        <access-grant-form></access-grant-form>
+        <access-grant-form class="access-grant-form"></access-grant-form>
       </div>
     </article>
   </fieldset>
