@@ -26,9 +26,9 @@
 
             <div class="profile-link">
               <a ng-href="{{::v.volume.route()}}" ng-bind="::v.volume.displayName"></a>
-              <a ng-if="::v.volume.checkPermission(page.constants.permission.EDIT)" href="" ng-click="v.edit()" class="icon edit button mini profile-hover-link"></a> 
+              <a ng-if="::v.volume.checkPermission(page.constants.permission.EDIT)" href="" ng-click="v.edit()" ng-class="!v.selected && selected && selected.constructor !== v.constructor ? 'profile-hover-link-show add' : 'edit'" class="icon button mini profile-hover-link">
+              </a> 
             </div>
-
           </li>
         </ul>
       </div>
@@ -52,7 +52,7 @@
               <a ng-href="{{::p.party.route()}}" ng-bind="::p.party.name"></a><wbr>
               <span ng-if="::!(p.parent.member || p.parent.site)" class="permission-auth-pending" message="auth.pending"></span>
               <span ng-if="::(p.parent.member || p.parent.site)" class="permission-auth-expiration small" ng-bind="::p.parent.expires | date:'yyyy/MM/dd'" ng-class="::{expired:isExpired(p.parent)}"></span><wbr>
-              <a href="" ng-click="p.edit('apply')" class="icon edit button neutral profile-hover-link"></a>
+              <a href="" ng-click="p.edit('apply')" ng-class="!p.selected && selected && selected.constructor !== p.constructor ? 'profile-hover-link-show add' : 'edit'" class="icon edit button neutral profile-hover-link"></a>
               <br>
             </div>
             <div ng-if="::p.parent.site" class="profile-additional small">
@@ -87,7 +87,7 @@
                 <a ng-href="{{::p.party.route()}}" ng-bind="::p.party.name"></a><wbr>
                 <span ng-if="::!(p.child.member || p.child.site)" class="permission-auth-pending" message="auth.pending"></span>
                 <span ng-if="::(p.child.member || p.child.site)" class="permission-auth-expiration small" ng-bind="::p.child.expires | date:'yyyy/MM/dd'" ng-class="::{expired:isExpired(p.child)}"></span><wbr>
-                <a href="" ng-click="p.edit('grant')" class="icon edit button mini profile-hover-link"></a>
+                <a href="" ng-click="p.edit('grant')" ng-class="!p.selected && selected && selected.constructor !== p.constructor ? 'profile-hover-link-show add' : 'edit'" class="icon button mini profile-hover-link"></a>
               </div>
             </li>
           </ul>
@@ -106,7 +106,7 @@
 
             <div class="profile-link">
               <a ng-href="{{::p.party.route()}}" ng-bind="::p.party.name"></a><wbr>
-              <a ng-if="editable" href="" ng-click="p.edit()" class="profile-hover-link icon edit button"></a>
+              <a ng-if="editable" href="" ng-click="p.edit()" ng-class="!p.selected && selected && selected.constructor !== p.constructor ? 'profile-hover-link-show add' : 'edit'" class="profile-hover-link icon button"></a>
             </div>
           </li>
         </ul>
