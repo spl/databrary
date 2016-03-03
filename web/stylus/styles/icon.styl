@@ -14,7 +14,6 @@
   &.clickable:hover
     opacity 0.4
   // png's
-  &.add,
   &.session,
   &.jump,
   &.trash,
@@ -30,7 +29,7 @@
     min-width 28px
 
   &.add
-    background-image url('/web/icons/add.png')
+    background-image url('/web/icons/add.svg')
   &.activity
     background-image url('/web/icons/activity.svg')
 
@@ -165,10 +164,11 @@
   &.line
     height b1
     background-position 0px 4px
-    &.add
-      width b1
     &.session
       width b1+b8
+  
+  &.b1
+    size b1
 
 .sort
   background-position right
