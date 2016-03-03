@@ -55,5 +55,5 @@ metricJSON m@Metric{..} = JSON.Record metricId $
 {- schema synchronization:
 20160201-nih_race
 20160202-context_language
-20160302-pregnancy_term
+20160303-pregnancy_term
 -}
