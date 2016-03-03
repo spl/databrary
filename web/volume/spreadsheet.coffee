@@ -369,6 +369,8 @@ app.directive 'spreadsheet', [
             name: s.name
             date: s.date
             release: s.release+''
+          if s == volume.top
+            d.global = true
           d
 
         populateRecordData = (r) ->
@@ -404,7 +406,7 @@ app.directive 'spreadsheet', [
           for ci, slot of volume.containers
             if slot == volume.top
               for rr in slot.records when (record = rr.record)
-                record.top = true
+                record.global = true
               continue
             populateSlot(slot)
 
@@ -420,17 +422,17 @@ app.directive 'spreadsheet', [
 
           nor = undefined
           for ci, slot of volume.containers
-            if slot == volume.top
-              for rr in slot.records when (record = rr.record)
-                record.top = true
-              continue
             recs = slot.records
             any = false
             for rr in recs when (row = records[rr.id])
               d = populateSlotData(slot)
               if 'age' of rr
                 d.age = rr.age
-              d.summary = (rrr.record.displayName for rrr in recs when rrr.id != rr.id).join(', ')
+              if d.global
+                rr.record.global = true
+                d.summary = "Whole volume (all folders)"
+              else
+                d.summary = (rrr.record.displayName for rrr in recs when rrr.id != rr.id).join(', ')
               row.add('slot', d)
               any = true
             unless any
@@ -985,7 +987,7 @@ app.directive 'spreadsheet', [
                   rs = []
                   mf = (r) -> (m) -> r.measures[m]
                   for ri, r of volume.records
-                    if r.category == info.c && !info.row.list(info.c).some((d) -> `d.id == ri`) && !r.top
+                    if r.category == info.c && !info.row.list(info.c).some((d) -> `d.id == ri`) && !r.global
                       rs.push
                         r:r
                         v:(r.measures[mi] ? '').toLowerCase()
@@ -1011,7 +1013,7 @@ app.directive 'spreadsheet', [
                 new: 'Create new ' + c.name
                 remove: c.not
               for ri, r of volume.records
-                if r.category == c.id && (!info.row.list(info.c).some((d) -> `d.id == ri`) || `ri == editInput.value`) && !r.top
+                if r.category == c.id && (!info.row.list(info.c).some((d) -> `d.id == ri`) || `ri == editInput.value`) && !r.global
                   editScope.options[ri] = r.displayName
               ms = info.cols.metrics
               # detect special cases: singleton or unitary records
