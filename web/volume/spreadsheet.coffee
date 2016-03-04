@@ -371,6 +371,7 @@ app.directive 'spreadsheet', [
             release: s.release+''
           if s == volume.top
             d.global = true
+            d.summary = "Whole volume (all folders)"
           d
 
         populateRecordData = (r) ->
@@ -430,7 +431,6 @@ app.directive 'spreadsheet', [
                 d.age = rr.age
               if d.global
                 rr.record.global = true
-                d.summary = "Whole volume (all folders)"
               else
                 d.summary = (rrr.record.displayName for rrr in recs when rrr.id != rr.id).join(', ')
               row.add('slot', d)
@@ -466,9 +466,6 @@ app.directive 'spreadsheet', [
                 cell.classList.add('clickable')
                 del = cell.appendChild(document.createElement('a'))
                 del.className = 'clickable trash icon'
-                i = new Info(info.i)
-                i.c = info.c
-                i.cell = cell
                 $(del).on 'click', $scope.$lift(clickRemove)
               if info.c == 'slot'
                 a = cell.appendChild(document.createElement('a'))
@@ -488,6 +485,11 @@ app.directive 'spreadsheet', [
               v = display.formatAge(v)
             when 'top'
               v = info.metric.options[v]
+            when 'summary'
+              if Editing && info.d.global
+                del = cell.appendChild(document.createElement('a'))
+                del.className = 'clickable trash icon'
+                $(del).on 'click', $scope.$lift(clickGlobal)
             else
               if info.metric.type == 'void' && info.d
                 cell.className = 'clickable' if Editing && Key.id != info.c
@@ -538,6 +540,10 @@ app.directive 'spreadsheet', [
               if Editing && info.c != 'slot' && info.c != Key.id
                 generateAdd(info, td)
               else if !info.n
+                if Editing && info.c == 'slot' && info.c != Key.id
+                  add = td.appendChild(document.createElement('a'))
+                  add.className = 'clickable add icon'
+                  $(add).on 'click', $scope.$lift(clickGlobal)
                 td.appendChild(document.createTextNode(info.category.not))
                 td.id = ID + '-no_' + info.i + '_' + info.c
           else
@@ -1193,6 +1199,26 @@ app.directive 'spreadsheet', [
           event.stopPropagation()
           false
 
+        clickGlobal = (event) ->
+          return unless info = parseId(event.target.parentNode)
+          rec = info.row.key.record
+          act =
+            if rec.global
+              volume.top.removeRecord(rec).then () ->
+                delete rec.global
+                info.row.set(info.c, info.n, undefined)
+                return
+            else
+              volume.top.addRecord(rec).then () ->
+                rec.global = true
+                info.row.set(info.c, info.n, populateSlotData(volume.top))
+          saveRun info.cell, act.then () ->
+            collapse()
+            generateRow(info.i)
+            expand(info) if info.n
+            return
+          return
+
         $scope.unlimit = ->
           Limit = Infinity
           fill()
@@ -1409,8 +1435,8 @@ app.directive 'spreadsheet', [
             pivot:
               cols: []
               rows: ["release"]
-              aggregatorName: "Count"
               rendererName: "Table"
+              aggregatorName: "Count"
             filter: [
               {c: "slot", m:"top", op:"false"}]
 
