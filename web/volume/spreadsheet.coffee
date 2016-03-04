@@ -435,7 +435,7 @@ app.directive 'spreadsheet', [
                 d.summary = (rrr.record.displayName for rrr in recs when rrr.id != rr.id).join(', ')
               row.add('slot', d)
               any = true
-            unless any
+            unless any || slot == volume.top
               nor ||= new Row()
               d = populateSlotData(slot)
               d.summary = (rrr.record.displayName for rrr in recs).join(', ')
@@ -557,11 +557,18 @@ app.directive 'spreadsheet', [
             return
           pre = ID + '-' + info.i + '_'
           post = if info.hasOwnProperty('n') then '_' + info.n else ''
-          for mi in [0..l-1] by 1
-            info.m = info.cols.start+mi
-            info.id = pre + (info.cols.start+mi) + post
+          generateCell = (i) ->
+            info.m = info.cols.start+i
+            info.id = pre + info.m + post
             info.cell = info.tr.appendChild(document.createElement('td'))
             generateText(info)
+            return
+          if info.category.id == 'slot' && info.slot.top
+            generateCell(l-1) # summary
+            info.cell.setAttribute("colspan", l)
+            return
+          for mi in [0..l-1] by 1
+            generateCell(mi)
           return
 
         # Fill out Rows[i].
