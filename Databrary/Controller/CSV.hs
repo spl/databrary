@@ -8,6 +8,7 @@ import Control.Arrow (second)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Char8 as BSC
+import Data.Foldable (fold)
 import Data.Function (on)
 import Data.List (foldl', nubBy, groupBy)
 import Data.Monoid ((<>))
@@ -72,7 +73,7 @@ headerRow = concatMap $ uncurry $ metricsHeader . tenc . categoryName
 
 metricsRow :: [Metric] -> [Measure] -> [BS.ByteString]
 metricsRow mh@(m:h) dl@(d:l) = case compare m dm of
-  LT -> BS.empty : metricsRow h dl
+  LT -> fold (metricAssumed m) : metricsRow h dl
   EQ -> measureDatum d : metricsRow h l
   GT -> metricsRow mh l
   where dm = measureMetric d
