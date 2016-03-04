@@ -1400,10 +1400,19 @@ app.directive 'spreadsheet', [
               rows: ["participant race"]
               rendererName: "Table"
               aggregatorName: "Count"
-            filter: [ # these aren't actually used (yet)
+            filter: [
               {c: "slot", m: "top", op: "false"},
               {c: "slot", m: "date", op: "ge"},
               {c: "slot", m: "date", op: "le", v: $filter('date')(new Date(), 'yyyy-MM-dd')}]
+          volume.state['Session release level summary'] ?=
+            key: 'slot'
+            pivot:
+              cols: []
+              rows: ["release"]
+              aggregatorName: "Count"
+              rendererName: "Table"
+            filter: [
+              {c: "slot", m:"top", op:"false"}]
 
         $scope.zip = (event) ->
           event.preventDefault()
