@@ -77,7 +77,7 @@ metricsRow mh@(m:h) dl@(d:l) = case compare m dm of
   EQ -> measureDatum d : metricsRow h l
   GT -> metricsRow mh l
   where dm = measureMetric d
-metricsRow m _ = map (const BS.empty) m
+metricsRow m _ = map (fold . metricAssumed) m
 
 recordsRow :: Metrics -> [Record] -> [BS.ByteString]
 recordsRow h [] = concatMap (`metricsRow` []) h
