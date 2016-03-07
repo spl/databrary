@@ -404,7 +404,7 @@ CREATE TABLE "slot_release" (
 	"segment" segment NOT NULL,
 	"release" release NOT NULL,
 	Primary Key ("container", "segment"),
-	Exclude USING gist (singleton("container") WITH =, "segment" WITH &&)
+	Constraint "slot_release_overlap_excl" Exclude USING gist (singleton("container") WITH =, "segment" WITH &&) DEFERRABLE
 ) INHERITS ("slot");
 COMMENT ON TABLE "slot_release" IS 'Sharing/release permissions granted by participants on (portions of) contained data.';
 
@@ -513,7 +513,7 @@ CREATE TABLE "excerpt" (
 	"segment" segment NOT NULL Check (NOT isempty("segment")),
 	"release" release,
 	Primary Key ("asset", "segment"),
-	Exclude USING gist (singleton("asset") WITH =, "segment" WITH &&)
+	Constraint "excerpt_overlap_excl" Exclude USING gist (singleton("asset") WITH =, "segment" WITH &&) DEFERRABLE
 );
 ALTER TABLE "excerpt"
 	ALTER "segment" SET STORAGE PLAIN;
@@ -530,6 +530,7 @@ DECLARE
 	shift interval := COALESCE(lower(NEW.segment), '0') - COALESCE(lower(OLD.segment), '0');
 BEGIN
 	IF NEW.segment <> OLD.segment THEN
+		SET CONSTRAINTS excerpt_overlap_excl DEFERRED;
 		UPDATE excerpt SET segment = segment_shift(segment, shift) WHERE asset = NEW.asset;
 	END IF;
 	RETURN null;
@@ -642,7 +643,7 @@ CREATE TABLE "tag_use" (
 	"container" integer NOT NULL References "container",
 	"segment" segment NOT NULL,
 	Primary Key ("tag", "who", "container", "segment"),
-	Exclude USING gist (singleton("tag") WITH =, singleton("who") WITH =, singleton("container") WITH =, "segment" WITH &&)
+	Constraint "tag_use_overlap_excl" Exclude USING gist (singleton("tag") WITH =, singleton("who") WITH =, singleton("container") WITH =, "segment" WITH &&) DEFERRABLE
 ) INHERITS ("slot");
 CREATE INDEX ON "tag_use" ("who");
 CREATE INDEX "tag_use_slot_idx" ON "tag_use" ("container", "segment");
@@ -650,7 +651,7 @@ COMMENT ON TABLE "tag_use" IS 'Applications of tags to slots.';
 
 CREATE TABLE "keyword_use" (
 	Primary Key ("tag", "container", "segment"),
-	Exclude USING gist (singleton("tag") WITH =, singleton("container") WITH =, "segment" WITH &&)
+	Constraint "keyword_use_overlap_excl" Exclude USING gist (singleton("tag") WITH =, singleton("container") WITH =, "segment" WITH &&) DEFERRABLE
 ) INHERITS ("tag_use");
 CREATE INDEX "keyword_use_slot_idx" ON "keyword_use" ("container", "segment");
 COMMENT ON TABLE "keyword_use" IS 'Special "keyword" tags editable as volume data.';
@@ -924,7 +925,7 @@ CREATE TABLE "slot_record" (
 	"container" integer NOT NULL References "container",
 	"segment" segment NOT NULL,
 	Primary Key ("record", "container", "segment"),
-	Exclude USING gist (singleton("record") WITH =, singleton("container") WITH =, "segment" WITH &&)
+	Constraint "slot_record_overlap_excl" Exclude USING gist (singleton("record") WITH =, singleton("container") WITH =, "segment" WITH &&) DEFERRABLE
 ) INHERITS ("slot");
 CREATE INDEX "slot_record_slot_idx" ON "slot_record" ("container", "segment");
 COMMENT ON TABLE "slot_record" IS 'Attachment of records to slots.';
