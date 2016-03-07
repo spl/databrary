@@ -32,7 +32,7 @@
               <button ng-if="editing && current.asset && !current.file" class="player-action-word yellow" flow-btn>Replace File</button>
               <a ng-if="editing && !!(current.asset || current.file) && !current.pending" ng-click="current.remove()" class="player-action-icon icon trash2 button"></a>
               <a ng-if="current.asset && !current.asset.pending && current.asset.checkPermission(page.permission.VIEW)" class="player-action-icon icon download button" ng-href="{{current.asset.route()}}"></a>
-              <button ng-if="current.canRestore()" class="paste icon" tooltip="'asset.restore' | message:current.canRestore().name" ng-click="current.restore()"></button>
+              <button ng-if="current.canRestore()" class="paste icon" tooltip="'asset.restore' | message" ng-click="current.restore()"></button>
             </nav>
             <div ng-if="!(folded || !current)" id="player-scroll" class="player-scroll" ng-style="{height:playerHeight+'px'}">
               <div class="player-info">
