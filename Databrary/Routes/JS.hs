@@ -130,6 +130,7 @@ jsRoutes =
   , jsRoute "deleteRecord" deleteRecord (JSON, record)
   , jsRoute "postRecordMeasure" postRecordMeasure (JSON, record, metric)
   , jsRoute "postRecordSlot" postRecordSlot (JSON, slot, record)
+  , jsRoute "deleteRecordAllSlot" deleteRecordAllSlot (JSON, record)
 
   , jsRoute "addVolumeMetric" postVolumeMetric (volume, Right metric)
   , jsRoute "addVolumeCategory" postVolumeMetric (volume, Left category)

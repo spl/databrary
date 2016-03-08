@@ -124,6 +124,7 @@ routeMap = fromRouteList
   , route deleteRecord
   , route postRecordSlot
   , route deleteRecordSlot
+  , route deleteRecordAllSlot
 
   , route postVolumeMetric
   , route deleteVolumeMetric

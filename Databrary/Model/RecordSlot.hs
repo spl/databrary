@@ -9,6 +9,7 @@ module Databrary.Model.RecordSlot
   , lookupVolumeContainersRecordIds
   , lookupVolumeRecordSlotIds
   , moveRecordSlot
+  , removeRecordAllSlot
   , recordSlotAge
   , recordSlotJSON
   ) where
@@ -28,6 +29,7 @@ import Databrary.Model.Id.Types
 import Databrary.Model.Segment
 import Databrary.Model.Permission
 import Databrary.Model.Audit
+import Databrary.Model.Audit.SQL
 import Databrary.Model.Volume.Types
 import Databrary.Model.Container.Types
 import Databrary.Model.Slot
@@ -80,6 +82,11 @@ moveRecordSlot rs@RecordSlot{ recordSlot = s@Slot{ slotSegment = src } } dst = d
   where
   rd = rs{ recordSlot = s{ slotSegment = dst } }
   err = guard . isExclusionViolation
+
+removeRecordAllSlot :: (MonadAudit c m) => Record -> m Int
+removeRecordAllSlot r = do
+  ident <- getAuditIdentity
+  dbExecute $(auditDelete 'ident "slot_record" "record = ${recordId $ recordRow r} AND segment = '(,)'" Nothing)
 
 recordSlotAge :: RecordSlot -> Maybe Age
 recordSlotAge rs@RecordSlot{..} =

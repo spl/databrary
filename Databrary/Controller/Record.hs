@@ -7,6 +7,7 @@ module Databrary.Controller.Record
   , deleteRecord
   , postRecordSlot
   , deleteRecordSlot
+  , deleteRecordAllSlot
   ) where
 
 import Control.Monad (when, unless)
@@ -117,3 +118,12 @@ deleteRecordSlot = action DELETE (pathAPI </>> pathSlotId </> pathId) $ \(api, s
     HTML | r -> peeks $ otherRouteResponse [] viewRecord (api, recordId $ recordRow rec)
     JSON | r -> return $ okResponse [] $ JSON.recordEncoding $ recordJSON rec
     _ -> return $ emptyResponse noContent204 []
+
+deleteRecordAllSlot :: ActionRoute (API, Id Record)
+deleteRecordAllSlot = action DELETE (pathAPI </> "slot" >/> "all" >/> pathId) $ \(api, ri) -> withAuth $ do
+  guardVerfHeader
+  rec <- getRecord PermissionEDIT ri
+  _ <- removeRecordAllSlot rec
+  case api of
+    HTML -> peeks $ otherRouteResponse [] viewRecord (api, recordId $ recordRow rec)
+    JSON -> return $ okResponse [] $ JSON.recordEncoding $ recordJSON rec

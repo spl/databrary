@@ -1,8 +1,8 @@
 'use strict'
 
 app.directive 'spreadsheet', [
-  'constantService', 'displayService', 'messageService', 'tooltipService', 'styleService', '$compile', '$templateCache', '$timeout', '$document', '$location', '$filter', 'routerService', 'storageService',
-  (constants, display, messages, tooltips, styles, $compile, $templateCache, $timeout, $document, $location, $filter, router, storage) ->
+  'constantService', 'displayService', 'messageService', 'tooltipService', 'styleService', '$compile', '$templateCache', '$timeout', '$document', '$location', '$filter', 'routerService', 'storageService', 'Segment',
+  (constants, display, messages, tooltips, styles, $compile, $templateCache, $timeout, $document, $location, $filter, router, storage, Segment) ->
     restrict: 'E'
     scope: true
     templateUrl: 'volume/spreadsheet.html'
@@ -126,7 +126,6 @@ app.directive 'spreadsheet', [
         # We use the following types of data structures:
         #   Row = index of slot in slots and rows (i)
         #   Slot_id = Database id of container
-        #   Segment = standard time range (see type service)
         #   Record_id = Database id of record
         #   Category_id = Database id of record category (c)
         #   Count = index of record within category for slot (n)
@@ -142,6 +141,7 @@ app.directive 'spreadsheet', [
         Cats = {}       # Set of used categories
         Order = []      # Permutation Array of Row in display order
         Expanded = undefined # Info
+        SlotCount = 0
 
 
         class Row
@@ -404,7 +404,9 @@ app.directive 'spreadsheet', [
           row
 
         populateSlots = ->
+          SlotCount = -1
           for ci, slot of volume.containers
+            SlotCount++
             if slot == volume.top
               for rr in slot.records when (record = rr.record)
                 record.global = true
@@ -421,8 +423,10 @@ app.directive 'spreadsheet', [
           for r, record of volume.records when record.category == Key.id
             records[r] = populateRecord(record)
 
+          SlotCount = -1
           nor = undefined
           for ci, slot of volume.containers
+            SlotCount++
             recs = slot.records
             any = false
             for rr in recs when (row = records[rr.id])
@@ -431,8 +435,10 @@ app.directive 'spreadsheet', [
                 d.age = rr.age
               if d.global
                 rr.record.global = true
+                row.partial = true
               else
                 d.summary = (rrr.record.displayName for rrr in recs when rrr.id != rr.id).join(', ')
+                row.partial ||= !Segment.isFull(rr.segment)
               row.add('slot', d)
               any = true
             unless any || slot == volume.top
@@ -540,13 +546,17 @@ app.directive 'spreadsheet', [
               if Editing && info.c != 'slot' && info.c != Key.id
                 generateAdd(info, td)
               else if !info.n
-                if Editing && info.c == 'slot' && info.c != Key.id
+                if Editing && info.c == 'slot' && Key.id != 'slot'
                   add = td.appendChild(document.createElement('a'))
                   add.className = 'clickable add icon'
                   $(add).on 'click', $scope.$lift(clickGlobal)
                 td.appendChild(document.createTextNode(info.category.not))
                 td.id = ID + '-no_' + info.i + '_' + info.c
           else
+            if Editing && info.c == 'slot' && Key.id != 'slot' && t == SlotCount && !info.row.partial
+              add = td.appendChild(document.createElement('a'))
+              add.className = 'clickable add icon'
+              $(add).on 'click', $scope.$lift(clickGlobal)
             td.appendChild(document.createTextNode(t + " " + info.category.name + "s"))
             td.className = 'more'
             td.id = ID + '-more_' + info.i + '_' + info.c
@@ -1208,10 +1218,15 @@ app.directive 'spreadsheet', [
                 delete rec.global
                 info.row.set(info.c, info.n, undefined)
                 return
+            else if info.count
+              router.http(router.controllers.deleteRecordAllSlot, rec.id).then () ->
+                volume.top.addRecord(rec)
+                  # TODO
             else
               volume.top.addRecord(rec).then () ->
                 rec.global = true
                 info.row.set(info.c, info.n, populateSlotData(volume.top))
+                return
           saveRun info.cell, act.then () ->
             collapse()
             generateRow(info.i)
