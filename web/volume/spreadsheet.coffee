@@ -553,7 +553,7 @@ app.directive 'spreadsheet', [
                 td.appendChild(document.createTextNode(info.category.not))
                 td.id = ID + '-no_' + info.i + '_' + info.c
           else
-            if Editing && info.c == 'slot' && Key.id != 'slot' && t == SlotCount && !info.row.partial
+            if Editing && info.c == 'slot' && Key.id != 'slot' && t == SlotCount && !info.row.partial && info.row.key
               add = td.appendChild(document.createElement('a'))
               add.className = 'clickable add icon'
               $(add).on 'click', $scope.$lift(clickGlobal)
