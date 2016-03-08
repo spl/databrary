@@ -12,7 +12,6 @@ app.directive 'volumeOverview', [
         agesum: 0
         ages: 0
         participants: 0
-        categories: {condition:[], group:[], task:[]}
 
       Participant = constants.categoryName.participant
       Gender = Participant.metricName.gender.id
@@ -38,10 +37,6 @@ app.directive 'volumeOverview', [
               summary.genders[g]++
             else
               summary.genders[g] = 1
-        else
-          cat = constants.category[r.category]
-          if (l = volume.summary.categories[cat.name]) && (i = r.measures[cat.metricName.name.id])
-            l.push(i)
 
     {
     restrict: 'E'
