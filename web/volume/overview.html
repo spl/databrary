@@ -65,12 +65,12 @@
               </span>
             </dt>
 
-            <dt ng-repeat-start="r in ::volume.top.records">
-              {{::page.constants.category[volume.records[r.id].category].name}} 
+            <dt ng-repeat-start="r in ::volume.top.records" ng-init="rec=volume.records[r.id]">
+              {{::page.constants.category[rec.category].name}}
             </dt>
             <dd ng-repeat-end>
               <ul class="inline flat">
-                <li ng-repeat="(m, v) in ::volume.records[r.id].measures track by m" class="panel-overview-global-record">{{::page.constants.metric[m].name}}: {{::v}}</li>
+                <li ng-repeat="m in ::volume.metrics[rec.category]" ng-init="met=page.constants.metric[m]" class="panel-overview-global-record">{{::met.name}}: {{::rec.measures[m] || met.assumed || ''}}</li>
                 <li ng-if="::r.age">age: <display-age value="::r.age"></display-age>
               </ul>
             </dd>
