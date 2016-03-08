@@ -26,7 +26,7 @@ app.factory('constantService', [
     }
 
     constants.releases = Object.keys(constants.release);
-    constants.release['undefined'] = 'DEFAULT';
+    constants.release['undefined'] = 'UNRELEASED';
     constants.releases.unshift('undefined');
     invertArray(constants.permission);
     invertArray(constants.release);

@@ -761,7 +761,7 @@ app.controller('volume/slot', [
       excerptOptions: () ->
         r = (@asset.classification ? @asset.container.release) || 0
         l =
-          true: constants.message('release.DEFAULT.select') + ' (' + constants.message('release.' + constants.release[r] + '.title') + ')'
+          true: constants.message('release.UNRELEASED.select') + ' (' + constants.message('release.' + constants.release[r] + '.title') + ')'
         for c, i in constants.release when i > r
           l[i] = constants.message('release.' + c + '.title') + ': ' + constants.message('release.' + c + '.select')
         l[@excerpt.release] = constants.message('release.prompt') unless @excerpt.release of l
