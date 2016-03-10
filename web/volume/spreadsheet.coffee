@@ -13,6 +13,7 @@ app.directive 'spreadsheet', [
 
         Editing = $scope.editing = $attrs.edit != undefined
         ID = $scope.id = $attrs.id ? 'ss'
+        ShowGlobal = false
         Limit = $attrs.limit || Infinity
         Key = undefined
 
@@ -326,17 +327,17 @@ app.directive 'spreadsheet', [
         # Fill Cols and Groups from volume metrics
         populateCols = (slot) ->
           Cols = []
+          all = Object.keys(volume.metrics).sort(byNumber).map((i) -> constants.category[i])
           if slot
             slot = undefined
-            cats = Object.keys(volume.metrics)
-            unless Editing
-              cats = cats.filter((i) -> Cats[i])
-            cats = cats.sort(byNumber).map((i) -> constants.category[i])
+            cats = all.filter((c) -> ShowGlobal || (Cats[c.id] ? Editing))
             cats.push(pseudoCategory.asset)
             cats.unshift(pseudoCategory.slot)
+            $scope.anyGlobal = all.some((c) -> Cats[c.id] == false)
           else
             slot = [pseudoMetric.summary]
             cats = [Key, pseudoCategory.slot]
+            $scope.anyGlobal = false
 
           $scope.groups = Groups = cats.map (category) ->
             metrics = (category.template || volume.metrics[category.id]).map(getMetric)
@@ -357,8 +358,8 @@ app.directive 'spreadsheet', [
               start: si
             }
           $scope.cols = Cols
-          if Key == pseudoCategory.slot || !$scope.views
-            $scope.views = (g.category for g in Groups when g.category.id != 'asset')
+          $scope.views = all
+          $scope.views.unshift(pseudoCategory.slot)
           return
 
         populateSlotData = (s) ->
@@ -410,6 +411,7 @@ app.directive 'spreadsheet', [
             if slot == volume.top
               for rr in slot.records when (record = rr.record)
                 record.global = true
+                Cats[record.category] ||= false
               continue
             populateSlot(slot)
 
@@ -1220,8 +1222,10 @@ app.directive 'spreadsheet', [
                 return
             else if info.count
               router.http(router.controllers.deleteRecordAllSlot, rec.id).then () ->
-                volume.top.addRecord(rec)
+                volume.top.addRecord(rec).then () ->
                   # TODO
+                  rec.global = true
+                  return
             else
               volume.top.addRecord(rec).then () ->
                 rec.global = true
@@ -1237,6 +1241,12 @@ app.directive 'spreadsheet', [
         $scope.unlimit = ->
           Limit = Infinity
           fill()
+          return
+
+        $scope.showHideGlobal = ->
+          ShowGlobal = !ShowGlobal
+          $scope.setKey(Key.id)
+          return
 
         $scope.tabOptionsClick = false
         $scope.tabOptionsToggle = ($event) ->
@@ -1312,9 +1322,12 @@ app.directive 'spreadsheet', [
           return
 
         # Call all populate functions
-        populate = ->
+        setKey = (key) ->
+          unselect()
+          Key = $scope.key = key? && getCategory(key) || pseudoCategory.slot
           foot = Rows[-1]
           Rows = []
+          Cats = {}
           if bySlot = Key == pseudoCategory.slot
             populateSlots()
           else
@@ -1331,12 +1344,6 @@ app.directive 'spreadsheet', [
           if Editing
             generateFoot()
           tooltips.clear()
-          return
-
-        setKey = (key) ->
-          unselect()
-          Key = $scope.key = key? && getCategory(key) || pseudoCategory.slot
-          populate()
           $scope.filter.key = Key.id
           $scope.filter.list = $scope.filter.list.filter($scope.filter.accept)
           setFilter($scope.filter.make?())
