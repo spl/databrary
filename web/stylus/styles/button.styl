@@ -76,8 +76,11 @@ button, .button
     display initial
     white-space nowrap
     .icon
-      vertical-align middle
       margin-right b8
+    &.mini > .icon
+      vertical-align middle
+    &:not(.mini) > .icon
+      vertical-align sub
 
 // link button
 

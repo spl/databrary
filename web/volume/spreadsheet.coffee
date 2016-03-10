@@ -372,7 +372,7 @@ app.directive 'spreadsheet', [
             release: s.release+''
           if s == volume.top
             d.global = true
-            d.summary = "Whole volume (all folders)"
+            d.summary = "Whole volume"
           d
 
         populateRecordData = (r) ->
@@ -496,7 +496,10 @@ app.directive 'spreadsheet', [
             when 'summary'
               if Editing && info.d.global
                 del = cell.appendChild(document.createElement('a'))
-                del.className = 'clickable trash icon'
+                del.className = 'button mini global-record white icon-text'
+                delicon = del.appendChild(document.createElement('span'))
+                delicon.className = 'icon trash'
+                $(del).append('remove from volume description')
                 $(del).on 'click', $scope.$lift(clickGlobal)
             else
               if info.metric.type == 'void' && info.d
@@ -526,6 +529,7 @@ app.directive 'spreadsheet', [
             info.tr.insertBefore(info.cell, td)
             if width > 1
               td.setAttribute("colspan", width-1)
+              td.classList.add('prompt')
               td.appendChild(document.createTextNode("\u2190 add " + info.category.name))
             else
               info.tr.removeChild(td)
@@ -550,8 +554,12 @@ app.directive 'spreadsheet', [
               else if !info.n
                 if Editing && info.c == 'slot' && Key.id != 'slot'
                   add = td.appendChild(document.createElement('a'))
-                  add.className = 'clickable add icon'
+                  add.className = 'button mini white global-record icon-text'
+                  addicon = add.appendChild(document.createElement('span'))
+                  addicon.className = 'add icon'
+                  $(add).append('Set as volume-level descriptor')
                   $(add).on 'click', $scope.$lift(clickGlobal)
+
                 td.appendChild(document.createTextNode(info.category.not))
                 td.id = ID + '-no_' + info.i + '_' + info.c
           else
