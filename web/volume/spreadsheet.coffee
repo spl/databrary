@@ -1324,6 +1324,7 @@ app.directive 'spreadsheet', [
         # Call all populate functions
         setKey = (key) ->
           unselect()
+          oldKey = Key
           Key = $scope.key = key? && getCategory(key) || pseudoCategory.slot
           foot = Rows[-1]
           Rows = []
@@ -1332,7 +1333,7 @@ app.directive 'spreadsheet', [
             populateSlots()
           else
             populateRecords()
-          if Order.length != Rows.length
+          if Key != oldKey || Order.length != Rows.length
             Order = if Rows.length then [0..Rows.length-1] else []
           $scope.count = Rows.length
           $(TBody).empty()
