@@ -372,7 +372,7 @@ app.directive 'spreadsheet', [
             release: s.release+''
           if s == volume.top
             d.global = true
-            d.summary = "Whole volume"
+            d.summary = ""
           d
 
         populateRecordData = (r) ->
@@ -495,11 +495,12 @@ app.directive 'spreadsheet', [
               v = info.metric.options[v]
             when 'summary'
               if Editing && info.d.global
+                cell.classList.add('null')
                 del = cell.appendChild(document.createElement('a'))
                 del.className = 'button mini global-record white icon-text'
                 delicon = del.appendChild(document.createElement('span'))
                 delicon.className = 'icon trash'
-                $(del).append('remove from volume description')
+                $(del).append('Remove from whole volume')
                 $(del).on 'click', $scope.$lift(clickGlobal)
             else
               if info.metric.type == 'void' && info.d
@@ -552,15 +553,14 @@ app.directive 'spreadsheet', [
               if Editing && info.c != 'slot' && info.c != Key.id
                 generateAdd(info, td)
               else if !info.n
+                td.appendChild(document.createTextNode(info.category.not))
                 if Editing && info.c == 'slot' && Key.id != 'slot'
                   add = td.appendChild(document.createElement('a'))
                   add.className = 'button mini white global-record icon-text'
                   addicon = add.appendChild(document.createElement('span'))
                   addicon.className = 'add icon'
-                  $(add).append('Set as volume-level descriptor')
-                  $(add).on 'click', $scope.$lift(clickGlobal)
-
-                td.appendChild(document.createTextNode(info.category.not))
+                  $(add).append('Set as whole-volume descriptor')
+                  $(add).on 'click', $scope.$lift(clickGlobal)                
                 td.id = ID + '-no_' + info.i + '_' + info.c
           else
             if Editing && info.c == 'slot' && Key.id != 'slot' && t == SlotCount && !info.row.partial && info.row.key
