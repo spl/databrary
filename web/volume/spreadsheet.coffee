@@ -560,7 +560,7 @@ app.directive 'spreadsheet', [
                   addicon = add.appendChild(document.createElement('span'))
                   addicon.className = 'add icon'
                   $(add).append('Set as whole-volume descriptor')
-                  $(add).on 'click', $scope.$lift(clickGlobal)                
+                  $(add).on 'click', $scope.$lift(clickGlobal)
                 td.id = ID + '-no_' + info.i + '_' + info.c
           else
             if Editing && info.c == 'slot' && Key.id != 'slot' && t == SlotCount && !info.row.partial && info.row.key
