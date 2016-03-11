@@ -41,7 +41,7 @@
 </div>
 
 <div class="spreadsheet-dynamic-section" ng-if="::editing">
-  <div class="foot-2">
+  <div>
     <button class="icon list" ng-click="tabOptionsToggle($event)" tooltip="'spreadsheet.switchview' | message"></button>
     <span class="b"> You are in the <span ng-bind="key.name" class="spreadsheet-header-style"></span> view.</span>
     <ul class="flat spreadsheet-tab-options" click-elsewhere="tabOptionsToggle($event)" ng-if="tabOptionsClick">
@@ -51,7 +51,7 @@
       </li>
     </ul>
   </div>
-  <div class="small reminder">
+  <div class="small reminder top-2" ng-if="key.id != 'slot' || anyGlobal">
     <span ng-show="key.id !== 'slot'">Here you can manage the list of labels in this category. <a href="" ng-click="setKey('slot')">Return to the <span class="spreadsheet-tab-name spreadsheet-header-style">folder</span> view</a> to edit session data.</span>
     <span ng-show="anyGlobal">Whole-volume categories are <em>{{showGlobal ? 'shown': 'hidden'}}</em>. <button class="link" ng-click="showHideGlobal()">Click to {{showGlobal ? 'hide all' : 'show all'}}.</button>
     </span>
