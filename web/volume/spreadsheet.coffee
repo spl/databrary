@@ -14,6 +14,7 @@ app.directive 'spreadsheet', [
         Editing = $scope.editing = $attrs.edit != undefined
         ID = $scope.id = $attrs.id ? 'ss'
         ShowGlobal = false
+        $scope.showGlobal = ShowGlobal
         Limit = $attrs.limit || Infinity
         Key = undefined
 
@@ -1253,6 +1254,7 @@ app.directive 'spreadsheet', [
 
         $scope.showHideGlobal = ->
           ShowGlobal = !ShowGlobal
+          $scope.showGlobal = ShowGlobal
           $scope.setKey(Key.id)
           return
 

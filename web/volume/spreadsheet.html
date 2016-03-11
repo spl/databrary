@@ -45,7 +45,10 @@
   <slot-filter></slot-filter>
 </div>
 
-<button ng-if="::editing" ng-show="anyGlobal" ng-click="showHideGlobal()">show/hide global</button>
+<button ng-if="::editing" ng-show="anyGlobal" ng-click="showHideGlobal()">
+  <span ng-if="!showGlobal">Hiding global categories. Click to show.</span>
+  <span ng-if="showGlobal">Showing global categories. Click to hide.</span>
+</button>
 
 <div class="spreadsheet" ng-class="::{'edit': editing, 'view': !editing}">
   <table class="spreadsheet-table" ng-click="click($event)">
