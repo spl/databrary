@@ -1030,7 +1030,10 @@ app.factory('modelService', [
     Object.defineProperty(Record.prototype, 'displayName', {
       get: function () {
         var cat = constants.category[this.category];
-        var met = constants.metric[this.volume.metrics[cat.id][0]];
+        var met = this.volume.metrics[cat.id];
+        if (!met)
+          return;
+        met = constants.metric[met[0]];
         if (met.type === 'void')
           return met.name;
         var val = this.measures[met.id];
