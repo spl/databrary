@@ -1333,7 +1333,7 @@ app.directive 'spreadsheet', [
         setKey = (key) ->
           unselect()
           oldKey = Key
-          Key = $scope.key = key? && getCategory(key) || pseudoCategory.slot
+          Key = $scope.key = key? && volume.metrics[key] && getCategory(key) || pseudoCategory.slot
           foot = Rows[-1]
           Rows = []
           Cats = {}
