@@ -496,11 +496,12 @@ app.directive 'spreadsheet', [
             when 'summary'
               if Editing && info.d.global
                 cell.classList.add('null')
+                $(cell).append('Whole volume')
                 del = cell.appendChild(document.createElement('a'))
                 del.className = 'button mini global-record white icon-text'
                 delicon = del.appendChild(document.createElement('span'))
                 delicon.className = 'icon trash'
-                $(del).append('Remove from whole volume')
+                $(del).append('Remove')
                 $(del).on 'click', $scope.$lift(clickGlobal)
             else
               if info.metric.type == 'void' && info.d
