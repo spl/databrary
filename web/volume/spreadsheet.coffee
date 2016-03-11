@@ -13,8 +13,7 @@ app.directive 'spreadsheet', [
 
         Editing = $scope.editing = $attrs.edit != undefined
         ID = $scope.id = $attrs.id ? 'ss'
-        ShowGlobal = false
-        $scope.showGlobal = ShowGlobal
+        $scope.showGlobal = false
         Limit = $attrs.limit || Infinity
         Key = undefined
 
@@ -331,7 +330,7 @@ app.directive 'spreadsheet', [
           all = Object.keys(volume.metrics).sort(byNumber).map((i) -> constants.category[i])
           if slot
             slot = undefined
-            cats = all.filter((c) -> ShowGlobal || (Cats[c.id] ? Editing))
+            cats = all.filter((c) -> $scope.showGlobal || (Cats[c.id] ? Editing))
             cats.push(pseudoCategory.asset)
             cats.unshift(pseudoCategory.slot)
             $scope.anyGlobal = all.some((c) -> Cats[c.id] == false)
@@ -1253,8 +1252,7 @@ app.directive 'spreadsheet', [
           return
 
         $scope.showHideGlobal = ->
-          ShowGlobal = !ShowGlobal
-          $scope.showGlobal = ShowGlobal
+          $scope.showGlobal = !$scope.showGlobal
           $scope.setKey(Key.id)
           return
 
