@@ -47,10 +47,7 @@
   </div>
   <div class="small reminder">
     <span ng-show="key.id !== 'slot'">Here you can manage the list of labels in this category. <a href="" ng-click="setKey('slot')">Return to the <span class="spreadsheet-tab-name spreadsheet-header-style">folder</span> view</a> to edit session data.</span>
-    <span ng-show="anyGlobal">
-      <span ng-if="!showGlobal">Global categories are <em>hidden</em>. </span>
-      <span ng-if="showGlobal">Global categories are <em>shown</em>. </span>
-      <button class="link" ng-click="showHideGlobal()">{{showGlobal ? 'Hide all' : 'Show all'}}.</button>
+    <span ng-show="anyGlobal">Whole-volume categories are <em>{{showGlobal ? 'shown': 'hidden'}}</em>. <button class="link" ng-click="showHideGlobal()">Click to {{showGlobal ? 'hide all' : 'show all'}}.</button>
     </span>
   </div>
 </div>
