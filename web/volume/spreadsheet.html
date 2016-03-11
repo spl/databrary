@@ -19,11 +19,6 @@
     </li>
   </ul>
 </div>
-<div class="spreadsheet-dynamic-info" ng-if="::editing" ng-show="key.id !== 'slot'">
-  You are in <span class="icon list"></span> <em><span ng-bind="key.name"></span> view</em>. 
-  Here you can manage the list of labels in this category. 
-  Return to the <a href="" ng-click="setKey('slot')">folder view</a> to edit session data.
-</div>
 
 <div ng-if="::!editing" class="spreadsheet-report-manage">
   <select ng-options="k as k for (k,s) in volume.state" ng-model="state.name" ng-change="state.restore()" class="width-auto spreadsheet-pivot-part">
@@ -45,10 +40,20 @@
   <slot-filter></slot-filter>
 </div>
 
-<button ng-if="::editing" ng-show="anyGlobal" ng-click="showHideGlobal()">
-  <span ng-if="!showGlobal">Hiding global categories. Click to show.</span>
-  <span ng-if="showGlobal">Showing global categories. Click to hide.</span>
-</button>
+<div class="spreadsheet-dynamic-section" ng-if="::editing">
+  <div class="foot-2">
+    <span class="icon list clickable" ng-click="tabOptionsToggle($event)"></span>
+    <span class="b"> You are in the <span ng-bind="key.name" class="spreadsheet-header-style"></span> view.</span>
+  </div>
+  <div class="small reminder">
+    <span ng-show="key.id !== 'slot'">Here you can manage the list of labels in this category. <a href="" ng-click="setKey('slot')">Return to the <span class="spreadsheet-tab-name spreadsheet-header-style">folder</span> view</a> to edit session data.</span>
+    <span ng-show="anyGlobal">
+      <span ng-if="!showGlobal">Global categories are <em>hidden</em>. </span>
+      <span ng-if="showGlobal">Global categories are <em>shown</em>. </span>
+      <button class="link" ng-click="showHideGlobal()">{{showGlobal ? 'Hide all' : 'Show all'}}.</button>
+    </span>
+  </div>
+</div>
 
 <div class="spreadsheet" ng-class="::{'edit': editing, 'view': !editing}">
   <table class="spreadsheet-table" ng-click="click($event)">
