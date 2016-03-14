@@ -5,6 +5,15 @@
 
     <section id="profile-volumes" class="profile-volumes col-desktop-9 col-tablet-5 col-mobile-6">
       <legend class="hide-desktop hide-tablet foot-2" message="volumes.title"></legend>
+      <div class="profile-volume-sort">
+        <small>Sort volumes by </small>
+        <button class="mini white">Name</button>
+        <button class="mini white">
+          <span class="icon access1"></span>
+          <span>Shared</span>
+        </button>
+        <button class="mini white">Access</button>
+      </div>
       <div ng-repeat="vl in ::volumes" ng-if="::vl.length">
         <div class="profile-section-header">
           <strong ng-bind="::'profile.volumes.'+vl.type+'.title' | message:vl.parent.party.name"></strong> 
