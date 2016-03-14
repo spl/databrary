@@ -162,10 +162,10 @@ app.controller 'party/profile', [
 
     $scope.sortVolumes = (b) ->
       if $scope.volumeSort == b
-        volumes.individual.reverse()
-        volumes.collaborator.reverse()
-        for ii, il of volumes.inherited
-          il.reverse()
+        # volumes.individual.reverse()
+        # volumes.collaborator.reverse()
+        # for ii, il of volumes.inherited
+        #   il.reverse()
         return
       volumeSort =
         switch b

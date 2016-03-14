@@ -6,12 +6,12 @@
       <legend class="hide-desktop hide-tablet foot-2" message="volumes.title"></legend>
       <div class="profile-volume-sort">
         <small>Sort volumes by </small>
-        <button class="mini white" ng-class="{green:volumeSort==='name'}" ng-click="sortVolumes('name')">Name</button>
-        <button class="mini white" ng-class="{green:volumeSort==='access'}" ng-click="sortVolumes('access')">
+        <button class="mini white" ng-class="{'neutral selected':volumeSort==='name'}" ng-click="sortVolumes('name')">Name</button>
+        <button class="mini white" ng-class="{'neutral selected':volumeSort==='access'}" ng-click="sortVolumes('access')">
           <span class="icon access1"></span>
           <span>Shared</span>
         </button>
-        <button class="mini white" ng-class="{green:volumeSort==='permission'}" ng-click="sortVolumes('permission')">Access</button>
+        <button class="mini white" ng-class="{'neutral selected':volumeSort==='permission'}" ng-click="sortVolumes('permission')">Access</button>
       </div>
       <div ng-repeat="vl in ::volumes" ng-if="::vl.length">
         <div class="profile-section-header">
