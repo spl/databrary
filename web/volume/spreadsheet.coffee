@@ -372,7 +372,7 @@ app.directive 'spreadsheet', [
             release: s.release+''
           if s == volume.top
             d.global = true
-            d.summary = "Whole volume"
+            d.summary = "Whole volume (only displayed in volume description)"
           d
 
         populateRecordData = (r) ->
