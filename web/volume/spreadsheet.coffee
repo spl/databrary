@@ -494,15 +494,16 @@ app.directive 'spreadsheet', [
             when 'top'
               v = info.metric.options[v]
             when 'summary'
-              if Editing && info.d.global
+              if info.d.global
                 cell.classList.add('null')
                 cell.appendChild(document.createTextNode('Whole volume'))
-                del = cell.appendChild(document.createElement('a'))
-                del.className = 'button mini global-record white icon-text'
-                delicon = del.appendChild(document.createElement('span'))
-                delicon.className = 'icon trash'
-                del.appendChild(document.createTextNode('Remove'))
-                $(del).on 'click', $scope.$lift(clickGlobal)
+                if Editing
+                  del = cell.appendChild(document.createElement('a'))
+                  del.className = 'button mini global-record white icon-text'
+                  delicon = del.appendChild(document.createElement('span'))
+                  delicon.className = 'icon trash'
+                  del.appendChild(document.createTextNode('Remove'))
+                  $(del).on 'click', $scope.$lift(clickGlobal)
             else
               if info.metric.type == 'void' && info.d
                 cell.className = 'clickable' if Editing && Key.id != info.c
