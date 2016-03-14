@@ -42,19 +42,24 @@
 
 <div class="spreadsheet-dynamic-section" ng-if="::editing">
   <div>
-    <button class="icon list" ng-click="tabOptionsToggle($event)" tooltip="'spreadsheet.switchview' | message"></button>
-    <span class="b"> You are in the <span ng-bind="key.name" class="spreadsheet-header-style"></span> view.</span>
-    <ul class="flat spreadsheet-tab-options" click-elsewhere="tabOptionsToggle($event)" ng-if="tabOptionsClick">
-      <li ng-repeat="c in views track by c.id" class="spreadsheet-tab-option clickable" ng-click="setKey(c.id)" ng-if="key !== c">
-        <span ng-if="::key.id !== 'slot' && c.id === 'slot'" ng-bind="::'back to '+c.name+' view'" class="default"></span>
-        <span ng-if="::key.id !== c.id && c.id !== 'slot'" ng-bind="::c.name+' view'"></span>
-      </li>
-    </ul>
+    <span class="b"> You are in the <span ng-bind="key.name" class="spreadsheet-header-style"></span> view. </span>
+    <div class="inline-block spreadsheet-switch-view">
+      <button class="icon-text mini" ng-click="tabOptionsToggle($event)" tooltip="'spreadsheet.switchview' | message">
+        <span class="icon list"></span>
+        <span>Switch</span>
+      </button>
+      <ul class="flat spreadsheet-tab-options" click-elsewhere="tabOptionsToggle($event)" ng-if="tabOptionsClick">
+        <li ng-repeat="c in views track by c.id" class="spreadsheet-tab-option clickable" ng-click="setKey(c.id)" ng-if="key !== c">
+          <span ng-if="::key.id !== 'slot' && c.id === 'slot'" ng-bind="::'back to '+c.name+' view'" class="default"></span>
+          <span ng-if="::key.id !== c.id && c.id !== 'slot'" ng-bind="::c.name+' view'"></span>
+        </li>
+      </ul>
+    </div>
   </div>
   <div class="small reminder top-2" ng-if="key.id != 'slot' || anyGlobal">
-    <span ng-show="key.id !== 'slot'">Here you can manage the list of labels in this category. <a href="" ng-click="setKey('slot')">Return to the <span class="spreadsheet-tab-name spreadsheet-header-style">folder</span> view</a> to edit session data.</span>
-    <span ng-show="anyGlobal">Whole-volume categories are <em>{{showGlobal ? 'shown': 'hidden'}}</em>. <button class="link" ng-click="showHideGlobal()">Click to {{showGlobal ? 'hide all' : 'show all'}}.</button>
-    </span>
+    <span ng-show="key.id !== 'slot'">Here you can manage the list of options in this category.</span>
+    <span ng-show="anyGlobal">Some categories are {{showGlobal ? 'shown': 'hidden'}}. <button class="link" ng-click="showHideGlobal()">Click to {{showGlobal ? 'hide all' : 'show all'}}.</button> </span><br>
+    <span ng-show="key.id == 'slot'">Switch to list data, define options, and set whole-volume description by other categories.</span>
   </div>
 </div>
 

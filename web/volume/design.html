@@ -25,7 +25,7 @@
         <div class="volume-design-header" class="selected">
           <strong ng-bind="selected.name" ng-class="{b: volumeDesign.category[selected.id]}"></strong>
           <small class="reminder" ng-if="!volumeDesign.category[selected.id]">Click the checkbox on the left to change these fields</small>
-          <a ng-if="volumeDesign.category[selected.id]" class="button mini small" ng-click="manage()" tooltip="'wizard.volume-edit-design.options-tooltip' | message">Pre-define options</a>
+          <a ng-if="volumeDesign.category[selected.id]" class="button mini small" ng-click="manage()" tooltip="'wizard.volume-edit-design.options-tooltip' | message">Define options</a>
         </div>
         <ul class="volume-design-fields flat" ng-class="{'disabled':!volumeDesign.category[selected.id]}">
           <li ng-repeat="m in selected.metrics track by m.id" ng-if="::m.type!=='void'">

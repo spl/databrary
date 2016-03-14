@@ -561,7 +561,7 @@ app.directive 'spreadsheet', [
                   add.className = 'button mini white global-record icon-text'
                   addicon = add.appendChild(document.createElement('span'))
                   addicon.className = 'add icon'
-                  add.appendChild(document.createTextNode('Set as whole-volume descriptor'))
+                  add.appendChild(document.createTextNode('Apply to whole volume'))
                   $(add).on 'click', $scope.$lift(clickGlobal)
                 td.id = ID + '-no_' + info.i + '_' + info.c
           else
