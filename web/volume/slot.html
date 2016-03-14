@@ -8,7 +8,7 @@
     <div class="row">
       <div class="col">
         <hgroup class="session-header">
-          <a class="view-link" ng-href="{{::editing ? volume.editRoute(slot.top ? 'materials' : 'data') : volume.route() + '#panel-' + (slot.top ? 'materials' : 'session')}}" ng-bind="::volume.alias || volume.name"></a>
+          <a class="view-link" ng-href="{{::editing ? volume.editRoute('data') : volume.route() + '#panel-data'}}" ng-bind="::volume.alias || volume.name"></a>
           <h3 class="view-context">{{::editing? 'Manage' : 'View'}}</h3>
           <h3 class="view-title">
             <span ng-bind="::slot.displayName"></span>
