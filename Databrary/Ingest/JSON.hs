@@ -171,10 +171,14 @@ ingestJSON vol jdata run overwrite = runExceptT $ do
         r <- record
         inObj r $ do
           rs' <- lift $ lookupRecordSlotRecords r s
-          segs <- (if null rs' then return . Just else check (map (slotSegment . recordSlot) rs')) . return =<< JE.keyOrDefault "position" fullSegment asSegment
-          forM_ segs $ \[seg] -> do
-            o <- lift $ moveRecordSlot (RecordSlot r $ Slot c (if null rs' then emptySegment else fullSegment)) seg
-            unless o $ throwPE "record link failed"
+          segm <- (if null rs' then return . Just else check (map (slotSegment . recordSlot) rs')) =<< JE.keyOrDefault "positions" [fullSegment] (JE.eachInArray asSegment)
+          forM_ segm $ \segs -> do
+            let rs = RecordSlot r . Slot c
+            unless (null rs') $ do
+              o <- lift $ moveRecordSlot (rs fullSegment) emptySegment
+              unless o $ throwPE "record clear failed"
+            o <- lift $ mapM (moveRecordSlot (rs emptySegment)) segs
+            unless (and o) $ throwPE "record link failed"
       _ <- JE.key "assets" $ JE.eachInArray $ do
         (a, probe) <- asset dir
         inObj a $ do

@@ -105,7 +105,9 @@
           "description": "Types of records that are relevant for data organization.",
           "enum": ["participant", "pilot", "exclusion", "condition", "group", "task", "context"]
         },
-        "position": {"$ref": "#/definitions/segment"},
+        "positions": {"type": "array",
+	  "items": {"$ref": "#/definitions/segment"}
+	},
         "ID": {"type": "string"},
         "name": {"type": "string"},
         "reason": {"type": "string",
