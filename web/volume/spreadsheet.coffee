@@ -372,7 +372,7 @@ app.directive 'spreadsheet', [
             release: s.release+''
           if s == volume.top
             d.global = true
-            d.summary = ""
+            d.summary = "Whole volume"
           d
 
         populateRecordData = (r) ->
@@ -495,8 +495,7 @@ app.directive 'spreadsheet', [
               v = info.metric.options[v]
             when 'summary'
               if info.d.global
-                cell.classList.add('null')
-                cell.appendChild(document.createTextNode('Whole volume'))
+                cell.classList.add('spreadsheet-global-record-cell')
                 if Editing
                   del = cell.appendChild(document.createElement('a'))
                   del.className = 'button mini global-record white icon-text'
@@ -555,6 +554,7 @@ app.directive 'spreadsheet', [
               if Editing && info.c != 'slot' && info.c != Key.id
                 generateAdd(info, td)
               else if !info.n
+                td.classList.add('spreadsheet-global-record-cell')
                 td.appendChild(document.createTextNode(info.category.not))
                 if Editing && info.c == 'slot' && Key.id != 'slot'
                   add = td.appendChild(document.createElement('a'))

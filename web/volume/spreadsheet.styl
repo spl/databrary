@@ -36,8 +36,14 @@
       background-color rgba(255,255,255,0.85)
     td.prompt
       text-align initial
+  .spreadsheet-global-record-cell
+    padding-left 2
   .global-record
-    margin-left b3
+    position absolute
+    margin-top 1px
+    margin-left 1px
+    top 0
+    left 0
 
 .spreadsheet-table
   width auto
@@ -107,6 +113,12 @@
     text-align center
 
   td.editing
+    position relative
+
+  td.spreadsheet-global-record-cell
+    text-align center
+    font-size 0.8
+    line-height 1
     position relative
 
   td.blank
@@ -286,4 +298,3 @@ select.spreadsheet-pivot-part
   padding-width b3
   margin-width b8
   color neutral12
-
