@@ -86,8 +86,6 @@
     height 1+f3
     display table-cell
     max-width 15em
-    overflow hidden
-    text-overflow ellipsis
     position relative
 
     img.format
@@ -98,6 +96,11 @@
       width b23
     > .icon
       vertical-align top
+
+  tbody
+    td
+      overflow hidden
+      text-overflow ellipsis
 
   td.folder-type
     .icon
