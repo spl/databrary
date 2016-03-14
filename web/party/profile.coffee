@@ -63,7 +63,7 @@ app.controller 'party/profile', [
     class Volume extends Item
       constructor: (@volume) ->
         @access = {}
-        for a in @volume.access
+        for a in @volume.access when a.party.id != constants.party.STAFF
           p = Party.make(a.party)
           p.access[@volume.id] = a
           @access[p.party.id] = a
