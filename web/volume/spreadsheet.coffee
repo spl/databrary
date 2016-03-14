@@ -495,8 +495,8 @@ app.directive 'spreadsheet', [
               v = info.metric.options[v]
             when 'summary'
               if info.d.global
-                cell.classList.add('spreadsheet-global-record-cell')
                 if Editing
+                  cell.classList.add('spreadsheet-global-record-cell')
                   del = cell.appendChild(document.createElement('a'))
                   del.className = 'button mini global-record white icon-text'
                   delicon = del.appendChild(document.createElement('span'))
@@ -554,9 +554,9 @@ app.directive 'spreadsheet', [
               if Editing && info.c != 'slot' && info.c != Key.id
                 generateAdd(info, td)
               else if !info.n
-                td.classList.add('spreadsheet-global-record-cell')
                 td.appendChild(document.createTextNode(info.category.not))
                 if Editing && info.c == 'slot' && Key.id != 'slot'
+                  td.classList.add('spreadsheet-global-record-cell')
                   add = td.appendChild(document.createElement('a'))
                   add.className = 'button mini white global-record icon-text'
                   addicon = add.appendChild(document.createElement('span'))
