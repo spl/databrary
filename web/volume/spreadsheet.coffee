@@ -496,12 +496,12 @@ app.directive 'spreadsheet', [
             when 'summary'
               if Editing && info.d.global
                 cell.classList.add('null')
-                $(cell).append('Whole volume')
+                cell.appendChild(document.createTextNode('Whole volume'))
                 del = cell.appendChild(document.createElement('a'))
                 del.className = 'button mini global-record white icon-text'
                 delicon = del.appendChild(document.createElement('span'))
                 delicon.className = 'icon trash'
-                $(del).append('Remove')
+                del.appendChild(document.createTextNode('Remove'))
                 $(del).on 'click', $scope.$lift(clickGlobal)
             else
               if info.metric.type == 'void' && info.d
@@ -560,7 +560,7 @@ app.directive 'spreadsheet', [
                   add.className = 'button mini white global-record icon-text'
                   addicon = add.appendChild(document.createElement('span'))
                   addicon.className = 'add icon'
-                  $(add).append('Set as whole-volume descriptor')
+                  add.appendChild(document.createTextNode('Set as whole-volume descriptor'))
                   $(add).on 'click', $scope.$lift(clickGlobal)
                 td.id = ID + '-no_' + info.i + '_' + info.c
           else
