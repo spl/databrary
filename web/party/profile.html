@@ -2,17 +2,16 @@
   <ng-include src="'party/overview.html'"></ng-include>
   <panel id="panel_browser" panel-title="profile.title" fold ng-if="::party.volumes || page.models.Login.isAuthorized()" class="profile">
 
-
     <section id="profile-volumes" class="profile-volumes col-desktop-9 col-tablet-5 col-mobile-6">
       <legend class="hide-desktop hide-tablet foot-2" message="volumes.title"></legend>
       <div class="profile-volume-sort">
         <small>Sort volumes by </small>
-        <button class="mini white">Name</button>
-        <button class="mini white">
+        <button class="mini white" ng-class="{green:volumeSort==='name'}" ng-click="sortVolumes('name')">Name</button>
+        <button class="mini white" ng-class="{green:volumeSort==='access'}" ng-click="sortVolumes('access')">
           <span class="icon access1"></span>
           <span>Shared</span>
         </button>
-        <button class="mini white">Access</button>
+        <button class="mini white" ng-class="{green:volumeSort==='permission'}" ng-click="sortVolumes('permission')">Access</button>
       </div>
       <div ng-repeat="vl in ::volumes" ng-if="::vl.length">
         <div class="profile-section-header">
@@ -23,7 +22,7 @@
           </div>
         </div>
         <ul class="flat">
-          <li ng-repeat="v in ::vl" ng-class="{'profile-highlight': !!v.selected}">
+          <li ng-repeat="v in vl" ng-class="{'profile-highlight': !!v.selected}">
             <div class="profile-left-icons clickable hide-mobile">
               <span ng-click="v.select()" class="icon" ng-class="v.class()" tooltip="'Click to highlight ' + ('profile.volumes.selected' | message:'this volume')"></span>
             </div>

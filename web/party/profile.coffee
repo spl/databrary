@@ -138,17 +138,13 @@ app.controller 'party/profile', [
     parties.collaborators = (Party.all[pi] for pi of collaborators)
 
     stringSort = (a,b) -> +(a > b) || +(a == b) - 1
-    volumeSort = (a,b) -> b.volume.permission - a.volume.permission || stringSort(a.volume.displayName, b.volume.displayName)
     partySort = (a,b) -> stringSort(a.party.sortname, b.party.sortname)
 
-    volumes.individual.sort(volumeSort)
     volumes.individual.type = "individual"
-    volumes.collaborator.sort(volumeSort)
     volumes.collaborator.type = "collaborator"
     $scope.volumes = [volumes.individual, volumes.collaborator]
     for ii, il of volumes.inherited
       p = Party.all[ii]
-      il.sort(volumeSort)
       il.type = "inherited"
       il.parent = Party.all[ii]
       $scope.volumes.push(il)
@@ -163,6 +159,26 @@ app.controller 'party/profile', [
     today = Date.now()
     $scope.isExpired = (a) ->
       new Date(a.expires) < today
+
+    $scope.sortVolumes = (b) ->
+      if $scope.volumeSort == b
+        volumes.individual.reverse()
+        volumes.collaborator.reverse()
+        for ii, il of volumes.inherited
+          il.reverse()
+        return
+      volumeSort =
+        switch b
+          when 'name' then (a,b) -> stringSort(a.volume.displayName, b.volume.displayName)
+          when 'access' then (a,b) -> b.volume.accessPreset - a.volume.accessPreset || b.volume.permission - a.volume.permission || stringSort(a.volume.displayName, b.volume.displayName)
+          when 'permission' then (a,b) -> b.volume.permission - a.volume.permission || stringSort(a.volume.displayName, b.volume.displayName)
+      volumes.individual.sort(volumeSort)
+      volumes.collaborator.sort(volumeSort)
+      for ii, il of volumes.inherited
+        il.sort(volumeSort)
+      $scope.volumeSort = b
+      return
+    $scope.sortVolumes('permission')
 
     return
 ]
