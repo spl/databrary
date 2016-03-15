@@ -226,8 +226,8 @@ ingestJSON vol jdata run overwrite = runExceptT $ do
         return r)
       =<< lift (lookupIngestRecord vol key)
     _ <- inObj r $ JE.forEachInObject $ \mn ->
-      unless (mn `elem` ["id", "key", "category", "position"]) $ do
-        metric <- fromMaybeM (throwPE "metric not found") $ find (\m -> mn == metricName m && recordCategory (recordRow r) == metricCategory m) allMetrics
+      unless (mn `elem` ["id", "key", "category", "positions"]) $ do
+        metric <- fromMaybeM (throwPE $ "metric " <> mn <> " not found") $ find (\m -> mn == metricName m && recordCategory (recordRow r) == metricCategory m) allMetrics
         datum <- maybe (return . Just) (check . measureDatum) (getMeasure metric (recordMeasures r)) . TE.encodeUtf8 =<< JE.asText
         forM_ datum $ lift . changeRecordMeasure . Measure r metric
     return r
