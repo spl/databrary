@@ -591,7 +591,7 @@ app.directive 'spreadsheet', [
             info.cell = info.tr.appendChild(document.createElement('td'))
             generateText(info)
             return
-          if info.category.id == 'slot' && info.slot.top
+          if info.category.id == 'slot' && info.slot.global
             generateCell(l-1) # summary
             info.cell.setAttribute("colspan", l)
             return
@@ -701,6 +701,8 @@ app.directive 'spreadsheet', [
             currentSortDirection = !currentSortDirection
             Order.reverse()
           else
+            unless currentSort
+              Order.sort (i, j) -> byNumber(Rows[i].key?.id, Rows[j].key?.id)
             c = col.category.id
             m = col.metric.id
             sort (i) ->
@@ -1343,13 +1345,15 @@ app.directive 'spreadsheet', [
             populateSlots()
           else
             populateRecords()
-          if Key != oldKey || Order.length != Rows.length
-            Order = if Rows.length then [0..Rows.length-1] else []
           $scope.count = Rows.length
           $(TBody).empty()
           Expanded = undefined
           Rows[-1] = foot if foot
           populateCols(bySlot)
+          if Key != oldKey || Order.length != Rows.length
+            Order = if Rows.length then [0..Rows.length-1] else []
+            currentSort = undefined
+            sortBy(Cols.find((c) -> c.category.id == 'slot' && c.metric.id == 'date'))
           for i in Order
             generateRow(i)
           if Editing
@@ -1408,9 +1412,8 @@ app.directive 'spreadsheet', [
                 metric: pseudoMetric.top
               ]
             setKey(key || state.key)
-            sortBy(Cols.find((c) -> c.category.id == 'slot' && c.metric.id == 'date'))
             if state.sort && col = Cols.find((c) -> c.category.id == state.sort.c && c.metric.id == state.sort.m)
-              sortBy(col, state.sort.currentSortDirection)
+              sortBy(col, state.sort.dir)
             fill()
             $scope.pivot.load(state.pivot)
             return
