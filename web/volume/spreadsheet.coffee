@@ -1,8 +1,8 @@
 'use strict'
 
 app.directive 'spreadsheet', [
-  'constantService', 'displayService', 'messageService', 'tooltipService', 'styleService', '$compile', '$templateCache', '$timeout', '$document', '$location', '$filter', 'routerService', 'storageService', 'Segment',
-  (constants, display, messages, tooltips, styles, $compile, $templateCache, $timeout, $document, $location, $filter, router, storage, Segment) ->
+  'constantService', 'displayService', 'messageService', 'tooltipService', 'styleService', '$compile', '$templateCache', '$timeout', '$document', '$location', '$filter', '$route', 'routerService', 'storageService', 'Segment',
+  (constants, display, messages, tooltips, styles, $compile, $templateCache, $timeout, $document, $location, $filter, $route, router, storage, Segment) ->
     restrict: 'E'
     scope: true
     templateUrl: 'volume/spreadsheet.html'
@@ -494,15 +494,14 @@ app.directive 'spreadsheet', [
             when 'top'
               v = info.metric.options[v]
             when 'summary'
-              if info.d.global
-                if Editing
-                  cell.classList.add('spreadsheet-global-record-cell')
-                  del = cell.appendChild(document.createElement('a'))
-                  del.className = 'button mini global-record white icon-text'
-                  delicon = del.appendChild(document.createElement('span'))
-                  delicon.className = 'icon trash'
-                  del.appendChild(document.createTextNode('Remove'))
-                  $(del).on 'click', $scope.$lift(clickGlobal)
+              if info.d.global && Editing
+                cell.classList.add('spreadsheet-global-record-cell')
+                del = cell.appendChild(document.createElement('a'))
+                del.className = 'button mini global-record white icon-text'
+                delicon = del.appendChild(document.createElement('span'))
+                delicon.className = 'icon trash'
+                del.appendChild(document.createTextNode('Remove'))
+                $(del).on 'click', $scope.$lift(clickGlobal)
             else
               if info.metric.type == 'void' && info.d
                 cell.className = 'clickable' if Editing && Key.id != info.c
@@ -566,8 +565,10 @@ app.directive 'spreadsheet', [
                 td.id = ID + '-no_' + info.i + '_' + info.c
           else
             if Editing && info.c == 'slot' && Key.id != 'slot' && t == SlotCount && !info.row.partial && info.row.key
+              # TODO: style, this action is irreversable
               add = td.appendChild(document.createElement('a'))
-              add.className = 'clickable add icon'
+              add.className = 'button mini white global-record icon-text'
+              add.appendChild(document.createTextNode('Convert to whole volume'))
               $(add).on 'click', $scope.$lift(clickGlobal)
             td.appendChild(document.createTextNode(t + " " + info.category.name + "s"))
             td.className = 'more'
@@ -591,7 +592,7 @@ app.directive 'spreadsheet', [
             info.cell = info.tr.appendChild(document.createElement('td'))
             generateText(info)
             return
-          if info.category.id == 'slot' && info.slot.global
+          if info.category.id == 'slot' && info.d.global
             generateCell(l-1) # summary
             info.cell.setAttribute("colspan", l)
             return
@@ -1235,15 +1236,16 @@ app.directive 'spreadsheet', [
             else if info.count
               router.http(router.controllers.deleteRecordAllSlot, rec.id).then () ->
                 volume.top.addRecord(rec).then () ->
-                  # TODO
-                  rec.global = true
-                  return
+                  true
             else
               volume.top.addRecord(rec).then () ->
                 rec.global = true
                 info.row.set(info.c, info.n, populateSlotData(volume.top))
                 return
-          saveRun info.cell, act.then () ->
+          saveRun info.cell, act.then (r) ->
+            if r
+              $route.reload()
+              return
             collapse()
             generateRow(info.i)
             expand(info) if info.n
