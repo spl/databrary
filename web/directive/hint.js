@@ -20,7 +20,7 @@ app.directive('hint', [
         a.name;
     });
 
-    _.each(['slot'], function (a) {
+    _.each(['slot', 'globalrecord'], function (a) {
       hints['action-' + a] =
         constants.message('hint.action.' + a);
     });

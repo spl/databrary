@@ -571,15 +571,15 @@ app.directive 'spreadsheet', [
                   $(add).on 'click', $scope.$lift(clickGlobal)
                 td.id = ID + '-no_' + info.i + '_' + info.c
           else
-            if Editing && info.c == 'slot' && Key.id != 'slot' && t == SlotCount && !info.row.partial && info.row.key
-              # TODO: style, this action is irreversable
-              add = td.appendChild(document.createElement('a'))
-              add.className = 'button mini white global-record icon-text'
-              add.appendChild(document.createTextNode('Convert to ' + constants.message('global.name')))
-              $(add).on 'click', $scope.$lift(clickGlobal)
-            td.appendChild(document.createTextNode(t + " " + info.category.name + "s"))
             td.className = 'more'
             td.id = ID + '-more_' + info.i + '_' + info.c
+            if Editing && info.c == 'slot' && Key.id != 'slot' && t == SlotCount && !info.row.partial && info.row.key
+              td.classList.add('spreadsheet-global-record-cell')
+              add = td.appendChild(document.createElement('a'))
+              add.className = 'button mini yellow global-record icon-text hint-action-globalrecord'
+              add.appendChild(document.createTextNode('Convert to ' + constants.message('global.name').toLowerCase() + ' (irreversible)'))
+              $(add).on 'click', $scope.$lift(clickGlobal)
+            td.appendChild(document.createTextNode(t + " " + info.category.name + "s"))
           td
 
         # Add all the measure tds to row i for count n, record r
