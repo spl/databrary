@@ -453,8 +453,10 @@ app.factory('modelService', [
           containerMake(this, l[i]);
         delete this.containers._PLACEHOLDER;
       }
-      if ('top' in init)
+      if ('top' in init) {
         this.top = containerMake(this, init.top);
+        this.top.top = 'global';
+      }
       if ('excerpts' in init)
         this.excerpts = excerptMakeArray(this, init.excerpts);
       if ('comments' in init)
@@ -746,7 +748,7 @@ app.factory('modelService', [
 
     Object.defineProperty(Slot.prototype, 'displayName', {
       get: function () {
-        return constants.message((this.container.top ? 'materials' : 'session') + '.name') + (this.name ? ': ' + this.name : '');
+        return constants.message((this.container.top ? (this.container.top === 'global' ? 'global' : 'materials') : 'session') + '.name') + (this.name ? ': ' + this.name : '');
       }
     });
 

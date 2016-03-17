@@ -366,13 +366,13 @@ app.directive 'spreadsheet', [
           d =
             slot: s
             id: s.id
-            top: !!s.top
+            top: s.top || false
             name: s.name
             date: s.date
             release: s.release+''
-          if s == volume.top
+          if s.top == 'global'
             d.global = true
-            d.summary = "Whole volume (only displayed in volume description)"
+            d.summary = constants.message('global.name') + " (only displayed in volume description)"
           d
 
         populateRecordData = (r) ->
@@ -408,7 +408,7 @@ app.directive 'spreadsheet', [
           SlotCount = -1
           for ci, slot of volume.containers
             SlotCount++
-            if slot == volume.top
+            if slot.top == 'global'
               for rr in slot.records when (record = rr.record)
                 record.global = true
                 Cats[record.category] ||= false
@@ -422,7 +422,10 @@ app.directive 'spreadsheet', [
 
         populateRecords = ->
           records = {}
+          nog = undefined
           for r, record of volume.records when record.category == Key.id
+            if nog then nog++ else nog = 1
+            delete record.global
             records[r] = populateRecord(record)
 
           SlotCount = -1
@@ -436,18 +439,22 @@ app.directive 'spreadsheet', [
               if 'age' of rr
                 d.age = rr.age
               if d.global
-                rr.record.global = true
+                unless rr.record.global
+                  rr.record.global = true
+                  nog--
                 row.partial = true
               else
                 d.summary = (rrr.record.displayName for rrr in recs when rrr.id != rr.id).join(', ')
                 row.partial ||= !Segment.isFull(rr.segment)
               row.add('slot', d)
               any = true
-            unless any || slot == volume.top
+            unless any || slot.top == 'global'
               nor ||= new Row()
               d = populateSlotData(slot)
               d.summary = (rrr.record.displayName for rrr in recs).join(', ')
               nor.add('slot', d)
+          if nog == 0 && nor
+            delete Rows[nor.i]
 
         ################################# Generate HTML
 
@@ -568,7 +575,7 @@ app.directive 'spreadsheet', [
               # TODO: style, this action is irreversable
               add = td.appendChild(document.createElement('a'))
               add.className = 'button mini white global-record icon-text'
-              add.appendChild(document.createTextNode('Convert to whole volume'))
+              add.appendChild(document.createTextNode('Convert to ' + constants.message('global.name')))
               $(add).on 'click', $scope.$lift(clickGlobal)
             td.appendChild(document.createTextNode(t + " " + info.category.name + "s"))
             td.className = 'more'
@@ -1321,14 +1328,14 @@ app.directive 'spreadsheet', [
         setFilter = (f) ->
           c = 0
           if !f
-            for row in Rows
+            for row in Rows when row
               row.filt = true
           else if Key.id == 'slot'
-            for row in Rows
+            for row in Rows when row
               s = row.slot.slot
               c++ unless row.filt = f(s, s.records)
           else
-            for row in Rows
+            for row in Rows when row
               c++ unless row.filt = f(row.key?.record, row.list('slot'))
           $scope.filter.count = c
           if $scope.pivot.active
@@ -1353,7 +1360,7 @@ app.directive 'spreadsheet', [
           Rows[-1] = foot if foot
           populateCols(bySlot)
           if Key != oldKey || Order.length != Rows.length
-            Order = if Rows.length then [0..Rows.length-1] else []
+            Order = (row.i for row in Rows when row)
             currentSort = undefined
             sortBy(Cols.find((c) -> c.category.id == 'slot' && c.metric.id == 'date'))
           for i in Order
@@ -1481,7 +1488,7 @@ app.directive 'spreadsheet', [
         $scope.zip = (event) ->
           event.preventDefault()
           cs = []
-          for row in Rows
+          for row in Rows when row
             cs.push
               i: row.slot.id
               f: !!row.filt

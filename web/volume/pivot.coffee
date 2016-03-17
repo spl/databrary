@@ -32,14 +32,17 @@ app.directive 'volumePivot', [
             when 'age'
               v / agediv
             when 'top'
-              m.options[v]
+              if v == 'global'
+                'volume'
+              else
+                m.options[v]
             else
               if m.type == 'void'
                 true
               else
                 v
 
-        for row in rows when row.filt && row.key
+        for row in rows when row?.filt && row.key
           data.push(d = [])
           for g in cols when g.category.id != 'asset'
             l = row.list(g.category.id)
