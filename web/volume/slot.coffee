@@ -398,7 +398,6 @@ app.controller('volume/slot', [
           else
             $scope.form.edit.$setPristine()
 
-        blank.fillData() if blank && this == blank
         $scope.playing = 0
         updateSelection()
         updatePlayerHeight()
@@ -649,6 +648,10 @@ app.controller('volume/slot', [
           , (res) =>
             delete @file
             delete @progress
+            if !blank
+              blank = this
+            else if $.isEmptyObject(@data)
+              @removed()
             return
         return
 
