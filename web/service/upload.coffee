@@ -1,8 +1,8 @@
 'use strict'
 
 app.factory('uploadService', [
-  '$q', 'routerService',
-  ($q, router) ->
+  '$q', '$sce', 'constantService', 'routerService', 'messageService',
+  ($q, $sce, constants, router, messages) ->
     removedAsset: undefined
 
     flowOptions: () ->
@@ -28,6 +28,10 @@ app.factory('uploadService', [
           file.resume()
           return
         , (res) ->
+          messages.addError
+            type: 'red'
+            body: constants.message('asset.upload.rejected', {sce:$sce.HTML}, file.name.substr(file.name.lastIndexOf('.')+1))
+            report: res
           file.cancel()
           $q.reject(res)
 ])

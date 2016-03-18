@@ -53,11 +53,6 @@ app.directive 'volumeAssist', [
             file.progressValue = 0
             return
           , (res) ->
-            messages.addError
-              type: 'red'
-              body: constants.message('asset.upload.rejected', {sce:$sce.HTML}, file.relativePath)
-              report: res
-              owner: this
             remove(file)
             return
         return

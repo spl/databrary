@@ -644,17 +644,12 @@ app.controller('volume/slot', [
         file.store = this
 
         uploads.upload(slot.volume, file).then () =>
-            @data.name ||= file.file.name
+            @data.name ||= file.name
             return
           , (res) =>
-            messages.addError
-              type: 'red'
-              body: constants.message('asset.upload.rejected', {sce:$sce.HTML}, @name)
-              report: res
-              owner: this
             delete @file
             delete @progress
-            false
+            return
         return
 
       error: (message) ->
