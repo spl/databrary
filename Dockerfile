@@ -55,13 +55,6 @@ RUN cabal update
 RUN cabal install happy
 RUN git clone git://github.com/databrary/databrary src
 
-ARG aeson_better_errors=9412a9d72642c3cd62bdb033d63ccd6c71b64e2b
-RUN git clone git://github.com/hdgarrood/aeson-better-errors && cd aeson-better-errors && \
-  git checkout $aeson_better_errors && \
-  sed -i 's/\<0\.9\.0\>/0.9.0.1/' aeson-better-errors.cabal && \
-  ln -s ../src/cabal.config . && \
-  cabal install --force-reinstall
-
 WORKDIR src
 ARG commit=origin/stage
 RUN git remote update && git checkout $commit

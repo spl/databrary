@@ -13,7 +13,7 @@ import qualified Data.Attoparsec.ByteString as P
 import qualified Data.ByteString as BS
 import Data.ByteString.Lazy.Internal (defaultChunkSize)
 import Data.Function (on)
-import qualified Data.JsonSchema as JS
+import qualified Data.JsonSchema.Draft4 as JS
 import Data.List (find)
 import Data.Maybe (isJust, fromMaybe, isNothing)
 import Data.Monoid ((<>))
@@ -53,15 +53,13 @@ import Databrary.Action.Types
 
 type IngestM a = JE.ParseT T.Text ActionM a
 
-loadSchema :: ExceptT [T.Text] IO (JS.Schema JS.Draft4Failure)
+loadSchema :: ExceptT [T.Text] IO (J.Value -> [JS.Failure])
 loadSchema = do
   schema <- lift $ getDataFileName "volume.json"
   r <- lift $ withBinaryFile schema ReadMode (\h ->
     P.parseWith (BS.hGetSome h defaultChunkSize) J.json' BS.empty)
   js <- ExceptT . return . left (return . T.pack) $ J.eitherJSON =<< P.eitherResult r
-  let rs = JS.RawSchema Nothing js
-  g <- ExceptT $ left return <$> JS.fetchReferencedSchemas JS.draft4 mempty rs
-  ExceptT $ return $ left (map (T.pack . show)) $ JS.compileDraft4 g rs
+  ExceptT $ return $ left (map (T.pack . show)) $ JS.checkSchema (JS.SchemaCache js mempty) (JS.SchemaContext Nothing js)
 
 throwPE :: T.Text -> IngestM a
 throwPE = JE.throwCustomError
@@ -104,7 +102,7 @@ asStageFile b = do
 ingestJSON :: Volume -> J.Value -> Bool -> Bool -> ActionM (Either [T.Text] [Container])
 ingestJSON vol jdata run overwrite = runExceptT $ do
   schema <- mapExceptT liftIO loadSchema
-  let errs = JS.validate schema jdata
+  let errs = schema jdata
   unless (null errs) $ throwError $ map (T.pack . show) errs
   if run
     then ExceptT $ left (JE.displayError id) <$> JE.parseValueM volume jdata
