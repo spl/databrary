@@ -43,7 +43,7 @@
 <div class="spreadsheet-dynamic-section" ng-if="::editing">
   <div>
     <span class="b"> You are in the <span ng-bind="key.name" class="spreadsheet-header-style"></span> view. </span>
-    <div class="inline-block spreadsheet-switch-view">
+    <div ng-if="views.length > 1" class="inline-block spreadsheet-switch-view">
       <button class="icon-text mini" ng-click="tabOptionsToggle($event)" tooltip="'spreadsheet.switchview' | message">
         <span class="icon list"></span>
         <span>Switch</span>

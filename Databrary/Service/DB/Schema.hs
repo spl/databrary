@@ -3,7 +3,6 @@ module Databrary.Service.DB.Schema
   ( updateDBSchema
   ) where
 
-import Control.Applicative ((<$>))
 import Control.Arrow (first, second)
 import Control.Exception.Lifted (tryJust)
 import Control.Monad (guard)
