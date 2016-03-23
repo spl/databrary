@@ -73,22 +73,22 @@ containerZipEntry c l = do
     , zipEntryContent = ZipDirectory a
     }
 
-volumeDescription :: Bool -> Volume -> IdSet Container -> [AssetSlot] -> ActionM (Html.Html, [[AssetSlot]], [[AssetSlot]])
-volumeDescription inzip v cs al = do
+volumeDescription :: Bool -> Volume -> (Container, [RecordSlot]) -> IdSet Container -> [AssetSlot] -> ActionM (Html.Html, [[AssetSlot]], [[AssetSlot]])
+volumeDescription inzip v (_, glob) cs al = do
   cite <- lookupVolumeCitation v
   links <- lookupVolumeLinks v
   fund <- lookupVolumeFunding v
-  desc <- peeks $ htmlVolumeDescription inzip v (maybeToList cite ++ links) fund cs at ab
+  desc <- peeks $ htmlVolumeDescription inzip v (maybeToList cite ++ links) fund glob cs at ab
   return (desc, at, ab)
   where
   (at, ab) = partition (any (containerTop . containerRow . slotContainer) . assetSlot . head) $ groupBy (me `on` fmap (containerId . containerRow . slotContainer) . assetSlot) al
   me (Just x) (Just y) = x == y
   me _ _ = False
 
-volumeZipEntry :: Volume -> IdSet Container -> Maybe BSB.Builder -> [AssetSlot] -> ActionM ZipEntry
-volumeZipEntry v cs csv al = do
+volumeZipEntry :: Volume -> (Container, [RecordSlot]) -> IdSet Container -> Maybe BSB.Builder -> [AssetSlot] -> ActionM ZipEntry
+volumeZipEntry v top cs csv al = do
   req <- peek
-  (desc, at, ab) <- volumeDescription True v cs al
+  (desc, at, ab) <- volumeDescription True v top cs al
   zt <- mapM ent at
   zb <- mapM ent ab
   return blankZipEntry
@@ -151,10 +151,10 @@ getVolumeInfo vi = do
 zipVolume :: ActionRoute (Id Volume)
 zipVolume = action GET (pathId </< "zip") $ \vi -> withAuth $ do
   (v, s, a) <- getVolumeInfo vi
-  _:cr <- lookupVolumeContainersRecords v
+  top:cr <- lookupVolumeContainersRecords v
   let cr' = filter ((`RS.member` s) . containerId . containerRow . fst) cr
   csv <- null cr' ?!$> volumeCSV v cr'
-  z <- volumeZipEntry v s csv a
+  z <- volumeZipEntry v top s csv a
   auditVolumeDownload (not $ null a) v
   zipResponse (BSC.pack $ "databrary-" ++ show (volumeId $ volumeRow v) ++ if idSetIsFull s then "" else "-partial") [z]
 
@@ -162,5 +162,7 @@ viewVolumeDescription :: ActionRoute (Id Volume)
 viewVolumeDescription = action GET (pathId </< "description") $ \vi -> withAuth $ do
   angular
   (v, s, a) <- getVolumeInfo vi
-  (desc, _, _) <- volumeDescription False v s a
+  top <- lookupVolumeTopContainer v
+  glob <- lookupSlotRecords $ containerSlot top
+  (desc, _, _) <- volumeDescription False v (top, glob) s a
   return $ okResponse [] desc

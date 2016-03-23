@@ -28,9 +28,15 @@ import Databrary.Model.Id.Types
 import Databrary.Model.Party
 import Databrary.Model.Volume.Types
 import Databrary.Model.Container
+import Databrary.Model.Segment
 import Databrary.Model.Slot.Types
 import Databrary.Model.Citation.Types
 import Databrary.Model.Funding.Types
+import Databrary.Model.RecordSlot.Types
+import Databrary.Model.Record.Types
+import Databrary.Model.Category.Types
+import Databrary.Model.Measure
+import Databrary.Model.Metric.Types
 import Databrary.Model.Asset.Types
 import Databrary.Model.AssetSlot.Types
 import Databrary.Model.Format
@@ -46,8 +52,8 @@ import Databrary.View.Html
 
 import {-# SOURCE #-} Databrary.Controller.Zip
 
-htmlVolumeDescription :: Bool -> Volume -> [Citation] -> [Funding] -> IdSet Container -> [[AssetSlot]] -> [[AssetSlot]] -> RequestContext -> H.Html
-htmlVolumeDescription inzip Volume{ volumeRow = VolumeRow{..}, ..} cite fund cs atl abl req = H.docTypeHtml $ do
+htmlVolumeDescription :: Bool -> Volume -> [Citation] -> [Funding] -> [RecordSlot] -> IdSet Container -> [[AssetSlot]] -> [[AssetSlot]] -> RequestContext -> H.Html
+htmlVolumeDescription inzip Volume{ volumeRow = VolumeRow{..}, ..} cite fund glob cs atl abl req = H.docTypeHtml $ do
   H.head $ do
     H.meta H.! HA.httpEquiv "content-type" H.! HA.content "text/html;charset=utf-8"
     H.title $ do
@@ -82,6 +88,17 @@ htmlVolumeDescription inzip Volume{ volumeRow = VolumeRow{..}, ..} cite fund cs 
           H.text citationHead
           forM_ citationYear $ \y ->
             " (" >> H.toMarkup (fromIntegral y :: Int) >> ")"
+    unless (null glob) $ do
+      H.h3 "Descriptors"
+      forM_ glob $ \RecordSlot{ slotRecord = r, recordSlot = s } -> do
+        H.h3 $ H.text $ categoryName $ recordCategory $ recordRow r
+        H.dl $ do
+          unless (segmentFull $ slotSegment s) $ do
+            H.dt "segment"
+            H.dd $ H.string $ show $ slotSegment s
+          forM_ (getRecordMeasures r) $ \m -> do
+            H.dt $ H.text $ metricName $ measureMetric m
+            H.dd $ byteStringHtml $ measureDatum m
     H.h2 "Package information"
     H.dl $ do
       H.dt "Created"
