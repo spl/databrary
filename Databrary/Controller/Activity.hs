@@ -57,7 +57,8 @@ viewPartyActivity = action GET (pathAPI </> pathPartyTarget </< "activity") $ \(
   v <- getParty (Just PermissionADMIN) p
   a <- lookupPartyActivity v
   return $ case api of
-    JSON -> okResponse [] $ JSON.toEncoding $ mapMaybe activityJSON a
+    ~JSON -> okResponse [] $ JSON.toEncoding $ mapMaybe activityJSON a
+    -- TODO: HTML
 
 viewVolumeActivity :: ActionRoute (API, Id Volume)
 viewVolumeActivity = action GET (pathAPI </> pathId </< "activity") $ \(api, vi) -> withAuth $ do
@@ -65,7 +66,8 @@ viewVolumeActivity = action GET (pathAPI </> pathId </< "activity") $ \(api, vi)
   v <- getVolume PermissionEDIT vi
   a <- lookupVolumeActivity v
   return $ case api of
-    JSON -> okResponse [] $ JSON.toEncoding $ mapMaybe activityJSON a
+    ~JSON -> okResponse [] $ JSON.toEncoding $ mapMaybe activityJSON a
+    -- TODO: HTML
 
 viewContainerActivity :: ActionRoute (API, (Maybe (Id Volume), Id Slot))
 viewContainerActivity = action GET (pathAPI </> pathMaybe pathId </> pathSlotId </< "activity") $ \(api, (vi, ci)) -> withAuth $ do
@@ -73,4 +75,5 @@ viewContainerActivity = action GET (pathAPI </> pathMaybe pathId </> pathSlotId 
   v <- getContainer PermissionEDIT vi ci True
   a <- lookupContainerActivity v
   return $ case api of
-    JSON -> okResponse [] $ JSON.toEncoding $ mapMaybe activityJSON a
+    ~JSON -> okResponse [] $ JSON.toEncoding $ mapMaybe activityJSON a
+    -- TODO: HTML

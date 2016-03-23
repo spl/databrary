@@ -95,7 +95,7 @@ unionValue _ v Empty = v
 unionValue p (Sub m1) (Sub m2) = Sub $ unionConfig p m1 m2
 unionValue p v1 v2
   | v1 == v2 = v1
-  | otherwise = throw $ ConflictError p v1 v2
+  | otherwise = throw $ ConflictError{ errorPath = p, errorValue1 = v1, errorValue2 = v2 }
 
 unionConfig :: Path -> ConfigMap -> ConfigMap -> ConfigMap
 unionConfig p = HM.foldrWithKey $ \k -> HM.insertWith (flip $ unionValue (pathSnoc p k)) k
@@ -160,7 +160,7 @@ load f = either (throw . ParseError) (return . topConfig) =<< P.parseFromFile pa
 
 class Typeable a => Configurable a where
   get :: Path -> Config -> a
-  get p (Config cp m) = fromMaybe (throw $ ValueError (cp <> p) v $ typeRep r) r where
+  get p (Config cp m) = fromMaybe (throw ValueError{ errorPath = cp <> p, errorValue = v, errorNeeded = typeRep r}) r where
     v = lookup p m
     r = config v
   config :: Value -> Maybe a
