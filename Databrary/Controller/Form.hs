@@ -112,5 +112,5 @@ csrfForm = do
     verf <- lift $ peeks identityVerf
     "csverf" .:> maybe
       (deformError "You must be logged in to perform this request.")
-      (\v -> deformGuard "Invalid form verifier. Please reload and try again." . (v ==) =<< deform)
+      (\v -> deformGuard "Invalid form verifier. Please logout, reload, and try again." . (v ==) =<< deform)
       verf
