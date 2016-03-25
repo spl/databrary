@@ -14,20 +14,20 @@ app.directive('loginForm', [
         form.$setSubmitted();
         models.Login.login(form.data).then(function () {
           form.validator.server({});
-          form.$setPristine();
           if ($route.current.controller === 'party/login')
             router.back();
           else
             $route.reload();
+          form.$setPristine();
         }, function (res) {
-          form.$setUnsubmitted();
           form.validator.server(res, true);
+          form.$setUnsubmitted();
         });
       };
 
       form.validator.client({}, true);
 
-      $timeout(function(){angular.element('#loginEmail').focus();},300);
+      $timeout(function(){angular.element('#loginEmail').focus();},100);
     }
   }; }
 ]);
