@@ -25,6 +25,7 @@ import Databrary.Service.DB
 import Databrary.Model.SQL
 import Databrary.Model.Identity
 import Databrary.Model.Id
+import Databrary.Model.Time
 import Databrary.Model.Audit
 import Databrary.Model.Volume
 import Databrary.Model.VolumeAccess
@@ -38,17 +39,30 @@ import Databrary.Model.AssetRevision
 import Databrary.Model.Activity.Types
 import Databrary.Model.Activity.SQL
 
-auditsMatch :: Audit -> Audit -> Bool
-auditsMatch a1 a2 = auditIdentity a1 == auditIdentity a2 && auditWhen a2 `diffUTCTime` auditWhen a1 < 1
+onActivityTime :: (Timestamp -> Timestamp -> a) -> Activity -> Activity -> a
+onActivityTime = (`on` auditWhen . activityAudit)
 
 orderActivity :: Activity -> Activity -> Ordering
-orderActivity = compare `on` auditWhen . activityAudit
+orderActivity = onActivityTime compare
 
 mergeActivity :: [Activity] -> [Activity] -> [Activity]
 mergeActivity = mergeBy $ \x y -> orderActivity x y <> LT
 
 mergeActivities :: [[Activity]] -> [Activity]
 mergeActivities = foldr1 mergeActivity
+
+joinActivitiesWith :: (Activity -> Maybe (Activity -> Maybe Activity)) -> [Activity] -> [Activity]
+joinActivitiesWith f (a1:a1r) = maybe al
+  (\af ->
+    let la c (a2:a2r)
+          | onActivityTime diffUTCTime a2 a1 >= 1 = al
+          | ((==) `on` auditIdentity . activityAudit) a1 a2, Just a <- af a2 = a : joinActivitiesWith f (c a2r)
+          | otherwise = la (c . (a2 :)) a2r
+        la c [] = joinActivitiesWith f $ c []
+    in la id a1r)
+  $ f a1
+  where al = a1 : joinActivitiesWith f a1r
+joinActivitiesWith _ [] = []
 
 chainPrev :: Ord a => (ActivityTarget -> a) -> [Activity] -> [Activity]
 chainPrev f = scan Map.empty where
@@ -106,13 +120,12 @@ addAssetRevision vol
 addAssetRevision _ a = return a
 
 mergeAssetCreation :: [Activity] -> [Activity]
-mergeAssetCreation
-  ( a@Activity{ activityAudit = a1@Audit{ auditAction = AuditActionAdd  }, activityTarget = ActivityAsset aa, activityPrev = Nothing }
-  : Activity{ activityAudit = a2@Audit{ auditAction = AuditActionChange }, activityTarget = ActivityAsset ac, activityPrev = Just (ActivityAsset aa') }
-  : al) | assetId aa == assetId aa' && auditsMatch a1 a2 =
-  a{ activityTarget = ActivityAsset ac, activityPrev = Just (ActivityAsset aa) } : mergeAssetCreation al
-mergeAssetCreation (a:al) = a : mergeAssetCreation al
-mergeAssetCreation [] = []
+mergeAssetCreation = joinActivitiesWith f1 where
+  f1 a@Activity{ activityAudit = Audit{ auditAction = AuditActionAdd  }, activityTarget = ActivityAsset aa, activityPrev = Nothing } = Just f2 where
+    f2 Activity{ activityAudit = Audit{ auditAction = AuditActionChange }, activityTarget = ActivityAsset ac, activityPrev = Just (ActivityAsset aa') }
+      | assetId aa == assetId aa' = Just a{ activityTarget = ActivityAsset ac, activityPrev = Just (ActivityAsset aa) }
+    f2 _ = Nothing
+  f1 _ = Nothing
 
 mergeActivityAssetAndSlot :: ActivityTarget -> ActivityTarget -> Maybe ActivityTarget
 mergeActivityAssetAndSlot (ActivityAsset ar) (ActivityAssetSlot ai si) =
@@ -120,20 +133,19 @@ mergeActivityAssetAndSlot (ActivityAsset ar) (ActivityAssetSlot ai si) =
 mergeActivityAssetAndSlot _ _ = Nothing
 
 mergeAssetAndSlot :: [Activity] -> [Activity]
-mergeAssetAndSlot
-  ( Activity{ activityAudit = a1, activityTarget = t1, activityPrev = p1, activityReplace = Nothing, activityTranscode = Nothing }
-  : a@Activity{ activityAudit = a2, activityTarget = t2, activityPrev = p2 }
-  : al)
-  | auditsMatch a1 a2 && auditAction a1 <= auditAction a2 && auditAction a2 <= AuditActionChange
-  , Just t <- mergeActivityAssetAndSlot t1 t2 =
-  a { activityAudit = a1
-    , activityTarget = t
-    , activityPrev = (do
-      p1t <- p1
-      mergeActivityAssetAndSlot p1t =<< p2) <|> p1 <|> p2
-    } : mergeAssetAndSlot al
-mergeAssetAndSlot (a:al) = a : mergeAssetAndSlot al
-mergeAssetAndSlot [] = []
+mergeAssetAndSlot = joinActivitiesWith f1 where
+  f1 Activity{ activityAudit = a1, activityTarget = t1, activityPrev = p1, activityReplace = Nothing, activityTranscode = Nothing } = Just f2 where
+    f2 a@Activity{ activityAudit = a2, activityTarget = t2, activityPrev = p2 }
+      | auditAction a1 <= auditAction a2 && auditAction a2 <= AuditActionChange
+      , Just t <- mergeActivityAssetAndSlot t1 t2 = Just a
+        { activityAudit = a1
+        , activityTarget = t
+        , activityPrev = (do
+          p1t <- p1
+          mergeActivityAssetAndSlot p1t =<< p2) <|> p1 <|> p2
+        }
+    f2 _ = Nothing
+  f1 _ = Nothing
 
 lookupContainerActivity :: (MonadDB c m, MonadHasIdentity c m) => Container -> m [Activity]
 lookupContainerActivity cont = do
