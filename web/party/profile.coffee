@@ -79,11 +79,7 @@ app.controller 'party/profile', [
         constants.message('profile.volumes.selected', @volume.displayName)
 
       editAccess: (p) ->
-        $location.url(@volume.editRoute('access'))
-        if p
-          remove = $rootScope.$on 'volumeEditAccessForm-init', (event, form) ->
-            form.preSelect(p)
-            remove()
+        $location.url(@volume.editRoute('access', p))
 
       edit: () ->
         if (s = $scope.selected) && (s == @ || p = s.party) && @volume.checkPermission(constants.permission.ADMIN)

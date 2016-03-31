@@ -234,10 +234,12 @@ app.factory('modelService', [
       return router.party([this.id]);
     };
 
-    Party.prototype.editRoute = function (page) {
+    Party.prototype.editRoute = function (page, party) {
       var params = {};
       if (page)
         params.page = page;
+      if (party)
+        params.party = party.id;
 
       return router.partyEdit([this.id], params);
     };
@@ -557,10 +559,12 @@ app.factory('modelService', [
       return router.volume([this.id]);
     };
 
-    Volume.prototype.editRoute = function (page) {
+    Volume.prototype.editRoute = function (page, party) {
       var params = {};
       if (page)
         params.page = page;
+      if (party)
+        params.party = party.id;
 
       return router.volumeEdit([this.id], params);
     };

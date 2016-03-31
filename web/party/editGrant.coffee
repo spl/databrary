@@ -1,8 +1,8 @@
 'use strict'
 
 app.directive 'partyEditGrantForm', [
-  '$q', 'constantService', 'messageService', 'displayService',
-  ($q, constants, messages, display) ->
+  '$location', 'constantService', 'modelService', 'messageService', 'displayService',
+  ($location, constants, models, messages, display) ->
     restrict: 'E',
     templateUrl: 'party/editGrant.html',
     link: ($scope) ->
@@ -34,7 +34,7 @@ app.directive 'partyEditGrantForm', [
       form.saveAll = () ->
         $scope.$broadcast('authGrantSave')
 
-      form.preSelect = (p, searchForm) ->
+      $scope.authSearchSelectFn = (p, searchForm) ->
         if form.data.some((auth) -> auth.party.id == p.id)
           display.scrollTo("#auth-"+p.id)
         else if $scope.party.parents.some((a) -> a.party.id == p.id)
@@ -46,7 +46,9 @@ app.directive 'partyEditGrantForm', [
           authSearchSelectFn(p, searchForm)
         return
 
-      $scope.authSearchSelectFn = form.preSelect
+      if (p = $location.search().party)?
+        $location.search('party', null)
+        models.Party.get(p).then($scope.authSearchSelectFn)
 
-      $scope.$emit('partyEditGrantForm-init', form)
+      return
 ]

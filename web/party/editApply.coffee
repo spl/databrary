@@ -1,8 +1,8 @@
 'use strict'
 
 app.directive 'partyEditApplyForm', [
-  'constantService', 'messageService', 'displayService',
-  (constants, messages, display) ->
+  '$location', 'constantService', 'modelService', 'messageService', 'displayService',
+  ($location, constants, models, messages, display) ->
     restrict: 'E'
     templateUrl: 'party/editApply.html'
     link: ($scope) ->
@@ -41,7 +41,7 @@ app.directive 'partyEditApplyForm', [
         form.data.remove(auth)
         return
 
-      form.preSelect = (p) ->
+      $scope.authSearchSelectFn = (p) ->
         if form.data.some((auth) -> auth.party.id == p.id)
           display.scrollTo("#auth-"+p.id)
         else if $scope.party.children.some((a) -> a.party.id == p.id)
@@ -52,8 +52,9 @@ app.directive 'partyEditApplyForm', [
           authSearchSelectFn(p)
         return
 
-      $scope.authSearchSelectFn = form.preSelect
+      if (p = $location.search().party)?
+        $location.search('party', null)
+        models.Party.get(p).then($scope.authSearchSelectFn)
 
-      $scope.$emit('partyEditApplyForm-init', form)
       return
 ]

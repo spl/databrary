@@ -23,9 +23,8 @@
   </article>
 
   <fieldset class="skinny clean" ng-if="::page.models.Login.isLoggedIn()">
-    <button ng-if="::isAdmin" ng-click="page.$location.url(party.editRoute('apply'))" message="network.apply.local"></button>
-    <button ng-if="::isParent" ng-click="page.$location.url(page.models.Login.user.editRoute('grant') + '#auth-' + party.id)" ng-bind="::'network.apply.foreign' | message:party.name"></button>
-    <button ng-if="::!(party.institution || isRelation)" ng-click="grant()" ng-bind="::'network.apply.foreign' | message:party.name"></button>
+    <a class="button" ng-if="::isAdmin" ng-href="{{::party.editRoute('apply')}}" message="network.apply.local"></a>
+    <a class="button" ng-if="::isParent || !(party.institution || isRelation)" ng-href="{{::page.models.Login.user.editRoute('grant', party)}}" ng-bind="::'network.apply.foreign' | message:party.name"></a>
   </fieldset>
 </div>
 
@@ -53,7 +52,7 @@
   </article>
 
   <fieldset class="skinny clean" ng-if="::page.models.Login.isLoggedIn()">
-    <button ng-if="::isAdmin" ng-click="page.$location.url(party.editRoute('grant'))" message="network.grant.local"></button>
-    <button ng-if="::!isRelation" ng-click="apply()" ng-bind="::'network.grant.foreign' | message:party.name"></button>
+    <a class="button" ng-if="::isAdmin" ng-href="{{::party.editRoute('grant')}}" message="network.grant.local"></a>
+    <a class="button" ng-if="::!isRelation" ng-href="{{::page.models.Login.user.editRoute('apply', party)}}" ng-bind="::'network.grant.foreign' | message:party.name"></a>
   </fieldset>
 </div>

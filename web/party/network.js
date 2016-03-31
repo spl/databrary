@@ -20,22 +20,6 @@ app.directive('partyNetwork', [
         $scope.party.id <= 0 || $scope.party.id === user ||
         $scope.party.children.some(isUser);
 
-      $scope.grant = function () {
-        $location.url(models.Login.user.editRoute('grant'));
-        var remove = $rootScope.$on('partyEditGrantForm-init', function (event, form) {
-          form.preSelect($scope.party);
-          remove();
-        });
-      };
-
-      $scope.apply = function () {
-        $location.url(models.Login.user.editRoute('apply'));
-        var remove = $rootScope.$on('partyEditApplyForm-init', function (event, form) {
-          form.preSelect($scope.party);
-          remove();
-        });
-      };
-
       $scope.partyChildrenCount = Object.keys($scope.party.children).length;
       $scope.partyParentsCount = Object.keys($scope.party.parents).length;
     }

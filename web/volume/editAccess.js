@@ -1,8 +1,8 @@
 'use strict';
 
 app.directive('volumeEditAccessForm', [
-  '$q', 'constantService', 'messageService', 'displayService',
-  function ($q, constants, messages, display) {
+  '$q', '$location', 'constantService', 'modelService', 'messageService', 'displayService',
+  function ($q, $location, constants, models, messages, display) {
     var link = function ($scope) {
       var volume = $scope.volume;
       var form = $scope.volumeEditAccessForm;
@@ -72,9 +72,11 @@ app.directive('volumeEditAccessForm', [
         }
       };
 
-      form.preSelect = $scope.selectFn;
-
-      $scope.$emit('volumeEditAccessForm-init', form);
+      var p = $location.search().party;
+      if (p !== undefined) {
+        $location.search('party', null);
+        models.Party.get(p).then($scope.selectFn);
+      }
     };
 
     return {
