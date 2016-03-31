@@ -60,10 +60,12 @@ parseURL s = do
   if uriScheme u `elem` ["doi:","hdl:"] && isNothing (uriAuthority u) ||
      uriScheme u == "http:" && (uriAuthority u == Just (URIAuth "" "dx.doi.org" "") || uriAuthority u == Just (URIAuth "" "doi.org" ""))
     then do
-      guard $ validHDL $ uriPath u
+      let p = dropWhile ('/' ==) $ uriPath u
+      guard $ validHDL p
       return u
         { uriScheme = "hdl:"
         , uriAuthority = Nothing
+        , uriPath = p
         }
     else do
       guard $ uriScheme u `elem` ["http:","https:"]
