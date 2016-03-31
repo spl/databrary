@@ -24,11 +24,11 @@ app.directive 'volumeEditLinksForm', [
 
       form.change = () -> blank() unless form.data[form.data.length-1].url == ''
 
-      form.remove = (ref) ->
+      form.remove = (ref, i) ->
         ref.removed = true
         ref.head = ''
         ref.url = ''
-        form.$setDirty()
+        $scope.removed = true
 
       form.save = () ->
         messages.clear(form)
@@ -43,6 +43,7 @@ app.directive 'volumeEditLinksForm', [
               body: constants.message('volume.edit.success')
               owner: form
 
+            delete $scope.removed
             form.$setPristine()
             return
           , (res) ->
