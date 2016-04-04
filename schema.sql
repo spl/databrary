@@ -1053,6 +1053,69 @@ END; $$;
 CREATE TRIGGER "volume_changed_text" AFTER INSERT OR UPDATE OF "name", "body" ON "volume" FOR EACH ROW EXECUTE PROCEDURE "volume_text_changed" ();
 CREATE TRIGGER "volume_citation_changed_text" AFTER INSERT OR UPDATE OF "head", "year" ON "volume_citation" FOR EACH ROW EXECUTE PROCEDURE "volume_text_changed" ();
 
+----------------------------------------------------------- notifications
+
+CREATE TYPE notice_delivery AS ENUM ('none', 'site', 'weekly', 'daily', 'async');
+COMMENT ON TYPE notice_delivery IS 'The different ways in which notifications can be delivered, as chosen by user.  While ''site'' means only online, ''weekly'', ''daily'', and ''async'' also generate email.';
+
+CREATE TABLE "notice" (
+	"id" smallserial NOT NULL Primary Key,
+	"name" varchar(64) NOT NULL Unique,
+	"delivery" notice_delivery NOT NULL
+);
+COMMENT ON TABLE "notice" IS 'The different classes of notifications about which users can set delivery preferences.';
+
+INSERT INTO "notice" ("name", "delivery") VALUES ('account_change',		'async');
+INSERT INTO "notice" ("name", "delivery") VALUES ('authorize_request',		'site');
+INSERT INTO "notice" ("name", "delivery") VALUES ('authorize_granted',		'async');
+INSERT INTO "notice" ("name", "delivery") VALUES ('authorize_expiring',		'daily');
+INSERT INTO "notice" ("name", "delivery") VALUES ('authorize_expired',		'daily');
+INSERT INTO "notice" ("name", "delivery") VALUES ('authorize_child_request',	'async');
+INSERT INTO "notice" ("name", "delivery") VALUES ('authorize_child_granted',	'none');
+INSERT INTO "notice" ("name", "delivery") VALUES ('authorize_child_expiring',	'daily');
+INSERT INTO "notice" ("name", "delivery") VALUES ('authorize_child_expired',	'daily');
+INSERT INTO "notice" ("name", "delivery") VALUES ('volume_assist',		'none');
+INSERT INTO "notice" ("name", "delivery") VALUES ('volume_created',		'daily');
+INSERT INTO "notice" ("name", "delivery") VALUES ('volume_sharing',		'daily');
+INSERT INTO "notice" ("name", "delivery") VALUES ('volume_access_other',		'daily');
+INSERT INTO "notice" ("name", "delivery") VALUES ('volume_access',		'daily');
+INSERT INTO "notice" ("name", "delivery") VALUES ('public_slot',			'daily');
+INSERT INTO "notice" ("name", "delivery") VALUES ('public_asset',		'daily');
+INSERT INTO "notice" ("name", "delivery") VALUES ('public_excerpt',		'daily');
+INSERT INTO "notice" ("name", "delivery") VALUES ('excerpt_volume',		'none');
+INSERT INTO "notice" ("name", "delivery") VALUES ('comment_volume',		'site');
+INSERT INTO "notice" ("name", "delivery") VALUES ('comment_reply',		'site');
+INSERT INTO "notice" ("name", "delivery") VALUES ('tag_volume',			'none');
+INSERT INTO "notice" ("name", "delivery") VALUES ('shared_volume',		'none');
+INSERT INTO "notice" ("name", "delivery") VALUES ('newsletter',			'async');
+
+CREATE TABLE "notify" (
+	"target" integer NOT NULL References "account" ON DELETE CASCADE,
+	"notice" smallint NOT NULL References "notice" ON DELETE CASCADE ON UPDATE CASCADE,
+	"delivery" notice_delivery NOT NULL,
+	Primary Key ("target", "notice")
+);
+COMMENT ON TABLE "notify" IS 'Delivery preferences about notice types, overriding the default.';
+
+CREATE VIEW "notify_view" ("target", "notice", "delivery") AS
+	SELECT account.id, notice.id, COALESCE(notify.delivery, notice.delivery)
+	FROM account CROSS JOIN notice
+	LEFT JOIN notify ON account.id = target AND notice.id = notice;
+COMMENT ON VIEW "notify_view" IS 'Full set of delivery preferences for all users and notices.';
+
+CREATE TABLE "notification" (
+	"id" serial NOT NULL Primary Key,
+	"target" integer NOT NULL References "account" ON DELETE CASCADE,
+	"notice" smallint NOT NULL References "notice" ON DELETE CASCADE ON UPDATE CASCADE,
+	"time" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	"agent" integer NOT NULL References "account" ON DELETE CASCADE,
+	"volume" integer References "volume" ON DELETE CASCADE,
+	"data" jsonb,
+	"delivered" notice_delivery
+);
+CREATE INDEX "notification_party_idx" ON "notification" ("target");
+COMMENT ON TABLE "notification" IS 'List of active notification messages.';
+
 ----------------------------------------------------------- client state
 
 CREATE TABLE "volume_state" (

@@ -101,7 +101,7 @@ volumeFilter VolumeFilter{..} = BS.concat
   , paginateSQL volumeFilterPaginate
   ]
   where
-  withq v f = maybe "" f v
+  withq v f = maybe BS.empty f v
 
 findVolumes :: (MonadHasIdentity c m, MonadDB c m) => VolumeFilter -> m [Volume]
 findVolumes pf = do
