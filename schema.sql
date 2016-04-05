@@ -1065,29 +1065,29 @@ CREATE TABLE "notice" (
 );
 COMMENT ON TABLE "notice" IS 'The different classes of notifications about which users can set delivery preferences.';
 
-INSERT INTO "notice" ("name", "delivery") VALUES ('account_change',		'async');
-INSERT INTO "notice" ("name", "delivery") VALUES ('authorize_request',		'site');
-INSERT INTO "notice" ("name", "delivery") VALUES ('authorize_granted',		'async');
-INSERT INTO "notice" ("name", "delivery") VALUES ('authorize_expiring',		'daily');
-INSERT INTO "notice" ("name", "delivery") VALUES ('authorize_expired',		'daily');
-INSERT INTO "notice" ("name", "delivery") VALUES ('authorize_child_request',	'async');
-INSERT INTO "notice" ("name", "delivery") VALUES ('authorize_child_granted',	'none');
-INSERT INTO "notice" ("name", "delivery") VALUES ('authorize_child_expiring',	'daily');
-INSERT INTO "notice" ("name", "delivery") VALUES ('authorize_child_expired',	'daily');
-INSERT INTO "notice" ("name", "delivery") VALUES ('volume_assist',		'none');
-INSERT INTO "notice" ("name", "delivery") VALUES ('volume_created',		'daily');
-INSERT INTO "notice" ("name", "delivery") VALUES ('volume_sharing',		'daily');
-INSERT INTO "notice" ("name", "delivery") VALUES ('volume_access_other',		'daily');
-INSERT INTO "notice" ("name", "delivery") VALUES ('volume_access',		'daily');
-INSERT INTO "notice" ("name", "delivery") VALUES ('public_slot',			'daily');
-INSERT INTO "notice" ("name", "delivery") VALUES ('public_asset',		'daily');
-INSERT INTO "notice" ("name", "delivery") VALUES ('public_excerpt',		'daily');
-INSERT INTO "notice" ("name", "delivery") VALUES ('excerpt_volume',		'none');
-INSERT INTO "notice" ("name", "delivery") VALUES ('comment_volume',		'site');
-INSERT INTO "notice" ("name", "delivery") VALUES ('comment_reply',		'site');
-INSERT INTO "notice" ("name", "delivery") VALUES ('tag_volume',			'none');
-INSERT INTO "notice" ("name", "delivery") VALUES ('shared_volume',		'none');
-INSERT INTO "notice" ("name", "delivery") VALUES ('newsletter',			'async');
+INSERT INTO "notice" ("name", "delivery") VALUES ('AccountChange',		'async');
+INSERT INTO "notice" ("name", "delivery") VALUES ('AuthorizeRequest',		'site');
+INSERT INTO "notice" ("name", "delivery") VALUES ('AuthorizeGranted',		'async');
+INSERT INTO "notice" ("name", "delivery") VALUES ('AuthorizeExpiring',		'daily');
+INSERT INTO "notice" ("name", "delivery") VALUES ('AuthorizeExpired',		'daily');
+INSERT INTO "notice" ("name", "delivery") VALUES ('AuthorizeChildRequest',	'async');
+INSERT INTO "notice" ("name", "delivery") VALUES ('AuthorizeChildGranted',	'none');
+INSERT INTO "notice" ("name", "delivery") VALUES ('AuthorizeChildExpiring',	'daily');
+INSERT INTO "notice" ("name", "delivery") VALUES ('AuthorizeChildExpired',	'daily');
+INSERT INTO "notice" ("name", "delivery") VALUES ('VolumeAssist',		'none');
+INSERT INTO "notice" ("name", "delivery") VALUES ('VolumeCreated',		'daily');
+INSERT INTO "notice" ("name", "delivery") VALUES ('VolumeSharing',		'daily');
+INSERT INTO "notice" ("name", "delivery") VALUES ('VolumeAccessOther',		'daily');
+INSERT INTO "notice" ("name", "delivery") VALUES ('VolumeAccess',		'daily');
+INSERT INTO "notice" ("name", "delivery") VALUES ('PublicSlot',			'daily');
+INSERT INTO "notice" ("name", "delivery") VALUES ('PublicAsset',		'daily');
+INSERT INTO "notice" ("name", "delivery") VALUES ('PublicExcerpt',		'daily');
+INSERT INTO "notice" ("name", "delivery") VALUES ('ExcerptVolume',		'none');
+INSERT INTO "notice" ("name", "delivery") VALUES ('CommentVolume',		'site');
+INSERT INTO "notice" ("name", "delivery") VALUES ('CommentReply',		'site');
+INSERT INTO "notice" ("name", "delivery") VALUES ('TagVolume',			'none');
+INSERT INTO "notice" ("name", "delivery") VALUES ('SharedVolume',		'none');
+INSERT INTO "notice" ("name", "delivery") VALUES ('Newsletter',			'async');
 
 CREATE TABLE "notify" (
 	"target" integer NOT NULL References "account" ON DELETE CASCADE,
