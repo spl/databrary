@@ -11,7 +11,6 @@ import Control.Monad (liftM2)
 import qualified Data.Aeson.Types as JSON
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.CaseInsensitive as CI (mk)
-import Data.Char (toUpper)
 import qualified Data.Text as T
 import Database.PostgreSQL.Typed.Enum (PGEnum, pgEnumValues, makePGEnum)
 import Text.Read (readMaybe)
@@ -22,6 +21,7 @@ import Databrary.Service.DB (useTDB)
 import Databrary.Model.Kind
 import Databrary.HTTP.Form (FormDatum(..))
 import Databrary.HTTP.Form.Deform
+import Databrary.String
 
 class (PGEnum a, Kinded a) => DBEnum a
 
@@ -56,7 +56,7 @@ makeDBEnum :: String -> String -> TH.DecsQ
 makeDBEnum name typs = do
   [] <- useTDB
   liftM2 (++)
-    (makePGEnum name typs (\(h:r) -> typs ++ toUpper h : r))
+    (makePGEnum name typs (\s -> typs ++ toCamel s))
     [d| instance Kinded $(return typt) where
           kindOf _ = $(TH.litE $ TH.stringL name)
         instance DBEnum $(return typt)
