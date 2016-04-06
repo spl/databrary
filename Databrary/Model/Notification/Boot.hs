@@ -1,5 +1,5 @@
 {-# LANGUAGE TemplateHaskell, QuasiQuotes, DataKinds #-}
-module Databrary.Model.Notice.Boot
+module Databrary.Model.Notification.Boot
   ( makeNotice
   ) where
 

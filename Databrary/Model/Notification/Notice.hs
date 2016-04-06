@@ -1,5 +1,6 @@
 {-# LANGUAGE TemplateHaskell, DataKinds, OverloadedStrings #-}
-module Databrary.Model.Notice
+{-# OPTIONS_GHC -fno-warn-orphans #-}
+module Databrary.Model.Notification.Notice
   ( Delivery(..)
   , Notice(..)
   ) where
@@ -12,7 +13,7 @@ import Database.PostgreSQL.Typed.Enum (PGEnum)
 import Databrary.HTTP.Form.Deform
 import Databrary.Model.Kind
 import Databrary.Model.Enum
-import Databrary.Model.Notice.Boot
+import Databrary.Model.Notification.Boot
 
 makeDBEnum "notice_delivery" "Delivery"
 
