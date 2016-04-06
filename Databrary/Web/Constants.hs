@@ -37,7 +37,7 @@ constantsJSON =
     <> "root" JSON..=: partyJSON rootParty
     <> "staff" JSON..=: partyJSON staffParty
     )
-  <> "notice" JSON..= JSON.object [ T.pack s JSON..= fromEnum n | n <- [minBound..maxBound::Notice], 'N':'o':'t':'i':'c':'e':s <- [show n] ]
+  <> "notice" JSON..= JSON.object [ T.pack (show n) JSON..= n | n <- [minBound..maxBound::Notice] ]
   <> "version" JSON..= showVersion version
 #ifdef DEVEL
   <> "devel" JSON..= True
