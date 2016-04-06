@@ -21,7 +21,7 @@ makeNotice = do
     ]
   where
   fill i l@((d, n):r) = case compare i d of
-    LT -> ("Notice_"++show i) : fill (succ i) l -- unused gap, hopefully rare and unused
+    LT -> ("InvalidNotice_"++show i) : fill (succ i) l -- unused gap, hopefully rare and unused
     EQ -> ("Notice"++n) : fill (succ i) r
     GT -> error "makeNotice: out of order"
   fill _ [] = []
