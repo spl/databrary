@@ -146,7 +146,8 @@ Executable databrary
     aeson-better-errors > 0.9.0,
     xml,
     zlib,
-    range-set-list
+    range-set-list,
+    isomorphism
 
   default-language: Haskell2010
   default-extensions: MultiParamTypeClasses, FlexibleContexts, FlexibleInstances, ScopedTypeVariables, ConstraintKinds, PatternGuards

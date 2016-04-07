@@ -10,12 +10,12 @@ module Databrary.Controller.Container
   ) where
 
 import Control.Monad (when, unless, mfilter)
+import qualified Data.Isomorphism as I
 import Data.Maybe (isJust, fromMaybe, maybeToList)
 import qualified Data.Text as T
 import Network.HTTP.Types (StdMethod(DELETE), noContent204, movedPermanently301, conflict409)
 
 import Databrary.Ops
-import qualified Databrary.Iso as I
 import Databrary.Has
 import qualified Databrary.JSON as JSON
 import Databrary.Model.Id
@@ -53,7 +53,7 @@ containerDownloadName Container{ containerRow = ContainerRow{..} } =
     T.pack (show containerId) : maybeToList containerName
 
 viewContainer :: ActionRoute (API, (Maybe (Id Volume), Id Container))
-viewContainer = I.second (I.second $ slotContainerId . unId I.:<->: containerSlotId) I.<$> viewSlot
+viewContainer = I.second (I.second $ slotContainerId . unId :<->: containerSlotId) >$< viewSlot
 
 containerForm :: Container -> DeformActionM () Container
 containerForm c = do

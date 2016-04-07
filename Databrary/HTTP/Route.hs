@@ -11,15 +11,16 @@ module Databrary.HTTP.Route
 
 import Prelude hiding (lookup)
 
+import qualified Control.Invariant.Functor as Inv
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Lazy.Char8 as BSLC
+import qualified Data.Isomorphism as I
 import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
 import Network.HTTP.Types (StdMethod)
 import Network.URI (URI(..), nullURI)
 import qualified Network.Wai as Wai
 
-import Databrary.Iso.Types (Invariant(..))
 import Databrary.HTTP
 import Databrary.HTTP.Request
 import Databrary.HTTP.Path.Types
@@ -35,10 +36,10 @@ data Route r a = Route
   , routeAction :: a -> r
   }
 
-instance Invariant (Route r) where
-  invMap f g r = r
-    { routePath = invMap f g $ routePath r
-    , routeAction = routeAction r . g
+instance Inv.Functor (Route r) where
+  fmap f r = r
+    { routePath = Inv.fmap f $ routePath r
+    , routeAction = routeAction r . I.isoFrom f
     }
 
 type RouteResult r = PathElements -> r

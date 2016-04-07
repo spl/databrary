@@ -16,7 +16,6 @@ import Network.HTTP.Types (notFound404, hContentEncoding)
 import qualified Network.Wai as Wai
 import System.Posix.FilePath (joinPath, splitDirectories)
 
-import Databrary.Iso.Types (invMap)
 import Databrary.Ops
 import Databrary.Has
 import Databrary.Files
@@ -28,7 +27,7 @@ import Databrary.Action
 import Databrary.HTTP
 import Databrary.HTTP.Request
 import Databrary.HTTP.File
-import Databrary.HTTP.Path.Parser (PathParser(..), (>/>))
+import Databrary.HTTP.Path.Parser
 import Databrary.Web.Types
 import Databrary.Web.Cache
 
@@ -56,7 +55,7 @@ parseStaticPath = fmap (StaticPath . joinPath) . mapM component where
   component c = TE.encodeUtf8 c <? (not (T.null c) && T.head c /= '.' && T.all ok c)
 
 pathStatic :: PathParser (Maybe StaticPath)
-pathStatic = invMap parseStaticPath (maybe [] $ map TE.decodeLatin1 . splitDirectories . staticFilePath) PathAny
+pathStatic = (parseStaticPath :<->: maybe [] (map TE.decodeLatin1 . splitDirectories . staticFilePath)) >$< PathAny
 
 webFile :: ActionRoute (Maybe StaticPath)
 webFile = action GET ("web" >/> pathStatic) $ \sp -> withoutAuth $ do

@@ -14,11 +14,11 @@ module Databrary.Action.Route
 
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Char8 as BSC
+import qualified Data.Isomorphism as I
 import Data.Monoid ((<>))
 import Network.HTTP.Types (StdMethod(..), Query, renderQueryBuilder, renderQuery)
 import Network.URI (URI(..))
 
-import qualified Databrary.Iso as I
 import Databrary.HTTP.Request
 import Databrary.HTTP.Path.Parser
 import Databrary.HTTP.Route
@@ -54,4 +54,4 @@ pathJSON :: PathParser ()
 pathJSON = "api"
 
 pathAPI :: PathParser API
-pathAPI = HTML =/= I.constant JSON I.<$> pathJSON
+pathAPI = HTML =/= I.const JSON >$< pathJSON
