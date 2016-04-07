@@ -31,7 +31,7 @@ makeNotice = do
         (TH.NormalB $ TH.AppE (TH.ConE 'Just) $ TH.ConE $ conn n) []) nl
         ++ [TH.Clause [TH.WildP] (TH.NormalB $ TH.ConE 'Nothing) []]
     , TH.SigD (TH.mkName "noticeFromName") (TH.ArrowT `TH.AppT` TH.ConT ''String `TH.AppT` (TH.ConT ''Maybe `TH.AppT` TH.ConT typn))
-    , TH.FunD (TH.mkName "noticeFromName") $ map (\(i, n) -> TH.Clause [TH.LitP $ TH.StringL n]
+    , TH.FunD (TH.mkName "noticeFromName") $ map (\(_, n) -> TH.Clause [TH.LitP $ TH.StringL n]
         (TH.NormalB $ TH.AppE (TH.ConE 'Just) $ TH.ConE $ conn n) []) nl
         ++ [TH.Clause [TH.WildP] (TH.NormalB $ TH.ConE 'Nothing) []]
     ]
