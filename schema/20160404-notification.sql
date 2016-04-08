@@ -51,10 +51,17 @@ CREATE TABLE "notification" (
 	"target" integer NOT NULL References "account" ON DELETE CASCADE,
 	"notice" smallint NOT NULL References "notice" ON DELETE CASCADE ON UPDATE CASCADE,
 	"time" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	"delivered" notice_delivery,
 	"agent" integer NOT NULL References "party" ON DELETE CASCADE,
+	"party" integer References "party" ON DELETE CASCADE,
+	"permission" permission,
 	"volume" integer References "volume" ON DELETE CASCADE,
-	"data" jsonb,
-	"delivered" notice_delivery
+	"container" integer References "container" ON DELETE CASCADE,
+	"segment" segment,
+	"asset" integer References "asset" ON DELETE CASCADE,
+	"comment" integer References "comment" ON DELETE CASCADE,
+	"tag" integer References "tag" ON DELETE CASCADE
 );
 CREATE INDEX "notification_party_idx" ON "notification" ("target");
 COMMENT ON TABLE "notification" IS 'List of active notification messages.';
+
