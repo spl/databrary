@@ -157,5 +157,8 @@ app.controller 'site/search', [
       v.get ['excerpts']
       return
 
+    if $scope.fields.content_type == 'excerpt' && !$scope.expanded
+      $scope.expandVolume($scope.volumes[0])
     return
+
 ]
