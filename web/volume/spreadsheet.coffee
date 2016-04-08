@@ -490,8 +490,9 @@ app.directive 'spreadsheet', [
             when 'name'
               v ?= ''
             when 'release'
-              cn = constants.release[v]
-              cell.className = cn + ' release icon hint-release-' + cn
+              if v || !slot?.top
+                cn = constants.release[v]
+                cell.className = cn + ' release icon hint-release-' + cn
               cell.classList.add('null') if slot?.top
               v = ''
             when 'date'
