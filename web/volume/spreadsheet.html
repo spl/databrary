@@ -7,15 +7,10 @@
     Show legend of session release levels
   </a>
   <ul class="release-legend flat" ng-show="showConsents">
-    <li>
-      <span class="icon release"></span>
-      <span ng-bind="::'release.UNRELEASED.title' | message"></span>: 
-      <span ng-bind=":: 'release.UNRELEASED.description' | message"></span>
-    </li>
-    <li ng-repeat="(i,c) in page.constants.release" ng-if="i>=0">
-      <span class="icon release" ng-class="c"></span>
-      <span ng-bind="'release.'+c+'.title' | message"></span>: 
-      <span ng-bind="'release.'+c+'.description' | message"></span>
+    <li ng-repeat="(i,c) in page.constants.releases">
+      <span class="icon release" ng-class="page.constants.release[c]"></span>
+      <span ng-bind="::'release.'+page.constants.release[c]+'.title' | message"></span>: 
+      <span ng-bind="::'release.'+page.constants.release[c]+'.description' | message"></span>
     </li>
   </ul>
 </div>
