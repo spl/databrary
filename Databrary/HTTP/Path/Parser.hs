@@ -90,16 +90,16 @@ infixr 2 </>, </>>, </>>>, >/>, </<
 (</>) = (>*<)
 
 (</>>) :: PathParser a -> PathParser (b, c) -> PathParser (a, b, c)
-(</>>) l r = [I.isoCase|(a, (b, c)) <-> (a, b, c)|] >$< PathTuple l r
+(</>>) = (>*<<)
 
 (</>>>) :: PathParser a -> PathParser (b, c, d) -> PathParser (a, b, c, d)
-(</>>>) l r = [I.isoCase|(a, (b, c, d)) <-> (a, b, c, d)|] >$< PathTuple l r
+(</>>>) = (>*<<<)
 
 (>/>) :: PathParser () -> PathParser a -> PathParser a
-(>/>) = (>*)
+(>/>) = (*<)
 
 (</<) :: PathParser a -> PathParser () -> PathParser a
-(</<) = (*<)
+(</<) = (>*)
 
 infix 3 |/|, =/=
 (|/|) :: PathParser a -> PathParser b -> PathParser (Either a b)
