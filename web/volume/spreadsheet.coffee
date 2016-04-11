@@ -369,7 +369,7 @@ app.directive 'spreadsheet', [
             top: s.top || false
             name: s.name
             date: s.date
-            release: s.release+''
+            release: s.release ? -1
           if s.top == 'global'
             d.global = true
             d.summary = constants.message('global.name') + " (only displayed in volume description)"
@@ -490,7 +490,7 @@ app.directive 'spreadsheet', [
             when 'name'
               v ?= ''
             when 'release'
-              if v || !slot?.top
+              if v >= 0 || !slot?.top
                 cn = constants.release[v]
                 cell.className = cn + ' release icon hint-release-' + cn
               cell.classList.add('null') if slot?.top
@@ -1333,8 +1333,8 @@ app.directive 'spreadsheet', [
               row.filt = true
           else if Key.id == 'slot'
             for row in Rows when row
-              s = row.slot.slot
-              c++ unless row.filt = f(s, s.records)
+              s = row.slot
+              c++ unless row.filt = f(s, s.slot.records)
           else
             for row in Rows when row
               c++ unless row.filt = f(row.key?.record, row.list('slot'))
