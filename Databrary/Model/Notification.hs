@@ -4,16 +4,21 @@ module Databrary.Model.Notification
   , module Databrary.Model.Notification.Notify
   , blankNotification
   , addNotification
-  , deliveredNotifications
+  , changeNotificationsDelivery
+  , lookupNotifications
   ) where
 
 import Database.PostgreSQL.Typed (pgSQL)
 
 import Databrary.Has
 import Databrary.Service.DB
+import Databrary.Model.SQL
+import Databrary.Model.Identity
+import Databrary.Model.Id.Types
 import Databrary.Model.Party.Types
 import Databrary.Model.Notification.Types
 import Databrary.Model.Notification.Notify
+import Databrary.Model.Notification.SQL
 
 useTDB
 
@@ -45,6 +50,11 @@ addNotification n@Notification{..} = do
     , notificationAgent = p
     }
 
-deliveredNotifications :: MonadDB c m => [Notification] -> Delivery -> m Int
-deliveredNotifications nl d =
-  dbExecute [pgSQL|UPDATE notification SET delivered = ${d} WHERE id = ANY (${map notificationId nl})|]
+changeNotificationsDelivery :: MonadDB c m => [Notification] -> Delivery -> m Int
+changeNotificationsDelivery nl d =
+  dbExecute [pgSQL|UPDATE notification SET delivered = ${d} WHERE id = ANY (${map notificationId nl}) AND delivered < ${d}|]
+
+lookupNotifications :: (MonadDB c m, MonadHasIdentity c m) => m [Notification]
+lookupNotifications = do
+  ident <- peek
+  dbQuery $(selectQuery (selectNotification 'ident) "$WHERE target = ${view ident :: Id Party} ORDER BY notification.id")
