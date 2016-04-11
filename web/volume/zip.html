@@ -28,15 +28,10 @@
   <div class="popup-classification release-legend">
     <ul class="flat">
       <li><b>File release levels:</b></li>
-      <li>
-        <span class="icon release"></span>
-        <span class="popup-classification-title" ng-bind="::'release.UNRELEASED.title' | message"></span>: 
-        <span ng-bind="::'release.UNRELEASED.description' | message"></span>
-      </li>
-      <li ng-repeat="(i,c) in page.constants.release">
-        <span class="icon release" ng-class="c"></span>
-        <span class="popup-classification-title" ng-bind="::'release.'+c+'.title' | message"></span>: 
-        <span ng-bind="::'release.'+c+'.description' | message"></span>
+      <li ng-repeat="c in ::page.constants.releases">
+        <span class="icon release" ng-class="::page.constants.release[c]"></span>
+        <span class="popup-classification-title" message="release.{{::page.constants.release[c]}}.title"></span>: 
+        <span message="release.{{::page.constants.release[c]}}.description"></span>
       </li>
     </ul>
   </div>
