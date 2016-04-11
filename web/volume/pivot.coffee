@@ -25,7 +25,8 @@ app.directive 'volumePivot', [
         data = [head]
 
         disp = (m, v) ->
-          return if m.assumed then '\u2043default\u2043 (' + m.assumed + ')' else '' unless v?
+          unless v?
+            return if m.assumed then '\u2043default\u2043 (' + m.assumed + ')' else ''
           switch m.id
             when 'release'
               constants.release[v]
