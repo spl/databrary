@@ -14,6 +14,7 @@ import Control.Monad (when, unless)
 import Control.Monad.Trans.Class (lift)
 import qualified Crypto.BCrypt as BCrypt
 import qualified Data.ByteString as BS
+import Data.Function (on)
 import Data.Maybe (fromMaybe)
 
 import Databrary.Ops
@@ -31,6 +32,7 @@ import Databrary.Action
 import Databrary.Controller.Paths
 import Databrary.Controller.Form
 import Databrary.Controller.Angular
+import Databrary.Controller.Notification
 import Databrary.View.Login
 
 import {-# SOURCE #-} Databrary.Controller.Root
@@ -103,6 +105,9 @@ postUser = action POST (pathAPI </< "user") $ \api -> withAuth $ do
       , accountPasswd = passwd <|> accountPasswd auth
       }
   changeAccount auth'
+  when (on (/=) (accountEmail . siteAccount) auth' auth || on (/=) accountPasswd auth' auth) $
+    createNotification (blankNotification acct NoticeAccountChange) -- use old acct (email)
+      { notificationPartyId = Just $ partyId $ partyRow $ accountParty acct }
   case api of
     JSON -> return $ okResponse [] $ JSON.recordEncoding $ partyJSON $ accountParty $ siteAccount auth'
     HTML -> peeks $ otherRouteResponse [] viewParty (api, TargetProfile)
