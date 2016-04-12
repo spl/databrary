@@ -31,7 +31,6 @@ app.directive('toolbar', [
           $scope.hoverSearch = false;
           $scope.hoverNav = false;
         });
-
         $scope.search = function () {
           page.$location.url(page.router.search()).search($scope.search.data);
           $scope.search.data.q = "";
