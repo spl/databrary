@@ -3,8 +3,6 @@ module Databrary.Model.Notification.SQL
   ( selectNotification
   ) where
 
-import Data.Maybe (fromMaybe)
-import qualified Data.Text as T
 import qualified Language.Haskell.TH as TH
 
 import Databrary.Has
@@ -17,12 +15,10 @@ import Databrary.Model.Party.Types
 import Databrary.Model.Party.SQL
 import Databrary.Model.Volume.Types
 import Databrary.Model.Container.Types
-import Databrary.Model.Container.SQL
 import Databrary.Model.Segment
 import Databrary.Model.Asset.Types
 import Databrary.Model.Tag.Types
 import Databrary.Model.Comment.Types
-import Databrary.Model.Slot.Types
 import Databrary.Model.Notification.Types
 
 makeNotification :: Id Notification -> Notice -> Timestamp -> Maybe Delivery -> Maybe (Id Party) -> Maybe Permission -> Maybe (Id Volume) -> Maybe (Id Container) -> Maybe Segment -> Maybe (Id Asset) -> Maybe (Id Comment) -> Maybe (Id Tag) -> Party -> Identity -> Notification

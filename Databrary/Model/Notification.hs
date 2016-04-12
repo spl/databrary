@@ -53,7 +53,7 @@ addNotification n@Notification{..} = do
 
 changeNotificationsDelivery :: MonadDB c m => [Notification] -> Delivery -> m Int
 changeNotificationsDelivery nl d =
-  dbExecute [pgSQL|UPDATE notification SET delivered = ${d} WHERE id = ANY (${map notificationId nl}) AND delivered < ${d}|]
+  dbExecute [pgSQL|UPDATE notification SET delivered = ${d} WHERE id = ANY (${map notificationId nl}) AND delivered < ${d} OR delivered IS NULL|]
 
 lookupNotifications :: (MonadDB c m, MonadHasIdentity c m) => m [Notification]
 lookupNotifications = do
