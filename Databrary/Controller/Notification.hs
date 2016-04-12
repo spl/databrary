@@ -5,15 +5,20 @@ module Databrary.Controller.Notification
   , blankNotification
   , createNotification
   , viewNotifications
+  , deleteNotification
   ) where
 
 import Control.Monad (when)
+import Network.HTTP.Types (StdMethod(DELETE), noContent204)
 
+import Databrary.Has
 import qualified Databrary.JSON as JSON
 import Databrary.Service.DB
+import Databrary.Model.Id.Types
 import Databrary.Model.Notification
 import Databrary.HTTP.Path.Parser
 import Databrary.Controller.Permission
+import Databrary.Controller.Paths
 import Databrary.Action
 
 -- |Must all have same target
@@ -32,8 +37,16 @@ createNotification n' = do
     return ()
 
 viewNotifications :: ActionRoute ()
-viewNotifications = action GET (pathJSON </< "notifications") $ \() -> withAuth $ do
+viewNotifications = action GET (pathJSON </< "notification") $ \() -> withAuth $ do
   _ <- authAccount
   nl <- lookupNotifications
-  changeNotificationsDelivery nl DeliverySite
+  _ <- changeNotificationsDelivery nl DeliverySite
   return $ okResponse [] $ JSON.mapRecords (\n -> JSON.Record (notificationId n) $ mempty) nl
+
+deleteNotification :: ActionRoute (Id Notification)
+deleteNotification = action DELETE (pathJSON >/> pathId) $ \i -> withAuth $ do
+  _ <- authAccount
+  r <- removeNotification i
+  if r
+    then return $ emptyResponse noContent204 []
+    else peeks notFoundResponse

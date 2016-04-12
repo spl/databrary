@@ -35,6 +35,7 @@ import Databrary.Controller.Ingest
 import Databrary.Controller.Web
 import Databrary.Controller.Search
 import Databrary.Controller.Periodic
+import Databrary.Controller.Notification
 import Databrary.Controller.API
 
 routeMap :: RouteMap Action
@@ -147,6 +148,9 @@ routeMap = fromRouteList
   , route queryFunder
   , route remoteTranscode
   , route viewSiteActivity
+
+  , route viewNotifications
+  , route deleteNotification
 
   , route viewTranscodes
   , route postTranscode

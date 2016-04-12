@@ -6,6 +6,7 @@ module Databrary.Model.Notification
   , addNotification
   , changeNotificationsDelivery
   , lookupNotifications
+  , removeNotification
   ) where
 
 import Database.PostgreSQL.Typed (pgSQL)
@@ -58,3 +59,8 @@ lookupNotifications :: (MonadDB c m, MonadHasIdentity c m) => m [Notification]
 lookupNotifications = do
   ident <- peek
   dbQuery $(selectQuery (selectNotification 'ident) "$WHERE target = ${view ident :: Id Party} ORDER BY notification.id")
+
+removeNotification :: (MonadDB c m, MonadHas (Id Party) c m) => Id Notification -> m Bool
+removeNotification i = do
+  p <- peek
+  dbExecute1 [pgSQL|DELETE FROM notification WHERE id = ${i} AND target = ${p :: Id Party}|]
