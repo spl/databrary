@@ -547,7 +547,7 @@ app.directive 'spreadsheet', [
             td.classList.add('add')
             td.classList.add('clickable')
             td.id = ID + '-add_' + info.i + '_' + info.c
-            td.appendChild(document.createTextNode(info.category.not))
+            td.appendChild(document.createTextNode(if Editing && info.metric.type != 'void' then "add " + info.category.name else info.category.not))
 
         generateMultiple = (info) ->
           t = info.count
@@ -1022,7 +1022,7 @@ app.directive 'spreadsheet', [
                 return if info.slot?.top && (mi == 'date' || mi == 'release')
                 v = info.slot?[mi]
                 v = !!v if mi == 'top' && info.slot
-                v = v+'' if mi == 'release'
+                v = (v ? -1)+'' if mi == 'release'
               else if info.c == 'asset' # not reached
                 v = info.asset[mi]
               else
