@@ -1022,7 +1022,7 @@ app.directive 'spreadsheet', [
                 return if info.slot?.top && (mi == 'date' || mi == 'release')
                 v = info.slot?[mi]
                 v = !!v if mi == 'top' && info.slot
-                v = v+'' if mi == 'release'
+                v = (v ? -1)+'' if mi == 'release'
               else if info.c == 'asset' # not reached
                 v = info.asset[mi]
               else
