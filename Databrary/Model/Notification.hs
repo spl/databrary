@@ -60,6 +60,8 @@ lookupNotifications = do
   ident <- peek
   dbQuery $(selectQuery (selectNotification 'ident) "$WHERE target = ${view ident :: Id Party} ORDER BY notification.id")
 
+-- lookupUndeliveredNotifications :: MonadDB c m => Delivery -> m [Notification]
+
 removeNotification :: (MonadDB c m, MonadHas (Id Party) c m) => Id Notification -> m Bool
 removeNotification i = do
   p <- peek

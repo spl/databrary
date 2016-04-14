@@ -7,13 +7,12 @@ module Databrary.Controller.Authorize
   ) where
 
 import Control.Applicative ((<|>))
-import Control.Monad (when, liftM3, mfilter)
+import Control.Monad (when, liftM3, mfilter, forM_)
 import qualified Data.ByteString as BS
-import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy as BSL
-import qualified Data.ByteString.Lazy.Char8 as BSLC
 import Data.Foldable (fold)
+import Data.Function (on)
 import Data.Maybe (fromMaybe, isNothing, mapMaybe)
 import Data.Monoid ((<>))
 import qualified Data.Text as T
@@ -39,6 +38,7 @@ import Databrary.Action
 import Databrary.Controller.Paths
 import Databrary.Controller.Form
 import Databrary.Controller.Party
+import Databrary.Controller.Notification
 import Databrary.View.Authorize
 
 viewAuthorize :: ActionRoute (API, PartyTarget, AuthorizeTarget)
@@ -75,12 +75,19 @@ postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarge
   let (child, parent) = if app then (p, o) else (o, p)
   c <- lookupAuthorize child parent
   let c' = Authorize (Authorization mempty child parent) Nothing `fromMaybe` c
-  authaddr <- peeks authorizeAddr
+  -- authaddr <- peeks authorizeAddr
   a <- if app
     then do
       when (isNothing c) $ do
         changeAuthorize c'
-        dl <- partyDelegates parent
+        dl <- partyDelegates o
+        forM_ dl $ \t ->
+          createNotification (blankNotification t NoticeAuthorizeChildRequest)
+            { notificationPartyId = Just $ partyId $ partyRow p }
+        forM_ (partyAccount p) $ \t ->
+          createNotification (blankNotification t NoticeAuthorizeRequest)
+            { notificationPartyId = Just $ partyId $ partyRow o }
+        {-
         agent <- peeks $ fmap accountEmail . partyAccount
         req <- peek
         sendMail (map Right dl ++ authaddr) []
@@ -90,6 +97,7 @@ postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarge
             BSB.toLazyByteString (actionURL (Just req) viewPartyEdit (TargetParty $ partyId $ partyRow parent) [("page", Just "grant")]) <> "#auth-" <> BSLC.pack (show $ partyId $ partyRow child) <> "\n\n\
             \Find more information about authorizing and managing affiliates here: \
             \http://databrary.org/access/guide/investigators/authorization/affiliates.html\n"
+        -}
       return $ Just $ fromMaybe c' c
     else do
       su <- peeks identityAdmin
@@ -106,6 +114,18 @@ postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarge
             =<< (<|> (su ?!> maxexp)) <$> deformNonEmpty deform)
           return $ Authorize (Authorization (Access site member) child parent) $ fmap (`UTCTime` 43210) expires
       maybe (mapM_ removeAuthorize c) changeAuthorize a
+      when (on (/=) (foldMap $ authorizeAccess . authorization) a c) $ do
+        forM_ (partyAccount o) $ \t ->
+          createNotification (blankNotification t NoticeAuthorizeGranted)
+            { notificationPartyId = Just $ partyId $ partyRow p
+            , notificationPermission = accessSite <$> a
+            }
+        forM_ (partyAccount p) $ \t ->
+          createNotification (blankNotification t NoticeAuthorizeChildGranted)
+            { notificationPartyId = Just $ partyId $ partyRow o
+            , notificationPermission = accessSite <$> a
+            }
+      {-
       let site = foldMap accessSite a
       when (PermissionPUBLIC < site && all ((PermissionPUBLIC >=) . accessSite) c) $ do
         sitemsg <- peeks $ authorizeTitle site
@@ -134,6 +154,7 @@ postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarge
             \Please contact us at support@databrary.org with questions or for help getting started.\
             \\n"
           ]
+      -}
       return a
   case api of
     JSON -> return $ okResponse [] $ JSON.objectEncoding $ foldMap authorizeJSON a <> "party" JSON..=: partyJSON o

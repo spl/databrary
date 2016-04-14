@@ -1066,14 +1066,14 @@ CREATE TABLE "notice" (
 COMMENT ON TABLE "notice" IS 'The different classes of notifications about which users can set delivery preferences.';
 
 INSERT INTO "notice" ("name", "delivery") VALUES ('AccountChange',		'async');
-INSERT INTO "notice" ("name", "delivery") VALUES ('AuthorizeRequest',		'site');
+INSERT INTO "notice" ("name", "delivery") VALUES ('AuthorizeRequest',		'site'); -- state/async
 INSERT INTO "notice" ("name", "delivery") VALUES ('AuthorizeGranted',		'async');
-INSERT INTO "notice" ("name", "delivery") VALUES ('AuthorizeExpiring',		'daily');
-INSERT INTO "notice" ("name", "delivery") VALUES ('AuthorizeExpired',		'daily');
-INSERT INTO "notice" ("name", "delivery") VALUES ('AuthorizeChildRequest',	'async');
+INSERT INTO "notice" ("name", "delivery") VALUES ('AuthorizeExpiring',		'daily'); -- state/periodic
+INSERT INTO "notice" ("name", "delivery") VALUES ('AuthorizeExpired',		'daily'); -- state/periodic
+INSERT INTO "notice" ("name", "delivery") VALUES ('AuthorizeChildRequest',	'async'); -- state/async
 INSERT INTO "notice" ("name", "delivery") VALUES ('AuthorizeChildGranted',	'none');
-INSERT INTO "notice" ("name", "delivery") VALUES ('AuthorizeChildExpiring',	'daily');
-INSERT INTO "notice" ("name", "delivery") VALUES ('AuthorizeChildExpired',	'daily');
+INSERT INTO "notice" ("name", "delivery") VALUES ('AuthorizeChildExpiring',	'daily'); -- state/periodic
+INSERT INTO "notice" ("name", "delivery") VALUES ('AuthorizeChildExpired',	'daily'); -- state/periodic
 INSERT INTO "notice" ("name", "delivery") VALUES ('VolumeAssist',		'none');
 INSERT INTO "notice" ("name", "delivery") VALUES ('VolumeCreated',		'daily');
 INSERT INTO "notice" ("name", "delivery") VALUES ('VolumeSharing',		'daily');
