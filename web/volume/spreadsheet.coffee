@@ -369,7 +369,7 @@ app.directive 'spreadsheet', [
             top: s.top || false
             name: s.name
             date: s.date
-            release: s.release+''
+            release: s.release ? -1
           if s.top == 'global'
             d.global = true
             d.summary = constants.message('global.name') + " (only displayed in volume description)"
@@ -490,7 +490,7 @@ app.directive 'spreadsheet', [
             when 'name'
               v ?= ''
             when 'release'
-              if v || !slot?.top
+              if v >= 0 || !slot?.top
                 cn = constants.release[v]
                 cell.className = cn + ' release icon hint-release-' + cn
               cell.classList.add('null') if slot?.top
@@ -547,7 +547,7 @@ app.directive 'spreadsheet', [
             td.classList.add('add')
             td.classList.add('clickable')
             td.id = ID + '-add_' + info.i + '_' + info.c
-            td.appendChild(document.createTextNode(info.category.not))
+            td.appendChild(document.createTextNode(if Editing && info.metric.type != 'void' then "add " + info.category.name else info.category.not))
 
         generateMultiple = (info) ->
           t = info.count
@@ -1022,7 +1022,7 @@ app.directive 'spreadsheet', [
                 return if info.slot?.top && (mi == 'date' || mi == 'release')
                 v = info.slot?[mi]
                 v = !!v if mi == 'top' && info.slot
-                v = v+'' if mi == 'release'
+                v = (v ? -1)+'' if mi == 'release'
               else if info.c == 'asset' # not reached
                 v = info.asset[mi]
               else
@@ -1333,8 +1333,8 @@ app.directive 'spreadsheet', [
               row.filt = true
           else if Key.id == 'slot'
             for row in Rows when row
-              s = row.slot.slot
-              c++ unless row.filt = f(s, s.records)
+              s = row.slot
+              c++ unless row.filt = f(s, s.slot.records)
           else
             for row in Rows when row
               c++ unless row.filt = f(row.key?.record, row.list('slot'))

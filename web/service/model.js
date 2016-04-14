@@ -850,8 +850,11 @@ app.factory('modelService', [
 
     Slot.prototype.save = function (data) {
       var s = this;
-      if (data.release === 'undefined')
-        data.release = '';
+      if ('release' in data) {
+        data.release += '';
+        if (data.release === 'undefined' || data.release == -1)
+          data.release = '';
+      }
       return router.http(router.controllers.postContainer, this.container.id, this.segment.format(), data)
         .then(function (res) {
           if ('release' in data) {
@@ -1241,8 +1244,11 @@ app.factory('modelService', [
 
     Asset.prototype.save = function (data) {
       var a = this;
-      if (data.classification === 'undefined')
-        data.classification = '';
+      if ('classification' in data) {
+        data.classification += '';
+        if (data.classification === 'undefined' || data.classification == -1)
+          data.classification = '';
+      }
       return router.http(router.controllers.postAsset, this.id, data)
         .then(function (res) {
           if ('excerpt' in data) {
