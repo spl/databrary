@@ -38,8 +38,7 @@ createNotification n' = do
   d <- lookupNotify (notificationTarget n') (notificationNotice n')
   when (d > DeliveryNone) $ do
     n <- addNotification n'
-    -- when (d >= DeliveryAsync) $ sendNotifications [n] d
-    return ()
+    when (d >= DeliveryAsync) $ focusIO $ triggerNotifications Nothing
 
 viewNotifications :: ActionRoute ()
 viewNotifications = action GET (pathJSON </< "notification") $ \() -> withAuth $ do
