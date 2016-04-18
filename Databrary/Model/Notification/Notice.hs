@@ -2,6 +2,7 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Databrary.Model.Notification.Notice
   ( Delivery(..)
+  , periodicDelivery
   , Notice(..)
   , noticeId
   , getNotice
@@ -21,9 +22,15 @@ import Databrary.HTTP.Form.Deform
 import Databrary.Model.Kind
 import Databrary.Model.Id
 import Databrary.Model.Enum
+import Databrary.Model.Periodic
 import Databrary.Model.Notification.Boot
 
 makeDBEnum "notice_delivery" "Delivery"
+
+periodicDelivery :: Maybe Period -> Delivery
+periodicDelivery (Just PeriodDaily) = DeliveryDaily
+periodicDelivery (Just PeriodWeekly) = DeliveryWeekly
+periodicDelivery Nothing = DeliveryAsync
 
 makeNotice
 

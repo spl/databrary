@@ -1,11 +1,10 @@
 {-# LANGUAGE TemplateHaskell, DeriveDataTypeable, TupleSections, Rank2Types, ScopedTypeVariables #-}
 module Databrary.Service.Periodic
   ( forkPeriodic
-  , Period(..)
   ) where
 
 import Control.Concurrent (ThreadId, forkFinally, threadDelay)
-import Control.Exception (Exception, handle, mask)
+import Control.Exception (handle, mask)
 import Control.Monad (void, when)
 import Control.Monad.Trans.Reader (withReaderT)
 import Data.Fixed (Fixed(..), Micro)
@@ -13,24 +12,18 @@ import Data.IORef (writeIORef)
 import Data.Time.Calendar.OrdinalDate (sundayStartWeek)
 import Data.Time.Clock (UTCTime(..), diffUTCTime, getCurrentTime)
 import Data.Time.LocalTime (TimeOfDay(TimeOfDay), timeOfDayToTime)
-import Data.Typeable (Typeable)
 
 import Databrary.Has
 import Databrary.Service.Types
 import Databrary.Service.Log
+import Databrary.Service.Notification
 import Databrary.Context
+import Databrary.Model.Periodic
 import Databrary.Model.Token
 import Databrary.Model.Volume
 import Databrary.Model.Stats
 import Databrary.Solr.Index
 import Databrary.EZID.Volume -- TODO
-
-data Period
-  = PeriodDaily
-  | PeriodWeekly
-  deriving (Typeable, Eq, Ord, Enum, Show)
-
-instance Exception Period
 
 threadDelay' :: Micro -> IO ()
 threadDelay' (MkFixed t)
@@ -51,6 +44,7 @@ run p = runContextM $ withReaderT BackgroundContext $ do
   focusIO $ (`writeIORef` ss) . serviceStats
   when (p >= PeriodWeekly) $
     void updateEZID
+  focusIO $ triggerNotifications (Just p) 
 
 runPeriodic :: Service -> (forall a . IO a -> IO a) -> IO ()
 runPeriodic rc unmask = loop (if s <= st then d s else s) where

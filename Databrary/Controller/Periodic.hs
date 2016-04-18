@@ -8,8 +8,8 @@ import Control.Exception (throwTo)
 import Control.Monad.IO.Class (liftIO)
 
 import Databrary.Has
+import Databrary.Model.Periodic
 import Databrary.Service.Types
-import Databrary.Service.Periodic
 import Databrary.Action
 import Databrary.HTTP.Form.Deform
 import Databrary.HTTP.Path.Parser
