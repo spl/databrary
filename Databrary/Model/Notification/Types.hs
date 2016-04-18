@@ -26,14 +26,14 @@ data Notification = Notification
   , notificationTime :: Timestamp
   , notificationDelivered :: !Delivery
   , notificationAgent :: !PartyRow
-  , notificationPartyId :: Maybe (Id Party)
+  , notificationParty :: Maybe PartyRow
   , notificationPermission :: Maybe Permission
-  , notificationVolumeId :: Maybe (Id Volume)
+  , notificationVolume :: Maybe VolumeRow
   , notificationContainerId :: Maybe (Id Container)
   , notificationSegment :: Maybe Segment
   , notificationAssetId :: Maybe (Id Asset)
   , notificationCommentId :: Maybe (Id Comment)
-  , notificationTagId :: Maybe (Id Tag)
+  , notificationTag :: Maybe Tag
   }
 
 instance Kinded Notification where

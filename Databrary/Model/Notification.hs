@@ -17,6 +17,8 @@ import Databrary.Service.DB
 import Databrary.Model.SQL
 import Databrary.Model.Id.Types
 import Databrary.Model.Party.Types
+import Databrary.Model.Volume.Types
+import Databrary.Model.Tag.Types
 import Databrary.Model.Notification.Types
 import Databrary.Model.Notification.Notify
 import Databrary.Model.Notification.SQL
@@ -31,20 +33,20 @@ blankNotification target notice = Notification
   , notificationTime = error "blankNotification"
   , notificationDelivered = DeliveryNone
   , notificationAgent = error "blankNotification"
-  , notificationPartyId = Nothing
+  , notificationParty = Nothing
   , notificationPermission = Nothing
-  , notificationVolumeId = Nothing
+  , notificationVolume = Nothing
   , notificationContainerId = Nothing
   , notificationSegment = Nothing
   , notificationAssetId = Nothing
   , notificationCommentId = Nothing
-  , notificationTagId = Nothing
+  , notificationTag = Nothing
   }
 
 addNotification :: (MonadDB c m, MonadHas Party c m) => Notification -> m Notification
 addNotification n@Notification{..} = do
   p <- peek
-  (i, t) <- dbQuery1' [pgSQL|INSERT INTO notification (target, notice, delivered, agent, party, volume, container, segment, asset, comment, tag, permission) VALUES (${partyId $ partyRow $ accountParty notificationTarget}, ${notificationNotice}, ${notificationDelivered}, ${partyId $ partyRow p}, ${notificationPartyId}, ${notificationVolumeId}, ${notificationContainerId}, ${notificationSegment}, ${notificationAssetId}, ${notificationCommentId}, ${notificationTagId}, ${notificationPermission}) RETURNING id, time|]
+  (i, t) <- dbQuery1' [pgSQL|INSERT INTO notification (target, notice, delivered, agent, party, volume, container, segment, asset, comment, tag, permission) VALUES (${partyId $ partyRow $ accountParty notificationTarget}, ${notificationNotice}, ${notificationDelivered}, ${partyId $ partyRow p}, ${partyId <$> notificationParty}, ${volumeId <$> notificationVolume}, ${notificationContainerId}, ${notificationSegment}, ${notificationAssetId}, ${notificationCommentId}, ${tagId <$> notificationTag}, ${notificationPermission}) RETURNING id, time|]
   return n
     { notificationId = i
     , notificationTime = t
@@ -57,12 +59,12 @@ changeNotificationsDelivery nl d =
 
 lookupUserNotifications :: (MonadDB c m, MonadHas Account c m) => m [Notification]
 lookupUserNotifications = do
-  ident <- peek
-  dbQuery $(selectQuery (selectUserNotification 'ident) "$WHERE target = ${view ident :: Id Party} ORDER BY notification.id")
+  u <- peek
+  dbQuery $ ($ u) <$> $(selectQuery selectTargetNotification "$WHERE target = ${view u :: Id Party} ORDER BY notification.id")
 
 lookupUndeliveredNotifications :: MonadDB c m => Delivery -> m [Notification]
 lookupUndeliveredNotifications d =
-  dbQuery $(selectQuery selectNotification "JOIN notify_view USING (target, notice) WHERE delivery >= ${d} AND delivered < ${d} ORDER BY notification.target, notification.id")
+  dbQuery $(selectQuery selectNotification "JOIN notify_view USING (target, notice) WHERE delivery >= ${d} AND delivered = 'none' ORDER BY notification.target, notification.id")
 
 removeNotification :: (MonadDB c m, MonadHas (Id Party) c m) => Id Notification -> m Bool
 removeNotification i = do

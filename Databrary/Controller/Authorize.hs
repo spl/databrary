@@ -83,10 +83,10 @@ postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarge
         dl <- partyDelegates o
         forM_ dl $ \t ->
           createNotification (blankNotification t NoticeAuthorizeChildRequest)
-            { notificationPartyId = Just $ partyId $ partyRow p }
+            { notificationParty = Just $ partyRow p }
         forM_ (partyAccount p) $ \t ->
           createNotification (blankNotification t NoticeAuthorizeRequest)
-            { notificationPartyId = Just $ partyId $ partyRow o }
+            { notificationParty = Just $ partyRow o }
         {-
         agent <- peeks $ fmap accountEmail . partyAccount
         req <- peek
@@ -117,12 +117,12 @@ postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarge
       when (on (/=) (foldMap $ authorizeAccess . authorization) a c) $ do
         forM_ (partyAccount o) $ \t ->
           createNotification (blankNotification t NoticeAuthorizeGranted)
-            { notificationPartyId = Just $ partyId $ partyRow p
+            { notificationParty = Just $ partyRow p
             , notificationPermission = accessSite <$> a
             }
         forM_ (partyAccount p) $ \t ->
           createNotification (blankNotification t NoticeAuthorizeChildGranted)
-            { notificationPartyId = Just $ partyId $ partyRow o
+            { notificationParty = Just $ partyRow o
             , notificationPermission = accessSite <$> a
             }
       {-
