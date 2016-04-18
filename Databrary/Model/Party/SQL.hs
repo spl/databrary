@@ -5,6 +5,7 @@ module Databrary.Model.Party.SQL
   , selectPartyAuthorization
   , selectAuthParty
   , selectAccount
+  , selectUserAccount
   , selectSiteAuth
   , updateParty
   , updateAccount
@@ -92,14 +93,20 @@ selectAccount :: TH.Name -- ^ 'Identity'
 selectAccount ident = selectMap ((`TH.AppE` TH.VarE ident) . (`TH.AppE` (TH.ConE 'Nothing)) . (TH.VarE 'permissionParty `TH.AppE`)) $
   selectPermissionAccount
 
-makeSiteAuth :: (Permission -> Maybe Access -> Account) -> Maybe BS.ByteString -> Maybe Access -> SiteAuth
-makeSiteAuth p w a = SiteAuth (p maxBound $ Just maxBound) w (fold a)
+makeUserAccount :: (Permission -> Maybe Access -> Account) -> Account
+makeUserAccount a = a maxBound (Just maxBound)
+
+selectUserAccount :: Selector -- @'Account'
+selectUserAccount = selectMap (TH.VarE 'makeUserAccount `TH.AppE`) selectPermissionAccount
+
+makeSiteAuth :: Account -> Maybe BS.ByteString -> Maybe Access -> SiteAuth
+makeSiteAuth p w a = SiteAuth p w (fold a)
 
 selectSiteAuth :: Selector -- @'SiteAuth'@
 selectSiteAuth = selectJoin 'makeSiteAuth
-  [ selectPermissionAccount
+  [ selectUserAccount
   , Selector (SelectColumn "account" "password") "" ""
-  , maybeJoinOn "party.id = authorize_view.child AND authorize_view.parent = 0"
+  , maybeJoinOn "account.id = authorize_view.child AND authorize_view.parent = 0"
     $ accessRow "authorize_view"
   ]
 

@@ -5,7 +5,8 @@ module Databrary.Model.Notification
   , blankNotification
   , addNotification
   , changeNotificationsDelivery
-  , lookupNotifications
+  , lookupUserNotifications
+  , lookupUndeliveredNotifications
   , removeNotification
   ) where
 
@@ -14,7 +15,6 @@ import Database.PostgreSQL.Typed (pgSQL)
 import Databrary.Has
 import Databrary.Service.DB
 import Databrary.Model.SQL
-import Databrary.Model.Identity
 import Databrary.Model.Id.Types
 import Databrary.Model.Party.Types
 import Databrary.Model.Notification.Types
@@ -29,7 +29,7 @@ blankNotification target notice = Notification
   , notificationTarget = target
   , notificationNotice = notice
   , notificationTime = error "blankNotification"
-  , notificationDelivered = Nothing
+  , notificationDelivered = DeliveryNone
   , notificationAgent = error "blankNotification"
   , notificationPartyId = Nothing
   , notificationPermission = Nothing
@@ -48,19 +48,21 @@ addNotification n@Notification{..} = do
   return n
     { notificationId = i
     , notificationTime = t
-    , notificationAgent = p
+    , notificationAgent = partyRow p
     }
 
 changeNotificationsDelivery :: MonadDB c m => [Notification] -> Delivery -> m Int
 changeNotificationsDelivery nl d =
-  dbExecute [pgSQL|UPDATE notification SET delivered = ${d} WHERE id = ANY (${map notificationId nl}) AND delivered < ${d} OR delivered IS NULL|]
+  dbExecute [pgSQL|UPDATE notification SET delivered = ${d} WHERE id = ANY (${map notificationId nl}) AND delivered < ${d}|]
 
-lookupNotifications :: (MonadDB c m, MonadHasIdentity c m) => m [Notification]
-lookupNotifications = do
+lookupUserNotifications :: (MonadDB c m, MonadHas Account c m) => m [Notification]
+lookupUserNotifications = do
   ident <- peek
-  dbQuery $(selectQuery (selectNotification 'ident) "$WHERE target = ${view ident :: Id Party} ORDER BY notification.id")
+  dbQuery $(selectQuery (selectUserNotification 'ident) "$WHERE target = ${view ident :: Id Party} ORDER BY notification.id")
 
--- lookupUndeliveredNotifications :: MonadDB c m => Delivery -> m [Notification]
+lookupUndeliveredNotifications :: MonadDB c m => Delivery -> m [Notification]
+lookupUndeliveredNotifications d =
+  dbQuery $(selectQuery selectNotification "JOIN notify_view USING (target, notice) WHERE delivery >= ${d} AND delivered < ${d} ORDER BY notification.target, notification.id")
 
 removeNotification :: (MonadDB c m, MonadHas (Id Party) c m) => Id Notification -> m Bool
 removeNotification i = do

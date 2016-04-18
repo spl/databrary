@@ -1108,7 +1108,7 @@ CREATE TABLE "notification" (
 	"target" integer NOT NULL References "account" ON DELETE CASCADE,
 	"notice" smallint NOT NULL References "notice" ON DELETE CASCADE ON UPDATE CASCADE,
 	"time" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	"delivered" notice_delivery,
+	"delivered" notice_delivery NOT NULL DEFAULT 'none',
 	"agent" integer NOT NULL References "party" ON DELETE CASCADE,
 	"party" integer References "party" ON DELETE CASCADE,
 	"permission" permission,

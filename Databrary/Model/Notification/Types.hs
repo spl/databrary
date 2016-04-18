@@ -24,8 +24,8 @@ data Notification = Notification
   , notificationTarget :: !Account
   , notificationNotice :: !Notice
   , notificationTime :: Timestamp
-  , notificationDelivered :: !(Maybe Delivery)
-  , notificationAgent :: !Party
+  , notificationDelivered :: !Delivery
+  , notificationAgent :: !PartyRow
   , notificationPartyId :: Maybe (Id Party)
   , notificationPermission :: Maybe Permission
   , notificationVolumeId :: Maybe (Id Volume)
