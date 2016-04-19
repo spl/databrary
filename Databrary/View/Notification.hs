@@ -20,8 +20,10 @@ import Databrary.View.Html
 htmlNotification :: Notification -> H.Html
 htmlNotification Notification{..} = case notificationNotice of
   NoticeAccountChange -> agent >> " changed " >> partys >> " " >> partyEdit (fromMaybe target notificationParty) [("page", "account")] "account information" >> "."
-  NoticeAuthorizeRequest -> agent >> " requested " >> partyEdit target [("page", "grant"), ("party", maybe "" (BSC.pack . show . partyId) notificationParty)] "authorization" >> " for " >> party >> "."
-  NoticeAuthorizeGranted -> agent >> " granted " >> partyEdit target [("page", "grant"), ("party", maybe "" (BSC.pack . show . partyId) notificationParty)] "authorization" >> " to " >> party >> "."
+  NoticeAuthorizeRequest -> agent >> " requested " >> partyEdit target [("page", "apply"), partyq] "authorization" >> " from " >> party >> "."
+  NoticeAuthorizeGranted -> agent >> " granted you " >> partyEdit target [("page", "apply"), partyq] "authorization" >> " under " >> party >> "."
+  NoticeAuthorizeChildRequest -> agent >> " requested " >> partyEdit target [("page", "grant"), partyq] "authorization" >> " for " >> party >> "."
+  NoticeAuthorizeChildGranted -> agent >> " granted " >> partyEdit target [("page", "grant"), partyq] "authorization" >> " to " >> party >> "."
   where
   target = partyRow (accountParty notificationTarget)
   person p = on (==) partyId p target ?!> htmlPartyViewLink p ([] :: Query)
@@ -29,5 +31,6 @@ htmlNotification Notification{..} = case notificationNotice of
   partyp = person =<< notificationParty
   party = fromMaybe "you" partyp
   partys = maybe "your" (>> "'s") partyp
+  partyq = ("party", maybe "" (BSC.pack . show . partyId) notificationParty)
   link u a q h = H.a H.! actionLink u a (map (second Just) q :: Query) $ h
   partyEdit = link viewPartyEdit . TargetParty . partyId
