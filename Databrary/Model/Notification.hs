@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell, QuasiQuotes, DataKinds, RecordWildCards #-}
+{-# LANGUAGE TemplateHaskell, QuasiQuotes, DataKinds, RecordWildCards, OverloadedStrings #-}
 module Databrary.Model.Notification
   ( module Databrary.Model.Notification.Types
   , module Databrary.Model.Notification.Notify
@@ -8,15 +8,18 @@ module Databrary.Model.Notification
   , lookupUserNotifications
   , lookupUndeliveredNotifications
   , removeNotification
+  , notificationJSON
   ) where
 
+import Data.Monoid ((<>))
 import Database.PostgreSQL.Typed (pgSQL)
 
 import Databrary.Has
+import qualified Databrary.JSON as JSON
 import Databrary.Service.DB
 import Databrary.Model.SQL
 import Databrary.Model.Id.Types
-import Databrary.Model.Party.Types
+import Databrary.Model.Party
 import Databrary.Model.Volume.Types
 import Databrary.Model.Tag.Types
 import Databrary.Model.Notification.Types
@@ -70,3 +73,18 @@ removeNotification :: (MonadDB c m, MonadHas (Id Party) c m) => Id Notification 
 removeNotification i = do
   p <- peek
   dbExecute1 [pgSQL|DELETE FROM notification WHERE id = ${i} AND target = ${p :: Id Party}|]
+
+notificationJSON :: JSON.ToNestedObject o u => Notification -> JSON.Record (Id Notification) o
+notificationJSON Notification{..} = JSON.Record notificationId $
+     "notice" JSON..= notificationNotice
+  <> "time" JSON..= notificationTime
+  <> "delivered" JSON..= notificationDelivered
+  <> "agent" JSON..=. JSON.recordObject ({-on (==) partyId notificationAgent (partyRow (accountParty notificationTarget)) ?!>-} partyRowJSON notificationAgent)
+  <> "party" JSON..=? (partyId <$> notificationParty)
+  <> "permission" JSON..=? notificationPermission
+  <> "volume" JSON..=? (volumeId <$> notificationVolume)
+  <> "container" JSON..=? notificationContainerId
+  <> "segment" JSON..=? notificationSegment
+  <> "asset" JSON..=? notificationAssetId
+  <> "comment" JSON..=? notificationCommentId
+  <> "tag" JSON..=? (tagName <$> notificationTag)
