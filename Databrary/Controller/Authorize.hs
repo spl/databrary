@@ -74,7 +74,6 @@ postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarge
   let (child, parent) = if app then (p, o) else (o, p)
   c <- lookupAuthorize child parent
   let c' = Authorize (Authorization mempty child parent) Nothing `fromMaybe` c
-  -- authaddr <- peeks authorizeAddr
   a <- if app
     then do
       when (isNothing c) $ do
@@ -86,17 +85,6 @@ postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarge
         forM_ (partyAccount p) $ \t ->
           createNotification (blankNotification t NoticeAuthorizeRequest)
             { notificationParty = Just $ partyRow o }
-        {-
-        agent <- peeks $ fmap accountEmail . partyAccount
-        req <- peek
-        sendMail (map Right dl ++ authaddr) []
-          ("Databrary authorization request from " <> partyName (partyRow child))
-          $ BSL.fromChunks [TE.encodeUtf8 (partyName $ partyRow child), " <", fold agent, "> has requested to be authorized by ", TE.encodeUtf8 (partyName $ partyRow parent), ". \
-            \To approve or reject this authorization request, go to:\n\n" ] <>
-            BSB.toLazyByteString (actionURL (Just req) viewPartyEdit (TargetParty $ partyId $ partyRow parent) [("page", Just "grant")]) <> "#auth-" <> BSLC.pack (show $ partyId $ partyRow child) <> "\n\n\
-            \Find more information about authorizing and managing affiliates here: \
-            \http://databrary.org/access/guide/investigators/authorization/affiliates.html\n"
-        -}
       return $ Just c'
     else do
       su <- peeks identityAdmin
@@ -126,36 +114,6 @@ postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarge
             { notificationParty = Just $ partyRow p
             , notificationPermission = perm
             }
-      {-
-      let site = foldMap accessSite a
-      when (PermissionPUBLIC < site && all ((PermissionPUBLIC >=) . accessSite) c) $ do
-        sitemsg <- peeks $ authorizeTitle site
-        sendMail (maybe id (:) (Right <$> partyAccount child) authaddr) []
-          "Databrary authorization approved"
-          $ BSL.fromChunks
-          [ "Dear ", TE.encodeUtf8 (partyName $ partyRow child), ",\n\n\
-            \You have been authorized by ", TE.encodeUtf8 (partyName $ partyRow parent), ", as a Databrary ", TE.encodeUtf8 sitemsg, ". \
-            \Your authorization allows you to access all the shared data in Databrary. \
-            \Our primary goal is to inspire you to reuse shared videos on Databrary to ask new questions outside the scope of the original study. \
-            \You will also find illustrative video excerpts that you can use for teaching and to learn about researchers' methods and procedures.\
-            \\n\n\
-            \Databrary's unique \"active curation\" functionality allows you to upload your videos as you collect them so that your data are backed up and preserved in our free, secure library, your videos are immediately available to you and your collaborators offsite, and your data are organized and ready for sharing. \
-            \Your data will remain private and accessible only to your lab members and collaborators until you are ready to share with the Databrary community. \
-            \When you are ready, sharing is as easy as clicking a button!\
-            \\n\n\
-            \To share your data, you can use our template Databrary release form for obtaining permission for sharing from your participants, which can be found here: http://databrary.org/access/policies/release-template.html\n\
-            \The release form can be added to new or existing IRB protocols. \
-            \It is completely adaptable and can be customized to suit your needs. \
-            \We also have lots of information and helpful tips about managing and sharing your video data in our User Guide: http://databrary.org/access/guide\n\
-            \As soon as your protocol is amended to allow you to share data, you can start uploading your data from each new session. \
-            \Don't wait until your study is complete to upload your videos. \
-            \It's much easier to upload data after each data collection while your study is in progress!\
-            \\n\n\
-            \We are dedicated to providing assistance to the Databrary community. \
-            \Please contact us at support@databrary.org with questions or for help getting started.\
-            \\n"
-          ]
-      -}
       return a
   case api of
     JSON -> return $ okResponse [] $ JSON.objectEncoding $ foldMap authorizeJSON a <> "party" JSON..=: partyJSON o
