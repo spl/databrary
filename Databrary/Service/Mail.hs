@@ -41,6 +41,7 @@ mailFooter = "\n\
   \databrary.org\n"
 
 sendMail :: MonadIO m => [Either BS.ByteString Account] -> [Either BS.ByteString Account] -> T.Text -> TL.Text -> m ()
+sendMail [] [] _ _ = return ()
 sendMail to cc subj body =
   liftIO $ renderSendMail $ addPart [plainPart $ mailHeader <> wrapText 78 body <> mailFooter] $ baseMail
     { mailTo = map addr to

@@ -14,7 +14,8 @@ import Control.Concurrent.MVar (takeMVar, tryTakeMVar)
 import Control.Monad (join, when, unless)
 import Data.Function (on)
 import Data.List (groupBy)
-import Data.Maybe (maybeToList)
+import Data.Monoid ((<>))
+import qualified Data.Text.Lazy as TL
 import Data.Time.Clock (getCurrentTime)
 import Network.HTTP.Types (StdMethod(DELETE), noContent204)
 import qualified Text.Regex.Posix as Regex
@@ -26,9 +27,10 @@ import Databrary.Service.Types
 import Databrary.Service.Notification
 import Databrary.Service.Log
 import Databrary.Service.DB
+import Databrary.Service.Mail
 import Databrary.Context
 import Databrary.Model.Id.Types
-import Databrary.Model.Party.Types
+import Databrary.Model.Party
 import Databrary.Model.Notification
 import Databrary.HTTP.Path.Parser
 import Databrary.Controller.Permission
@@ -64,10 +66,12 @@ deleteNotification = action DELETE (pathJSON >/> pathId) $ \i -> withAuth $ do
 
 mailNotifications :: [Notification] -> Notifications -> IO ()
 mailNotifications l@(Notification{ notificationTarget = u }:_) s = unless (null to) $ do
-  return ()
+  sendMail (map Right (filter (Regex.matchTest (notificationsFilter s) . accountEmail) [u])) (maybe [] (return . Left) $ notificationsCopy s)
+    "Databrary notifications"
+    $ TL.fromChunks ["Dear ", partyName $ partyRow $ accountParty u, ",\n"]
+    <> foldMap (\n -> '\n' `TL.cons` mailNotification n `TL.snoc` '\n') l
   where
-  to = filter (Regex.matchTest $ notificationsFilter s) [accountEmail u] ++ maybeToList (notificationsCopy s)
-  m = map mailNotification l
+  to = map Right (filter (Regex.matchTest (notificationsFilter s) . accountEmail) [u]) ++ maybe [] (return . Left) (notificationsCopy s)
 mailNotifications [] _ = return ()
 
 emitNotifications :: (MonadDB c m, MonadHas Notifications c m) => Delivery -> m ()
