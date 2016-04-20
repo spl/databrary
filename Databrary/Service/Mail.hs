@@ -3,39 +3,33 @@ module Databrary.Service.Mail
   ( sendMail
   ) where
 
-import Control.Applicative ((<|>))
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import qualified Data.ByteString as BS
-import qualified Data.ByteString.Char8 as BSC
-import qualified Data.ByteString.Lazy as BSL
-import qualified Data.ByteString.Lazy.Char8 as BSLC
-import Data.Char (isSpace)
+import Data.Int (Int64)
 import Data.Monoid ((<>))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
+import qualified Data.Text.Lazy as TL
 import Network.Mail.Mime
 
 import Databrary.Model.Party
 
-wrapText :: Int -> BSL.ByteString -> BSL.ByteString
+wrapText :: Int64 -> TL.Text -> TL.Text
 wrapText n s
-  | BS.length sn <= n = s
-  | Just ni <- fromIntegral <$> BSC.elemIndexEnd '\n' sn = ((. wrapText n) . BSL.append) `uncurry` BSL.splitAt (succ ni) s
-  | Just si <- fromIntegral <$> BSC.elemIndexEnd ' ' sn <|> BSLC.findIndex isSpace s =
-    ((. (wrapText n . BSL.tail)) . BSL.append . (`BSLC.snoc` '\n')) `uncurry` BSL.splitAt si s
+  | TL.length sp <= n = s
+  | (np,nq) <- TL.breakOnEnd "\n" sp, not (TL.null np) = np <> wrapText n (nq <> sq)
+  | (bp,bq) <- TL.breakOnEnd " " sp, not (TL.null bp) = TL.init bp `TL.snoc` '\n' <> wrapText n (bq <> sq)
+  | (lp,lq) <- TL.breakOn "\n" s, not (TL.null lq) = lp `TL.snoc` '\n' <> wrapText n (TL.tail lq)
   | otherwise = s
-  where sn = BSL.toStrict $ BSL.take (succ (fromIntegral n)) s
-
-wrapMailText :: BSL.ByteString -> BSL.ByteString
-wrapMailText = wrapText 78
+  where (sp,sq) = TL.splitAt (succ n) s
 
 baseMail :: Mail
 baseMail = emptyMail (Address (Just "Databrary") "help@databrary.org")
 
-mailHeader :: BSL.ByteString
-mailHeader = mempty
+mailHeader :: TL.Text
+mailHeader = TL.empty
 
-mailFooter :: BSL.ByteString
+mailFooter :: TL.Text
 mailFooter = "\n\
   \Sincerely,\n\
   \The Databrary Team\n\
@@ -46,9 +40,9 @@ mailFooter = "\n\
   \contact@databrary.org\n\
   \databrary.org\n"
 
-sendMail :: MonadIO m => [Either BS.ByteString Account] -> [Either BS.ByteString Account] -> T.Text -> BSL.ByteString -> m ()
+sendMail :: MonadIO m => [Either BS.ByteString Account] -> [Either BS.ByteString Account] -> T.Text -> TL.Text -> m ()
 sendMail to cc subj body =
-  liftIO $ renderSendMail $ addPart [Part "text/plain; charset=utf-8" None Nothing [] (mailHeader <> wrapMailText body <> mailFooter)] $ baseMail
+  liftIO $ renderSendMail $ addPart [plainPart $ mailHeader <> wrapText 78 body <> mailFooter] $ baseMail
     { mailTo = map addr to
     , mailCc = map addr cc
     , mailHeaders = [("Subject", subj)]

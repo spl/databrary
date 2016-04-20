@@ -5,11 +5,12 @@ module Databrary.Action.Response
   , emptyResponse
   , okResponse
   , result
+  , unsafeResult
   , runResult
   , proxyResponse
   ) where
 
-import Control.Exception (Exception, throwIO, handle)
+import Control.Exception (Exception, throwIO, throw, handle)
 import Control.Monad (join)
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import qualified Data.ByteString as BS
@@ -109,6 +110,9 @@ instance Exception Result
 
 result :: MonadIO m => Response -> m a
 result = liftIO . throwIO . Result
+
+unsafeResult :: Response -> a
+unsafeResult = throw . Result
 
 runResult :: IO Response -> IO Response
 runResult = handle (return . resultResponse)

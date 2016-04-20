@@ -10,13 +10,12 @@ import Control.Applicative ((<|>))
 import Control.Monad (when, liftM3, mfilter, forM_)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
-import qualified Data.ByteString.Lazy as BSL
-import Data.Foldable (fold)
 import Data.Function (on)
 import Data.Maybe (fromMaybe, isNothing, mapMaybe)
 import Data.Monoid ((<>))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
+import qualified Data.Text.Lazy as TL
 import Data.Time (UTCTime(..), fromGregorian, addGregorianYearsRollOver)
 import Network.HTTP.Types (noContent204, StdMethod(DELETE))
 
@@ -98,7 +97,7 @@ postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarge
             \Find more information about authorizing and managing affiliates here: \
             \http://databrary.org/access/guide/investigators/authorization/affiliates.html\n"
         -}
-      return $ Just $ fromMaybe c' c
+      return $ Just c'
     else do
       su <- peeks identityAdmin
       now <- peek
@@ -115,15 +114,17 @@ postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarge
           return $ Authorize (Authorization (Access site member) child parent) $ fmap (`UTCTime` 43210) expires
       maybe (mapM_ removeAuthorize c) changeAuthorize a
       when (on (/=) (foldMap $ authorizeAccess . authorization) a c) $ do
+        let perm = accessSite <$> a
+        dl <- partyDelegates p
+        forM_ dl $ \t ->
+          createNotification (blankNotification t NoticeAuthorizeChildGranted)
+            { notificationParty = Just $ partyRow o
+            , notificationPermission = perm
+            }
         forM_ (partyAccount o) $ \t ->
           createNotification (blankNotification t NoticeAuthorizeGranted)
             { notificationParty = Just $ partyRow p
-            , notificationPermission = accessSite <$> a
-            }
-        forM_ (partyAccount p) $ \t ->
-          createNotification (blankNotification t NoticeAuthorizeChildGranted)
-            { notificationParty = Just $ partyRow o
-            , notificationPermission = accessSite <$> a
+            , notificationPermission = perm
             }
       {-
       let site = foldMap accessSite a
@@ -182,6 +183,6 @@ postAuthorizeNotFound = action POST (pathJSON >/> pathPartyTarget </< "notfound"
   title <- peeks $ authorizeTitle perm
   sendMail authaddr []
     ("Databrary authorization request from " <> partyName (partyRow p))
-    $ BSL.fromChunks [TE.encodeUtf8 (partyName $ partyRow p), " <", fold agent, ">", mbt (partyAffiliation $ partyRow p), " has requested to be authorized as an ", TE.encodeUtf8 title, " by ", TE.encodeUtf8 name, mbt info, ".\n"]
+    $ TL.fromChunks [partyName $ partyRow p, " <", foldMap TE.decodeLatin1 agent, ">", mbt $ partyAffiliation $ partyRow p, " has requested to be authorized as an ", title, " by ", name, mbt info, ".\n"]
   return $ emptyResponse noContent204 []
-  where mbt = maybe "" $ \t -> " (" <> TE.encodeUtf8 t <> ")"
+  where mbt = maybe "" $ \t -> " (" <> t <> ")"

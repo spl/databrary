@@ -15,7 +15,7 @@ import qualified Databrary.Store.Config as C
 
 data Notifications = Notifications
   { notificationsTrigger :: !(MVar (Maybe Period))
-  , notificationsFilter :: !(BS.ByteString -> Bool)
+  , notificationsFilter :: !Regex.Regex
   , notificationsCopy :: !(Maybe BS.ByteString)
   }
 
@@ -24,7 +24,7 @@ initNotifications conf = do
   t <- newMVar Nothing -- run async notification pass at boot
   return Notifications
     { notificationsTrigger = t
-    , notificationsFilter = Regex.matchTest (Regex.makeRegexOpts Regex.compIgnoreCase Regex.blankExecOpt (conf C.! "filter" :: BS.ByteString) :: Regex.Regex)
+    , notificationsFilter = Regex.makeRegexOpts Regex.compIgnoreCase Regex.blankExecOpt (conf C.! "filter" :: BS.ByteString)
     , notificationsCopy = conf C.! "copy"
     }
 

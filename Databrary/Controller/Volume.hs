@@ -22,14 +22,13 @@ import Control.Monad.Trans.Class (lift)
 import Control.Monad.Trans.State.Lazy (StateT(..), evalStateT, get, put)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
-import qualified Data.ByteString.Lazy as BSL
 import qualified Data.HashMap.Lazy as HML
 import qualified Data.HashMap.Strict as HM
 import Data.Maybe (fromMaybe, isNothing)
 import Data.Monoid ((<>))
 import qualified Data.Text as T
-import qualified Data.Text.Encoding as TE
-import Network.HTTP.Types (noContent204)
+import qualified Data.Text.Lazy as TL
+import Network.HTTP.Types (noContent204, unsupportedMediaType415)
 import qualified Network.Wai as Wai
 
 import Databrary.Ops
@@ -312,9 +311,12 @@ postVolumeAssist = action POST (pathJSON >/> pathId </< "assist") $ \vi -> withA
   user <- authAccount
   v <- getVolume PermissionEDIT vi
   addr <- peeks assistAddr
-  body <- getRequestTextContent
-  sendMail addr [Right user] ("Databrary upload assistance request for volume " <> T.pack (show vi)) $ BSL.fromChunks
-    [ TE.encodeUtf8 $ partyName $ partyRow $ accountParty user, " has requested curation assistance for ", TE.encodeUtf8 $ volumeName $ volumeRow v, "\n\n", body, "\n" ]
+  cont <- parseRequestContent (const 0)
+  body <- case cont :: Content () of
+    ContentText body -> return body
+    _ -> result $ emptyResponse unsupportedMediaType415 []
+  sendMail addr [Right user] ("Databrary upload assistance request for volume " <> T.pack (show vi)) $ TL.fromChunks
+    [ partyName $ partyRow $ accountParty user, " has requested curation assistance for ", volumeName $ volumeRow v, "\n\n" ] <> body `TL.snoc` '\n'
   return $ emptyResponse noContent204 []
 
 volumeSearchForm :: DeformActionM f VolumeFilter

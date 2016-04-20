@@ -11,12 +11,13 @@ module Databrary.Controller.Notification
 
 import Control.Concurrent (ThreadId, forkFinally, threadDelay)
 import Control.Concurrent.MVar (takeMVar, tryTakeMVar)
-import Control.Monad (join, when, unless, forM_)
+import Control.Monad (join, when, unless)
 import Data.Function (on)
 import Data.List (groupBy)
 import Data.Maybe (maybeToList)
 import Data.Time.Clock (getCurrentTime)
 import Network.HTTP.Types (StdMethod(DELETE), noContent204)
+import qualified Text.Regex.Posix as Regex
 
 import Databrary.Has
 import Databrary.Ops
@@ -39,8 +40,12 @@ createNotification :: Notification -> ActionM ()
 createNotification n' = do
   d <- lookupNotify (notificationTarget n') (notificationNotice n')
   when (d > DeliveryNone) $ do
-    _ <- addNotification n'
-    when (d >= DeliveryAsync) $ focusIO $ triggerNotifications Nothing
+    n <- addNotification n'
+      { notificationDelivered = if d == DeliveryImmediate then d else notificationDelivered n' }
+    when (d >= DeliveryAsync) $ focusIO $
+      if notificationDelivered n == DeliveryImmediate
+        then mailNotifications [n]
+        else triggerNotifications Nothing
 
 viewNotifications :: ActionRoute ()
 viewNotifications = action GET (pathJSON </< "notification") $ \() -> withAuth $ do
@@ -57,14 +62,18 @@ deleteNotification = action DELETE (pathJSON >/> pathId) $ \i -> withAuth $ do
     then return $ emptyResponse noContent204 []
     else peeks notFoundResponse
 
-sendNotifications :: (MonadDB c m, MonadHas Notifications c m) => Delivery -> m ()
-sendNotifications d = do
+mailNotifications :: [Notification] -> Notifications -> IO ()
+mailNotifications l@(Notification{ notificationTarget = u }:_) s = unless (null to) $ do
+  return ()
+  where
+  to = filter (Regex.matchTest $ notificationsFilter s) [accountEmail u] ++ maybeToList (notificationsCopy s)
+  m = map mailNotification l
+mailNotifications [] _ = return ()
+
+emitNotifications :: (MonadDB c m, MonadHas Notifications c m) => Delivery -> m ()
+emitNotifications d = do
   unl <- lookupUndeliveredNotifications d
-  Notifications{ notificationsFilter = filt, notificationsCopy = copy } <- peek
-  forM_ (groupBy ((==) `on` partyId . partyRow . accountParty . notificationTarget) unl) $ \nl@(Notification{ notificationTarget = u }:_) -> do
-    let to = filter filt [accountEmail u] ++ maybeToList copy
-    unless (null to) $ do
-      return ()
+  mapM_ (focusIO . mailNotifications) $ groupBy ((==) `on` partyId . partyRow . accountParty . notificationTarget) unl
   _ <- changeNotificationsDelivery unl d
   return ()
   
@@ -74,9 +83,9 @@ runNotifier rc = loop where
   loop = do
     d' <- takeMVar t
     d <- d' `orElseM` do
-      threadDelay 10000000 -- 10 second throttle on async notifications
+      threadDelay 60000000 -- 60 second throttle on async notifications
       join <$> tryTakeMVar t
-    runContextM (sendNotifications $ periodicDelivery d) rc
+    runContextM (emitNotifications $ periodicDelivery d) rc
     loop
 
 forkNotifier :: Service -> IO ThreadId
