@@ -78,8 +78,8 @@ mailNotifications :: [Notification] -> TL.Text
 mailNotifications l@(~Notification{ notificationTarget = u }:_) =
   TL.fromChunks ["Dear ", partyName target, ",\n"]
   <> foldMap (\n -> '\n' `TL.cons` mailNotification n `TL.snoc` '\n') l
-  <> "You can change your notification settings or unsubscribe here: "
-  <> partyEditLink mailLink target target [("page", "notifications")]
+  <> "\nYou can change your notification settings or unsubscribe here: "
+  <> partyEditLink mailLink target target [("page", "notifications")] `TL.snoc` '\n'
   where
   target = partyRow (accountParty u)
 

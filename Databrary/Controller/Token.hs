@@ -28,6 +28,7 @@ import Databrary.Controller.Paths
 import Databrary.Controller.Form
 import Databrary.Controller.Login
 import Databrary.Controller.Angular
+import Databrary.Controller.Notification
 import Databrary.View.Token
 
 lookupPasswordResetAccount :: BS.ByteString -> ActionM (Maybe SiteAuth)
@@ -59,4 +60,6 @@ postPasswordToken = action POST (pathAPI </> pathId) $ \(api, ti) -> withoutAuth
     passwordForm (siteAccount auth)
   changeAccount auth{ accountPasswd = Just pw } -- or should this be withAuth?
   _ <- removeLoginToken tok
+  createNotification (blankNotification (siteAccount auth) NoticeAccountChange)
+    { notificationParty = Just $ partyRow $ accountParty $ siteAccount auth }
   loginAccount api (view tok) False

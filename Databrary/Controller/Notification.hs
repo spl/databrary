@@ -11,7 +11,7 @@ module Databrary.Controller.Notification
 
 import Control.Concurrent (ThreadId, forkFinally, threadDelay)
 import Control.Concurrent.MVar (takeMVar, tryTakeMVar)
-import Control.Monad (join, when, unless)
+import Control.Monad (join, when)
 import Data.Function (on)
 import Data.List (groupBy)
 import Data.Time.Clock (getCurrentTime)
@@ -24,7 +24,6 @@ import qualified Databrary.JSON as JSON
 import Databrary.Service.Types
 import Databrary.Service.Notification
 import Databrary.Service.Log
-import Databrary.Service.DB
 import Databrary.Service.Mail
 import Databrary.Context
 import Databrary.Model.Id.Types
@@ -42,10 +41,10 @@ createNotification n' = do
   when (d > DeliveryNone) $ do
     n <- addNotification n'
       { notificationDelivered = if d == DeliveryImmediate then d else notificationDelivered n' }
-    when (d >= DeliveryAsync) $ focusIO $
+    when (d >= DeliveryAsync) $
       if notificationDelivered n == DeliveryImmediate
-        then sendNotifications [n]
-        else triggerNotifications Nothing
+        then sendTargetNotifications [n]
+        else focusIO $ triggerNotifications Nothing
 
 viewNotifications :: ActionRoute ()
 viewNotifications = action GET (pathJSON </< "notification") $ \() -> withAuth $ do
@@ -62,19 +61,19 @@ deleteNotification = action DELETE (pathJSON >/> pathId) $ \i -> withAuth $ do
     then return $ emptyResponse noContent204 []
     else peeks notFoundResponse
 
-sendNotifications :: [Notification] -> Notifications -> IO ()
-sendNotifications l@(Notification{ notificationTarget = u }:_) s = unless (null to) $ do
-  sendMail (map Right (filter (Regex.matchTest (notificationsFilter s) . accountEmail) [u])) (maybe [] (return . Left) $ notificationsCopy s)
+-- |Assumed to be all same target
+sendTargetNotifications :: (MonadMail c m, MonadHas Notifications c m) => [Notification] -> m ()
+sendTargetNotifications l@(Notification{ notificationTarget = u }:_) = do
+  Notifications{ notificationsFilter = filt, notificationsCopy = copy } <- peek
+  sendMail (map Right (filter (Regex.matchTest filt . accountEmail) [u])) (maybe [] (return . Left) copy)
     "Databrary notifications"
     $ mailNotifications l
-  where
-  to = map Right (filter (Regex.matchTest (notificationsFilter s) . accountEmail) [u]) ++ maybe [] (return . Left) (notificationsCopy s)
-sendNotifications [] _ = return ()
+sendTargetNotifications [] = return ()
 
-emitNotifications :: (MonadDB c m, MonadHas Notifications c m) => Delivery -> m ()
+emitNotifications :: Delivery -> ContextM ()
 emitNotifications d = do
   unl <- lookupUndeliveredNotifications d
-  mapM_ (focusIO . sendNotifications) $ groupBy ((==) `on` partyId . partyRow . accountParty . notificationTarget) unl
+  mapM_ sendTargetNotifications $ groupBy ((==) `on` partyId . partyRow . accountParty . notificationTarget) unl
   _ <- changeNotificationsDelivery unl d
   return ()
   

@@ -1,18 +1,25 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Databrary.Service.Mail
-  ( sendMail
+  ( MonadMail
+  , sendMail
   ) where
 
-import Control.Monad.IO.Class (MonadIO, liftIO)
+import Control.Monad.IO.Class (liftIO)
 import qualified Data.ByteString as BS
 import Data.Int (Int64)
 import Data.Monoid ((<>))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.Text.Lazy as TL
+import qualified Data.Text.Lazy.Encoding as TLE
+import Data.Time.Clock (getCurrentTime)
 import Network.Mail.Mime
 
+import Databrary.Has
 import Databrary.Model.Party
+import Databrary.Service.Log
+
+type MonadMail c m = (MonadLog c m)
 
 wrapText :: Int64 -> TL.Text -> TL.Text
 wrapText n s
@@ -40,10 +47,13 @@ mailFooter = "\n\
   \contact@databrary.org\n\
   \databrary.org\n"
 
-sendMail :: MonadIO m => [Either BS.ByteString Account] -> [Either BS.ByteString Account] -> T.Text -> TL.Text -> m ()
+sendMail :: MonadMail c m => [Either BS.ByteString Account] -> [Either BS.ByteString Account] -> T.Text -> TL.Text -> m ()
 sendMail [] [] _ _ = return ()
-sendMail to cc subj body =
-  liftIO $ renderSendMail $ addPart [plainPart $ mailHeader <> wrapText 78 body <> mailFooter] $ baseMail
+sendMail to cc subj body = do
+  t <- liftIO getCurrentTime
+  focusIO $ logMsg t $ "mail " <> BS.intercalate ", " (map (either id accountEmail) to) <> ": " <> TE.encodeUtf8 subj
+  liftIO $ renderSendMail $ addPart
+    [Part "text/plain; charset=utf-8" None Nothing [] $ TLE.encodeUtf8 $ mailHeader <> wrapText 78 body <> mailFooter] baseMail
     { mailTo = map addr to
     , mailCc = map addr cc
     , mailHeaders = [("Subject", subj)]
