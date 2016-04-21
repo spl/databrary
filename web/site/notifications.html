@@ -1,0 +1,14 @@
+<div ng-if="!notifications">
+  Loading...
+</div>
+<div ng-if="::notifications">
+  <ul ng-if="::notifications.length">
+    <li ng-repeat="n in ::notifications">
+      <span ng-bind-html="::n.html">
+      </span>
+    </li>
+  </ul>
+  <span ng-if="::!notifications.length">
+    No notifications.
+  </span>
+</div>

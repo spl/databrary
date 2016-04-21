@@ -159,7 +159,7 @@ jsRoutes =
   , jsRoute "getTopTags" queryTags Nothing
   , jsRoute "getSiteActivity" viewSiteActivity (JSON)
 
-  , jsRoute "viewNotifications" viewNotifications ()
+  , jsRoute "getNotifications" viewNotifications ()
   , jsRoute "deleteNotification" deleteNotification (Id 0)
   ] where
   token = Id ""
