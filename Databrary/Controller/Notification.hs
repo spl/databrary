@@ -3,6 +3,7 @@ module Databrary.Controller.Notification
   ( Notice(..)
   , Notification(..)
   , blankNotification
+  , postNotify
   , createNotification
   , viewNotifications
   , deleteNotification
@@ -11,7 +12,7 @@ module Databrary.Controller.Notification
 
 import Control.Concurrent (ThreadId, forkFinally, threadDelay)
 import Control.Concurrent.MVar (takeMVar, tryTakeMVar)
-import Control.Monad (join, when)
+import Control.Monad (join, when, void)
 import Data.Function (on)
 import Data.List (groupBy)
 import Data.Time.Clock (getCurrentTime)
@@ -30,10 +31,23 @@ import Databrary.Model.Id.Types
 import Databrary.Model.Party
 import Databrary.Model.Notification
 import Databrary.HTTP.Path.Parser
+import Databrary.HTTP.Form.Deform
 import Databrary.Controller.Permission
 import Databrary.Controller.Paths
+import Databrary.Controller.Form
 import Databrary.Action
 import Databrary.View.Notification
+
+postNotify :: ActionRoute ()
+postNotify = action POST (pathJSON </< "notification") $ \() -> withAuth $ do
+  u <- authAccount
+  (nl, md) <- runForm Nothing $ do
+    csrfForm
+    (,)
+      <$> ("notice" .:> withSubDeforms (const deform))
+      <*> ("delivery" .:> deformNonEmpty deform)
+  mapM_ (maybe (void . removeNotify u) (\d n -> changeNotify u n d) md) nl
+  return $ emptyResponse noContent204 []
 
 createNotification :: Notification -> ActionM ()
 createNotification n' = do

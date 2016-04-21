@@ -75,7 +75,7 @@ mailNotification Notification{..} = case notificationNotice of
   partyEdit = partyEditLink mailLink target
 
 mailNotifications :: [Notification] -> TL.Text
-mailNotifications l@(~Notification{ notificationTarget = u }:_) =
+mailNotifications ~l@(Notification{ notificationTarget = u }:_) =
   TL.fromChunks ["Dear ", partyName target, ",\n"]
   <> foldMap (\n -> '\n' `TL.cons` mailNotification n `TL.snoc` '\n') l
   <> "\nYou can change your notification settings or unsubscribe here: "
@@ -92,7 +92,7 @@ htmlNotification Notification{..} = case notificationNotice of
     agent >> " requested "
     >> partyEdit target [("page", "apply"), partyq] "authorization" >> " from " >> party >> "."
   NoticeAuthorizeGranted ->
-    agent >> " " >> granted >> " you "
+    agent >> " " >> granted >> " your "
     >> partyEdit target [("page", "apply"), partyq] "authorization" >> " under " >> party >> "."
   NoticeAuthorizeChildRequest ->
     agent >> " requested "

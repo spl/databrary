@@ -161,6 +161,7 @@ jsRoutes =
 
   , jsRoute "getNotifications" viewNotifications ()
   , jsRoute "deleteNotification" deleteNotification (Id 0)
+  , jsRoute "postNotify" postNotify ()
   ] where
   token = Id ""
   party = Id 0
