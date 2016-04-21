@@ -10,6 +10,7 @@ module Databrary.Controller.Notification
   , forkNotifier
   ) where
 
+import Control.Applicative ((<|>))
 import Control.Concurrent (ThreadId, forkFinally, threadDelay)
 import Control.Concurrent.MVar (takeMVar, tryTakeMVar)
 import Control.Monad (join, when, void)
@@ -44,7 +45,7 @@ postNotify = action POST (pathJSON </< "notification") $ \() -> withAuth $ do
   (nl, md) <- runForm Nothing $ do
     csrfForm
     (,)
-      <$> ("notice" .:> withSubDeforms (const deform))
+      <$> ("notice" .:> return <$> deform <|> withSubDeforms (const deform))
       <*> ("delivery" .:> deformNonEmpty deform)
   mapM_ (maybe (void . removeNotify u) (\d n -> changeNotify u n d) md) nl
   return $ emptyResponse noContent204 []
