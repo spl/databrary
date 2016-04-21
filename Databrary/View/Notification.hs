@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings, RecordWildCards #-}
 module Databrary.View.Notification
-  ( mailNotification
+  ( mailNotifications
   , htmlNotification
   ) where
 
@@ -18,11 +18,18 @@ import Databrary.Ops
 import Databrary.Model.Permission
 import Databrary.Model.Party
 import Databrary.Model.Notification
+import Databrary.HTTP.Route
 import Databrary.View.Party (htmlPartyViewLink)
 import Databrary.Action.Route
 import Databrary.Controller.Paths
 import Databrary.Controller.Party
 import Databrary.View.Html
+
+mailLink :: Route r a -> a -> [(BSC.ByteString, BSC.ByteString)] -> TL.Text
+mailLink u a q = TLE.decodeLatin1 $ BSB.toLazyByteString $ actionURL Nothing u a (map (second Just) q :: Query)
+
+partyEditLink :: (ActionRoute PartyTarget -> PartyTarget -> t) -> PartyRow -> PartyRow -> t
+partyEditLink link target p = link viewPartyEdit (if on (==) partyId p target then TargetProfile else TargetParty (partyId p))
 
 mailNotification :: Notification -> TL.Text
 mailNotification Notification{..} = case notificationNotice of
@@ -65,8 +72,16 @@ mailNotification Notification{..} = case notificationNotice of
   partyp = person =<< notificationParty
   party = fromMaybe "you" partyp
   partyq = ("party", maybe "" (BSC.pack . show . partyId) notificationParty)
-  link u a q = TLE.decodeLatin1 $ BSB.toLazyByteString $ actionURL Nothing u a (map (second Just) q :: Query)
-  partyEdit = link viewPartyEdit . TargetParty . partyId
+  partyEdit = partyEditLink mailLink target
+
+mailNotifications :: [Notification] -> TL.Text
+mailNotifications l@(~Notification{ notificationTarget = u }:_) =
+  TL.fromChunks ["Dear ", partyName target, ",\n"]
+  <> foldMap (\n -> '\n' `TL.cons` mailNotification n `TL.snoc` '\n') l
+  <> "You can change your notification settings or unsubscribe here: "
+  <> partyEditLink mailLink target target [("page", "notifications")]
+  where
+  target = partyRow (accountParty u)
 
 htmlNotification :: Notification -> H.Html
 htmlNotification Notification{..} = case notificationNotice of
@@ -94,5 +109,5 @@ htmlNotification Notification{..} = case notificationNotice of
   partys = maybe "your" (maybe "their own" (>> "'s")) partyp
   partyq = ("party", maybe "" (BSC.pack . show . partyId) notificationParty)
   link u a q h = H.a H.! actionLink u a (map (second Just) q :: Query) $ h
-  partyEdit = link viewPartyEdit . TargetParty . partyId
+  partyEdit = partyEditLink link target
   granted = maybe "revoked" (const "granted") notificationPermission

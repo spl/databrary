@@ -14,8 +14,6 @@ import Control.Concurrent.MVar (takeMVar, tryTakeMVar)
 import Control.Monad (join, when, unless)
 import Data.Function (on)
 import Data.List (groupBy)
-import Data.Monoid ((<>))
-import qualified Data.Text.Lazy as TL
 import Data.Time.Clock (getCurrentTime)
 import Network.HTTP.Types (StdMethod(DELETE), noContent204)
 import qualified Text.Regex.Posix as Regex
@@ -46,7 +44,7 @@ createNotification n' = do
       { notificationDelivered = if d == DeliveryImmediate then d else notificationDelivered n' }
     when (d >= DeliveryAsync) $ focusIO $
       if notificationDelivered n == DeliveryImmediate
-        then mailNotifications [n]
+        then sendNotifications [n]
         else triggerNotifications Nothing
 
 viewNotifications :: ActionRoute ()
@@ -64,20 +62,19 @@ deleteNotification = action DELETE (pathJSON >/> pathId) $ \i -> withAuth $ do
     then return $ emptyResponse noContent204 []
     else peeks notFoundResponse
 
-mailNotifications :: [Notification] -> Notifications -> IO ()
-mailNotifications l@(Notification{ notificationTarget = u }:_) s = unless (null to) $ do
+sendNotifications :: [Notification] -> Notifications -> IO ()
+sendNotifications l@(Notification{ notificationTarget = u }:_) s = unless (null to) $ do
   sendMail (map Right (filter (Regex.matchTest (notificationsFilter s) . accountEmail) [u])) (maybe [] (return . Left) $ notificationsCopy s)
     "Databrary notifications"
-    $ TL.fromChunks ["Dear ", partyName $ partyRow $ accountParty u, ",\n"]
-    <> foldMap (\n -> '\n' `TL.cons` mailNotification n `TL.snoc` '\n') l
+    $ mailNotifications l
   where
   to = map Right (filter (Regex.matchTest (notificationsFilter s) . accountEmail) [u]) ++ maybe [] (return . Left) (notificationsCopy s)
-mailNotifications [] _ = return ()
+sendNotifications [] _ = return ()
 
 emitNotifications :: (MonadDB c m, MonadHas Notifications c m) => Delivery -> m ()
 emitNotifications d = do
   unl <- lookupUndeliveredNotifications d
-  mapM_ (focusIO . mailNotifications) $ groupBy ((==) `on` partyId . partyRow . accountParty . notificationTarget) unl
+  mapM_ (focusIO . sendNotifications) $ groupBy ((==) `on` partyId . partyRow . accountParty . notificationTarget) unl
   _ <- changeNotificationsDelivery unl d
   return ()
   
