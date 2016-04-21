@@ -17,5 +17,9 @@ app.directive 'notifications', [
             body: 'An error occured retrieving your notifications; please try again'
             report: res
           return
+      $scope.delete = (n) ->
+        router.http(router.controllers.deleteNotification, [n.id]).then () ->
+          n.deleted = true
+          return
       return
 ]

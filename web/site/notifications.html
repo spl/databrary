@@ -3,7 +3,8 @@
 </div>
 <div ng-if="::notifications">
   <ul ng-if="::notifications.length">
-    <li ng-repeat="n in ::notifications">
+    <li ng-repeat="n in ::notifications" ng-if="!n.deleted">
+      <a href="" ng-click="delete(n)">delete</a>
       <span ng-bind-html="::n.html">
       </span>
     </li>
