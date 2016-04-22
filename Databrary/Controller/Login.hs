@@ -24,6 +24,7 @@ import Databrary.Model.Id.Types
 import Databrary.Model.Party
 import Databrary.Model.Identity
 import Databrary.Model.Permission
+import Databrary.Model.Notification.Types
 import Databrary.Model.Token
 import Databrary.HTTP.Cookie
 import Databrary.HTTP.Form.Deform

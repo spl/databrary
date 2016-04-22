@@ -151,6 +151,7 @@ routeMap = fromRouteList
 
   , route viewNotifications
   , route deleteNotification
+  , route viewNotify
   , route postNotify
 
   , route viewTranscodes

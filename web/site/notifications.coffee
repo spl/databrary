@@ -1,8 +1,8 @@
 'use strict'
 
 app.directive 'notifications', [
-  '$sce', 'routerService',
-  ($sce, router) ->
+  '$sce', 'routerService', 'messageService',
+  ($sce, router, messages) ->
     restrict: 'E'
     templateUrl: 'site/notifications.html'
     scope: {}
@@ -14,7 +14,7 @@ app.directive 'notifications', [
         , (res) ->
           messages.addError
             type: 'red'
-            body: 'An error occured retrieving your notifications; please try again'
+            body: 'An error occured retrieving your notifications'
             report: res
           return
       $scope.delete = (n) ->

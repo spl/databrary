@@ -1,8 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Databrary.Controller.Notification
-  ( Notice(..)
-  , Notification(..)
-  , blankNotification
+  ( viewNotify
   , postNotify
   , createNotification
   , viewNotifications
@@ -39,8 +37,14 @@ import Databrary.Controller.Form
 import Databrary.Action
 import Databrary.View.Notification
 
+viewNotify :: ActionRoute ()
+viewNotify = action GET (pathJSON </< "notify") $ \() -> withAuth $ do
+  u <- authAccount
+  n <- lookupAccountNotify u
+  return $ okResponse [] $ JSON.toEncoding n
+
 postNotify :: ActionRoute ()
-postNotify = action POST (pathJSON </< "notification") $ \() -> withAuth $ do
+postNotify = action POST (pathJSON </< "notify") $ \() -> withAuth $ do
   u <- authAccount
   (nl, md) <- runForm Nothing $ do
     csrfForm

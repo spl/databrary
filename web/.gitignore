@@ -28,6 +28,7 @@
 /party/data.js
 /party/editApply.js
 /party/editGrant.js
+/party/editNotifications.js
 /party/load.js
 /party/profile.js
 /party/search.js

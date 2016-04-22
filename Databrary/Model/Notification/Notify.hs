@@ -2,16 +2,20 @@
 module Databrary.Model.Notification.Notify
   ( lookupNotify
   , lookupAccountNotify
+  , NoticeMap
   , changeNotify
   , removeNotify
   ) where
 
 import Control.Monad (when)
-import qualified Data.Map.Strict as Map
+import qualified Data.Aeson as JSON
+import qualified Data.Vector as V
+import qualified Data.Vector.Mutable as VM
 import Database.PostgreSQL.Typed.Query (pgSQL)
 
 import Databrary.Service.DB
 import Databrary.Model.SQL
+import Databrary.Model.Id
 import Databrary.Model.Party.Types
 import Databrary.Model.Notification.Notice
 
@@ -21,8 +25,8 @@ lookupNotify :: MonadDB c m => Account -> Notice -> m Delivery
 lookupNotify a n =
   dbQuery1' [pgSQL|!SELECT delivery FROM notify_view WHERE target = ${partyId $ partyRow $ accountParty a} AND notice = ${n}|]
 
-lookupAccountNotify :: MonadDB c m => Account -> m (Map.Map Notice Delivery)
-lookupAccountNotify a = Map.fromDistinctAscList <$>
+lookupAccountNotify :: MonadDB c m => Account -> m (NoticeMap Delivery)
+lookupAccountNotify a = NoticeMap <$>
   dbQuery [pgSQL|!SELECT notice, delivery FROM notify_view WHERE target = ${partyId $ partyRow $ accountParty a} ORDER BY notice|]
 
 changeNotify :: MonadDB c m => Account -> Notice -> Delivery -> m ()
@@ -36,3 +40,23 @@ changeNotify a n d = do
 removeNotify :: MonadDB c m => Account -> Notice -> m Bool
 removeNotify a n =
   dbExecute1 [pgSQL|DELETE FROM notify WHERE target = ${partyId $ partyRow $ accountParty a} AND notice = ${n}|]
+
+newtype NoticeMap a = NoticeMap [(Notice, a)]
+
+noticeInt :: Notice -> Int
+noticeInt = fromIntegral . unId . noticeId
+
+noticeMapToList :: NoticeMap a -> [Maybe a]
+noticeMapToList (NoticeMap m) = pop 0 m where
+  pop _ [] = []
+  pop i nl@((n,x):l) = case i `compare` noticeInt n of
+    LT -> Nothing : pop (succ i) nl
+    EQ -> Just x : pop (succ i) l
+    GT -> error "NoticeMap: out of order"
+
+instance JSON.ToJSON a => JSON.ToJSON (NoticeMap a) where
+  toJSON (NoticeMap m) = JSON.Array $ V.create $ do
+    v <- VM.replicate (succ (noticeInt maxBound)) JSON.Null
+    mapM_ (\(n,x) -> VM.write v (noticeInt n) $ JSON.toJSON x) m
+    return v
+  toEncoding = JSON.foldable . noticeMapToList

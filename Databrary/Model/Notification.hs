@@ -2,7 +2,6 @@
 module Databrary.Model.Notification
   ( module Databrary.Model.Notification.Types
   , module Databrary.Model.Notification.Notify
-  , blankNotification
   , addNotification
   , changeNotificationsDelivery
   , lookupUserNotifications
@@ -27,24 +26,6 @@ import Databrary.Model.Notification.Notify
 import Databrary.Model.Notification.SQL
 
 useTDB
-
-blankNotification :: Account -> Notice -> Notification
-blankNotification target notice = Notification
-  { notificationId = error "blankNotification"
-  , notificationTarget = target
-  , notificationNotice = notice
-  , notificationTime = error "blankNotification"
-  , notificationDelivered = DeliveryNone
-  , notificationAgent = error "blankNotification"
-  , notificationParty = Nothing
-  , notificationPermission = Nothing
-  , notificationVolume = Nothing
-  , notificationContainerId = Nothing
-  , notificationSegment = Nothing
-  , notificationAssetId = Nothing
-  , notificationCommentId = Nothing
-  , notificationTag = Nothing
-  }
 
 addNotification :: (MonadDB c m, MonadHas Party c m) => Notification -> m Notification
 addNotification n@Notification{..} = do

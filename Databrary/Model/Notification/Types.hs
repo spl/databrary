@@ -2,6 +2,7 @@
 module Databrary.Model.Notification.Types
   ( module Databrary.Model.Notification.Notice
   , Notification(..)
+  , blankNotification
   ) where
 
 import Databrary.Model.Time
@@ -38,3 +39,21 @@ data Notification = Notification
 
 instance Kinded Notification where
   kindOf _ = "notification"
+
+blankNotification :: Account -> Notice -> Notification
+blankNotification target notice = Notification
+  { notificationId = error "blankNotification"
+  , notificationTarget = target
+  , notificationNotice = notice
+  , notificationTime = error "blankNotification"
+  , notificationDelivered = DeliveryNone
+  , notificationAgent = error "blankNotification"
+  , notificationParty = Nothing
+  , notificationPermission = Nothing
+  , notificationVolume = Nothing
+  , notificationContainerId = Nothing
+  , notificationSegment = Nothing
+  , notificationAssetId = Nothing
+  , notificationCommentId = Nothing
+  , notificationTag = Nothing
+  }

@@ -21,6 +21,7 @@ import Databrary.Model.Party
 #if !defined(DEVEL) && !defined(SANDBOX)
 import Databrary.Model.Permission
 #endif
+import Databrary.Model.Notification.Types
 import Databrary.HTTP.Path.Parser
 import Databrary.Action.Run
 import Databrary.Action

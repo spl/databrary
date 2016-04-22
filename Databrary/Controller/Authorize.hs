@@ -30,6 +30,7 @@ import Databrary.Model.Id.Types
 import Databrary.Model.Party
 import Databrary.Model.Permission
 import Databrary.Model.Identity
+import Databrary.Model.Notification.Types
 import Databrary.Model.Authorize
 import Databrary.HTTP.Path.Parser
 import Databrary.HTTP.Form.Deform
