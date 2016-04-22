@@ -21,14 +21,20 @@ import Databrary.Service.Log
 
 type MonadMail c m = (MonadLog c m)
 
+-- |Wrap text to the given line length where possibleby changing some ' ' to '\n'.
+-- >>> wrapText 10 $ TL.pack "hello there this is a test wherethereareexactlyvery long.\nLines.\n\nThing with multiple.\n"
+-- "hello\nthere this\nis a test\nwherethereareexactlyvery\nlong.\nLines.\n\nThing with\nmultiple.\n"
 wrapText :: Int64 -> TL.Text -> TL.Text
-wrapText n s
-  | TL.length sp <= n = s
-  | (np,nq) <- TL.breakOnEnd "\n" sp, not (TL.null np) = np <> wrapText n (nq <> sq)
-  | (bp,bq) <- TL.breakOnEnd " " sp, not (TL.null bp) = TL.init bp `TL.snoc` '\n' <> wrapText n (bq <> sq)
-  | (lp,lq) <- TL.breakOn "\n" s, not (TL.null lq) = lp `TL.snoc` '\n' <> wrapText n (TL.tail lq)
-  | otherwise = s
-  where (sp,sq) = TL.splitAt (succ n) s
+wrapText n = TL.unlines . concatMap wrap . TL.lines where
+  wrap s
+    | short s = [s]
+    | (h:l) <- TL.breakOnAll " " s = let (p,r) = fb h l in p : wrap (TL.tail r)
+    | otherwise = [s]
+  fb p [] = p
+  fb p (h@(t,_):l)
+    | short t = fb h l
+    | otherwise = p
+  short s = TL.compareLength s n <= EQ
 
 baseMail :: Mail
 baseMail = emptyMail (Address (Just "Databrary") "help@databrary.org")
