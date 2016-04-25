@@ -15,6 +15,7 @@ import Databrary.Model.Permission
 import Databrary.Model.Id
 import Databrary.Model.Slot
 import Databrary.Model.Tag
+import Databrary.Model.Notification.Types
 import Databrary.Solr.Tag
 import Databrary.HTTP.Form.Deform
 import Databrary.HTTP.Path.Parser
@@ -24,6 +25,7 @@ import Databrary.Controller.Paths
 import Databrary.Controller.Form
 import Databrary.Controller.Permission
 import Databrary.Controller.Slot
+import Databrary.Controller.Notification
 
 _tagNameForm :: DeformActionM f TagName
 _tagNameForm = deformMaybe' "Invalid tag name." . validateTag =<< deform
@@ -46,6 +48,11 @@ postTag = action POST (pathAPI </>> pathSlotId </> pathTagId) $ \(api, si, TagId
   r <- addTagUse tu
   unless r $ result $
     response conflict409 [] ("The requested tag overlaps your existing tag." :: T.Text)
+  createVolumeNotification (view tu) $ \n -> (n NoticeTagVolume)
+    { notificationContainerId = Just $ view tu
+    , notificationSegment = Just $ view tu
+    , notificationTag = Just $ view tu
+    }
   tagResponse api tu
 
 deleteTag :: ActionRoute (API, Id Slot, TagId)

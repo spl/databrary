@@ -25,6 +25,7 @@ import Databrary.Model.Container
 import Databrary.Model.Segment
 import Databrary.Model.Slot
 import Databrary.Model.Release
+import Databrary.Model.Notification.Types
 import Databrary.Action.Response
 import Databrary.Action
 import Databrary.HTTP.Form.Deform
@@ -34,6 +35,7 @@ import Databrary.Controller.Permission
 import Databrary.Controller.Form
 import Databrary.Controller.Angular
 import Databrary.Controller.Volume
+import Databrary.Controller.Notification
 import {-# SOURCE #-} Databrary.Controller.Slot
 import Databrary.View.Container
 
@@ -84,6 +86,7 @@ createContainer = action POST (pathAPI </> pathId </< "slot") $ \(api, vi) -> wi
   vol <- getVolume PermissionEDIT vi
   bc <- runForm (api == HTML ?> htmlContainerEdit (Left vol)) $ containerForm (blankContainer vol)
   c <- addContainer bc
+  -- TODO: NoticeReleaseSlot?
   case api of
     JSON -> return $ okResponse [] $ JSON.recordEncoding $ containerJSON c
     HTML -> peeks $ otherRouteResponse [] viewContainer (api, (Just vi, containerId $ containerRow c))
@@ -97,6 +100,10 @@ postContainer = action POST (pathAPI </> pathSlotId) $ \(api, ci) -> withAuth $ 
     r <- changeRelease (containerSlot c') (containerRelease c')
     unless r $
       result $ emptyResponse conflict409 []
+    when (containerRelease c' == Just ReleasePUBLIC && not (containerTop $ containerRow c')) $
+      createVolumeNotification (containerVolume c) $ \n -> (n NoticeReleaseSlot)
+        { notificationContainerId = Just $ containerId $ containerRow c'
+        }
   case api of
     JSON -> return $ okResponse [] $ JSON.recordEncoding $ containerJSON c'
     HTML -> peeks $ otherRouteResponse [] viewSlot (api, (Just (view c'), ci))
