@@ -9,6 +9,7 @@ module Databrary.Model.Notification.Notify
 
 import Control.Monad (when)
 import qualified Data.Aeson as JSON
+import Data.Maybe (fromMaybe)
 import qualified Data.Vector as V
 import qualified Data.Vector.Mutable as VM
 import Database.PostgreSQL.Typed.Query (pgSQL)
@@ -22,8 +23,8 @@ import Databrary.Model.Notification.Notice
 useTDB
 
 lookupNotify :: MonadDB c m => Account -> Notice -> m Delivery
-lookupNotify a n =
-  dbQuery1' [pgSQL|!SELECT delivery FROM notify_view WHERE target = ${partyId $ partyRow $ accountParty a} AND notice = ${n}|]
+lookupNotify a n = fromMaybe DeliveryNone <$>
+  dbQuery1 [pgSQL|$!SELECT delivery FROM notify_view WHERE target = ${partyId $ partyRow $ accountParty a} AND notice = ${n}|]
 
 lookupAccountNotify :: MonadDB c m => Account -> m (NoticeMap Delivery)
 lookupAccountNotify a = NoticeMap <$>

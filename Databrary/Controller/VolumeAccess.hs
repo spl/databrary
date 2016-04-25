@@ -61,8 +61,7 @@ postVolumeAccess = action POST (pathAPI </> pathId </> pathVolumeAccessTarget) $
   if ap == partyId (partyRow rootParty) && on (/=) volumeAccessChildren a' a
     then
       createVolumeNotification v $ \n -> (n NoticeVolumeSharing)
-        { notificationParty = Just $ partyRow $ volumeAccessParty a'
-        , notificationPermission = Just $ volumeAccessChildren a'
+        { notificationPermission = Just $ volumeAccessChildren a'
         }
     else when (ru && on (/=) volumeAccessIndividual a' a) $ do
       createVolumeNotification v $ \n -> (n NoticeVolumeAccessOther)
