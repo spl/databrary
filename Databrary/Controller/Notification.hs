@@ -25,6 +25,7 @@ import Databrary.Service.Types
 import Databrary.Service.Notification
 import Databrary.Service.Log
 import Databrary.Service.Mail
+import Databrary.Service.Messages
 import Databrary.Context
 import Databrary.Model.Id.Types
 import Databrary.Model.Party
@@ -81,12 +82,13 @@ deleteNotification = action DELETE (pathJSON >/> pathId) $ \i -> withAuth $ do
     else peeks notFoundResponse
 
 -- |Assumed to be all same target
-sendTargetNotifications :: (MonadMail c m, MonadHas Notifications c m) => [Notification] -> m ()
+sendTargetNotifications :: (MonadMail c m, MonadHas Notifications c m, MonadHas Messages c m) => [Notification] -> m ()
 sendTargetNotifications l@(Notification{ notificationTarget = u }:_) = do
   Notifications{ notificationsFilter = filt, notificationsCopy = copy } <- peek
+  msg <- peek
   sendMail (map Right (filter (Regex.matchTest filt . accountEmail) [u])) (maybe [] (return . Left) copy)
     "Databrary notifications"
-    $ mailNotifications l
+    $ mailNotifications msg l
 sendTargetNotifications [] = return ()
 
 emitNotifications :: Delivery -> ContextM ()

@@ -8,8 +8,6 @@ module Databrary.Controller.Authorize
 
 import Control.Applicative ((<|>))
 import Control.Monad (when, liftM3, mfilter, forM_)
-import qualified Data.ByteString as BS
-import qualified Data.ByteString.Char8 as BSC
 import Data.Function (on)
 import Data.Maybe (fromMaybe, isNothing, mapMaybe)
 import Data.Monoid ((<>))
@@ -22,9 +20,7 @@ import Network.HTTP.Types (noContent204, StdMethod(DELETE))
 import Databrary.Ops
 import Databrary.Has (peek, peeks)
 import qualified Databrary.JSON as JSON
-import qualified Databrary.Store.Config as C
 import Databrary.Service.Mail
-import Databrary.Service.Messages
 import Databrary.Static.Service
 import Databrary.Model.Id.Types
 import Databrary.Model.Party
@@ -55,18 +51,15 @@ viewAuthorize = action GET (pathAPI </>> pathPartyTarget </> pathAuthorizeTarget
       | otherwise -> peeks $ blankForm . htmlAuthorizeForm c'
 
 partyDelegates :: Party -> ActionM [Account]
-partyDelegates p =
-  mapMaybe partyAccount
-    . (p :)
+partyDelegates u = do
+  l <- deleg u
+  if null l
+    then deleg rootParty
+    else return l
+  where
+  deleg p = mapMaybe partyAccount . (p :)
     . map (authorizeChild . authorization)
-    . filter ((PermissionADMIN <=) . accessPermission)
-    <$> lookupAuthorizedChildren p False
-
-authorizeAddr :: Static -> [Either BS.ByteString Account]
-authorizeAddr = return . Left . staticAuthorizeAddr
-
-authorizeTitle :: Permission -> Messages -> T.Text
-authorizeTitle site = getMessage $ C.Path ["auth", "site", BSC.pack (show site), "title"]
+    <$> lookupAuthorizedChildren p (Just PermissionADMIN)
 
 postAuthorize :: ActionRoute (API, PartyTarget, AuthorizeTarget)
 postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarget) $ \arg@(api, i, AuthorizeTarget app oi) -> withAuth $ do
@@ -138,9 +131,9 @@ postAuthorizeNotFound = action POST (pathJSON >/> pathPartyTarget </< "notfound"
     ("name" .:> deform)
     ("permission" .:> deform)
     ("info" .:> deformNonEmpty deform)
-  authaddr <- peeks authorizeAddr
+  authaddr <- peeks staticAuthorizeAddr
   title <- peeks $ authorizeTitle perm
-  sendMail authaddr []
+  sendMail [Left authaddr] []
     ("Databrary authorization request from " <> partyName (partyRow p))
     $ TL.fromChunks [partyName $ partyRow p, " <", foldMap TE.decodeLatin1 agent, ">", mbt $ partyAffiliation $ partyRow p, " has requested to be authorized as an ", title, " by ", name, mbt info, ".\n"]
   return $ emptyResponse noContent204 []

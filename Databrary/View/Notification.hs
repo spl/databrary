@@ -18,11 +18,13 @@ import Databrary.Ops
 import Databrary.Model.Permission
 import Databrary.Model.Party
 import Databrary.Model.Notification
+import Databrary.Service.Messages
 import Databrary.HTTP.Route
 import Databrary.View.Party (htmlPartyViewLink)
 import Databrary.Action.Route
 import Databrary.Controller.Paths
 import Databrary.Controller.Party
+import Databrary.View.Authorize
 import Databrary.View.Html
 
 mailLink :: Route r a -> a -> [(BSC.ByteString, BSC.ByteString)] -> TL.Text
@@ -31,15 +33,15 @@ mailLink u a q = TLE.decodeLatin1 $ BSB.toLazyByteString $ actionURL Nothing u a
 partyEditLink :: (ActionRoute PartyTarget -> PartyTarget -> t) -> PartyRow -> PartyRow -> t
 partyEditLink link target p = link viewPartyEdit (if on (==) partyId p target then TargetProfile else TargetParty (partyId p))
 
-mailNotification :: Notification -> TL.Text
-mailNotification Notification{..} = case notificationNotice of
+mailNotification :: Messages -> Notification -> TL.Text
+mailNotification msg Notification{..} = case notificationNotice of
   NoticeAccountChange ->
     maybe "Your" (<> "'s") partyp <> " account information has been changed. To review or update your information, go to: "
     <> partyEdit (fromMaybe target notificationParty) [("page", "account")]
     <> "\nIf you did not make this change, please contact us immediately."
   NoticeAuthorizeGranted
     | Just p <- notificationPermission ->
-      "You have been authorized by " <> party <> ", as a Databrary " <> (if p >= PermissionEDIT then "Authorized Investigater" else "Affiliate") <> "."
+      "You have been authorized by " <> party <> ", as a Databrary " <> TL.fromStrict (authorizeTitle p msg) <> "."
       <> if p < PermissionSHARED then mempty else
       " Your authorization allows you to access all the shared data in Databrary. \
       \Our primary goal is to inspire you to reuse shared videos on Databrary to ask new questions outside the scope of the original study. \
@@ -74,10 +76,10 @@ mailNotification Notification{..} = case notificationNotice of
   partyq = ("party", maybe "" (BSC.pack . show . partyId) notificationParty)
   partyEdit = partyEditLink mailLink target
 
-mailNotifications :: [Notification] -> TL.Text
-mailNotifications ~l@(Notification{ notificationTarget = u }:_) =
+mailNotifications :: Messages -> [Notification] -> TL.Text
+mailNotifications msg ~l@(Notification{ notificationTarget = u }:_) =
   TL.fromChunks ["Dear ", partyName target, ",\n"]
-  <> foldMap (\n -> '\n' `TL.cons` mailNotification n `TL.snoc` '\n') l
+  <> foldMap (\n -> '\n' `TL.cons` mailNotification msg n `TL.snoc` '\n') l
   <> "\nYou can change your notification settings or unsubscribe here: "
   <> partyEditLink mailLink target target [("page", "notifications")] `TL.snoc` '\n'
   where
