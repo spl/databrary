@@ -4,10 +4,7 @@ http://databrary.github.io/databrary
 
 ## Layout
 
-* [MVC Application](app/)
-* [Master database schema](conf/schema.sql)
-* [Database interface](dbrary/)
-* [ffmpeg interface](media/)
+* [Master database schema](schema.sql)
 
 ## Installation
 
@@ -15,67 +12,21 @@ Requirements:
 - PostgreSQL >= 9.3
 - ffmpeg >= 2.4 (not libav) with shared libraries
 - cracklib with shared library
-- Java 7 JDK
-- GHC >= ??
-- cabal >= ??
+- GHC == 7.10
 
 ### New Haskell-Databrary Installation steps
 
     git clone https://github.com/databrary/databrary.git
 
-Now we have to checkout one of the depencenies that is not in hackage
+Copy and edit example.conf to databrary.conf.  Build and run using:
 
-    cd ..
-    git clone https://github.com/dylex/postgresql-typed
-    cd postresql-typed
-    cabal install
-
-And finally we build databrary!
-
-    cd ../databrary
-    mkdir -p dist/build/databrary tmp upload cache/tmp
-    echo 'secret = "'`openssl rand -base64 -out /dev/stdout 48`'"' >> databrary.conf
-    cabal install --only-dependencies
     ./dev
-
-The first time you run it'll but the DB indexes. Once it is finished with those run ./dev again.
-If schemabrary fails to build change db.host in databrary.conf to "localhost".
-Now we have to load the DB image into the database.
-
-    ./runsql restore $DBFILE
 
 ### Postgres
 
-We assume that the server's timezone (for timestamp without timezone values) is
-UTC, which means timezone should be unset in postgresql.conf.
-
-Postgres must be installed and listening on localhost:5432, for example with a
-line like this in pg\_hba.conf:
-
-    host	sameuser	all	127.0.0.1/32	md5
-
-(JDBC does not support unix sockets for some reason.)  You must also create a
-"databrary" user and database:
-
-    CREATE USER "databrary" WITH PASSWORD '<passwd>';
-    CREATE DATABASE "databrary" WITH OWNER "databrary";
-
-Then create local.conf with whatever password you used above:
-
-    db.default.password="<passwd>"
-
-For other settings, see conf/application.conf.
-
-You also must manually install pgranges after each postgres upgrade:
+You must manually install pgranges after each postgres upgrade:
 
     make -C dbrary/pgranges install
-
-### Security
-
-To ensure proper application security you must add a secret to local.conf,
-e.g.:
-
-    echo secret=\"`openssl rand -base64 -out /dev/stdout 48`\" >> databrary.conf
 
 ### Object storage
 
@@ -114,7 +65,6 @@ both need to be created or changed to other existing directories in local.conf.
 * Always use single quotes.
 * Indent with two spaces.
 * Use === as often as possible.
-* Make sure app.js is remains the first file alphabetically.
 
 #### AngularJS
 
@@ -124,7 +74,7 @@ both need to be created or changed to other existing directories in local.conf.
 
 ## License
 
-Copyright (C) 2013-2015 New York University
+Copyright (C) 2013-2016 New York University
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
