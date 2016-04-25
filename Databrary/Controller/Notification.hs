@@ -69,8 +69,9 @@ createNotification n' = do
         else focusIO $ triggerNotifications Nothing
 
 createVolumeNotifications :: Volume -> ((Notice -> Notification) -> Notification) -> ActionM ()
-createVolumeNotifications v f =
-  forM_ (volumeOwners v) $ \(p, _) ->
+createVolumeNotifications v f = do
+  u <- peek
+  forM_ (volumeOwners v) $ \(p, _) -> when (u /= p) $
     createNotification (f $ blankNotification blankAccount{ accountParty = blankParty{ partyRow = (partyRow blankParty){ partyId = p } } })
       { notificationVolume = Just $ volumeRow v }
 
