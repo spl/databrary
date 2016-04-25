@@ -17,13 +17,14 @@ module Databrary.Controller.Volume
 
 import Control.Applicative ((<|>), optional)
 import Control.Arrow ((&&&), (***))
-import Control.Monad (mfilter, guard, void, when)
+import Control.Monad (mfilter, guard, void, when, forM_)
 import Control.Monad.Trans.Class (lift)
 import Control.Monad.Trans.State.Lazy (StateT(..), evalStateT, get, put)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.HashMap.Lazy as HML
 import qualified Data.HashMap.Strict as HM
+import Data.Function (on)
 import Data.Maybe (fromMaybe, isNothing)
 import Data.Monoid ((<>))
 import qualified Data.Text as T
@@ -54,6 +55,7 @@ import Databrary.Model.Excerpt
 import Databrary.Model.Tag
 import Databrary.Model.Comment
 import Databrary.Model.VolumeState
+import Databrary.Model.Notification.Types
 import Databrary.Store.Filename
 import Databrary.Static.Service
 import Databrary.Service.Mail
@@ -68,6 +70,7 @@ import Databrary.Controller.Form
 import Databrary.Controller.Angular
 import Databrary.Controller.Web
 import {-# SOURCE #-} Databrary.Controller.AssetSegment
+import Databrary.Controller.Notification
 import Databrary.View.Volume
 
 getVolume :: Permission -> Id Volume -> ActionM Volume
@@ -267,7 +270,7 @@ createVolume = action POST (pathAPI </< "volume") $ \api -> withAuth $ do
     (bv, cite) <- volumeCitationForm blankVolume
     own <- "owner" .:> do
       oi <- deformOptional deform
-      own <- maybe (return $ Just $ selfAuthorize u) (lift . lookupAuthorizeParent u) $ mfilter (peek u /=) oi
+      own <- maybe (return $ Just $ selfAuthorize u) (lift . lookupAuthorizeParent u) $ mfilter (partyId (partyRow u) /=) oi
       deformMaybe' "You are not authorized to create volumes for that owner." $
         authorizeParent . authorization <$> mfilter ((PermissionADMIN <=) . accessMember) own
     auth <- lift $ lookupAuthorization own rootParty
@@ -277,6 +280,11 @@ createVolume = action POST (pathAPI </< "volume") $ \api -> withAuth $ do
   v <- addVolume bv
   _ <- changeVolumeCitation v cite
   _ <- changeVolumeAccess $ VolumeAccess PermissionADMIN PermissionADMIN Nothing owner v
+  when (on (/=) (partyId . partyRow) owner u) $ forM_ (partyAccount owner) $ \t ->
+    createNotification (blankNotification t NoticeVolumeCreated)
+      { notificationVolume = Just $ volumeRow v
+      , notificationParty = Just $ partyRow owner
+      }
   case api of
     JSON -> return $ okResponse [] $ JSON.recordEncoding $ volumeJSON v
     HTML -> peeks $ otherRouteResponse [] viewVolume (api, volumeId $ volumeRow v)
@@ -303,20 +311,18 @@ postVolumeLinks = action POST (pathAPI </> pathId </< "link") $ \arg@(api, vi) -
     JSON -> return $ okResponse [] $ JSON.recordEncoding $ volumeJSON v JSON..<> "links" JSON..= links'
     HTML -> peeks $ otherRouteResponse [] viewVolume arg
 
-assistAddr :: Static -> [Either BS.ByteString Account]
-assistAddr = return . Left . staticAssistAddr
-
 postVolumeAssist :: ActionRoute (Id Volume)
 postVolumeAssist = action POST (pathJSON >/> pathId </< "assist") $ \vi -> withAuth $ do
   user <- authAccount
   v <- getVolume PermissionEDIT vi
-  addr <- peeks assistAddr
+  addr <- peeks staticAssistAddr
   cont <- parseRequestContent (const 0)
   body <- case cont :: Content () of
     ContentText body -> return body
     _ -> result $ emptyResponse unsupportedMediaType415 []
-  sendMail addr [Right user] ("Databrary upload assistance request for volume " <> T.pack (show vi)) $ TL.fromChunks
+  sendMail [Left addr] [Right user] ("Databrary upload assistance request for volume " <> T.pack (show vi)) $ TL.fromChunks
     [ partyName $ partyRow $ accountParty user, " has requested curation assistance for ", volumeName $ volumeRow v, "\n\n" ] <> body `TL.snoc` '\n'
+  createVolumeNotifications v ($ NoticeVolumeAssist)
   return $ emptyResponse noContent204 []
 
 volumeSearchForm :: DeformActionM f VolumeFilter

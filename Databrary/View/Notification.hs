@@ -16,15 +16,19 @@ import qualified Text.Blaze.Html5 as H
 
 import Databrary.Ops
 import Databrary.Model.Permission
+import Databrary.Model.Id.Types
 import Databrary.Model.Party
+import Databrary.Model.Volume.Types
 import Databrary.Model.Notification
 import Databrary.Service.Messages
 import Databrary.HTTP.Route
-import Databrary.View.Party (htmlPartyViewLink)
 import Databrary.Action.Route
 import Databrary.Controller.Paths
-import Databrary.Controller.Party
-import Databrary.View.Authorize
+import {-# SOURCE #-} Databrary.Controller.Party
+import {-# SOURCE #-} Databrary.Controller.Volume
+import Databrary.View.Authorize (authorizeTitle)
+import Databrary.View.Party (htmlPartyViewLink)
+import Databrary.View.Volume (htmlVolumeViewLink)
 import Databrary.View.Html
 
 mailLink :: Route r a -> a -> [(BSC.ByteString, BSC.ByteString)] -> TL.Text
@@ -102,6 +106,10 @@ htmlNotification Notification{..} = case notificationNotice of
   NoticeAuthorizeChildGranted ->
     agent >> " " >> granted >> " "
     >> partyEdit target [("page", "grant"), partyq] "authorization" >> " to " >> party >> "."
+  NoticeVolumeAssist ->
+    agent >> " requested " >> volumeEdit [("page", "assist")] "assistance" >> " with " >> volume >> "."
+  NoticeVolumeCreated ->
+    agent >> " created " >> volume >> " on " >> partys >> " behalf."
   where
   target = partyRow (accountParty notificationTarget)
   person p = on (/=) partyId p target ?> htmlPartyViewLink p ([] :: Query)
@@ -113,3 +121,5 @@ htmlNotification Notification{..} = case notificationNotice of
   link u a q h = H.a H.! actionLink u a (map (second Just) q :: Query) $ h
   partyEdit = partyEditLink link target
   granted = maybe "revoked" (const "granted") notificationPermission
+  volume = maybe "<VOLUME>" (\v -> htmlVolumeViewLink v ([] :: Query)) notificationVolume
+  volumeEdit = link viewVolumeEdit (maybe (Id $ -1) volumeId notificationVolume)

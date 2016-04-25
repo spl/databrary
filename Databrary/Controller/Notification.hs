@@ -3,6 +3,7 @@ module Databrary.Controller.Notification
   ( viewNotify
   , postNotify
   , createNotification
+  , createVolumeNotifications
   , viewNotifications
   , deleteNotification
   , forkNotifier
@@ -11,7 +12,7 @@ module Databrary.Controller.Notification
 import Control.Applicative ((<|>))
 import Control.Concurrent (ThreadId, forkFinally, threadDelay)
 import Control.Concurrent.MVar (takeMVar, tryTakeMVar)
-import Control.Monad (join, when, void)
+import Control.Monad (join, when, void, forM_)
 import Data.Function (on)
 import Data.List (groupBy)
 import Data.Time.Clock (getCurrentTime)
@@ -29,6 +30,7 @@ import Databrary.Service.Messages
 import Databrary.Context
 import Databrary.Model.Id.Types
 import Databrary.Model.Party
+import Databrary.Model.Volume.Types
 import Databrary.Model.Notification
 import Databrary.HTTP.Path.Parser
 import Databrary.HTTP.Form.Deform
@@ -65,6 +67,12 @@ createNotification n' = do
       if notificationDelivered n == DeliveryImmediate
         then sendTargetNotifications [n]
         else focusIO $ triggerNotifications Nothing
+
+createVolumeNotifications :: Volume -> ((Notice -> Notification) -> Notification) -> ActionM ()
+createVolumeNotifications v f =
+  forM_ (volumeOwners v) $ \(p, _) ->
+    createNotification (f $ blankNotification blankAccount{ accountParty = blankParty{ partyRow = (partyRow blankParty){ partyId = p } } })
+      { notificationVolume = Just $ volumeRow v }
 
 viewNotifications :: ActionRoute ()
 viewNotifications = action GET (pathJSON </< "notification") $ \() -> withAuth $ do
