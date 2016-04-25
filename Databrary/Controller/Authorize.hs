@@ -132,7 +132,7 @@ postAuthorizeNotFound = action POST (pathJSON >/> pathPartyTarget </< "notfound"
     ("permission" .:> deform)
     ("info" .:> deformNonEmpty deform)
   authaddr <- peeks staticAuthorizeAddr
-  title <- peeks $ authorizeTitle perm
+  title <- peeks $ authorizeSiteTitle perm
   sendMail [Left authaddr] []
     ("Databrary authorization request from " <> partyName (partyRow p))
     $ TL.fromChunks [partyName $ partyRow p, " <", foldMap TE.decodeLatin1 agent, ">", mbt $ partyAffiliation $ partyRow p, " has requested to be authorized as an ", title, " by ", name, mbt info, ".\n"]

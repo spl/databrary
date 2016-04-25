@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Databrary.View.Authorize
-  ( authorizeTitle
+  ( authorizeSiteTitle
   , htmlAuthorizeForm
   ) where
 
@@ -18,8 +18,8 @@ import Databrary.Controller.Paths
 
 import {-# SOURCE #-} Databrary.Controller.Authorize
 
-authorizeTitle :: Permission -> Messages -> T.Text
-authorizeTitle site = getMessage $ C.Path ["auth", "site", BSC.pack (show site), "title"]
+authorizeSiteTitle :: Permission -> Messages -> T.Text
+authorizeSiteTitle site = getMessage $ C.Path ["auth", "site", BSC.pack (show site), "title"]
 
 htmlAuthorizeForm :: Authorize -> RequestContext -> FormHtml f
 htmlAuthorizeForm a = htmlForm

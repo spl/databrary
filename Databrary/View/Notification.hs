@@ -26,9 +26,10 @@ import Databrary.Action.Route
 import Databrary.Controller.Paths
 import {-# SOURCE #-} Databrary.Controller.Party
 import {-# SOURCE #-} Databrary.Controller.Volume
-import Databrary.View.Authorize (authorizeTitle)
+import Databrary.View.Authorize (authorizeSiteTitle)
 import Databrary.View.Party (htmlPartyViewLink)
 import Databrary.View.Volume (htmlVolumeViewLink)
+import Databrary.View.VolumeAccess (volumeAccessTitle, volumeAccessPresetTitle)
 import Databrary.View.Html
 
 mailLink :: Route r a -> a -> [(BSC.ByteString, BSC.ByteString)] -> TL.Text
@@ -45,7 +46,7 @@ mailNotification msg Notification{..} = case notificationNotice of
     <> "\nIf you did not make this change, please contact us immediately."
   NoticeAuthorizeGranted
     | Just p <- notificationPermission ->
-      "You have been authorized by " <> party <> ", as a Databrary " <> TL.fromStrict (authorizeTitle p msg) <> "."
+      "You have been authorized by " <> party <> ", as a Databrary " <> TL.fromStrict (authorizeSiteTitle p msg) <> "."
       <> if p < PermissionSHARED then mempty else
       " Your authorization allows you to access all the shared data in Databrary. \
       \Our primary goal is to inspire you to reuse shared videos on Databrary to ask new questions outside the scope of the original study. \
@@ -89,8 +90,8 @@ mailNotifications msg ~l@(Notification{ notificationTarget = u }:_) =
   where
   target = partyRow (accountParty u)
 
-htmlNotification :: Notification -> H.Html
-htmlNotification Notification{..} = case notificationNotice of
+htmlNotification :: Messages -> Notification -> H.Html
+htmlNotification msg Notification{..} = case notificationNotice of
   NoticeAccountChange ->
     agent >> " changed " >> partys >> " "
     >> partyEdit (fromMaybe target notificationParty) [("page", "account")] "account information" >> "."
@@ -110,6 +111,15 @@ htmlNotification Notification{..} = case notificationNotice of
     agent >> " requested " >> volumeEdit [("page", "assist")] "assistance" >> " with " >> volume >> "."
   NoticeVolumeCreated ->
     agent >> " created " >> volume >> " on " >> partys >> " behalf."
+  NoticeVolumeSharing ->
+    agent >> " changed " >> volume >> " to "
+    >> H.text (volumeAccessPresetTitle (PermissionNONE < perm) msg) >> "."
+  NoticeVolumeAccessOther ->
+    agent >> " " >> volumeEdit [("page", "access"), partyq] "set" >> " " >> partys
+    >> " access to " >> H.text (volumeAccessTitle perm msg) >> " on " >> volume >> "."
+  NoticeVolumeAccess ->
+    agent >> " " >> volumeEdit [("page", "access")] "set" >> " " >> partys
+    >> " access to " >> H.text (volumeAccessTitle perm msg) >> " on " >> volume >> "."
   where
   target = partyRow (accountParty notificationTarget)
   person p = on (/=) partyId p target ?> htmlPartyViewLink p ([] :: Query)
@@ -123,3 +133,4 @@ htmlNotification Notification{..} = case notificationNotice of
   granted = maybe "revoked" (const "granted") notificationPermission
   volume = maybe "<VOLUME>" (\v -> htmlVolumeViewLink v ([] :: Query)) notificationVolume
   volumeEdit = link viewVolumeEdit (maybe (Id $ -1) volumeId notificationVolume)
+  perm = fromMaybe PermissionNONE notificationPermission

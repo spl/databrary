@@ -322,7 +322,7 @@ postVolumeAssist = action POST (pathJSON >/> pathId </< "assist") $ \vi -> withA
     _ -> result $ emptyResponse unsupportedMediaType415 []
   sendMail [Left addr] [Right user] ("Databrary upload assistance request for volume " <> T.pack (show vi)) $ TL.fromChunks
     [ partyName $ partyRow $ accountParty user, " has requested curation assistance for ", volumeName $ volumeRow v, "\n\n" ] <> body `TL.snoc` '\n'
-  createVolumeNotifications v ($ NoticeVolumeAssist)
+  createVolumeNotification v ($ NoticeVolumeAssist)
   return $ emptyResponse noContent204 []
 
 volumeSearchForm :: DeformActionM f VolumeFilter

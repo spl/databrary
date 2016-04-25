@@ -3,7 +3,7 @@ module Databrary.Controller.Notification
   ( viewNotify
   , postNotify
   , createNotification
-  , createVolumeNotifications
+  , createVolumeNotification
   , viewNotifications
   , deleteNotification
   , forkNotifier
@@ -68,8 +68,8 @@ createNotification n' = do
         then sendTargetNotifications [n]
         else focusIO $ triggerNotifications Nothing
 
-createVolumeNotifications :: Volume -> ((Notice -> Notification) -> Notification) -> ActionM ()
-createVolumeNotifications v f = do
+createVolumeNotification :: Volume -> ((Notice -> Notification) -> Notification) -> ActionM ()
+createVolumeNotification v f = do
   u <- peek
   forM_ (volumeOwners v) $ \(p, _) -> when (u /= p) $
     createNotification (f $ blankNotification blankAccount{ accountParty = blankParty{ partyRow = (partyRow blankParty){ partyId = p } } })
@@ -80,7 +80,8 @@ viewNotifications = action GET (pathJSON </< "notification") $ \() -> withAuth $
   _ <- authAccount
   nl <- lookupUserNotifications
   _ <- changeNotificationsDelivery (filter ((DeliverySite >) . notificationDelivered) nl) DeliverySite -- would be nice if it could be done as part of lookupNotifications
-  return $ okResponse [] $ JSON.mapRecords (\n -> notificationJSON n JSON..<> "html" JSON..= htmlNotification n) nl
+  msg <- peek
+  return $ okResponse [] $ JSON.mapRecords (\n -> notificationJSON n JSON..<> "html" JSON..= htmlNotification msg n) nl
 
 deleteNotification :: ActionRoute (Id Notification)
 deleteNotification = action DELETE (pathJSON >/> pathId) $ \i -> withAuth $ do

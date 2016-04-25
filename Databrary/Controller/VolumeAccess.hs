@@ -4,6 +4,9 @@ module Databrary.Controller.VolumeAccess
   , postVolumeAccess
   ) where
 
+import Control.Monad (when, forM_)
+import Data.Function (on)
+
 import Databrary.Ops
 import Databrary.Has
 import qualified Databrary.JSON as JSON
@@ -13,12 +16,14 @@ import Databrary.Model.Identity
 import Databrary.Model.Volume
 import Databrary.Model.VolumeAccess
 import Databrary.Model.Party
+import Databrary.Model.Notification.Types
 import Databrary.HTTP.Form.Deform
 import Databrary.HTTP.Path.Parser
 import Databrary.Action
 import Databrary.Controller.Paths
 import Databrary.Controller.Form
 import Databrary.Controller.Volume
+import Databrary.Controller.Notification
 import Databrary.View.VolumeAccess
 
 viewVolumeAccess :: ActionRoute (Id Volume, VolumeAccessTarget)
@@ -53,6 +58,22 @@ postVolumeAccess = action POST (pathAPI </> pathId </> pathVolumeAccessTarget) $
       , volumeAccessSort = sort
       }
   r <- changeVolumeAccess a'
+  if ap == partyId (partyRow rootParty) && on (/=) volumeAccessChildren a' a
+    then
+      createVolumeNotification v $ \n -> (n NoticeVolumeSharing)
+        { notificationParty = Just $ partyRow $ volumeAccessParty a'
+        , notificationPermission = Just $ volumeAccessChildren a'
+        }
+    else when (ru && on (/=) volumeAccessIndividual a' a) $ do
+      createVolumeNotification v $ \n -> (n NoticeVolumeAccessOther)
+        { notificationParty = Just $ partyRow $ volumeAccessParty a'
+        , notificationPermission = Just $ volumeAccessIndividual a'
+        }
+      when (ap /= view u) $ forM_ (partyAccount (volumeAccessParty a')) $ \t ->
+        createNotification (blankNotification t NoticeVolumeAccess)
+          { notificationVolume = Just $ volumeRow v
+          , notificationPermission = Just $ volumeAccessIndividual a'
+          }
   case api of
     JSON -> return $ okResponse [] $ JSON.objectEncoding $ volumeAccessPartyJSON (if r then a' else a)
     HTML -> peeks $ otherRouteResponse [] viewVolumeAccess arg
