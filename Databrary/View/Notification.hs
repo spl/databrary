@@ -13,6 +13,7 @@ import Data.Monoid ((<>))
 import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.Encoding as TLE
 import qualified Text.Blaze.Html5 as H
+import qualified Text.Blaze.Html5.Attributes as HA
 
 import Databrary.Ops
 import Databrary.Model.Permission
@@ -106,12 +107,20 @@ htmlNotification msg Notification{..} = case notificationNotice of
   NoticeAuthorizeGranted ->
     agent >> " " >> granted >> " your "
     >> partyEdit target [("page", "apply"), partyq] "authorization" >> " under " >> party >> "."
+  NoticeAuthorizeExpiring ->
+    "Your " >> partyEdit target [("page", "apply"), partyq] "authorization" >> " through " >> party >> " will expire soon."
+  NoticeAuthorizeExpired ->
+    "Your " >> partyEdit target [("page", "apply"), partyq] "authorization" >> " through " >> party >> " is expired."
   NoticeAuthorizeChildRequest ->
     agent >> " requested "
     >> partyEdit target [("page", "grant"), partyq] "authorization" >> " for " >> party >> "."
   NoticeAuthorizeChildGranted ->
     agent >> " " >> granted >> " "
     >> partyEdit target [("page", "grant"), partyq] "authorization" >> " to " >> party >> "."
+  NoticeAuthorizeChildExpiring ->
+    partys >> " " >> partyEdit target [("page", "grant"), partyq] "authorization" >> " will expire soon."
+  NoticeAuthorizeChildExpired ->
+    partys >> " " >> partyEdit target [("page", "grant"), partyq] "authorization" >> " is expired."
   NoticeVolumeAssist ->
     agent >> " requested " >> volumeEdit [("page", "assist")] "assistance" >> " with " >> volume >> "."
   NoticeVolumeCreated ->
@@ -139,6 +148,8 @@ htmlNotification msg Notification{..} = case notificationNotice of
     >> " in " >> volume >> "."
   NoticeSharedVolume ->
     agent >> " shared " >> volume >> "."
+  NoticeNewsletter ->
+    "A new " >> (H.a H.! HA.href "//databrary.org/news.html") "Databrary newsletter" >> " has been posted."
   where
   target = partyRow (accountParty notificationTarget)
   person p = on (/=) partyId p target ?> htmlPartyViewLink p ([] :: Query)
