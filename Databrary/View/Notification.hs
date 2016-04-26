@@ -47,9 +47,12 @@ partyEditLink link target p = link viewPartyEdit (if on (==) partyId p target th
 mailNotification :: Messages -> Notification -> TL.Text
 mailNotification msg Notification{..} = case notificationNotice of
   NoticeAccountChange ->
-    maybe "Your" (<> "'s") partyp <> " account information has been changed. To review or update your information, go to: "
+    party'S <> " email or password has been changed. If you made this change, you may ignore this email. To review or update your account information, go to: "
     <> partyEdit (fromMaybe target notificationParty) [("page", "account")]
     <> "\nIf you did not make this change, please contact us immediately."
+  NoticeAuthorizeRequest ->
+    agent <> " requested authorization from " <> party <> ". To review the status of this request, go to: "
+    <> partyEdit target [("page", "apply"), partyq]
   NoticeAuthorizeGranted
     | Just p <- notificationPermission ->
       "You have been authorized by " <> party <> ", as a Databrary " <> TL.fromStrict (authorizeSiteTitle p msg) <> "."
@@ -76,16 +79,67 @@ mailNotification msg Notification{..} = case notificationNotice of
     | otherwise ->
       "Your authorization under " <> party <> " has been revoked. To review and apply for authorizations, go to: "
       <> partyEdit target [("page", "apply")]
+  NoticeAuthorizeExpiring ->
+    "Your authorization under " <> party <> " will expire soon. Please contact " <> party <> " and request that they renew your authorization."
+  NoticeAuthorizeExpired ->
+    "Your authorization under " <> party <> " has expired. Please contact " <> party <> " and request that they renew your authorization."
   NoticeAuthorizeChildRequest ->
     party <> " has requested to be authorized. To approve or reject this authorization request, go to: "
-      <> partyEdit target [("page", "grant"), partyq]
+    <> partyEdit target [("page", "grant"), partyq]
+  NoticeAuthorizeChildGranted ->
+    agent <> " " <> granted <> " authorization to " <> party <> "."
+  NoticeAuthorizeChildExpiring ->
+    party'S <> " authorization will expire soon. If you would like to renew their authorization, go to: "
+    <> partyEdit target [("page", "grant"), partyq]
+  NoticeAuthorizeChildExpired ->
+    party'S <> " authorization has expired. If you would like to renew their authorization, go to: "
+    <> partyEdit target [("page", "grant"), partyq]
+  NoticeVolumeAssist ->
+    agent <> " requested assistance with your volume, " <> volume <> "."
+  NoticeVolumeCreated ->
+    agent <> " created a volume, " <> volume <> ", on " <> party's <> " behalf. To review this volume, go to: "
+    <> mailLink viewVolume (HTML, maybe noId volumeId notificationVolume) []
+  NoticeVolumeSharing ->
+    agent <> " changed your volume, " <> volume <> ", to " <> TL.fromStrict (volumeAccessPresetTitle (PermissionNONE < perm) msg) <> ". To review, go to: "
+    <> volumeEdit [("page", "access")]
+  NoticeVolumeAccessOther ->
+    agent <> " set " <> party's <> " access to " <> TL.fromStrict (volumeAccessTitle perm msg) <> " on your volume, " <> volume <> ". To review, go to: "
+    <> volumeEdit [("page", "access"), partyq]
+  NoticeVolumeAccess ->
+    agent <> " set " <> party's <> " access to " <> TL.fromStrict (volumeAccessTitle perm msg) <> " on your volume, " <> volume <> ". To review, go to: "
+    <> volumeEdit [("page", "access")]
+  NoticeReleaseSlot ->
+    agent <> " set the release level of a folder in " <> volume <> " to " <> TL.fromStrict (releaseTitle notificationRelease msg) <> ". To review, go to: "
+    <> mailLink viewSlot (HTML, (volumeId <$> notificationVolume, slot)) []
+  NoticeReleaseAsset ->
+    agent <> " set the release level of a file in your volume (" <> volume <> ") to " <> TL.fromStrict (releaseTitle notificationRelease msg) <> ". To review, go to: "
+    <> assetSegment
+  NoticeReleaseExcerpt ->
+    agent <> " set the release level of a highlight in your volume (" <> volume <> ") to " <> TL.fromStrict (releaseTitle notificationRelease msg) <> ". To review, go to: "
+    <> assetSegment
+  NoticeExcerptVolume ->
+    agent <> " created a highlight in your volume (" <> volume <> "). To review, go to: "
+    <> assetSegment
+  NoticeSharedVolume ->
+    agent <> " shared the following volume, " <> volume <> ", on Databrary. To review, go to: "
+    <> mailLink viewVolume (HTML, maybe noId volumeId notificationVolume) []
   where
   target = partyRow (accountParty notificationTarget)
   person p = on (/=) partyId p target ?> TL.fromStrict (partyName p)
+  agent = fromMaybe "You" $ person notificationAgent
   partyp = person =<< notificationParty
   party = fromMaybe "you" partyp
+  party'sOr your = maybe your (<> "'s") partyp
+  party's = party'sOr "your"
+  party'S = party'sOr "Your"
   partyq = ("party", maybe "" (BSC.pack . show . partyId) notificationParty)
   partyEdit = partyEditLink mailLink target
+  granted = maybe "revoked" (const "granted") notificationPermission
+  volume = maybe "<VOLUME>" (TL.fromStrict . volumeName) notificationVolume
+  volumeEdit = mailLink viewVolumeEdit (maybe noId volumeId notificationVolume)
+  perm = fromMaybe PermissionNONE notificationPermission
+  slot = Id $ SlotId (fromMaybe noId notificationContainerId) (fromMaybe fullSegment notificationSegment)
+  assetSegment = mailLink viewAssetSegment (HTML, volumeId <$> notificationVolume, slot, fromMaybe noId notificationAssetId) []
 
 mailNotifications :: Messages -> [Notification] -> TL.Text
 mailNotifications msg ~l@(Notification{ notificationTarget = u }:_) =
@@ -99,7 +153,7 @@ mailNotifications msg ~l@(Notification{ notificationTarget = u }:_) =
 htmlNotification :: Messages -> Notification -> H.Html
 htmlNotification msg Notification{..} = case notificationNotice of
   NoticeAccountChange ->
-    agent >> " changed " >> partys >> " "
+    agent >> " changed " >> party's >> " "
     >> partyEdit (fromMaybe target notificationParty) [("page", "account")] "account information" >> "."
   NoticeAuthorizeRequest ->
     agent >> " requested "
@@ -118,33 +172,33 @@ htmlNotification msg Notification{..} = case notificationNotice of
     agent >> " " >> granted >> " "
     >> partyEdit target [("page", "grant"), partyq] "authorization" >> " to " >> party >> "."
   NoticeAuthorizeChildExpiring ->
-    partys >> " " >> partyEdit target [("page", "grant"), partyq] "authorization" >> " will expire soon."
+    party'S >> " " >> partyEdit target [("page", "grant"), partyq] "authorization" >> " will expire soon."
   NoticeAuthorizeChildExpired ->
-    partys >> " " >> partyEdit target [("page", "grant"), partyq] "authorization" >> " is expired."
+    party'S >> " " >> partyEdit target [("page", "grant"), partyq] "authorization" >> " is expired."
   NoticeVolumeAssist ->
     agent >> " requested " >> volumeEdit [("page", "assist")] "assistance" >> " with " >> volume >> "."
   NoticeVolumeCreated ->
-    agent >> " created " >> volume >> " on " >> partys >> " behalf."
+    agent >> " created " >> volume >> " on " >> party's >> " behalf."
   NoticeVolumeSharing ->
     agent >> " changed " >> volume >> " to "
     >> H.text (volumeAccessPresetTitle (PermissionNONE < perm) msg) >> "."
   NoticeVolumeAccessOther ->
-    agent >> " " >> volumeEdit [("page", "access"), partyq] "set" >> " " >> partys
+    agent >> " " >> volumeEdit [("page", "access"), partyq] "set" >> " " >> party's
     >> " access to " >> H.text (volumeAccessTitle perm msg) >> " on " >> volume >> "."
   NoticeVolumeAccess ->
-    agent >> " " >> volumeEdit [("page", "access")] "set" >> " " >> partys
+    agent >> " " >> volumeEdit [("page", "access")] "set" >> " " >> party's
     >> " access to " >> H.text (volumeAccessTitle perm msg) >> " on " >> volume >> "."
   NoticeReleaseSlot ->
-    agent >> " set a " >> link viewSlot (HTML, (volumeId <$> notificationVolume, Id $ SlotId (fromMaybe noId notificationContainerId) segment)) [] "folder"
+    agent >> " set a " >> link viewSlot (HTML, (volumeId <$> notificationVolume, slot)) [] "folder"
     >> " in " >> volume >> " to " >> H.text (releaseTitle notificationRelease msg) >> "."
   NoticeReleaseAsset ->
-    agent >> " set a " >> link viewAssetSegment (HTML, volumeId <$> notificationVolume, Id $ SlotId (fromMaybe noId notificationContainerId) segment, fromMaybe noId notificationAssetId) [] "file"
+    agent >> " set a " >> assetSegment "file"
     >> " in " >> volume >> " to " >> H.text (releaseTitle notificationRelease msg) >> "."
   NoticeReleaseExcerpt ->
-    agent >> " set a " >> link viewAssetSegment (HTML, volumeId <$> notificationVolume, Id $ SlotId (fromMaybe noId notificationContainerId) segment, fromMaybe noId notificationAssetId) [] "highlight"
+    agent >> " set a " >> assetSegment "highlight"
     >> " in " >> volume >> " to " >> H.text (releaseTitle notificationRelease msg) >> "."
   NoticeExcerptVolume ->
-    agent >> " created a " >> link viewAssetSegment (HTML, volumeId <$> notificationVolume, Id $ SlotId (fromMaybe noId notificationContainerId) segment, fromMaybe noId notificationAssetId) [] "highlight"
+    agent >> " created a " >> assetSegment "highlight"
     >> " in " >> volume >> "."
   NoticeSharedVolume ->
     agent >> " shared " >> volume >> "."
@@ -156,7 +210,9 @@ htmlNotification msg Notification{..} = case notificationNotice of
   agent = fromMaybe "You" $ person notificationAgent
   partyp = any (on (/=) partyId notificationAgent) notificationParty ?$> person =<< notificationParty
   party = maybe "you" (fromMaybe "themselves") partyp
-  partys = maybe "your" (maybe "their own" (>> "'s")) partyp
+  party'sOr your their = maybe your (maybe their (>> "'s")) partyp
+  party's = party'sOr "your" "their own"
+  party'S = party'sOr "Your" "Their own"
   partyq = ("party", maybe "" (BSC.pack . show . partyId) notificationParty)
   link u a q h = H.a H.! actionLink u a (map (second Just) q :: Query) $ h
   partyEdit = partyEditLink link target
@@ -164,6 +220,8 @@ htmlNotification msg Notification{..} = case notificationNotice of
   volume = maybe "<VOLUME>" (\v -> htmlVolumeViewLink v ([] :: Query)) notificationVolume
   volumeEdit = link viewVolumeEdit (maybe noId volumeId notificationVolume)
   perm = fromMaybe PermissionNONE notificationPermission
-  segment = fromMaybe fullSegment notificationSegment
-  noId :: Num (IdType a) => Id a
-  noId = (Id $ -1)
+  slot = Id $ SlotId (fromMaybe noId notificationContainerId) (fromMaybe fullSegment notificationSegment)
+  assetSegment = link viewAssetSegment (HTML, volumeId <$> notificationVolume, slot, fromMaybe noId notificationAssetId) []
+
+noId :: Num (IdType a) => Id a
+noId = (Id $ -1)
