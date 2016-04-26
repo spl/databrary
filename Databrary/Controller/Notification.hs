@@ -4,6 +4,7 @@ module Databrary.Controller.Notification
   , postNotify
   , createNotification
   , createVolumeNotification
+  , broadcastNotification
   , viewNotifications
   , deleteNotification
   , forkNotifier
@@ -62,11 +63,13 @@ createNotification n' = do
   d <- lookupNotify (notificationTarget n') (notificationNotice n')
   when (d > DeliveryNone) $ do
     n <- addNotification n'
-      { notificationDelivered = if d == DeliveryImmediate then d else notificationDelivered n' }
-    when (d >= DeliveryAsync) $
-      if notificationDelivered n == DeliveryImmediate
-        then sendTargetNotifications [n]
-        else focusIO $ triggerNotifications Nothing
+    if notificationDelivered n' >= DeliveryAsync
+      then sendTargetNotifications [n]
+      else when (d >= DeliveryAsync) $ focusIO $ triggerNotifications Nothing
+
+broadcastNotification :: Bool -> ((Notice -> Notification) -> Notification) -> ActionM ()
+broadcastNotification add f =
+  void $ (if add then addBroadcastNotification else removeMatchingNotifications) $ f $ blankNotification $ siteAccount nobodySiteAuth
 
 createVolumeNotification :: Volume -> ((Notice -> Notification) -> Notification) -> ActionM ()
 createVolumeNotification v f = do

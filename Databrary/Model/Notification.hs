@@ -3,13 +3,18 @@ module Databrary.Model.Notification
   ( module Databrary.Model.Notification.Types
   , module Databrary.Model.Notification.Notify
   , addNotification
+  , addBroadcastNotification
   , changeNotificationsDelivery
   , lookupUserNotifications
   , lookupUndeliveredNotifications
   , removeNotification
+  , cleanNotifications
+  , removeMatchingNotifications
   , notificationJSON
   ) where
 
+import Control.Monad (mfilter)
+import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
 import Database.PostgreSQL.Typed (pgSQL)
 
@@ -20,6 +25,7 @@ import Databrary.Model.SQL
 import Databrary.Model.Id.Types
 import Databrary.Model.Party
 import Databrary.Model.Volume.Types
+import Databrary.Model.Segment
 import Databrary.Model.Tag.Types
 import Databrary.Model.Notification.Types
 import Databrary.Model.Notification.Notify
@@ -29,13 +35,18 @@ useTDB
 
 addNotification :: (MonadDB c m, MonadHas Party c m) => Notification -> m Notification
 addNotification n@Notification{..} = do
-  p <- peek
-  (i, t) <- dbQuery1' [pgSQL|INSERT INTO notification (target, notice, delivered, agent, party, volume, container, segment, asset, comment, tag, permission) VALUES (${partyId $ partyRow $ accountParty notificationTarget}, ${notificationNotice}, ${notificationDelivered}, ${partyId $ partyRow p}, ${partyId <$> notificationParty}, ${volumeId <$> notificationVolume}, ${notificationContainerId}, ${notificationSegment}, ${notificationAssetId}, ${notificationCommentId}, ${tagId <$> notificationTag}, ${notificationPermission}) RETURNING id, time|]
+  u <- peeks partyRow
+  (i, t) <- dbQuery1' [pgSQL|INSERT INTO notification (target, notice, delivered, agent, party, volume, container, segment, asset, comment, tag, permission, release) VALUES (${partyId $ partyRow $ accountParty notificationTarget}, ${notificationNotice}, ${notificationDelivered}, ${partyId u}, ${partyId <$> notificationParty}, ${volumeId <$> notificationVolume}, ${notificationContainerId}, ${notificationSegment}, ${notificationAssetId}, ${notificationCommentId}, ${tagId <$> notificationTag}, ${notificationPermission}, ${notificationRelease}) RETURNING id, time|]
   return n
     { notificationId = i
     , notificationTime = t
-    , notificationAgent = partyRow p
+    , notificationAgent = u
     }
+
+addBroadcastNotification :: (MonadDB c m, MonadHas Party c m) => Notification -> m Int
+addBroadcastNotification Notification{..} = do
+  u <- peeks (partyId . partyRow)
+  dbExecute [pgSQL|INSERT INTO notification (target, notice, delivered, agent, party, volume, container, segment, asset, comment, tag, permission, release) SELECT target, notice, ${notificationDelivered}, ${u}, ${partyId <$> notificationParty}, ${volumeId <$> notificationVolume}, ${notificationContainerId}, ${notificationSegment}, ${notificationAssetId}, ${notificationCommentId}, ${tagId <$> notificationTag}, ${notificationPermission}, ${notificationRelease} FROM notify_view WHERE notice = ${notificationNotice} AND delivery > 'none' AND target <> ${u}|]
 
 changeNotificationsDelivery :: MonadDB c m => [Notification] -> Delivery -> m Int
 changeNotificationsDelivery nl d =
@@ -54,6 +65,28 @@ removeNotification :: (MonadDB c m, MonadHas (Id Party) c m) => Id Notification 
 removeNotification i = do
   p <- peek
   dbExecute1 [pgSQL|DELETE FROM notification WHERE id = ${i} AND target = ${p :: Id Party}|]
+
+cleanNotifications :: MonadDB c m => m Int
+cleanNotifications =
+  dbExecute [pgSQL|DELETE FROM notification WHERE delivered > 'none' AND time < CURRENT_TIMESTAMP - interval '30 days'|]
+
+removeMatchingNotifications :: MonadDB c m => Notification -> m Int
+removeMatchingNotifications Notification{..} =
+  dbExecute [pgSQL|DELETE FROM notification
+    WHERE notice = ${notificationNotice}
+      AND target = COALESCE(${mfilter (no /=) $ Just $ partyId $ partyRow $ accountParty notificationTarget}, target) 
+      AND agent = COALESCE(${mfilter (no /=) $ Just $ partyId notificationAgent}, agent) 
+      AND COALESCE(party, -1) = COALESCE(${partyId <$> notificationParty}, party, -1)
+      AND COALESCE(volume, -1) = COALESCE(${volumeId <$> notificationVolume}, volume, -1)
+      AND COALESCE(container, -1) = COALESCE(${notificationContainerId}, container, -1)
+      AND COALESCE(segment, 'empty') <@ ${fromMaybe fullSegment notificationSegment} 
+      AND COALESCE(asset, -1) = COALESCE(${notificationAssetId}, asset, -1)
+      AND COALESCE(comment, -1) = COALESCE(${notificationCommentId}, comment, -1)
+      AND COALESCE(tag, -1) = COALESCE(${tagId <$> notificationTag}, tag, -1)
+    |]
+  where
+  no :: Num (IdType a) => Id a
+  no = Id $ -1
 
 notificationJSON :: JSON.ToNestedObject o u => Notification -> JSON.Record (Id Notification) o
 notificationJSON Notification{..} = JSON.Record notificationId $

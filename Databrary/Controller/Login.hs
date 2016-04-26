@@ -108,7 +108,9 @@ postUser = action POST (pathAPI </< "user") $ \api -> withAuth $ do
   changeAccount auth'
   when (on (/=) (accountEmail . siteAccount) auth' auth || on (/=) accountPasswd auth' auth) $
     createNotification (blankNotification acct NoticeAccountChange) -- use old acct (email)
-      { notificationParty = Just $ partyRow $ accountParty acct }
+      { notificationParty = Just $ partyRow $ accountParty acct
+      , notificationDelivered = DeliveryAsync -- force immediate delivery
+      }
   case api of
     JSON -> return $ okResponse [] $ JSON.recordEncoding $ partyJSON $ accountParty $ siteAccount auth'
     HTML -> peeks $ otherRouteResponse [] viewParty (api, TargetProfile)

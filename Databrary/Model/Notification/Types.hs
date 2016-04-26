@@ -8,7 +8,7 @@ module Databrary.Model.Notification.Types
 import Databrary.Model.Time
 import Databrary.Model.Id.Types
 import Databrary.Model.Kind
-import Databrary.Model.Party.Types
+import Databrary.Model.Party
 import Databrary.Model.Volume.Types
 import Databrary.Model.Container.Types
 import Databrary.Model.Segment
@@ -49,7 +49,7 @@ blankNotification target notice = Notification
   , notificationNotice = notice
   , notificationTime = error "blankNotification"
   , notificationDelivered = DeliveryNone
-  , notificationAgent = error "blankNotification"
+  , notificationAgent = partyRow nobodyParty
   , notificationParty = Nothing
   , notificationVolume = Nothing
   , notificationPermission = Nothing

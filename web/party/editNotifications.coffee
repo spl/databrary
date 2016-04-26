@@ -13,7 +13,7 @@ app.directive 'partyEditNotifications', [
         {
           name: "Your email or password changed"
           notice: [Notice.AccountChange]
-          options: [Delivery.immediate]
+          options: [Delivery.async]
         }, {
           name: "You submitted an authorization request"
           notice: [Notice.AuthorizeRequest]
@@ -21,7 +21,7 @@ app.directive 'partyEditNotifications', [
         }, {
           name: "You were authorized"
           notice: [Notice.AuthorizeGranted]
-          options: options.filter((x) -> x >= Delivery.site)
+          options: [Delivery.site, Delivery.weekly, Delivery.daily, Delivery.async]
         }, {
           name: "Your authorization is expiring"
           notice: [Notice.AuthorizeExpiring, Notice.AuthorizeExpired]
@@ -69,11 +69,11 @@ app.directive 'partyEditNotifications', [
         }, {
           name: "A new volume was shared"
           notice: [Notice.SharedVolume]
-          options: options
+          options: [Delivery.none, Delivery.site, Delivery.weekly, Delivery.daily]
         }, {
           name: "Subscribe to the newsletter"
           notice: [Notice.Newsletter]
-          options: [Delivery.none, Delivery.immediate]
+          options: [Delivery.none, Delivery.async]
         }
       ]
       $scope.delivery = (constants.message('notice.delivery.'+n) for n in constants.delivery)

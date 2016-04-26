@@ -126,17 +126,19 @@ htmlNotification msg Notification{..} = case notificationNotice of
     agent >> " " >> volumeEdit [("page", "access")] "set" >> " " >> partys
     >> " access to " >> H.text (volumeAccessTitle perm msg) >> " on " >> volume >> "."
   NoticeReleaseSlot ->
-    agent >> " set a " >> link viewSlot (HTML, (volumeId <$> notificationVolume, Id $ SlotId (getId id notificationContainerId) segment)) [] "folder"
+    agent >> " set a " >> link viewSlot (HTML, (volumeId <$> notificationVolume, Id $ SlotId (fromMaybe noId notificationContainerId) segment)) [] "folder"
     >> " in " >> volume >> " to " >> H.text (releaseTitle notificationRelease msg) >> "."
   NoticeReleaseAsset ->
-    agent >> " set a " >> link viewAssetSegment (HTML, volumeId <$> notificationVolume, Id $ SlotId (getId id notificationContainerId) segment, getId id notificationAssetId) [] "file"
+    agent >> " set a " >> link viewAssetSegment (HTML, volumeId <$> notificationVolume, Id $ SlotId (fromMaybe noId notificationContainerId) segment, fromMaybe noId notificationAssetId) [] "file"
     >> " in " >> volume >> " to " >> H.text (releaseTitle notificationRelease msg) >> "."
   NoticeReleaseExcerpt ->
-    agent >> " set a " >> link viewAssetSegment (HTML, volumeId <$> notificationVolume, Id $ SlotId (getId id notificationContainerId) segment, getId id notificationAssetId) [] "highlight"
+    agent >> " set a " >> link viewAssetSegment (HTML, volumeId <$> notificationVolume, Id $ SlotId (fromMaybe noId notificationContainerId) segment, fromMaybe noId notificationAssetId) [] "highlight"
     >> " in " >> volume >> " to " >> H.text (releaseTitle notificationRelease msg) >> "."
   NoticeExcerptVolume ->
-    agent >> " created a " >> link viewAssetSegment (HTML, volumeId <$> notificationVolume, Id $ SlotId (getId id notificationContainerId) segment, getId id notificationAssetId) [] "highlight"
+    agent >> " created a " >> link viewAssetSegment (HTML, volumeId <$> notificationVolume, Id $ SlotId (fromMaybe noId notificationContainerId) segment, fromMaybe noId notificationAssetId) [] "highlight"
     >> " in " >> volume >> "."
+  NoticeSharedVolume ->
+    agent >> " shared " >> volume >> "."
   where
   target = partyRow (accountParty notificationTarget)
   person p = on (/=) partyId p target ?> htmlPartyViewLink p ([] :: Query)
@@ -149,8 +151,8 @@ htmlNotification msg Notification{..} = case notificationNotice of
   partyEdit = partyEditLink link target
   granted = maybe "revoked" (const "granted") notificationPermission
   volume = maybe "<VOLUME>" (\v -> htmlVolumeViewLink v ([] :: Query)) notificationVolume
-  volumeEdit = link viewVolumeEdit (getId volumeId notificationVolume)
+  volumeEdit = link viewVolumeEdit (maybe noId volumeId notificationVolume)
   perm = fromMaybe PermissionNONE notificationPermission
   segment = fromMaybe fullSegment notificationSegment
-  getId :: Num (IdType b) => (a -> Id b) -> Maybe a -> Id b
-  getId = maybe (Id $ -1)
+  noId :: Num (IdType a) => Id a
+  noId = (Id $ -1)

@@ -1055,7 +1055,7 @@ CREATE TRIGGER "volume_citation_changed_text" AFTER INSERT OR UPDATE OF "head", 
 
 ----------------------------------------------------------- notifications
 
-CREATE TYPE notice_delivery AS ENUM ('none', 'site', 'weekly', 'daily', 'async', 'immediate');
+CREATE TYPE notice_delivery AS ENUM ('none', 'site', 'weekly', 'daily', 'async');
 COMMENT ON TYPE notice_delivery IS 'The different ways in which notifications can be delivered, as chosen by user.  While ''site'' means only online, ''weekly'', ''daily'', and ''async'' also generate email.';
 
 CREATE TABLE "notice" (
@@ -1065,7 +1065,7 @@ CREATE TABLE "notice" (
 );
 COMMENT ON TABLE "notice" IS 'The different classes of notifications about which users can set delivery preferences.';
 
-INSERT INTO "notice" ("name", "delivery") VALUES ('AccountChange',		'immediate');
+INSERT INTO "notice" ("name", "delivery") VALUES ('AccountChange',		'async');
 INSERT INTO "notice" ("name", "delivery") VALUES ('AuthorizeRequest',		'site'); -- state/async
 INSERT INTO "notice" ("name", "delivery") VALUES ('AuthorizeGranted',		'async');
 INSERT INTO "notice" ("name", "delivery") VALUES ('AuthorizeExpiring',		'daily'); -- state/periodic
@@ -1087,7 +1087,7 @@ INSERT INTO "notice" ("name", "delivery") VALUES ('CommentVolume',		'site');
 INSERT INTO "notice" ("name", "delivery") VALUES ('CommentReply',		'site');
 INSERT INTO "notice" ("name", "delivery") VALUES ('TagVolume',			'none');
 INSERT INTO "notice" ("name", "delivery") VALUES ('SharedVolume',		'none');
-INSERT INTO "notice" ("name", "delivery") VALUES ('Newsletter',			'immediate');
+INSERT INTO "notice" ("name", "delivery") VALUES ('Newsletter',			'async');
 
 CREATE TABLE "notify" (
 	"target" integer NOT NULL References "account" ON DELETE CASCADE,
