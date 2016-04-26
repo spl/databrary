@@ -103,6 +103,7 @@ postContainer = action POST (pathAPI </> pathSlotId) $ \(api, ci) -> withAuth $ 
     when (containerRelease c' == Just ReleasePUBLIC && not (containerTop $ containerRow c')) $
       createVolumeNotification (containerVolume c) $ \n -> (n NoticeReleaseSlot)
         { notificationContainerId = Just $ containerId $ containerRow c'
+        , notificationRelease = containerRelease c'
         }
   case api of
     JSON -> return $ okResponse [] $ JSON.recordEncoding $ containerJSON c'

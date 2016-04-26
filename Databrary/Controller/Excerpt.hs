@@ -43,6 +43,7 @@ postExcerpt = action POST pathExcerpt $ \(si, ai) -> withAuth $ do
         { notificationContainerId = Just $ view e
         , notificationSegment = Just $ view e
         , notificationAssetId = Just $ view e
+        , notificationRelease = excerptRelease e
         }
   when (isNothing $ assetExcerpt as) $
     notice NoticeExcerptVolume

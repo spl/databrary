@@ -8,7 +8,8 @@ import Databrary.Has
 import Databrary.Model.SQL.Select
 import Databrary.Model.Time
 import Databrary.Model.Id.Types
-import Databrary.Model.Permission
+import Databrary.Model.Permission.Types
+import Databrary.Model.Release.Types
 import Databrary.Model.Party.Types
 import Databrary.Model.Party.SQL
 import Databrary.Model.Volume.Types
@@ -21,11 +22,11 @@ import Databrary.Model.Tag.SQL
 import Databrary.Model.Comment.Types
 import Databrary.Model.Notification.Types
 
-makeNotification :: Id Notification -> Notice -> Timestamp -> Delivery -> Maybe Permission -> Maybe (Id Container) -> Maybe Segment -> Maybe (Id Asset) -> Maybe (Id Comment) -> PartyRow -> Maybe PartyRow -> Maybe VolumeRow -> Maybe Tag -> Account -> Notification
-makeNotification i n t d r c s a m w p v g u = Notification i (view u) n t d w p r v c s a m g
+makeNotification :: Id Notification -> Notice -> Timestamp -> Delivery -> Maybe Permission -> Maybe (Id Container) -> Maybe Segment -> Maybe (Id Asset) -> Maybe Release -> Maybe (Id Comment) -> PartyRow -> Maybe PartyRow -> Maybe VolumeRow -> Maybe Tag -> Account -> Notification
+makeNotification i n t d e c s a r m w p v g u = Notification i (view u) n t d w p v e c s a r m g
 
 notificationRow :: Selector -- ^ @'PartyRow' -> Maybe 'PartyRow' -> Maybe 'VolumeRow' -> Maybe 'Tag' -> 'Account' -> 'Notification'@
-notificationRow = selectColumns 'makeNotification "notification" ["id", "notice", "time", "delivered", "permission", "container", "segment", "asset", "comment"]
+notificationRow = selectColumns 'makeNotification "notification" ["id", "notice", "time", "delivered", "permission", "container", "segment", "asset", "release", "comment"]
 
 selectTargetNotification :: Selector -- ^ @'Account' -> 'Notification'@
 selectTargetNotification = selectJoin '($)

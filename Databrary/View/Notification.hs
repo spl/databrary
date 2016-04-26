@@ -19,6 +19,8 @@ import Databrary.Model.Permission
 import Databrary.Model.Id.Types
 import Databrary.Model.Party
 import Databrary.Model.Volume.Types
+import Databrary.Model.Segment
+import Databrary.Model.Slot.Types
 import Databrary.Model.Notification
 import Databrary.Service.Messages
 import Databrary.HTTP.Route
@@ -26,10 +28,13 @@ import Databrary.Action.Route
 import Databrary.Controller.Paths
 import {-# SOURCE #-} Databrary.Controller.Party
 import {-# SOURCE #-} Databrary.Controller.Volume
+import {-# SOURCE #-} Databrary.Controller.Slot
+import {-# SOURCE #-} Databrary.Controller.AssetSegment
 import Databrary.View.Authorize (authorizeSiteTitle)
 import Databrary.View.Party (htmlPartyViewLink)
 import Databrary.View.Volume (htmlVolumeViewLink)
 import Databrary.View.VolumeAccess (volumeAccessTitle, volumeAccessPresetTitle)
+import Databrary.View.Container (releaseTitle)
 import Databrary.View.Html
 
 mailLink :: Route r a -> a -> [(BSC.ByteString, BSC.ByteString)] -> TL.Text
@@ -120,6 +125,18 @@ htmlNotification msg Notification{..} = case notificationNotice of
   NoticeVolumeAccess ->
     agent >> " " >> volumeEdit [("page", "access")] "set" >> " " >> partys
     >> " access to " >> H.text (volumeAccessTitle perm msg) >> " on " >> volume >> "."
+  NoticeReleaseSlot ->
+    agent >> " set a " >> link viewSlot (HTML, (volumeId <$> notificationVolume, Id $ SlotId (getId id notificationContainerId) segment)) [] "folder"
+    >> " in " >> volume >> " to " >> H.text (releaseTitle notificationRelease msg) >> "."
+  NoticeReleaseAsset ->
+    agent >> " set a " >> link viewAssetSegment (HTML, volumeId <$> notificationVolume, Id $ SlotId (getId id notificationContainerId) segment, getId id notificationAssetId) [] "file"
+    >> " in " >> volume >> " to " >> H.text (releaseTitle notificationRelease msg) >> "."
+  NoticeReleaseExcerpt ->
+    agent >> " set a " >> link viewAssetSegment (HTML, volumeId <$> notificationVolume, Id $ SlotId (getId id notificationContainerId) segment, getId id notificationAssetId) [] "highlight"
+    >> " in " >> volume >> " to " >> H.text (releaseTitle notificationRelease msg) >> "."
+  NoticeExcerptVolume ->
+    agent >> " created a " >> link viewAssetSegment (HTML, volumeId <$> notificationVolume, Id $ SlotId (getId id notificationContainerId) segment, getId id notificationAssetId) [] "highlight"
+    >> " in " >> volume >> "."
   where
   target = partyRow (accountParty notificationTarget)
   person p = on (/=) partyId p target ?> htmlPartyViewLink p ([] :: Query)
@@ -132,5 +149,8 @@ htmlNotification msg Notification{..} = case notificationNotice of
   partyEdit = partyEditLink link target
   granted = maybe "revoked" (const "granted") notificationPermission
   volume = maybe "<VOLUME>" (\v -> htmlVolumeViewLink v ([] :: Query)) notificationVolume
-  volumeEdit = link viewVolumeEdit (maybe (Id $ -1) volumeId notificationVolume)
+  volumeEdit = link viewVolumeEdit (getId volumeId notificationVolume)
   perm = fromMaybe PermissionNONE notificationPermission
+  segment = fromMaybe fullSegment notificationSegment
+  getId :: Num (IdType b) => (a -> Id b) -> Maybe a -> Id b
+  getId = maybe (Id $ -1)

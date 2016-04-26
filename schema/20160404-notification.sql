@@ -54,11 +54,12 @@ CREATE TABLE "notification" (
 	"delivered" notice_delivery NOT NULL DEFAULT 'none',
 	"agent" integer NOT NULL References "party" ON DELETE CASCADE,
 	"party" integer References "party" ON DELETE CASCADE,
-	"permission" permission,
 	"volume" integer References "volume" ON DELETE CASCADE,
+	"permission" permission,
 	"container" integer References "container" ON DELETE CASCADE,
 	"segment" segment,
 	"asset" integer References "asset" ON DELETE CASCADE,
+	"release" release,
 	"comment" integer References "comment" ON DELETE CASCADE,
 	"tag" integer References "tag" ON DELETE CASCADE
 );

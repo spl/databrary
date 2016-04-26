@@ -217,6 +217,7 @@ processAsset api target = do
       { notificationContainerId = containerId . containerRow . slotContainer <$> assetSlot as''
       , notificationSegment = slotSegment <$> assetSlot as''
       , notificationAssetId = Just $ assetId $ assetRow a'
+      , notificationRelease = assetRelease $ assetRow a'
       }
   case api of
     JSON -> return $ okResponse [] $ JSON.recordEncoding $ assetSlotJSON as''
