@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, QuasiQuotes #-}
 module Databrary.Controller.Notification
   ( viewNotify
   , postNotify
@@ -8,6 +8,7 @@ module Databrary.Controller.Notification
   , viewNotifications
   , deleteNotification
   , forkNotifier
+  , updateStateNotifications
   ) where
 
 import Control.Applicative ((<|>))
@@ -17,6 +18,7 @@ import Control.Monad (join, when, void, forM_)
 import Data.Function (on)
 import Data.List (groupBy)
 import Data.Time.Clock (getCurrentTime)
+import Database.PostgreSQL.Typed (pgSQL)
 import Network.HTTP.Types (StdMethod(DELETE), noContent204)
 import qualified Text.Regex.Posix as Regex
 
@@ -24,6 +26,7 @@ import Databrary.Has
 import Databrary.Ops
 import qualified Databrary.JSON as JSON
 import Databrary.Service.Types
+import Databrary.Service.DB
 import Databrary.Service.Notification
 import Databrary.Service.Log
 import Databrary.Service.Mail
@@ -127,3 +130,23 @@ forkNotifier rc = forkFinally (runNotifier rc) $ \r -> do
   t <- getCurrentTime
   logMsg t ("notifier aborted: " ++ show r) (view rc)
 
+updateStateNotifications :: MonadDB c m => m ()
+updateStateNotifications =
+  dbTransaction $ dbExecute_ [pgSQL|#
+    CREATE TEMPORARY TABLE notification_authorize_expire (id, target, party, permission, time, notice) ON COMMIT DROP
+      AS WITH authorize_expire AS (SELECT * FROM authorize WHERE expires <= CURRENT_TIMESTAMP + interval '1 week' AND expires > CURRENT_TIMESTAMP - interval '30 days')
+         SELECT notification.id, COALESCE(child, target), COALESCE(parent, party), site, expires, CASE WHEN expires <= CURRENT_TIMESTAMP THEN ${NoticeAuthorizeExpired} WHEN expires > CURRENT_TIMESTAMP THEN ${NoticeAuthorizeExpiring} END
+           FROM notification FULL JOIN authorize_expire JOIN account ON child = id ON child = target AND parent = party
+          WHERE (notice IS NULL OR notice = ${NoticeAuthorizeExpiring} OR notice = ${NoticeAuthorizeExpired})
+      UNION ALL
+         SELECT notification.id, COALESCE(parent, target), COALESCE(child, party), site, expires, CASE WHEN expires <= CURRENT_TIMESTAMP THEN ${NoticeAuthorizeChildExpired} WHEN expires > CURRENT_TIMESTAMP THEN ${NoticeAuthorizeChildExpiring} END
+           FROM notification FULL JOIN authorize_expire JOIN account ON parent = id ON parent = target AND child = party
+          WHERE (notice IS NULL OR notice = ${NoticeAuthorizeChildExpiring} OR notice = ${NoticeAuthorizeChildExpired});
+    DELETE FROM notification USING notification_authorize_expire nae
+          WHERE notification.id = nae.id AND nae.notice IS NULL;
+    UPDATE notification SET notice = nae.notice, time = nae.time, delivered = CASE WHEN notification.notice = nae.notice THEN delivered ELSE 'none' END, permission = nae.permission
+      FROM notification_authorize_expire nae WHERE notification.id = nae.id;
+    INSERT INTO notification (notice, target, party, permission, time, agent)
+         SELECT notice, target, party, permission, time, ${partyId $ partyRow nobodyParty}
+           FROM notification_authorize_expire WHERE id IS NULL;
+  |]

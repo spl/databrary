@@ -16,6 +16,7 @@ import Data.Int (Int16)
 import Data.Maybe (fromMaybe)
 import qualified Data.Text as T
 import Database.PostgreSQL.Typed.Types (PGParameter(..), PGColumn(..))
+import Database.PostgreSQL.Typed.Dynamic (PGRep)
 
 import Databrary.HTTP.Form (FormDatum(..))
 import Databrary.HTTP.Form.Deform
@@ -44,6 +45,7 @@ instance PGParameter "smallint" Notice where
 instance PGColumn "smallint" Notice where
   pgDecode t = noticeFromId' . pgDecode t
   pgDecodeValue e t = noticeFromId' . pgDecodeValue e t
+instance PGRep "smallint" Notice
 
 type instance IdType Notice = Int16
 

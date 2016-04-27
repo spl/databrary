@@ -23,6 +23,7 @@ import Databrary.Model.Token
 import Databrary.Model.Volume
 import Databrary.Model.Stats
 import Databrary.Model.Notification
+import Databrary.Controller.Notification
 import Databrary.Solr.Index
 import Databrary.EZID.Volume -- TODO
 
@@ -46,6 +47,7 @@ run p = runContextM $ withReaderT BackgroundContext $ do
   when (p >= PeriodWeekly) $
     void updateEZID
   _ <- cleanNotifications
+  updateStateNotifications
   focusIO $ triggerNotifications (Just p) 
 
 runPeriodic :: Service -> (forall a . IO a -> IO a) -> IO ()
