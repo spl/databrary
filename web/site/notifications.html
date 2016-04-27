@@ -3,8 +3,9 @@
 </div>
 <div ng-if="::notifications">
   <ul ng-if="::notifications.length">
-    <li ng-repeat="n in ::notifications" ng-if="!n.deleted">
-      <a href="" ng-click="delete(n)">delete</a>
+    <li ng-repeat="n in ::notifications" ng-if="!n.deleted" id="notification-{{::n.id}}">
+      <a ng-if="::deletable(n)" href="" ng-click="delete(n)">delete</a>
+      <time datetime="{{::n.time | date:'yyyy-MM-dd HH:mm:ss Z'}}" ng-bind="::n.time | date:'short'"></time> 
       <span ng-bind-html="::n.html">
       </span>
     </li>

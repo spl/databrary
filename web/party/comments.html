@@ -12,7 +12,7 @@
           <div>
             <a class="portrait-name" ng-href="{{::comment.volume.route()}}" ng-bind="::comment.volume.name"></a>
             <span class="portrait-extra">
-              <time datetime="comment.time | date:'yyyy-MM-dd HH:mm:ss Z'" pubdate ng-bind="::comment.time | date:'MMMM d, yyyy'"></time>
+              <time datetime="{{::comment.time | date:'yyyy-MM-dd HH:mm:ss Z'}}" ng-bind="::comment.time | date:'MMMM d, yyyy'"></time>
             </span>
           </div>
         </aside>

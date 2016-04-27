@@ -1,8 +1,8 @@
 'use strict'
 
 app.directive 'notifications', [
-  '$sce', 'routerService', 'messageService',
-  ($sce, router, messages) ->
+  '$sce', 'constantService', 'routerService', 'messageService',
+  ($sce, constants, router, messages) ->
     restrict: 'E'
     templateUrl: 'site/notifications.html'
     scope: {}
@@ -17,6 +17,9 @@ app.directive 'notifications', [
             body: 'An error occured retrieving your notifications'
             report: res
           return
+      state = [constants.notice.AuthorizeExpiring, constants.notice.AuthorizeExpired, constants.notice.AuthorizeChildExpiring, constants.notice.AuthorizeChildExpired]
+      $scope.deletable = (n) ->
+        not (n.notice in state)
       $scope.delete = (n) ->
         router.http(router.controllers.deleteNotification, [n.id]).then () ->
           n.deleted = true
