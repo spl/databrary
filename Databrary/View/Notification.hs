@@ -39,7 +39,7 @@ import Databrary.View.Container (releaseTitle)
 import Databrary.View.Html
 
 mailLink :: Route r a -> a -> [(BSC.ByteString, BSC.ByteString)] -> TL.Text
-mailLink u a q = TLE.decodeLatin1 $ BSB.toLazyByteString $ actionURL Nothing u a (map (second Just) q :: Query)
+mailLink u a q = TLE.decodeLatin1 $ BSB.toLazyByteString $ "https://databrary.org" <> actionURL Nothing u a (map (second Just) q :: Query)
 
 partyEditLink :: (ActionRoute PartyTarget -> PartyTarget -> t) -> PartyRow -> PartyRow -> t
 partyEditLink link target p = link viewPartyEdit (if on (==) partyId p target then TargetProfile else TargetParty (partyId p))

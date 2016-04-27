@@ -134,7 +134,7 @@ updateStateNotifications :: MonadDB c m => m ()
 updateStateNotifications =
   dbTransaction $ dbExecute_ [pgSQL|#
     CREATE TEMPORARY TABLE notification_authorize_expire (id, target, party, permission, time, notice) ON COMMIT DROP
-      AS WITH authorize_expire AS (SELECT * FROM authorize WHERE expires <= CURRENT_TIMESTAMP + interval '1 week' AND expires > CURRENT_TIMESTAMP - interval '30 days')
+      AS   WITH authorize_expire AS (SELECT * FROM authorize WHERE expires BETWEEN CURRENT_TIMESTAMP - interval '30 days' AND CURRENT_TIMESTAMP + interval '1 week')
          SELECT notification.id, COALESCE(child, target), COALESCE(parent, party), site, expires, CASE WHEN expires <= CURRENT_TIMESTAMP THEN ${NoticeAuthorizeExpired} WHEN expires > CURRENT_TIMESTAMP THEN ${NoticeAuthorizeExpiring} END
            FROM notification FULL JOIN authorize_expire JOIN account ON child = id ON child = target AND parent = party
           WHERE (notice IS NULL OR notice = ${NoticeAuthorizeExpiring} OR notice = ${NoticeAuthorizeExpired})
