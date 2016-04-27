@@ -10,6 +10,7 @@ import qualified Data.ByteString.Char8 as BSC
 import Data.Function (on)
 import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
+import qualified Data.Text.Encoding as TE
 import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.Encoding as TLE
 import qualified Text.Blaze.Html5 as H
@@ -22,6 +23,7 @@ import Databrary.Model.Party
 import Databrary.Model.Volume.Types
 import Databrary.Model.Segment
 import Databrary.Model.Slot.Types
+import Databrary.Model.Tag.Types
 import Databrary.Model.Notification
 import Databrary.Service.Messages
 import Databrary.HTTP.Route
@@ -120,9 +122,20 @@ mailNotification msg Notification{..} = case notificationNotice of
   NoticeExcerptVolume ->
     agent <> " created a highlight in your volume (" <> volume <> "). To review, go to: "
     <> assetSegment
+  NoticeCommentVolume ->
+    agent <> " commented on your volume (" <> volume <> "). To review or reply, go to: "
+    <> mailLink viewSlot (HTML, (volumeId <$> notificationVolume, slot)) [] <> "#comment-" <> foldMap (TL.pack . show) notificationCommentId
+  NoticeCommentReply -> -- high risk information disclosure of volume name
+    agent <> " replied to your comment on the volume, " <> volume <> ". To review or reply, go to: "
+    <> mailLink viewSlot (HTML, (volumeId <$> notificationVolume, slot)) [] <> "#comment-" <> foldMap (TL.pack . show) notificationCommentId
+  NoticeTagVolume ->
+    agent <> " tagged the volume, " <> volume <> ", with " <> foldMap (TL.fromStrict . TE.decodeLatin1 . tagNameBS . tagName) notificationTag <> ". To review tags, go to: "
+    <> mailLink viewSlot (HTML, (volumeId <$> notificationVolume, slot)) [("tag", foldMap (tagNameBS . tagName) notificationTag)]
   NoticeSharedVolume ->
     agent <> " shared the following volume, " <> volume <> ", on Databrary. To review, go to: "
     <> mailLink viewVolume (HTML, maybe noId volumeId notificationVolume) []
+  NoticeNewsletter ->
+    "A new Databrary newsletter has been posted. Te see it, go to: http://databrary.org/news.html"
   where
   target = partyRow (accountParty notificationTarget)
   person p = on (/=) partyId p target ?> TL.fromStrict (partyName p)
@@ -200,6 +213,15 @@ htmlNotification msg Notification{..} = case notificationNotice of
   NoticeExcerptVolume ->
     agent >> " created a " >> assetSegment "highlight"
     >> " in " >> volume >> "."
+  NoticeCommentVolume ->
+    agent >> " " >> (H.a H.! HA.href (actionValue viewSlot (HTML, (volumeId <$> notificationVolume, slot)) ([] :: Query) <> "#comment-" <> foldMap (H.toValue . unId) notificationCommentId)) "commented"
+    >> " on " >> volume >> "."
+  NoticeCommentReply ->
+    agent >> " " >> (H.a H.! HA.href (actionValue viewSlot (HTML, (volumeId <$> notificationVolume, slot)) ([] :: Query) <> "#comment-" <> foldMap (H.toValue . unId) notificationCommentId)) "replied"
+    >> " to your comment on " >> volume >> "."
+  NoticeTagVolume ->
+    agent >> " " >> link viewSlot (HTML, (volumeId <$> notificationVolume, slot)) [("tag", foldMap (tagNameBS . tagName) notificationTag)] "tagged"
+    >> " " >> volume >> " with " >> mapM (byteStringHtml . tagNameBS . tagName) notificationTag >> "."
   NoticeSharedVolume ->
     agent >> " shared " >> volume >> "."
   NoticeNewsletter ->
