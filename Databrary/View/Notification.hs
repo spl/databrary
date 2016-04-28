@@ -91,10 +91,10 @@ mailNotification msg Notification{..} = case notificationNotice of
   NoticeAuthorizeChildGranted ->
     agent <> " " <> granted <> " authorization to " <> party <> "."
   NoticeAuthorizeChildExpiring ->
-    party'S <> " authorization will expire soon. If you would like to renew their authorization, go to: "
+    party'S <> " authorization will expire soon. If you would like to renew " <> party's <> " authorization, go to: "
     <> partyEdit target [("page", "grant"), partyq]
   NoticeAuthorizeChildExpired ->
-    party'S <> " authorization has expired. If you would like to renew their authorization, go to: "
+    party'S <> " authorization has expired. If you would like to renew " <> party's <> " authorization, go to: "
     <> partyEdit target [("page", "grant"), partyq]
   NoticeVolumeAssist ->
     agent <> " requested assistance with your volume, " <> volume <> "."
