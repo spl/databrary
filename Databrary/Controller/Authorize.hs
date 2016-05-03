@@ -75,7 +75,7 @@ postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarge
         dl <- partyDelegates o
         forM_ dl $ \t ->
           createNotification (blankNotification t NoticeAuthorizeChildRequest)
-            { notificationParty = Just $ partyRow p }
+            { notificationParty = Just $ partyRow o }
         forM_ (partyAccount p) $ \t ->
           createNotification (blankNotification t NoticeAuthorizeRequest)
             { notificationParty = Just $ partyRow o }

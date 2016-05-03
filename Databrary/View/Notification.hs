@@ -86,8 +86,8 @@ mailNotification msg Notification{..} = case notificationNotice of
   NoticeAuthorizeExpired ->
     "Your authorization under " <> party <> " has expired. Please contact " <> party <> " and request that they renew your authorization."
   NoticeAuthorizeChildRequest ->
-    party <> " has requested to be authorized. To approve or reject this authorization request, go to: "
-    <> partyEdit target [("page", "grant"), partyq]
+    agent <> " has requested to be authorized through " <> party <> ". To approve or reject this authorization request, go to: "
+    <> partyEdit (fromMaybe target notificationParty) [("page", "grant"), personq $ Just notificationAgent]
   NoticeAuthorizeChildGranted ->
     agent <> " " <> granted <> " authorization to " <> party <> ". To review this authorization, go to: "
     <> partyEdit target [("page", "grant"), partyq]
@@ -147,7 +147,8 @@ mailNotification msg Notification{..} = case notificationNotice of
   party'sOr your = maybe your (<> "'s") partyp
   party's = party'sOr "your"
   party'S = party'sOr "Your"
-  partyq = ("party", maybe "" (BSC.pack . show . partyId) notificationParty)
+  personq p = ("party", maybe "" (BSC.pack . show . partyId) p)
+  partyq = personq notificationParty
   partyEdit = partyEditLink mailLink target
   granted = maybe "revoked" (const "granted") notificationPermission
   volume = maybe "<VOLUME>" (TL.fromStrict . volumeName) notificationVolume
@@ -182,7 +183,7 @@ htmlNotification msg Notification{..} = case notificationNotice of
     "Your " >> partyEdit target [("page", "apply"), partyq] "authorization" >> " through " >> party >> " is expired."
   NoticeAuthorizeChildRequest ->
     agent >> " requested "
-    >> partyEdit target [("page", "grant"), partyq] "authorization" >> " for " >> party >> "."
+    >> partyEdit (fromMaybe target notificationParty) [("page", "grant"), personq $ Just notificationAgent] "authorization" >> " from " >> party >> "."
   NoticeAuthorizeChildGranted ->
     agent >> " " >> granted >> " "
     >> partyEdit target [("page", "grant"), partyq] "authorization" >> " to " >> party >> "."
@@ -237,7 +238,8 @@ htmlNotification msg Notification{..} = case notificationNotice of
   party'sOr your their = maybe your (maybe their (>> "'s")) partyp
   party's = party'sOr "your" "their own"
   party'S = party'sOr "Your" "Their own"
-  partyq = ("party", maybe "" (BSC.pack . show . partyId) notificationParty)
+  personq p = ("party", maybe "" (BSC.pack . show . partyId) p)
+  partyq = personq notificationParty
   link u a q h = H.a H.! actionLink u a (map (second Just) q :: Query) $ h
   partyEdit = partyEditLink link target
   granted = maybe "revoked" (const "granted") notificationPermission
