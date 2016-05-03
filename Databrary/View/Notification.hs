@@ -61,16 +61,16 @@ mailNotification msg Notification{..} = case notificationNotice of
       <> if p < PermissionSHARED then mempty else
       " Your authorization allows you to access all the shared data in Databrary. \
       \Our primary goal is to inspire you to reuse shared videos on Databrary to ask new questions outside the scope of the original study. \
-      \You will also find illustrative video excerpts that you can use for teaching and to learn about researchers' methods and procedures.\
+      \You will also find illustrative video excerpts that you can use for teaching and to learn about other researchers' methods and procedures.\
       \\n\n\
       \Databrary's unique \"active curation\" functionality allows you to upload your videos as you collect them so that your data are backed up and preserved in our free, secure library, your videos are immediately available to you and your collaborators offsite, and your data are organized and ready for sharing. \
       \Your data will remain private and accessible only to your lab members and collaborators until you are ready to share with the Databrary community. \
       \When you are ready, sharing is as easy as clicking a button!\
       \\n\n\
-      \To share your data, you can use our template Databrary release form for obtaining permission for sharing from your participants, which can be found here: http://databrary.org/access/policies/release-template.html\n\
+      \You can use our template Databrary release form to obtain permission for sharing the data you collect from your participants, which can be found here: http://databrary.org/access/policies/release-template.html\n\
       \The release form can be added to new or existing IRB protocols. \
       \It is completely adaptable and can be customized to suit your needs. \
-      \We also have lots of information and helpful tips about managing and sharing your video data in our User Guide: http://databrary.org/access/guide\n\
+      \We also offer additional information and helpful tips about managing and sharing your video data in our User Guide: http://databrary.org/access/guide\n\
       \As soon as your protocol is amended to allow you to share data, you can start uploading your data from each new session. \
       \Don't wait until your study is complete to upload your videos. \
       \It's much easier to upload data after each data collection while your study is in progress!\
@@ -89,7 +89,8 @@ mailNotification msg Notification{..} = case notificationNotice of
     party <> " has requested to be authorized. To approve or reject this authorization request, go to: "
     <> partyEdit target [("page", "grant"), partyq]
   NoticeAuthorizeChildGranted ->
-    agent <> " " <> granted <> " authorization to " <> party <> "."
+    agent <> " " <> granted <> " authorization to " <> party <> ". To review this authorization, go to: "
+    <> partyEdit target [("page", "grant"), partyq]
   NoticeAuthorizeChildExpiring ->
     party'S <> " authorization will expire soon. If you would like to renew " <> party's <> " authorization, go to: "
     <> partyEdit target [("page", "grant"), partyq]
@@ -97,30 +98,31 @@ mailNotification msg Notification{..} = case notificationNotice of
     party'S <> " authorization has expired. If you would like to renew " <> party's <> " authorization, go to: "
     <> partyEdit target [("page", "grant"), partyq]
   NoticeVolumeAssist ->
-    agent <> " requested assistance with your volume, " <> volume <> "."
+    agent <> " requested assistance with your volume, " <> volume <> ". To review this request, go to: "
+    <> volumeEdit [("page", "assist")]
   NoticeVolumeCreated ->
     agent <> " created a volume, " <> volume <> ", on " <> party's <> " behalf. To review this volume, go to: "
     <> mailLink viewVolume (HTML, maybe noId volumeId notificationVolume) []
   NoticeVolumeSharing ->
-    agent <> " changed your volume, " <> volume <> ", to " <> TL.fromStrict (volumeAccessPresetTitle (PermissionNONE < perm) msg) <> ". To review, go to: "
+    agent <> " changed your volume, " <> volume <> ", to " <> TL.fromStrict (volumeAccessPresetTitle (PermissionNONE < perm) msg) <> ". To review this change, go to: "
     <> volumeEdit [("page", "access")]
   NoticeVolumeAccessOther ->
-    agent <> " set " <> party's <> " access to " <> TL.fromStrict (volumeAccessTitle perm msg) <> " on your volume, " <> volume <> ". To review, go to: "
+    agent <> " set " <> party's <> " access to " <> TL.fromStrict (volumeAccessTitle perm msg) <> " on your volume, " <> volume <> ". To review this change, go to: "
     <> volumeEdit [("page", "access"), partyq]
   NoticeVolumeAccess ->
-    agent <> " set " <> party's <> " access to " <> TL.fromStrict (volumeAccessTitle perm msg) <> " on your volume, " <> volume <> ". To review, go to: "
+    agent <> " set " <> party's <> " access to " <> TL.fromStrict (volumeAccessTitle perm msg) <> " on your volume, " <> volume <> ". To review this change, go to: "
     <> volumeEdit [("page", "access")]
   NoticeReleaseSlot ->
-    agent <> " set the release level of a folder in " <> volume <> " to " <> TL.fromStrict (releaseTitle notificationRelease msg) <> ". To review, go to: "
+    agent <> " set the release level of a folder in " <> volume <> " to " <> TL.fromStrict (releaseTitle notificationRelease msg) <> ". To review this change, go to: "
     <> mailLink viewSlot (HTML, (volumeId <$> notificationVolume, slot)) []
   NoticeReleaseAsset ->
-    agent <> " set the release level of a file in your volume (" <> volume <> ") to " <> TL.fromStrict (releaseTitle notificationRelease msg) <> ". To review, go to: "
+    agent <> " set the release level of a file in your volume (" <> volume <> ") to " <> TL.fromStrict (releaseTitle notificationRelease msg) <> ". To review this change, go to: "
     <> assetSegment
   NoticeReleaseExcerpt ->
-    agent <> " set the release level of a highlight in your volume (" <> volume <> ") to " <> TL.fromStrict (releaseTitle notificationRelease msg) <> ". To review, go to: "
+    agent <> " set the release level of a highlight in your volume (" <> volume <> ") to " <> TL.fromStrict (releaseTitle notificationRelease msg) <> ". To review this change, go to: "
     <> assetSegment
   NoticeExcerptVolume ->
-    agent <> " created a highlight in your volume (" <> volume <> "). To review, go to: "
+    agent <> " created a highlight in your volume (" <> volume <> "). To review this highlight, go to: "
     <> assetSegment
   NoticeCommentVolume ->
     agent <> " commented on your volume (" <> volume <> "). To review or reply, go to: "
