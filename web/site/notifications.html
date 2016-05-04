@@ -2,15 +2,14 @@
   Loading...
 </div>
 <div ng-if="::notifications">
-  <ul ng-if="::notifications.length">
-    <li ng-repeat="n in ::notifications" ng-if="!n.deleted" id="notification-{{::n.id}}">
-      <a ng-if="::deletable(n)" href="" ng-click="delete(n)">delete</a>
-      <time datetime="{{::n.time | date:'yyyy-MM-dd HH:mm:ss Z'}}" ng-bind="::n.time | date:'short'"></time> 
-      <span ng-bind-html="::n.html">
-      </span>
+  <ul ng-if="::notifications.length" class="flat striped" class="notification-items">
+    <li ng-repeat="n in ::notifications" ng-if="!n.deleted" id="notification-{{::n.id}}" class="notification-item">
+      <a ng-if="::deletable(n)" href="" ng-click="delete(n)" class="icon trash"></a>
+      <span ng-bind-html="::n.html"></span><br>
+      <span class="date-time"><time datetime="{{::n.time | date:'yyyy-MM-dd HH:mm:ss Z'}}" ng-bind="::n.time | date:'short'"></time></span>
     </li>
   </ul>
-  <span ng-if="::!notifications.length">
+  <small ng-if="::!notifications.length">
     No notifications.
-  </span>
+  </small>
 </div>

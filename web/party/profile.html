@@ -59,7 +59,7 @@
             <div class="profile-link">
               <a ng-href="{{::p.party.route()}}" ng-bind="::p.party.name"></a><wbr>
               <span ng-if="::!(p.parent.member || p.parent.site)" class="permission-auth-pending" message="auth.pending"></span>
-              <span ng-if="::(p.parent.member || p.parent.site)" class="permission-auth-expiration small" ng-bind="::p.parent.expires | date:'yyyy/MM/dd'" ng-class="::{expired:isExpired(p.parent)}"></span><wbr>
+              <span ng-if="::(p.parent.member || p.parent.site)" class="date-time" ng-bind="::p.parent.expires | date:'yyyy/MM/dd'" ng-class="::{expired:isExpired(p.parent)}"></span><wbr>
               <a href="" ng-click="p.edit('apply')" ng-class="!p.selected && selected && selected.constructor !== p.constructor ? 'profile-hover-link-show add' : 'edit'" class="icon edit button neutral profile-hover-link"></a>
               <br>
             </div>
