@@ -108,6 +108,7 @@ postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarge
             { notificationParty = Just $ partyRow p
             , notificationPermission = perm
             }
+      updateAuthorizeNotifications c $ fromMaybe (Authorize (Authorization mempty child parent) Nothing) a
       return a
   case api of
     JSON -> return $ okResponse [] $ JSON.objectEncoding $ foldMap authorizeJSON a <> "party" JSON..=: partyJSON o
@@ -118,7 +119,10 @@ deleteAuthorize = action DELETE (pathAPI </>> pathPartyTarget </> pathAuthorizeT
   p <- getParty (Just PermissionADMIN) i
   o <- maybeAction =<< lookupParty oi
   let (child, parent) = if app then (p, o) else (o, p)
-  _ <- removeAuthorize $ Authorize (Authorization mempty child parent) Nothing
+      a = Authorize (Authorization mempty child parent) Nothing
+  c <- lookupAuthorize child parent
+  _ <- removeAuthorize a
+  updateAuthorizeNotifications c a
   case api of
     JSON -> return $ okResponse [] $ JSON.objectEncoding $ "party" JSON..=: partyJSON o
     HTML -> peeks $ otherRouteResponse [] viewAuthorize arg

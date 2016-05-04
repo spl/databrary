@@ -9,6 +9,7 @@ module Databrary.Controller.Notification
   , deleteNotification
   , forkNotifier
   , updateStateNotifications
+  , updateAuthorizeNotifications
   ) where
 
 import Control.Applicative ((<|>))
@@ -17,7 +18,7 @@ import Control.Concurrent.MVar (takeMVar, tryTakeMVar)
 import Control.Monad (join, when, void, forM_)
 import Data.Function (on)
 import Data.List (groupBy)
-import Data.Time.Clock (getCurrentTime)
+import Data.Time.Clock (getCurrentTime, addUTCTime)
 import Database.PostgreSQL.Typed (pgSQL)
 import Network.HTTP.Types (StdMethod(DELETE), noContent204)
 import qualified Text.Regex.Posix as Regex
@@ -35,6 +36,7 @@ import Databrary.Context
 import Databrary.Model.Id.Types
 import Databrary.Model.Party
 import Databrary.Model.Volume.Types
+import Databrary.Model.Authorize.Types
 import Databrary.Model.Notification
 import Databrary.HTTP.Path.Parser
 import Databrary.HTTP.Form.Deform
@@ -150,3 +152,17 @@ updateStateNotifications =
          SELECT notice, target, party, permission, time, ${partyId $ partyRow nobodyParty}
            FROM notification_authorize_expire WHERE id IS NULL;
   |]
+
+updateAuthorizeNotifications :: (MonadHas Context c m, MonadDB c m) => Maybe Authorize -> Authorize -> m ()
+updateAuthorizeNotifications Nothing _ = return ()
+updateAuthorizeNotifications (Just Authorize{ authorizeExpires = o }) Authorize{ authorization = Authorization{ authorizeChild = Party{ partyRow = PartyRow{ partyId = c } }, authorizeParent = Party{ partyRow = PartyRow{ partyId = p } } }, authorizeExpires = e } = do
+  -- ideally could move others from postAuthorize to here, too
+  t <- peeks contextTimestamp
+  let t' = addUTCTime 691200 t
+  when (all (t' <) e && any (t' >=) o) $
+    dbExecute_ [pgSQL|#
+      DELETE FROM notification
+       WHERE agent = ${partyId $ partyRow nobodyParty}
+         AND (((notice = ${NoticeAuthorizeExpiring} OR notice = ${NoticeAuthorizeExpired}) AND target = ${c} AND party = ${p})
+           OR ((notice = ${NoticeAuthorizeChildExpiring} OR notice = ${NoticeAuthorizeChildExpired}) AND target = ${p} AND party = ${c}))
+    |]
