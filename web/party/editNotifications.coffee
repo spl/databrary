@@ -127,13 +127,16 @@ app.directive 'partyEditNotifications', [
         return
 
       $scope.save = (n) ->
+        $scope.partyEditNotificationsForm.$setSubmitted()
         d = n.delivery
         router.http(router.controllers.postNotify, {notice:n.notice, delivery:d}).then () ->
             for t in n.notice
               delivery[t] = d
             getDelivery(n)
+            $scope.partyEditNotificationsForm.$setPristine()
             return
           , (res) ->
+            $scope.partyEditNotificationsForm.$setUnsubmitted()
             messages.addError
               type: 'red'
               body: 'An error occured saving your notification preferences'
