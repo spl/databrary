@@ -2,8 +2,12 @@
   Loading...
 </div>
 <div ng-if="::notifications">
-  <ul ng-if="::notifications.length" class="flat striped" class="notification-items">
-    <li ng-repeat="n in ::notifications" ng-if="!n.deleted" id="notification-{{::n.id}}" class="notification-item">
+  <div class="notifications-header-section">
+    <div class="small notification-actions">Remove all</div>
+    <div class="small b notifications-header">Notifications</div>
+  </div>
+  <ul ng-if="::notifications.length" class="flat striped notification-items">
+    <li ng-repeat="n in ::notifications" ng-if="!n.deleted" id="notification-{{::n.id}}" class="notification-item small">
       <a ng-if="::deletable(n)" href="" ng-click="delete(n)" class="icon trash"></a>
       <span ng-bind-html="::n.html"></span><br>
       <span class="date-time"><time datetime="{{::n.time | date:'yyyy-MM-dd HH:mm:ss Z'}}" ng-bind="::n.time | date:'short'"></time></span>

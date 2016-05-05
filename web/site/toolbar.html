@@ -65,8 +65,8 @@
         </span>
 
         <span ng-if="page.models.Login.isLoggedIn()">
-          <a href="" ng-click="hoverToggle('notifications', $event)">
-            !
+          <a href="" ng-click="hoverToggle('notifications', $event)" tooltip="'Notifications'">
+            <span class="icon notification"></span>
           </a>
 
           <a href="" ng-class="::{'toolbar-superuser': page.models.Login.user.superuser !== undefined, on: !!page.models.Login.user.superuser}" ng-click="hoverToggle('user', $event)">
@@ -80,7 +80,7 @@
           <span class="hide-mobile hide-tablet">Search</span>
         </a>
 
-        <span class="sep">|</span>
+        <span class="sep"></span>
 
         <a href="//databrary.org/about/support.html" id="toolbar-contact" target="_blank" tooltip="'Get help or contact us with comments, problems, and suggestions'">
           <span class="icon contact"></span>
