@@ -14,7 +14,7 @@ app.directive 'notifications', [
         , (res) ->
           messages.addError
             type: 'red'
-            body: 'An error occured retrieving your notifications'
+            body: 'An error occurred retrieving your notifications'
             report: res
           return
       state = [constants.notice.AuthorizeExpiring, constants.notice.AuthorizeExpired, constants.notice.AuthorizeChildExpiring, constants.notice.AuthorizeChildExpired]
