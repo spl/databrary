@@ -145,7 +145,7 @@
         "pregnancy term": {"type": "string",
           "enum": ["Full term","Preterm"]
         },
-        "birth weight": {"type": "number"}
+        "birth weight": {"$ref": "#/definitions/numeric"}
       },
       "required": ["key", "category"],
       "additionalProperties": false
