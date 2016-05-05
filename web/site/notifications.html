@@ -5,6 +5,7 @@
   <div class="notifications-header-section">
     <div class="small notification-actions">
       <button ng-click="" class="link">Remove all</button>
+      <a ng-href="{{::something.editRoute('notifications')}}" class="icon settings"></a>
     </div>
     <div class="small b notifications-header">Notifications</div>
   </div>
@@ -15,7 +16,7 @@
       <span class="date-time"><time datetime="{{::n.time | date:'yyyy-MM-dd HH:mm:ss Z'}}" ng-bind="::n.time | date:'short'"></time></span>
     </li>
   </ul>
-  <small ng-if="::!notifications.length">
-    No notifications.
-  </small>
+  <ul ng-if="::!notifications.length" class="flat striped notification-items">
+    <li class="notification-item small i">No notifications</li>
+  </ul>
 </div>
