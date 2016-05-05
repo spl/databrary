@@ -94,7 +94,7 @@
               <div class="profile-link">
                 <a ng-href="{{::p.party.route()}}" ng-bind="::p.party.name"></a><wbr>
                 <span ng-if="::!(p.child.member || p.child.site)" class="permission-auth-pending" message="auth.pending"></span>
-                <span ng-if="::(p.child.member || p.child.site)" class="permission-auth-expiration small" ng-bind="::p.child.expires | date:'yyyy/MM/dd'" ng-class="::{expired:isExpired(p.child)}"></span><wbr>
+                <span ng-if="::(p.child.member || p.child.site)" class="date-time small" ng-bind="::p.child.expires | date:'yyyy/MM/dd'" ng-class="::{expired:isExpired(p.child)}"></span><wbr>
                 <a href="" ng-click="p.edit('grant')" ng-class="!p.selected && selected && selected.constructor !== p.constructor ? 'profile-hover-link-show add' : 'edit'" class="icon button mini profile-hover-link"></a>
               </div>
             </li>
