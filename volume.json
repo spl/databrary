@@ -140,7 +140,8 @@
         "gestational age": {"type": "number"},
         "pregnancy term": {"type": "string",
           "enum": ["Full term","Preterm"]
-        }
+        },
+        "birth weight": {"type": "number"}
       },
       "required": ["key", "category"],
       "additionalProperties": false
