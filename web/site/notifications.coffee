@@ -1,12 +1,13 @@
 'use strict'
 
 app.directive 'notifications', [
-  '$sce', 'constantService', 'routerService', 'messageService',
-  ($sce, constants, router, messages) ->
+  '$sce', 'constantService', 'routerService', 'messageService', 'modelService'
+  ($sce, constants, router, messages, models) ->
     restrict: 'E'
     templateUrl: 'site/notifications.html'
     scope: {}
     link: ($scope) ->
+      $scope.party = models.Login.user
       router.http(router.controllers.getNotifications).then (res) ->
           for n in $scope.notifications = res.data
             n.html = $sce.trustAsHtml(n.html)
