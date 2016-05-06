@@ -25,5 +25,10 @@ app.directive 'notifications', [
         router.http(router.controllers.deleteNotification, [n.id]).then () ->
           n.deleted = true
           return
+      $scope.deleteAll = () ->
+        router.http(router.controllers.deleteNotifications).then () ->
+          for n in $scope.notifications when $scope.deletable(n)
+            n.deleted = true
+          return
       return
 ]

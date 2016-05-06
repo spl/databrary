@@ -7,6 +7,7 @@ module Databrary.Controller.Notification
   , broadcastNotification
   , viewNotifications
   , deleteNotification
+  , deleteNotifications
   , forkNotifier
   , updateStateNotifications
   , updateAuthorizeNotifications
@@ -98,6 +99,12 @@ deleteNotification = action DELETE (pathJSON >/> pathId) $ \i -> withAuth $ do
   if r
     then return $ emptyResponse noContent204 []
     else peeks notFoundResponse
+
+deleteNotifications :: ActionRoute ()
+deleteNotifications = action DELETE (pathJSON >/> "notification") $ \() -> withAuth $ do
+  _ <- authAccount
+  removeNotifications
+  return $ emptyResponse noContent204 []
 
 -- |Assumed to be all same target
 sendTargetNotifications :: (MonadMail c m, MonadHas Notifications c m, MonadHas Messages c m) => [Notification] -> m ()

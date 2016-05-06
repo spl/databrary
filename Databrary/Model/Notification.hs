@@ -8,6 +8,7 @@ module Databrary.Model.Notification
   , lookupUserNotifications
   , lookupUndeliveredNotifications
   , removeNotification
+  , removeNotifications
   , cleanNotifications
   , removeMatchingNotifications
   , notificationJSON
@@ -65,6 +66,11 @@ removeNotification :: (MonadDB c m, MonadHas (Id Party) c m) => Id Notification 
 removeNotification i = do
   p <- peek
   dbExecute1 [pgSQL|DELETE FROM notification WHERE id = ${i} AND target = ${p :: Id Party}|]
+
+removeNotifications :: (MonadDB c m, MonadHas (Id Party) c m) => m Int
+removeNotifications = do
+  p <- peek
+  dbExecute [pgSQL|DELETE FROM notification WHERE target = ${p :: Id Party} AND agent <> ${partyId $ partyRow nobodyParty}|]
 
 cleanNotifications :: MonadDB c m => m Int
 cleanNotifications =
