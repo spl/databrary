@@ -103,7 +103,7 @@ deleteNotification = action DELETE (pathJSON >/> pathId) $ \i -> withAuth $ do
 deleteNotifications :: ActionRoute ()
 deleteNotifications = action DELETE (pathJSON >/> "notification") $ \() -> withAuth $ do
   _ <- authAccount
-  removeNotifications
+  _ <- removeNotifications
   return $ emptyResponse noContent204 []
 
 -- |Assumed to be all same target
