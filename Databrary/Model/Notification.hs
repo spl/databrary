@@ -6,6 +6,7 @@ module Databrary.Model.Notification
   , addBroadcastNotification
   , changeNotificationsDelivery
   , lookupUserNotifications
+  , countUserNotifications
   , lookupUndeliveredNotifications
   , removeNotification
   , removeNotifications
@@ -15,6 +16,7 @@ module Databrary.Model.Notification
   ) where
 
 import Control.Monad (mfilter)
+import Data.Int (Int64)
 import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
 import Database.PostgreSQL.Typed (pgSQL)
@@ -57,6 +59,11 @@ lookupUserNotifications :: (MonadDB c m, MonadHas Account c m) => m [Notificatio
 lookupUserNotifications = do
   u <- peek
   dbQuery $ ($ u) <$> $(selectQuery selectTargetNotification "$WHERE target = ${view u :: Id Party} ORDER BY notification.id")
+
+countUserNotifications :: (MonadDB c m, MonadHas (Id Party) c m) => m Int64
+countUserNotifications = do
+  u <- peek
+  dbQuery1' $ fromMaybe 0 <$> [pgSQL|$SELECT count(id) FROM notification WHERE target = ${u :: Id Party} AND delivered = 'none'|]
 
 lookupUndeliveredNotifications :: MonadDB c m => Delivery -> m [Notification]
 lookupUndeliveredNotifications d =
