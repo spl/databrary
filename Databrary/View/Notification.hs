@@ -57,9 +57,10 @@ mailNotification msg Notification{..} = case notificationNotice of
     <> partyEdit target [("page", "apply"), partyq]
   NoticeAuthorizeGranted
     | Just p <- notificationPermission ->
-      "You have been authorized by " <> party <> ", as a Databrary " <> TL.fromStrict (authorizeSiteTitle p msg) <> "."
-      <> if p < PermissionSHARED then mempty else
-      " Your authorization allows you to access all the shared data in Databrary. \
+      "You have been authorized under " <> party <> ", "
+      <> if p == PermissionNONE then "for group/lab-only access."
+         else "as a Databrary " <> TL.fromStrict (authorizeSiteTitle p msg) <> ". \
+      \Your authorization allows you to access all the shared data in Databrary. \
       \Our primary goal is to inspire you to reuse shared videos on Databrary to ask new questions outside the scope of the original study. \
       \You will also find illustrative video excerpts that you can use for teaching and to learn about other researchers' methods and procedures.\
       \\n\n\
@@ -175,8 +176,8 @@ htmlNotification msg Notification{..} = case notificationNotice of
     agent >> " requested "
     >> partyEdit target [("page", "apply"), partyq] "authorization" >> " from " >> party >> "."
   NoticeAuthorizeGranted ->
-    agent >> " " >> granted >> " your "
-    >> partyEdit target [("page", "apply"), partyq] "authorization" >> " under " >> party >> "."
+    "Your " >> partyEdit target [("page", "apply"), partyq] "authorization"
+    >> " under " >> party >> " has been " >> granted >> "."
   NoticeAuthorizeExpiring ->
     "Your " >> partyEdit target [("page", "apply"), partyq] "authorization" >> " through " >> party >> " will expire soon."
   NoticeAuthorizeExpired ->
