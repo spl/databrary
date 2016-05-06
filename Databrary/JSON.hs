@@ -41,6 +41,8 @@ import qualified Data.Text.Lazy.Builder as TLB
 import qualified Data.Vector as V
 import Data.Word (Word8)
 import Network.HTTP.Types (Query)
+import qualified Text.Blaze.Html as Html
+import qualified Text.Blaze.Html.Renderer.Text as Html
 
 newtype UnsafeEncoding = UnsafeEncoding Encoding
 
@@ -132,6 +134,10 @@ instance ToJSON BS.ByteString where
 
 instance FromJSON BS.ByteString where
   parseJSON = fmap TE.encodeUtf8 . parseJSON
+
+instance ToJSON Html.Html where
+  toJSON = toJSON . Html.renderHtml
+  toEncoding = toEncoding . Html.renderHtml
 
 jsonQuery :: Monad m => (BS.ByteString -> Maybe BS.ByteString -> m (Maybe Encoding)) -> Query -> m Series
 jsonQuery _ [] = return mempty

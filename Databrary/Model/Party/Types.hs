@@ -6,6 +6,7 @@ module Databrary.Model.Party.Types
   , SiteAuth(..)
   , nobodySiteAuth
   , blankParty
+  , blankAccount
   ) where
 
 import qualified Data.ByteString as BS
@@ -104,4 +105,10 @@ blankParty = Party
   , partyAccount = Nothing
   , partyPermission = PermissionNONE
   , partyAccess = Nothing
+  }
+
+blankAccount :: Account
+blankAccount = Account
+  { accountParty = blankParty{ partyAccount = Just blankAccount }
+  , accountEmail = error "blankAccount"
   }

@@ -34,6 +34,7 @@ import Databrary.Has
 import qualified Databrary.JSON as JSON
 import Databrary.Model.Segment
 import Databrary.Model.Permission
+import Databrary.Model.Release
 import Databrary.Model.Id
 import Databrary.Model.Volume
 import Databrary.Model.Container
@@ -46,6 +47,7 @@ import Databrary.Model.AssetSegment
 import Databrary.Model.Excerpt
 import Databrary.Model.AssetRevision
 import Databrary.Model.Transcode
+import Databrary.Model.Notification
 import Databrary.Files hiding ((</>))
 import Databrary.Store.Types
 import Databrary.Store.Asset
@@ -65,6 +67,7 @@ import Databrary.Controller.Form
 import Databrary.Controller.Volume
 import Databrary.Controller.Slot
 import Databrary.Controller.Format
+import Databrary.Controller.Notification
 import {-# SOURCE #-} Databrary.Controller.AssetSegment
 import Databrary.View.Asset
 
@@ -207,8 +210,15 @@ processAsset api target = do
         }
       })
     up'
-  _ <- changeAsset (slotAsset as'') Nothing
+  a' <- changeAsset (slotAsset as'') Nothing
   _ <- changeAssetSlot as''
+  when (assetRelease (assetRow a') == Just ReleasePUBLIC && assetRelease (assetRow a) /= Just ReleasePUBLIC) $
+    createVolumeNotification (assetVolume a') $ \n -> (n NoticeReleaseAsset)
+      { notificationContainerId = containerId . containerRow . slotContainer <$> assetSlot as''
+      , notificationSegment = slotSegment <$> assetSlot as''
+      , notificationAssetId = Just $ assetId $ assetRow a'
+      , notificationRelease = assetRelease $ assetRow a'
+      }
   case api of
     JSON -> return $ okResponse [] $ JSON.recordEncoding $ assetSlotJSON as''
     HTML -> peeks $ otherRouteResponse [] viewAsset (api, assetId $ assetRow $ slotAsset as'')

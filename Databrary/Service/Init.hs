@@ -4,6 +4,7 @@ module Databrary.Service.Init
   ) where
 
 import Control.Exception (bracket)
+import Control.Monad (when, void)
 import Data.IORef (newIORef)
 import Data.Time.Clock (getCurrentTime)
 
@@ -23,8 +24,10 @@ import Databrary.Ingest.Service (initIngest)
 import Databrary.Model.Stats
 import Databrary.Solr.Service (initSolr, finiSolr)
 import Databrary.EZID.Service (initEZID)
+import Databrary.Service.Notification
 import Databrary.Service.Periodic (forkPeriodic)
 import Databrary.Service.Types
+import Databrary.Controller.Notification (forkNotifier)
 
 initService :: Bool -> C.Config -> IO Service
 initService fg conf = do
@@ -42,6 +45,7 @@ initService fg conf = do
   solr <- initSolr fg (conf C.! "solr")
   ezid <- initEZID (conf C.! "ezid")
   ingest <- initIngest
+  notify <- initNotifications (conf C.! "notification")
   stats <- if fg then runDBM db lookupSiteStats else return (error "siteStats")
   statsref <- newIORef stats
   let rc = Service
@@ -62,9 +66,11 @@ initService fg conf = do
         , serviceSolr = solr
         , serviceEZID = ezid
         , servicePeriodic = Nothing
+        , serviceNotification = notify
         , serviceDown = conf C.! "store.DOWN"
         }
   periodic <- fg ?$> forkPeriodic rc
+  when fg $ void $ forkNotifier rc
   return $! rc
     { servicePeriodic = periodic
     }

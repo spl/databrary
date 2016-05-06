@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings, RecordWildCards #-}
 module Databrary.View.Party
-  ( htmlPartyView
+  ( htmlPartyViewLink
+  , htmlPartyView
   , htmlPartyEdit
   , htmlPartySearch
   , htmlPartyAdmin
@@ -11,7 +12,7 @@ import Control.Monad (when, forM_, void)
 import qualified Data.ByteString.Char8 as BSC
 import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
-import Network.HTTP.Types (toQuery)
+import Network.HTTP.Types.QueryLike (QueryLike(..))
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as HA
 
@@ -32,6 +33,11 @@ import {-# SOURCE #-} Databrary.Controller.Angular
 import {-# SOURCE #-} Databrary.Controller.Party
 import {-# SOURCE #-} Databrary.Controller.Volume
 import {-# SOURCE #-} Databrary.Controller.Register
+
+htmlPartyViewLink :: QueryLike q => PartyRow -> q -> H.Html
+htmlPartyViewLink p q =
+  H.a H.! actionLink viewParty (HTML, TargetParty $ partyId p) q
+    $ H.text $ partyName p
 
 htmlPartyView :: Party -> RequestContext -> H.Html
 htmlPartyView p@Party{ partyRow = pr@PartyRow{..}, ..} req = htmlTemplate req Nothing $ \js -> do
@@ -78,9 +84,7 @@ htmlPartyEdit t = maybe
 
 htmlPartyList :: JSOpt -> [Party] -> H.Html
 htmlPartyList js pl = H.ul $ forM_ pl $ \p -> H.li $ do
-  H.h2
-    $ H.a H.! actionLink viewParty (HTML, TargetParty $ partyId $ partyRow p) js
-    $ H.text $ partyName $ partyRow p
+  H.h2 $ htmlPartyViewLink (partyRow p) js
   mapM_ H.text $ partyAffiliation $ partyRow p
 
 htmlPartySearchForm :: PartyFilter -> FormHtml f
@@ -127,5 +131,4 @@ htmlPartyDelete :: Party -> RequestContext -> FormHtml f
 htmlPartyDelete Party{ partyRow = pr@PartyRow{..}, ..} = htmlForm ("delete " <> partyName pr)
   deleteParty partyId
   (return ())
-  (\js -> void $ H.a H.! actionLink viewParty (HTML, TargetParty partyId) js
-    $ H.text $ partyName pr)
+  (void . htmlPartyViewLink pr)

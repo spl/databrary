@@ -23,6 +23,7 @@ import Databrary.Static.Service (Static)
 import Databrary.Solr.Service (Solr)
 import Databrary.Ingest.Service (Ingest)
 import Databrary.EZID.Service (EZID)
+import Databrary.Service.Notification (Notifications)
 import Databrary.Model.Time
 import Databrary.Model.Stats.Types
 
@@ -46,7 +47,8 @@ data Service = Service
   , serviceSolr :: !Solr
   , serviceEZID :: !(Maybe EZID)
   , servicePeriodic :: !(Maybe ThreadId)
+  , serviceNotification :: !Notifications
   , serviceDown :: !(Maybe T.Text)
   }
 
-makeHasRec ''Service ['serviceSecret, 'serviceEntropy, 'servicePasswd, 'serviceLogs, 'serviceMessages, 'serviceDB, 'serviceStorage, 'serviceAV, 'serviceWeb, 'serviceHTTPClient, 'serviceStatic, 'serviceIngest, 'serviceSolr]
+makeHasRec ''Service ['serviceSecret, 'serviceEntropy, 'servicePasswd, 'serviceLogs, 'serviceMessages, 'serviceDB, 'serviceStorage, 'serviceAV, 'serviceWeb, 'serviceHTTPClient, 'serviceStatic, 'serviceIngest, 'serviceSolr, 'serviceNotification]

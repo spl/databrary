@@ -1,10 +1,14 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Databrary.View.Authorize
-  ( htmlAuthorizeForm
+  ( authorizeSiteTitle
+  , htmlAuthorizeForm
   ) where
 
+import qualified Data.ByteString.Char8 as BSC
 import qualified Data.Text as T
 
+import qualified Databrary.Store.Config as C
+import Databrary.Service.Messages
 import Databrary.Action
 import Databrary.View.Form
 import Databrary.Model.Party
@@ -13,6 +17,9 @@ import Databrary.Model.Authorize
 import Databrary.Controller.Paths
 
 import {-# SOURCE #-} Databrary.Controller.Authorize
+
+authorizeSiteTitle :: Permission -> Messages -> T.Text
+authorizeSiteTitle site = getMessage $ C.Path ["auth", "site", BSC.pack (show site), "title"]
 
 htmlAuthorizeForm :: Authorize -> RequestContext -> FormHtml f
 htmlAuthorizeForm a = htmlForm

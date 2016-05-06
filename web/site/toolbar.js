@@ -8,28 +8,14 @@ app.directive('toolbar', [
       scope: {},
       link: function ($scope) {
         $scope.page = page;
-        $scope.hoverUserToggle = function ($event) {
-          $scope.hoverUser = !$scope.hoverUser;
-          $scope.hoverSearch = false;
-          if ($event)
-            $event.stopPropagation();
-        };
-        $scope.hoverSearchToggle = function ($event) {
-          $scope.hoverSearch = !$scope.hoverSearch;
-          $scope.hoverUser = false;
-          if ($event)
-            $event.stopPropagation();
-        };
-        $scope.hoverNavToggle = function ($event) {
-          $scope.hoverNav = !$scope.hoverNav;
-          $scope.hoverUser = $scope.hoverSearch = false;
+        $scope.hover = undefined;
+        $scope.hoverToggle = function (hover, $event) {
+          $scope.hover = (($scope.hover === hover) ? undefined : hover);
           if ($event)
             $event.stopPropagation();
         };
         $scope.$on('$locationChangeStart', function () {
-          $scope.hoverUser = false;
-          $scope.hoverSearch = false;
-          $scope.hoverNav = false;
+          $scope.hover = undefined;
         });
         $scope.search = function () {
           page.$location.url(page.router.search()).search($scope.search.data);

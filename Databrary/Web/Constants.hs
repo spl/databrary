@@ -8,6 +8,7 @@ module Databrary.Web.Constants
 
 import qualified Data.ByteString.Builder as BSB
 import Data.Monoid ((<>))
+import qualified Data.Text as T
 import Data.Version (showVersion)
 import System.IO (withBinaryFile, IOMode(WriteMode))
 
@@ -20,6 +21,7 @@ import Databrary.Model.Metric
 import Databrary.Model.Category
 import Databrary.Model.Format
 import Databrary.Model.Party
+import Databrary.Model.Notification.Notice
 import Databrary.Web.Types
 import Databrary.Web.Generate
 
@@ -35,6 +37,8 @@ constantsJSON =
     <> "root" JSON..=: partyJSON rootParty
     <> "staff" JSON..=: partyJSON staffParty
     )
+  <> "notice" JSON..= JSON.object [ T.pack (show n) JSON..= n | n <- [minBound..maxBound::Notice] ]
+  <> "delivery" JSON..= enumValues DeliveryNone
   <> "version" JSON..= showVersion version
 #ifdef DEVEL
   <> "devel" JSON..= True

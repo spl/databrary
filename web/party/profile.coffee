@@ -58,7 +58,7 @@ app.controller 'party/profile', [
         if $scope.editable
           $scope.selected.editAccess(@party)
         else if t
-          $location.url(party.editRoute(t)+'#auth-'+@party.id)
+          $location.url(party.editRoute(t, @party.id))
 
     class Volume extends Item
       constructor: (@volume) ->
@@ -130,7 +130,7 @@ app.controller 'party/profile', [
       unless a.member || a.site
         messages.add
           type: 'yellow',
-          body: $sce.trustAsHtml('<span>' + constants.message('auth.notice.pending', {sce:$sce.HTML}, a.party.name) + ' <a href="' + party.editRoute('grant') + '#auth-' + a.party.id + '">Manage</a>.</span>')
+          body: $sce.trustAsHtml('<span>' + constants.message('auth.notice.pending', {sce:$sce.HTML}, a.party.name) + ' <a href="' + party.editRoute('grant', a.party.id) + '">Manage</a>.</span>')
     parties.collaborators = (Party.all[pi] for pi of collaborators)
 
     stringSort = (a,b) -> +(a > b) || +(a == b) - 1

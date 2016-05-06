@@ -37,6 +37,7 @@ import Databrary.Controller.CSV
 import Databrary.Controller.VolumeState
 import Databrary.Controller.Search
 import Databrary.Controller.Activity
+import Databrary.Controller.Notification
 import Databrary.Web.Routes
 
 jsRoutes :: [B.Builder] -- should be mconcat, but BSB bug causes hangs
@@ -157,6 +158,12 @@ jsRoutes =
   , jsRoute "deleteKeyword" deleteTag (JSON, slot, TagId True tag)
   , jsRoute "getTopTags" queryTags Nothing
   , jsRoute "getSiteActivity" viewSiteActivity (JSON)
+
+  , jsRoute "getNotifications" viewNotifications ()
+  , jsRoute "deleteNotification" deleteNotification (Id 0)
+  , jsRoute "deleteNotifications" deleteNotifications ()
+  , jsRoute "getNotify" viewNotify ()
+  , jsRoute "postNotify" postNotify ()
   ] where
   token = Id ""
   party = Id 0

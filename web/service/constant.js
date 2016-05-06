@@ -30,6 +30,7 @@ app.factory('constantService', [
     constants.releases.unshift('-1');
     invertArray(constants.permission);
     invertArray(constants.release);
+    invertArray(constants.delivery);
     constants.categories = _.sortBy(constants.category, 'id');
     constants.categoryName = _.indexBy(constants.category, 'name');
 

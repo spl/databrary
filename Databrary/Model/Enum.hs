@@ -3,6 +3,8 @@ module Databrary.Model.Enum
   ( DBEnum
   , readDBEnum
   , makeDBEnum
+  , parseJSONEnum
+  , enumForm
   , pgEnumValues
   ) where
 
