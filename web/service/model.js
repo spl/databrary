@@ -326,6 +326,7 @@ app.factory('modelService', [
     Login.prototype.fields = angular.extend({
       csverf: false,
       superuser: false,
+      notifications: false,
     }, Login.prototype.fields);
 
     Login.user = new Login({id:constants.party.NOBODY});

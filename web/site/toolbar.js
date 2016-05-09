@@ -22,6 +22,9 @@ app.directive('toolbar', [
           $scope.search.data.q = "";
         };
         $scope.search.data = {};
+        /* Not ideal, should really come with the rest of user data: */
+        if (!('notifications' in page.models.Login))
+          page.models.Login.get({'notifications':true});
       }
     };
   }

@@ -11,6 +11,7 @@ app.directive 'notifications', [
       router.http(router.controllers.getNotifications).then (res) ->
           for n in $scope.notifications = res.data
             n.html = $sce.trustAsHtml(n.html)
+          models.Login.user.notifications = 0
           return
         , (res) ->
           messages.addError
