@@ -1,32 +1,46 @@
 # Databrary
 
-http://databrary.github.io/databrary
+## Installation
+
+There is an (partial and unused) [Docker file](Dockerfile) that lays out most of the installation steps.
+
+### Requirements
+
+- ffmpeg >= 2.4, < 3.0, both shared libraries and ffmpeg, built against:
+  - lame >= 3.99.5
+  - fdk-aac >= 0.1.4
+  - x264 git stable
+  - Recommended configure flags: --enable-shared --disable-runtime-cpudetect --enable-gpl --enable-version3 --enable-nonfree --enable-libx264 --enable-libfdk-aac --enable-libmp3lame
+- PostgreSQL >= 9.3
+  - Requires an additional plugin: make -C dbrary/pgranges install
+- node and npm
+- cracklib with shared library
+- solr >= 5.3
+- GHC == 7.10
+- cabal-install >= 1.22.6
+- blaze-markup with patches from https://github.com/dylex/blaze-markup (to enable HTML administration interfaces)
+
+### Configuration
+
+Copy [example.conf](example.conf) to databrary.conf and edit to taste.
+Make sure to follow the instructions in that file.
+
+### Building
+
+Build and run using:
+
+    ./dev
+
+This script takes a few optional flags:
+
+- -n: Do not run the application
+- -f: Force a reconfigure
+- -p: Do a production-mode build (implies -n)
+- -i: Install after build (implies -n)
 
 ## Layout
 
 * [Master database schema](schema.sql)
-
-## Installation
-
-Requirements:
-- PostgreSQL >= 9.3
-- ffmpeg >= 2.4 (not libav) with shared libraries
-- cracklib with shared library
-- GHC == 7.10
-
-### New Haskell-Databrary Installation steps
-
-    git clone https://github.com/databrary/databrary.git
-
-Copy and edit example.conf to databrary.conf.  Build and run using:
-
-    ./dev
-
-### Postgres
-
-You must manually install pgranges after each postgres upgrade:
-
-    make -C dbrary/pgranges install
 
 ### Object storage
 

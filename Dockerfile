@@ -58,7 +58,6 @@ RUN git clone git://github.com/databrary/databrary src
 WORKDIR src
 ARG commit=origin/stage
 RUN git remote update && git checkout $commit
-RUN cabal install --only-dep
 COPY databrary.conf ./
 RUN git describe ; ./dev -f -p -i
 
