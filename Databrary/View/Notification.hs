@@ -132,7 +132,7 @@ mailNotification msg Notification{..} = case notificationNotice of
     agent <> " replied to your comment on the volume, " <> volume <> ". To review or reply, go to: "
     <> mailLink viewSlot (HTML, (volumeId <$> notificationVolume, slot)) [] <> "#comment-" <> foldMap (TL.pack . show) notificationCommentId
   NoticeTagVolume ->
-    agent <> " tagged the volume, " <> volume <> ", with " <> foldMap (TL.fromStrict . TE.decodeLatin1 . tagNameBS . tagName) notificationTag <> ". To review tags, go to: "
+    agent <> " tagged the volume, " <> volume <> ", with \"" <> foldMap (TL.fromStrict . TE.decodeLatin1 . tagNameBS . tagName) notificationTag <> "\". To review tags, go to: "
     <> mailLink viewSlot (HTML, (volumeId <$> notificationVolume, slot)) [("tag", foldMap (tagNameBS . tagName) notificationTag)]
   NoticeSharedVolume ->
     agent <> " shared the following volume, " <> volume <> ", on Databrary. To review, go to: "
@@ -225,7 +225,7 @@ htmlNotification msg Notification{..} = case notificationNotice of
     >> " to your comment on " >> volume >> "."
   NoticeTagVolume ->
     agent >> " " >> link viewSlot (HTML, (volumeId <$> notificationVolume, slot)) [("tag", foldMap (tagNameBS . tagName) notificationTag)] "tagged"
-    >> " " >> volume >> " with " >> mapM (byteStringHtml . tagNameBS . tagName) notificationTag >> "."
+    >> " " >> volume >> " with " >> H.em (mapM_ (byteStringHtml . tagNameBS . tagName) notificationTag) >> "."
   NoticeSharedVolume ->
     agent >> " shared " >> volume >> "."
   NoticeNewsletter ->
