@@ -177,7 +177,7 @@ htmlNotification msg Notification{..} = case notificationNotice of
     >> partyEdit target [("page", "apply"), partyq] "authorization" >> " from " >> party >> "."
   NoticeAuthorizeGranted ->
     "Your " >> partyEdit target [("page", "apply"), partyq] "authorization"
-    >> " under " >> party >> " has been " >> granted >> "."
+    >> " under " >> fromMaybe "yourself" (person =<< notificationParty) >> " has been " >> granted >> "."
   NoticeAuthorizeExpiring ->
     "Your " >> partyEdit target [("page", "apply"), partyq] "authorization" >> " through " >> party >> " will expire soon."
   NoticeAuthorizeExpired ->
