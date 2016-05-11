@@ -83,9 +83,9 @@ mailNotification msg Notification{..} = case notificationNotice of
       "Your authorization under " <> party <> " has been revoked. To review and apply for authorizations, go to: "
       <> partyEdit target [("page", "apply")]
   NoticeAuthorizeExpiring ->
-    "Your authorization under " <> party <> " will expire soon. Please contact " <> party <> " and request that they renew your authorization."
+    "Your authorization under " <> party <> " will expire soon. Please contact them and request that they renew your authorization."
   NoticeAuthorizeExpired ->
-    "Your authorization under " <> party <> " has expired. Please contact " <> party <> " and request that they renew your authorization."
+    "Your authorization under " <> party <> " has expired. Please contact them and request that they renew your authorization."
   NoticeAuthorizeChildRequest ->
     agent <> " has requested to be authorized through " <> party <> ". To approve or reject this authorization request, go to: "
     <> partyEdit (fromMaybe target notificationParty) [("page", "grant"), personq $ Just notificationAgent]
@@ -93,10 +93,10 @@ mailNotification msg Notification{..} = case notificationNotice of
     agent <> " " <> granted <> " authorization to " <> party <> ". To review this authorization, go to: "
     <> partyEdit target [("page", "grant"), partyq]
   NoticeAuthorizeChildExpiring ->
-    party'S <> " authorization will expire soon. If you would like to renew " <> party's <> " authorization, go to: "
+    party'S <> " authorization will expire soon. If you would like to renew their authorization, go to: "
     <> partyEdit target [("page", "grant"), partyq]
   NoticeAuthorizeChildExpired ->
-    party'S <> " authorization has expired. If you would like to renew " <> party's <> " authorization, go to: "
+    party'S <> " authorization has expired. If you would like to renew their authorization, go to: "
     <> partyEdit target [("page", "grant"), partyq]
   NoticeVolumeAssist ->
     agent <> " requested assistance with your volume, " <> volume <> ". To review this request, go to: "
