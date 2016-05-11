@@ -200,11 +200,11 @@ htmlNotification msg Notification{..} = case notificationNotice of
     agent >> " changed " >> volume >> " to "
     >> H.text (volumeAccessPresetTitle (PermissionNONE < perm) msg) >> "."
   NoticeVolumeAccessOther ->
-    agent >> " " >> volumeEdit [("page", "access"), partyq] "set" >> " " >> party's
-    >> " access to " >> H.text (volumeAccessTitle perm msg) >> " on " >> volume >> "."
+    agent >> " set " >> party's >> " "
+    >> volumeEdit [("page", "access"), partyq] "access" >> " to " >> H.text (volumeAccessTitle perm msg) >> " on " >> volume >> "."
   NoticeVolumeAccess ->
-    agent >> " " >> volumeEdit [("page", "access")] "set" >> " " >> party's
-    >> " access to " >> H.text (volumeAccessTitle perm msg) >> " on " >> volume >> "."
+    agent >> " set " >> party's >> " "
+    >> volumeEdit [("page", "access")] "access" >> " to " >> H.text (volumeAccessTitle perm msg) >> " on " >> volume >> "."
   NoticeReleaseSlot ->
     agent >> " set a " >> link viewSlot (HTML, (volumeId <$> notificationVolume, slot)) [] "folder"
     >> " in " >> volume >> " to " >> H.text (releaseTitle notificationRelease msg) >> "."
