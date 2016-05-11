@@ -118,7 +118,7 @@ mailNotification msg Notification{..} = case notificationNotice of
     <> mailLink viewSlot (HTML, (volumeId <$> notificationVolume, slot)) []
   NoticeReleaseAsset ->
     agent <> " set the release level of a file in your volume (" <> volume <> ") to " <> TL.fromStrict (releaseTitle notificationRelease msg) <> ". To review this change, go to: "
-    <> assetSegment
+    <> mailLink viewSlot (HTML, (volumeId <$> notificationVolume, slot)) [("asset", foldMap (BSC.pack . show) notificationAssetId)]
   NoticeReleaseExcerpt ->
     agent <> " set the release level of a highlight in your volume (" <> volume <> ") to " <> TL.fromStrict (releaseTitle notificationRelease msg) <> ". To review this change, go to: "
     <> assetSegment
@@ -209,7 +209,7 @@ htmlNotification msg Notification{..} = case notificationNotice of
     agent >> " set a " >> link viewSlot (HTML, (volumeId <$> notificationVolume, slot)) [] "folder"
     >> " in " >> volume >> " to " >> H.text (releaseTitle notificationRelease msg) >> "."
   NoticeReleaseAsset ->
-    agent >> " set a " >> assetSegment "file"
+    agent >> " set a " >> link viewSlot (HTML, (volumeId <$> notificationVolume, slot)) [("asset", foldMap (BSC.pack . show) notificationAssetId)] "file"
     >> " in " >> volume >> " to " >> H.text (releaseTitle notificationRelease msg) >> "."
   NoticeReleaseExcerpt ->
     agent >> " set a " >> assetSegment "highlight"
