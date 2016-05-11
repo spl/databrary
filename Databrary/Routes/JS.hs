@@ -49,6 +49,7 @@ jsRoutes =
   , jsRoute "viewLoginToken" viewLoginToken (HTML, token)
 
   , jsRoute "viewProfile" viewParty (HTML, TargetProfile)
+  , jsRoute "viewProfileEdit" viewPartyEdit (TargetProfile)
   , jsRoute "viewParty" viewParty (HTML, TargetParty party)
   , jsRoute "viewPartyEdit" viewPartyEdit (TargetParty party)
   , jsRoute "viewPartySearch" queryParties (HTML)
