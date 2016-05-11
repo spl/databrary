@@ -23,7 +23,7 @@ app.directive('toolbar', [
         };
         $scope.search.data = {};
         /* Not ideal, should really come with the rest of user data: */
-        if (!('notifications' in page.models.Login))
+        if (page.models.Login.isLoggedIn() && !('notifications' in page.models.Login))
           page.models.Login.get({'notifications':true});
       }
     };
