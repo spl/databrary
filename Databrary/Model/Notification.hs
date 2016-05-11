@@ -58,7 +58,7 @@ changeNotificationsDelivery nl d =
 lookupUserNotifications :: (MonadDB c m, MonadHas Account c m) => m [Notification]
 lookupUserNotifications = do
   u <- peek
-  dbQuery $ ($ u) <$> $(selectQuery selectTargetNotification "$WHERE target = ${view u :: Id Party} ORDER BY notification.id")
+  dbQuery $ ($ u) <$> $(selectQuery selectTargetNotification "$WHERE target = ${view u :: Id Party} ORDER BY notification.id DESC")
 
 countUserNotifications :: (MonadDB c m, MonadHas (Id Party) c m) => m Int64
 countUserNotifications = do
