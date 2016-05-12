@@ -1,11 +1,12 @@
 'use strict'
 
 app.directive 'notifications', [
-  '$sce', 'constantService', 'routerService', 'messageService', 'modelService'
-  ($sce, constants, router, messages, models) ->
+  '$sce', '$route', '$rootScope', 'constantService', 'routerService', 'messageService', 'modelService'
+  ($sce, $route, $rootScope, constants, router, messages, models) ->
     restrict: 'E'
     templateUrl: 'site/notifications.html'
-    scope: {}
+    scope:
+      close: '&'
     link: ($scope) ->
       $scope.party = models.Login.user
       router.http(router.controllers.getNotifications).then (res) ->
@@ -26,10 +27,17 @@ app.directive 'notifications', [
         router.http(router.controllers.deleteNotification, [n.id]).then () ->
           n.deleted = true
           return
+        return
       $scope.deleteAll = () ->
         router.http(router.controllers.deleteNotifications).then () ->
           for n in $scope.notifications when $scope.deletable(n)
             n.deleted = true
           return
+        return
+      $scope.settings = () ->
+        if $route.current.controller == 'party/edit'
+          $scope.close()
+          $rootScope.$broadcast('wizard-activate', 'notifications')
+        return
       return
 ]
