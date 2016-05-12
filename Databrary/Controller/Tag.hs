@@ -10,9 +10,11 @@ import qualified Data.Text as T
 import Network.HTTP.Types (StdMethod(DELETE), conflict409)
 
 import Databrary.Has
+import Databrary.Ops
 import qualified Databrary.JSON as JSON
 import Databrary.Model.Permission
 import Databrary.Model.Id
+import Databrary.Model.Container
 import Databrary.Model.Slot
 import Databrary.Model.Tag
 import Databrary.Model.Notification.Types
@@ -48,8 +50,9 @@ postTag = action POST (pathAPI </>> pathSlotId </> pathTagId) $ \(api, si, TagId
   r <- addTagUse tu
   unless r $ result $
     response conflict409 [] ("The requested tag overlaps your existing tag." :: T.Text)
+  top <- containerIsVolumeTop (slotContainer s)
   createVolumeNotification (view tu) $ \n -> (n NoticeTagVolume)
-    { notificationContainerId = Just $ view tu
+    { notificationContainerId = top ?!> view tu
     , notificationSegment = Just $ view tu
     , notificationTag = Just $ view tu
     }

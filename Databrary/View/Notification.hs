@@ -8,7 +8,7 @@ import Control.Arrow (second)
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Char8 as BSC
 import Data.Function (on)
-import Data.Maybe (fromMaybe)
+import Data.Maybe (fromMaybe, isJust)
 import Data.Monoid ((<>))
 import qualified Data.Text.Encoding as TE
 import qualified Data.Text.Lazy as TL
@@ -127,13 +127,13 @@ mailNotification msg Notification{..} = case notificationNotice of
     <> assetSegment
   NoticeCommentVolume ->
     agent <> " commented on your volume (" <> volume <> "). To review or reply, go to: "
-    <> mailLink viewSlot (HTML, (volumeId <$> notificationVolume, slot)) [] <> "#comment-" <> foldMap (TL.pack . show) notificationCommentId
+    <> slotVolume [] <> "#comment-" <> foldMap (TL.pack . show) notificationCommentId
   NoticeCommentReply -> -- high risk information disclosure of volume name
     agent <> " replied to your comment on the volume, " <> volume <> ". To review or reply, go to: "
-    <> mailLink viewSlot (HTML, (volumeId <$> notificationVolume, slot)) [] <> "#comment-" <> foldMap (TL.pack . show) notificationCommentId
+    <> slotVolume [] <> "#comment-" <> foldMap (TL.pack . show) notificationCommentId
   NoticeTagVolume ->
     agent <> " tagged the volume, " <> volume <> ", with \"" <> foldMap (TL.fromStrict . TE.decodeLatin1 . tagNameBS . tagName) notificationTag <> "\". To review tags, go to: "
-    <> mailLink viewSlot (HTML, (volumeId <$> notificationVolume, slot)) [("tag", foldMap (tagNameBS . tagName) notificationTag)]
+    <> slotVolume [("tag", foldMap (tagNameBS . tagName) notificationTag)] <> "#panel-tags"
   NoticeSharedVolume ->
     agent <> " shared the following volume, " <> volume <> ", on Databrary. To review, go to: "
     <> mailLink viewVolume (HTML, maybe noId volumeId notificationVolume) []
@@ -157,6 +157,9 @@ mailNotification msg Notification{..} = case notificationNotice of
   perm = fromMaybe PermissionNONE notificationPermission
   slot = Id $ SlotId (fromMaybe noId notificationContainerId) (fromMaybe fullSegment notificationSegment)
   assetSegment = mailLink viewAssetSegment (HTML, volumeId <$> notificationVolume, slot, fromMaybe noId notificationAssetId) []
+  slotVolume
+    | isJust notificationContainerId = mailLink viewSlot (HTML, (volumeId <$> notificationVolume, slot))
+    | otherwise = mailLink viewVolume (HTML, maybe noId volumeId notificationVolume)
 
 mailNotifications :: Messages -> [Notification] -> TL.Text
 mailNotifications msg ~l@(Notification{ notificationTarget = u }:_) =
@@ -218,13 +221,13 @@ htmlNotification msg Notification{..} = case notificationNotice of
     agent >> " created a " >> assetSegment "highlight"
     >> " in " >> volume >> "."
   NoticeCommentVolume ->
-    agent >> " " >> (H.a H.! HA.href (actionValue viewSlot (HTML, (volumeId <$> notificationVolume, slot)) ([] :: Query) <> "#comment-" <> foldMap (H.toValue . unId) notificationCommentId)) "commented"
+    agent >> " " >> (slotVolume [] ("#comment-" <> foldMap (H.toValue . unId) notificationCommentId)) "commented"
     >> " on " >> volume >> "."
   NoticeCommentReply ->
-    agent >> " " >> (H.a H.! HA.href (actionValue viewSlot (HTML, (volumeId <$> notificationVolume, slot)) ([] :: Query) <> "#comment-" <> foldMap (H.toValue . unId) notificationCommentId)) "replied"
+    agent >> " " >> (slotVolume [] ("#comment-" <> foldMap (H.toValue . unId) notificationCommentId)) "replied"
     >> " to your comment on " >> volume >> "."
   NoticeTagVolume ->
-    agent >> " " >> link viewSlot (HTML, (volumeId <$> notificationVolume, slot)) [("tag", foldMap (tagNameBS . tagName) notificationTag)] "tagged"
+    agent >> " " >> (slotVolume [("tag", foldMap (tagNameBS . tagName) notificationTag)] "#panel-tags") "tagged"
     >> " " >> volume >> " with " >> H.em (mapM_ (byteStringHtml . tagNameBS . tagName) notificationTag) >> "."
   NoticeSharedVolume ->
     agent >> " shared " >> volume >> "."
@@ -249,6 +252,9 @@ htmlNotification msg Notification{..} = case notificationNotice of
   perm = fromMaybe PermissionNONE notificationPermission
   slot = Id $ SlotId (fromMaybe noId notificationContainerId) (fromMaybe fullSegment notificationSegment)
   assetSegment = link viewAssetSegment (HTML, volumeId <$> notificationVolume, slot, fromMaybe noId notificationAssetId) []
+  slotVolume q t = H.a H.! HA.href (if isJust notificationContainerId
+    then actionValue viewSlot (HTML, (volumeId <$> notificationVolume, slot)) (q :: [(BSC.ByteString, BSC.ByteString)]) <> t
+    else actionValue viewVolume (HTML, maybe noId volumeId notificationVolume) q <> t)
 
 noId :: Num (IdType a) => Id a
 noId = (Id $ -1)

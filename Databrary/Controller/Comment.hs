@@ -12,6 +12,7 @@ import Databrary.Has
 import qualified Databrary.JSON as JSON
 import Databrary.Model.Permission
 import Databrary.Model.Id
+import Databrary.Model.Container
 import Databrary.Model.Slot
 import Databrary.Model.Notification.Types
 import Databrary.Model.Party.Types
@@ -39,14 +40,15 @@ postComment = action POST (pathAPI </> pathSlotId </< "comment") $ \(api, si) ->
       , commentParents = maybe [] (return . commentId) parent
       }, parent)
   c' <- addComment c
+  top <- containerIsVolumeTop (slotContainer s)
   forM_ p $ \r -> when (on (/=) (partyId . partyRow . accountParty) (commentWho r) u) $
     createNotification (blankNotification (commentWho r) NoticeCommentReply)
-      { notificationContainerId = Just $ view c'
+      { notificationContainerId = top ?!> view c'
       , notificationSegment = Just $ view c'
       , notificationCommentId = Just $ view c'
       }
   createVolumeNotification (view c') $ \n -> (n NoticeCommentVolume)
-    { notificationContainerId = Just $ view c'
+    { notificationContainerId = top ?!> view c'
     , notificationSegment = Just $ view c'
     , notificationCommentId = Just $ view c'
     }
