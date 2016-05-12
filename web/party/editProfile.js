@@ -1,7 +1,8 @@
 'use strict';
 
 app.directive('partyEditProfileForm', [
-  'pageService', function (page) {
+  'messageService', 'constantService',
+  function (messages, constants) {
     var link = function ($scope) {
       var party = $scope.party;
       var form = $scope.partyEditProfileForm;
@@ -18,7 +19,7 @@ app.directive('partyEditProfileForm', [
       form.avatarUrl = party.avatarRoute();
 
       form.save = function () {
-        page.messages.clear(form);
+        messages.clear(form);
         form.$setSubmitted();
         var fd, upload;
         if (angular.isObject(form.data.avatar)) {
@@ -30,9 +31,9 @@ app.directive('partyEditProfileForm', [
             if (form.data.hasOwnProperty(prop) && form.data[prop] !== undefined)
               fd.append(prop, form.data[prop]);
 
-          upload = page.messages.add({
+          upload = messages.add({
             type: 'yellow',
-            body: page.constants.message('party.edit.avatar.upload', page.constants.message('avatar')),
+            body: constants.message('party.edit.avatar.upload', constants.message('avatar')),
             owner: form
           });
         } else
@@ -41,9 +42,9 @@ app.directive('partyEditProfileForm', [
         party.save(fd)
           .then(function () {
             form.validator.server({});
-            page.messages.add({
+            messages.add({
               type: 'green',
-              body: page.constants.message('party.edit.profile.success') + ('avatar' in form.data ? ' Your avatar will take some time to update.' : ''),
+              body: constants.message('party.edit.profile.success') + ('avatar' in form.data ? ' Your avatar will take some time to update.' : ''),
               owner: form
             });
 
@@ -73,7 +74,7 @@ app.directive('partyEditProfileForm', [
       var validate = {};
       fields.forEach(function (f) {
         validate[f] = {
-          tips: page.constants.message('party.edit.' + f + '.help')
+          tips: constants.message('party.edit.' + f + '.help')
         };
       });
       form.validator.client(validate, true);

@@ -2,8 +2,8 @@
 'use strict';
 
 app.directive('wizard', [
-  '$location', '$timeout', 'tooltipService', 'messageService',
-  function ($location, $timeout, tooltips, messages) {
+  '$location', 'tooltipService', 'messageService',
+  function ($location, tooltips, messages) {
     return {
       restrict: 'E',
       templateUrl: 'site/wizard.html',

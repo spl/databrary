@@ -1,7 +1,8 @@
 'use strict';
 
 app.directive('commentReplyForm', [
-  'pageService', function (page) {
+  'constantService', 'messageService',
+  function (constants, messages) {
     var link = function ($scope) {
       var form = $scope.commentReplyForm;
 
@@ -15,14 +16,14 @@ app.directive('commentReplyForm', [
       form.successFn = undefined;
 
       form.save = function () {
-        page.messages.clear(form);
+        messages.clear(form);
         (form.target || $scope.slot || $scope.volume.top).postComment(form.data)
           .then(function () {
             form.validator.server({});
             form.$setPristine();
 
-            page.messages.add({
-              body: page.constants.message('comments.add.success'),
+            messages.add({
+              body: constants.message('comments.add.success'),
               type: 'green',
               owner: form
             });
@@ -42,7 +43,7 @@ app.directive('commentReplyForm', [
       form.cancelFn = undefined;
 
       form.cancel = function () {
-        page.messages.clear(form);
+        messages.clear(form);
         if (angular.isFunction(form.cancelFn)) {
           form.cancelFn();
         }
@@ -55,8 +56,8 @@ app.directive('commentReplyForm', [
 
       form.validator.client({
         text: {
-          tips: page.constants.message('comments.text.help'),
-          errors: page.constants.message('comments.text.error'),
+          tips: constants.message('comments.text.help'),
+          errors: constants.message('comments.text.error'),
         }
       }, true);
 

@@ -1,8 +1,8 @@
 'use strict';
 
 app.directive('citeVolume', [
-  'constantService', 'routerService', '$location',
-  function (constants, router, $location) {
+  '$location',
+  function ($location) {
     var link = function ($scope) {
       var volume = $scope.volume;
 

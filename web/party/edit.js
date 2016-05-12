@@ -1,9 +1,10 @@
 'use strict';
 
 app.controller('party/edit', [
-  '$scope', 'party', 'pageService', function ($scope, party, page) {
+  '$scope', 'displayService', 'party',
+  function ($scope, display, party) {
     $scope.party = party;
-    page.display.title = "Edit " + party.name;
+    display.title = "Edit " + party.name;
 
     function leavingSoSoon() {
       return $scope.partyEditForm.resetAll(false, true);
@@ -16,7 +17,7 @@ app.controller('party/edit', [
       if (url.includes(party.editRoute()))
         return;
       if (!leavingSoSoon())
-        return page.display.cancelRouteChange(event);
+        return display.cancelRouteChange(event);
     });
   }
 ]);

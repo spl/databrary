@@ -1,8 +1,8 @@
 'use strict';
 
 app.directive('userPasswordForm', [
-  'pageService',
-  function (page) {
+  'messageService', 'constantsService', 'modelService',
+  function (messages, constants, models) {
     var link = function ($scope) {
       var form = $scope.userPasswordForm;
 
@@ -17,14 +17,14 @@ app.directive('userPasswordForm', [
       form.resetSuccessFn = undefined;
 
       form.send = function () {
-        page.messages.clear(form);
-        page.models.Login.issuePassword($scope.userPasswordForm.data)
+        messages.clear(form);
+        models.Login.issuePassword($scope.userPasswordForm.data)
           .then(function () {
             form.validator.server({});
 
-            page.messages.add({
+            messages.add({
               type: 'green',
-              body: page.constants.message('reset.request.success', form.data.email),
+              body: constants.message('reset.request.success', form.data.email),
               owner: form
             });
 
@@ -36,8 +36,8 @@ app.directive('userPasswordForm', [
 
       form.validator.client({
         email: {
-          tips: page.constants.message('reset.email.help'),
-          errors: page.constants.message('login.email.error'),
+          tips: constants.message('reset.email.help'),
+          errors: constants.message('login.email.error'),
         },
       }, true);
     };

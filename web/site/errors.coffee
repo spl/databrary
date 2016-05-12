@@ -1,8 +1,8 @@
 'use strict'
 
 app.directive('errors', [
-  '$sce', 'displayService', 'constantService', 'pageService',
-  ($sce, display, constants, page) ->
+  'displayService', 'constantService', 'pageService',
+  (display, constants, page) ->
     restrict: 'E'
     scope: {}
     templateUrl: 'site/errors.html'

@@ -1,7 +1,8 @@
 'use strict';
 
 app.directive('partyEditAccountForm', [
-  'pageService', function (page) {
+  'messageService', 'constantService',
+  function (messages, constants) {
     var link = function ($scope) {
       var party = $scope.party;
       var form = $scope.partyEditAccountForm;
@@ -21,14 +22,14 @@ app.directive('partyEditAccountForm', [
         if (form.data.password && !(form.data.password.once || form.data.password.again))
           delete form.data.password;
         form.$setSubmitted();
-        page.messages.clear(form);
+        messages.clear(form);
         party.saveAccount(form.data).then(
           function () {
             form.validator.server({});
 
-            page.messages.add({
+            messages.add({
               type: 'green',
-              body: page.constants.message('party.edit.profile.success'),
+              body: constants.message('party.edit.profile.success'),
               owner: form
             });
 
@@ -43,11 +44,11 @@ app.directive('partyEditAccountForm', [
       var validate = {};
       ['email', 'password', 'password.again', 'auth'].forEach(function (f) {
         validate[f] = {
-          tips: page.constants.message('party.edit.' + f + '.help')
+          tips: constants.message('party.edit.' + f + '.help')
         };
       });
-      validate.email.errors = page.constants.message('login.email.error');
-      validate['password.again'].errors = page.constants.message('party.edit.password.again.error');
+      validate.email.errors = constants.message('login.email.error');
+      validate['password.again'].errors = constants.message('party.edit.password.again.error');
       form.validator.client(validate, true);
     };
 

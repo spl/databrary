@@ -1,8 +1,8 @@
 'use strict'
 
 app.controller 'party/profile', [
-  '$rootScope', '$scope', '$location', '$filter', '$sce', 'displayService', 'constantService', 'modelService', 'messageService', 'party'
-  ($rootScope, $scope, $location, $filter, $sce, display, constants, models, messages, party) ->
+  '$scope', '$location', '$sce', 'displayService', 'constantService', 'messageService', 'party'
+  ($scope, $location, $sce, display, constants, messages, party) ->
     display.title = party.name
     $scope.party = party
 

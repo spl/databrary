@@ -1,7 +1,8 @@
 'use strict';
 
 app.directive('toolbar', [
-  'pageService', function (page) {
+  'pageService',
+  function (page) {
     return {
       restrict: 'E',
       templateUrl: 'site/toolbar.html',
