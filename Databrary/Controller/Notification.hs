@@ -163,7 +163,6 @@ updateStateNotifications =
 updateAuthorizeNotifications :: (MonadHas Context c m, MonadDB c m) => Maybe Authorize -> Authorize -> m ()
 updateAuthorizeNotifications Nothing _ = return ()
 updateAuthorizeNotifications (Just Authorize{ authorizeExpires = o }) Authorize{ authorization = Authorization{ authorizeChild = Party{ partyRow = PartyRow{ partyId = c } }, authorizeParent = Party{ partyRow = PartyRow{ partyId = p } } }, authorizeExpires = e } = do
-  -- ideally could move others from postAuthorize to here, too
   t <- peeks contextTimestamp
   let t' = addUTCTime 691200 t
   when (all (t' <) e && any (t' >=) o) $

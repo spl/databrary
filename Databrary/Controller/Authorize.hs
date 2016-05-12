@@ -61,6 +61,25 @@ partyDelegates u = do
     . map (authorizeChild . authorization)
     <$> lookupAuthorizedChildren p (Just PermissionADMIN)
 
+updateAuthorize :: Maybe Authorize -> Maybe Authorize -> ActionM ()
+updateAuthorize c a | Just auth <- authorization <$> (c <|> a) = do
+  maybe (mapM_ removeAuthorize c) changeAuthorize a
+  when (on (/=) (foldMap $ authorizeAccess . authorization) a c) $ do
+    let perm = accessSite <$> a
+    dl <- partyDelegates $ authorizeParent auth
+    forM_ dl $ \t ->
+      createNotification (blankNotification t NoticeAuthorizeChildGranted)
+        { notificationParty = Just $ partyRow $ authorizeChild auth
+        , notificationPermission = perm
+        }
+    forM_ (partyAccount $ authorizeChild auth) $ \t ->
+      createNotification (blankNotification t NoticeAuthorizeGranted)
+        { notificationParty = Just $ partyRow $ authorizeParent auth
+        , notificationPermission = perm
+        }
+  updateAuthorizeNotifications c $ fromMaybe (Authorize auth{ authorizeAccess = mempty } Nothing) a
+updateAuthorize ~Nothing ~Nothing = return ()
+
 postAuthorize :: ActionRoute (API, PartyTarget, AuthorizeTarget)
 postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarget) $ \arg@(api, i, AuthorizeTarget app oi) -> withAuth $ do
   p <- getParty (Just PermissionADMIN) i
@@ -94,21 +113,7 @@ postAuthorize = action POST (pathAPI </>> pathPartyTarget </> pathAuthorizeTarge
           expires <- "expires" .:> (deformCheck "Expiration must be within two years." (all (\e -> su || e > minexp && e <= maxexp))
             =<< (<|> (su ?!> maxexp)) <$> deformNonEmpty deform)
           return $ Authorize (Authorization (Access site member) child parent) $ fmap (`UTCTime` 43210) expires
-      maybe (mapM_ removeAuthorize c) changeAuthorize a
-      when (on (/=) (foldMap $ authorizeAccess . authorization) a c) $ do
-        let perm = accessSite <$> a
-        dl <- partyDelegates p
-        forM_ dl $ \t ->
-          createNotification (blankNotification t NoticeAuthorizeChildGranted)
-            { notificationParty = Just $ partyRow o
-            , notificationPermission = perm
-            }
-        forM_ (partyAccount o) $ \t ->
-          createNotification (blankNotification t NoticeAuthorizeGranted)
-            { notificationParty = Just $ partyRow p
-            , notificationPermission = perm
-            }
-      updateAuthorizeNotifications c $ fromMaybe (Authorize (Authorization mempty child parent) Nothing) a
+      updateAuthorize c a
       return a
   case api of
     JSON -> return $ okResponse [] $ JSON.objectEncoding $ foldMap authorizeJSON a <> "party" JSON..=: partyJSON o
@@ -119,10 +124,8 @@ deleteAuthorize = action DELETE (pathAPI </>> pathPartyTarget </> pathAuthorizeT
   p <- getParty (Just PermissionADMIN) i
   o <- maybeAction =<< lookupParty oi
   let (child, parent) = if app then (p, o) else (o, p)
-      a = Authorize (Authorization mempty child parent) Nothing
   c <- lookupAuthorize child parent
-  _ <- removeAuthorize a
-  updateAuthorizeNotifications c a
+  updateAuthorize c Nothing
   case api of
     JSON -> return $ okResponse [] $ JSON.objectEncoding $ "party" JSON..=: partyJSON o
     HTML -> peeks $ otherRouteResponse [] viewAuthorize arg
