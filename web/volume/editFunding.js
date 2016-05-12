@@ -1,7 +1,7 @@
 'use strict';
 
 app.directive('volumeEditFundingForm', [
-  'messageServices', 'constantService', 'displayService',
+  'messageService', 'constantService', 'displayService',
   function (messages, constants, display) {
     var link = function ($scope) {
       var volume = $scope.volume;
