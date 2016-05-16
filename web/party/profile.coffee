@@ -138,7 +138,9 @@ app.controller 'party/profile', [
 
     volumes.individual.type = "individual"
     volumes.collaborator.type = "collaborator"
-    $scope.volumes = [volumes.individual, volumes.collaborator]
+    $scope.volumes = [volumes.individual]
+    if volumes.collaborator.length
+      $scope.volumes.push(volumes.collaborator)
     for ii, il of volumes.inherited
       p = Party.all[ii]
       il.type = "inherited"

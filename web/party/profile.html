@@ -4,7 +4,7 @@
 
     <section id="profile-volumes" class="profile-volumes col-desktop-9 col-tablet-5 col-mobile-6">
       <legend class="hide-desktop hide-tablet foot-2" message="volumes.title"></legend>
-      <div class="profile-volume-sort" ng-if="::vl.length">
+      <div class="profile-volume-sort">
         <small>Sort volumes by </small>
         <button class="mini white" ng-class="{'neutral selected':volumeSort==='name'}" ng-click="sortVolumes('name')">Name</button>
         <button class="mini white" ng-class="{'neutral selected':volumeSort==='access'}" ng-click="sortVolumes('access')">
@@ -13,7 +13,7 @@
         </button>
         <button class="mini white" ng-class="{'neutral selected':volumeSort==='permission'}" ng-click="sortVolumes('permission')">Access</button>
       </div>
-      <div ng-if="::!vl.length"><span class="status">You aren't associated with any volumes.</span></div>
+      <div ng-if="::volumes.length<=1&&!volumes[0].length"><span class="status">You aren't associated with any volumes.</span></div>
       <div ng-repeat="vl in ::volumes" ng-if="::vl.length">
         <div class="profile-section-header">
           <strong ng-bind="::'profile.volumes.'+vl.type+'.title' | message:vl.parent.party.name"></strong> 
