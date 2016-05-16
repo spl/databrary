@@ -4,7 +4,7 @@
   </div>
   <div class="wrap toolbar-main" ng-class="{'hover-nav-bg':hover==='nav'}">
     <div class="row">
-      <div class="title cf col-desktop-9" ng-class="{'col-tablet-7 col-mobile-3': (hover!=='nav')&&page.models.Login.isLoggedIn(), 'col-tablet-6 col-mobile-2': (hover!=='nav')&&!page.models.Login.isLoggedIn(),'col-mobile-6':hover==='nav'}">
+      <div class="title cf col-desktop-9" ng-class="{'col-tablet-6 col-mobile-3': (hover!=='nav')&&page.models.Login.isLoggedIn(), 'col-tablet-6 col-mobile-2': (hover!=='nav')&&!page.models.Login.isLoggedIn(),'col-mobile-6':hover==='nav'}">
         <div class="toolbar-site" ng-show="page.$route.current.controller!=='site/home'">
           <a ng-class="::{sandbox:page.constants.sandbox}" ng-href="{{::page.router.index()}}" title="Databrary: An Open Data Library"></a>
         </div>
