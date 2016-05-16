@@ -10,7 +10,7 @@ import Control.Monad (mfilter)
 #endif
 import Control.Monad (when, unless)
 import qualified Data.ByteString as BS
-import Data.Maybe (isJust)
+import Data.Maybe (isNothing, isJust)
 
 import Databrary.Ops
 import Databrary.Has
@@ -61,6 +61,7 @@ postPasswordToken = action POST (pathAPI </> pathId) $ \(api, ti) -> withoutAuth
     passwordForm (siteAccount auth)
   changeAccount auth{ accountPasswd = Just pw } -- or should this be withAuth?
   _ <- removeLoginToken tok
-  createNotification (blankNotification (siteAccount auth) NoticeAccountChange)
-    { notificationParty = Just $ partyRow $ accountParty $ siteAccount auth }
+  unless (isNothing $ accountPasswd auth) $
+    createNotification (blankNotification (siteAccount auth) NoticeAccountChange)
+      { notificationParty = Just $ partyRow $ accountParty $ siteAccount auth }
   loginAccount api (view tok) False
