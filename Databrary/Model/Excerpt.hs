@@ -45,6 +45,7 @@ lookupSlotThumb (Slot c s) = do
     \WHERE slot_asset.container = ${containerId $ containerRow c} AND excerpt.segment && ${s} \
       \AND COALESCE(GREATEST(excerpt.release, asset.release), ${containerRelease c}) >= ${readRelease (view c)}::release \
       \AND (asset.duration IS NOT NULL AND format.mimetype LIKE 'video/%' OR format.mimetype LIKE 'image/%') \
+      \AND asset.sha1 IS NOT NULL \
     \LIMIT 1")
 
 lookupVolumeThumb :: MonadDB c m => Volume -> m (Maybe AssetSegment)
@@ -54,6 +55,7 @@ lookupVolumeThumb v = do
     \WHERE asset.volume = ${volumeId $ volumeRow v} \
       \AND COALESCE(GREATEST(excerpt.release, asset.release), slot_release.release) >= ${readRelease (view v)}::release \
       \AND (asset.duration IS NOT NULL AND format.mimetype LIKE 'video/%' OR format.mimetype LIKE 'image/%') \
+      \AND asset.sha1 IS NOT NULL \
     \ORDER BY container.top DESC LIMIT 1")
 
 changeExcerpt :: MonadAudit c m => Excerpt -> m Bool
