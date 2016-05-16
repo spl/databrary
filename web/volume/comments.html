@@ -1,6 +1,6 @@
 <comment-reply-form ng-if="canPost && !replyTo"></comment-reply-form>
 
-<article ng-repeat="comment in comments" class="panel-comments-comment" ng-class="::commentClass(comment)">
+<article ng-repeat="comment in comments" class="panel-comments-comment" ng-class="::commentClass(comment)" id="comment-{{::comment.id}}">
   <div class="row">
     <div class="col-desktop-15 col-tablet-9 col-mobile-6">
       <footer class="panel-comments-meta" ng-init="party = comment.who">
