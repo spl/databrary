@@ -1,8 +1,8 @@
 'use strict';
 
 app.controller('party/edit', [
-  '$scope', 'displayService', 'party',
-  function ($scope, display, party) {
+  '$scope', 'displayService', 'routerService', 'party',
+  function ($scope, display, router, party) {
     $scope.party = party;
     display.title = "Edit " + party.name;
 
@@ -14,7 +14,7 @@ app.controller('party/edit', [
 
     $scope.$on('$locationChangeStart', function (event, url) {
       /* hacky: */
-      if (url.includes(party.editRoute()))
+      if (url.includes(party.editRoute()) || url.includes(router.profileEdit()))
         return;
       if (!leavingSoSoon())
         return display.cancelRouteChange(event);
