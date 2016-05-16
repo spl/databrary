@@ -237,7 +237,7 @@ htmlNotification msg Notification{..} = case notificationNotice of
   target = partyRow (accountParty notificationTarget)
   person p = on (/=) partyId p target ?> htmlPartyViewLink p ([] :: Query)
   agent = fromMaybe "You" $ person notificationAgent
-  partyp = fmap (any (on (/=) partyId notificationAgent) notificationParty ?>) person =<< notificationParty
+  partyp = fmap (any (on (/=) partyId notificationAgent) notificationParty ?>) $ person =<< notificationParty
   party = maybe "you" (fromMaybe "themselves") partyp
   party'sOr your their = maybe your (maybe their (>> "'s")) partyp
   party's = party'sOr "your" "their own"
