@@ -54,7 +54,7 @@ lookupCitation uri hcm = runMaybeT $ do
   -- empirically this is UTF-8, but does not say so:
   lift $ handle
     (\(_ :: HC.HttpException) -> return cite)
-    $ (\h -> cite{ citationHead = TL.toStrict $ foldMap TLE.decodeUtf8 h }) <$>
+    $ (\h -> cite{ citationHead = TL.toStrict $ TLE.decodeUtf8 $ HC.responseBody h }) <$>
       HC.httpLbs (requestAcceptContent "text/x-bibliography;style=apa" req) hcm
   where
   may = MaybeT . return
