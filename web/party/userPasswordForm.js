@@ -1,7 +1,7 @@
 'use strict';
 
 app.directive('userPasswordForm', [
-  'messageService', 'constantsService', 'modelService',
+  'messageService', 'constantService', 'modelService',
   function (messages, constants, models) {
     var link = function ($scope) {
       var form = $scope.userPasswordForm;
