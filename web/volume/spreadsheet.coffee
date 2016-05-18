@@ -500,7 +500,12 @@ app.directive 'spreadsheet', [
             when 'age'
               v = display.formatAge(v)
             when 'top'
-              v = info.metric.options[v]
+              if v?
+                v = info.metric.options[v]
+              else if Editing && info.col.first
+                cell.classList.add('button')
+                v = 'new'
+                # TODO: styling for add folder button
             when 'summary'
               if info.d.global && Editing
                 cell.classList.add('spreadsheet-global-record-cell')
