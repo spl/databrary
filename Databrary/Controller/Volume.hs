@@ -236,7 +236,7 @@ volumeCitationForm v = do
         | otherwise = volumeName $ volumeRow vol
   _ <- "name" .:> deformRequired name
   when (not empty) $ void $
-    "citation" .:> "name" .:> deformRequired (citationHead fill)
+    "citation" .:> "head" .:> deformRequired (citationHead fill)
   return (vol{ volumeRow = (volumeRow vol){ volumeName = name } }, empty ?!> fill)
 
 viewVolumeEdit :: ActionRoute (Id Volume)
