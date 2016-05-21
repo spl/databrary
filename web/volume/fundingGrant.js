@@ -1,7 +1,8 @@
 'use strict';
 
 app.directive('fundingGrantForm', [
-  'pageService', function (page) {
+  'messageService', 'constantService', 'displayService',
+  function (messages, constants, display) {
     var link = function ($scope) {
       var volume = $scope.volume;
       var funding = $scope.funding;
@@ -20,13 +21,13 @@ app.directive('fundingGrantForm', [
       }
 
       form.save = function () {
-        page.messages.clear(form);
+        messages.clear(form);
         form.data.awards = _.filter(form.data.awards, keep);
 
         form.$setSubmitted();
         volume.fundingSave(funding.funder.id, form.data).then(function () {
-          page.messages.add({
-            body: page.constants.message('funding.save.success'),
+          messages.add({
+            body: constants.message('funding.save.success'),
             type: 'green',
             owner: form
           });
@@ -36,22 +37,22 @@ app.directive('fundingGrantForm', [
           form.$setPristine();
         }, function (res) {
           form.$setUnsubmitted();
-          page.messages.addError({
-            body: page.constants.message('funding.save.error'),
+          messages.addError({
+            body: constants.message('funding.save.error'),
             report: res,
             owner: form
           });
 
-          page.display.scrollTo(form.$element);
+          display.scrollTo(form.$element);
         });
       };
 
       form.remove = function () {
-        page.messages.clear(form);
+        messages.clear(form);
         form.$setSubmitted();
         volume.fundingRemove(funding.funder.id).then(function () {
-          page.messages.add({
-            body: page.constants.message('funding.remove.success'),
+          messages.add({
+            body: constants.message('funding.remove.success'),
             type: 'green',
             owner: form
           });
@@ -60,13 +61,13 @@ app.directive('fundingGrantForm', [
           form.removeSuccessFn(funding);
         }, function (res) {
           form.$setUnsubmitted();
-          page.messages.addError({
-            body: page.constants.message('funding.remove.error'),
+          messages.addError({
+            body: constants.message('funding.remove.error'),
             report: res,
             owner: form
           });
 
-          page.display.scrollTo(form.$element);
+          display.scrollTo(form.$element);
         });
       };
 

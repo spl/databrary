@@ -13,7 +13,8 @@
         </button>
         <button class="mini white" ng-class="{'neutral selected':volumeSort==='permission'}" ng-click="sortVolumes('permission')">Access</button>
       </div>
-      <div ng-repeat="vl in ::volumes" ng-if="::vl.length">
+      <div ng-if="::volumes.length<=1&&!volumes[0].length"><span class="status">You aren't associated with any volumes.</span></div>
+      <div ng-repeat="vl in ::volumes">
         <div class="profile-section-header">
           <strong ng-bind="::'profile.volumes.'+vl.type+'.title' | message:vl.parent.party.name"></strong> 
           <a ng-if="::vl.type === 'individual' && party.authorization >= page.constants.permission.EDIT || vl.parent.parent.member >= page.constants.permission.ADMIN" ng-href="{{page.router.volumeCreate([vl.parent.party.id])}}" class="button mini small white">Create volume</a>
@@ -44,7 +45,7 @@
 
     <section id="profile-parties" class="profile-parties col-desktop-6 col-tablet-4 col-mobile-6">
       <legend class="hide-desktop hide-tablet foot-2" message="network.title"></legend>
-
+      <div ng-if="::!(parties.parents.length || parties.children.length || parties.collaborators.length)"><span class="status">You aren't associated with any users.</span></div>
       <div class="profile-section foot-2" ng-if="::parties.parents.length">
         <div class="profile-section-header">
           <strong ng-bind="::'profile.parties.'+parties.parents.type+'.title' | message"></strong>
@@ -59,7 +60,7 @@
             <div class="profile-link">
               <a ng-href="{{::p.party.route()}}" ng-bind="::p.party.name"></a><wbr>
               <span ng-if="::!(p.parent.member || p.parent.site)" class="permission-auth-pending" message="auth.pending"></span>
-              <span ng-if="::(p.parent.member || p.parent.site)" class="permission-auth-expiration small" ng-bind="::p.parent.expires | date:'yyyy/MM/dd'" ng-class="::{expired:isExpired(p.parent)}"></span><wbr>
+              <span ng-if="::(p.parent.member || p.parent.site)" class="date-time" ng-bind="::p.parent.expires | date:'yyyy/MM/dd'" ng-class="::{expired:isExpired(p.parent)}"></span><wbr>
               <a href="" ng-click="p.edit('apply')" ng-class="!p.selected && selected && selected.constructor !== p.constructor ? 'profile-hover-link-show add' : 'edit'" class="icon edit button neutral profile-hover-link"></a>
               <br>
             </div>
@@ -94,7 +95,7 @@
               <div class="profile-link">
                 <a ng-href="{{::p.party.route()}}" ng-bind="::p.party.name"></a><wbr>
                 <span ng-if="::!(p.child.member || p.child.site)" class="permission-auth-pending" message="auth.pending"></span>
-                <span ng-if="::(p.child.member || p.child.site)" class="permission-auth-expiration small" ng-bind="::p.child.expires | date:'yyyy/MM/dd'" ng-class="::{expired:isExpired(p.child)}"></span><wbr>
+                <span ng-if="::(p.child.member || p.child.site)" class="date-time small" ng-bind="::p.child.expires | date:'yyyy/MM/dd'" ng-class="::{expired:isExpired(p.child)}"></span><wbr>
                 <a href="" ng-click="p.edit('grant')" ng-class="!p.selected && selected && selected.constructor !== p.constructor ? 'profile-hover-link-show add' : 'edit'" class="icon button mini profile-hover-link"></a>
               </div>
             </li>

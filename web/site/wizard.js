@@ -2,8 +2,8 @@
 'use strict';
 
 app.directive('wizard', [
-  '$location', '$timeout', 'tooltipService', 'messageService',
-  function ($location, $timeout, tooltips, messages) {
+  '$location', 'tooltipService', 'messageService',
+  function ($location, tooltips, messages) {
     return {
       restrict: 'E',
       templateUrl: 'site/wizard.html',
@@ -27,10 +27,7 @@ app.directive('wizard', [
         };
 
         $scope.activateStep = function (newStep) {
-          if (newStep.disabled || $scope.activeStep === newStep)
-            return;
-
-          if ($scope.switchStep && !$scope.switchStep(newStep))
+          if (newStep.disabled || $scope.activeStep === newStep || $scope.switchStep && !$scope.switchStep(newStep))
             return;
 
           if ($scope.activeStep)
@@ -45,6 +42,12 @@ app.directive('wizard', [
         this.activateStep = function(s) {
           $scope.activateStep($scope.step[s]);
         };
+
+        $scope.$on('wizard-activate', function (event, s) {
+          var step = $scope.step[s];
+          if (step)
+            $scope.activateStep(step);
+        });
       }],
     };
   }

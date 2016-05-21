@@ -3,7 +3,6 @@ module Databrary.HTTP.Parse
   ( Content(..)
   , FileContent
   , parseRequestContent
-  , getRequestTextContent
   ) where
 
 import Control.Monad (when, unless)
@@ -11,8 +10,12 @@ import Control.Monad.IO.Class (liftIO)
 import qualified Data.Aeson as JSON
 import qualified Data.Attoparsec.ByteString as AP
 import qualified Data.ByteString as BS
-import qualified Data.ByteString.Builder as BSB
 import Data.IORef (newIORef, readIORef, writeIORef)
+import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
+import qualified Data.Text.Encoding.Error as TE
+import qualified Data.Text.Lazy as TL
+import qualified Data.Text.Internal.Lazy as TL (chunk)
 import Data.Word (Word64)
 import Network.HTTP.Types (requestEntityTooLarge413, unsupportedMediaType415, hContentType)
 import Network.Wai
@@ -23,10 +26,10 @@ import Databrary.Has (peek, peeks)
 import Databrary.Action.Types
 import Databrary.Store.Temp
 import Databrary.HTTP.Request (lookupRequestHeader)
-import Databrary.Action.Response (response, result)
+import Databrary.Action.Response (response, emptyResponse, result, unsafeResult)
 
 requestTooLarge :: Response
-requestTooLarge = response requestEntityTooLarge413 [] (mempty :: BSB.Builder)
+requestTooLarge = emptyResponse requestEntityTooLarge413 []
 
 type ChunkParser a = IO BS.ByteString -> IO a
 
@@ -68,6 +71,18 @@ parserChunks parser next = run (AP.parse parser) where
       then return r
       else run $ AP.feed r
 
+textChunks :: TE.OnDecodeError -> ChunkParser TL.Text
+textChunks err next = run (TE.streamDecodeUtf8With err) where
+  run f = do
+    b <- next
+    let TE.Some t r f' = f b
+    if BS.null b
+      then return $ TL.fromStrict $ maybe t (T.snoc t) $ err "textChunks: invalid UTF-8" . Just . fst =<< BS.uncons r
+      else TL.chunk t <$> run f'
+
+textChunks' :: ChunkParser TL.Text
+textChunks' = textChunks (\e _ -> unsafeResult $ response unsupportedMediaType415 [] e)
+
 
 _mapBackEnd :: (a -> b) -> BackEnd a -> BackEnd b
 _mapBackEnd f back param info next = f <$> back param info next
@@ -92,6 +107,7 @@ data Content a
     , contentFormFiles :: [File a]
     }
   | ContentJSON JSON.Value
+  | ContentText TL.Text
   | ContentUnknown
 
 maxTextSize :: Word64
@@ -109,6 +125,9 @@ instance FileContent TempFile where
 instance FileContent JSON.Value where
   parseFileContent b = liftIO $ either (result . response unsupportedMediaType415 []) return . AP.eitherResult =<< parserChunks JSON.json b
 
+instance FileContent TL.Text where
+  parseFileContent = liftIO . textChunks'
+
 parseFormContent :: RequestBodyType -> ActionM (Content a)
 parseFormContent t = uncurry ContentForm
   <$> limitRequestChunks maxTextSize (liftIO . sinkRequestBody rejectBackEnd t)
@@ -125,7 +144,11 @@ parseFormFileContent ff rt = do
 
 parseJSONContent :: ActionM (Content a)
 parseJSONContent = maybe ContentUnknown ContentJSON . AP.maybeResult
-  <$> limitRequestChunks maxTextSize (liftIO . parserChunks JSON.json)
+  <$> limitRequestChunks maxTextSize (parserChunks JSON.json)
+
+parseTextContent :: ActionM (Content a)
+parseTextContent = ContentText <$> limitRequestChunks maxTextSize textChunks'
+  -- really would be better to catch the error and return ContentUnknown
 
 parseRequestContent :: FileContent a => (BS.ByteString -> Word64) -> ActionM (Content a)
 parseRequestContent ff = do
@@ -139,12 +162,6 @@ parseRequestContent ff = do
       parseJSONContent
     Just ("application/json", _) ->
       parseJSONContent
-    _ -> return ContentUnknown
-
-getRequestTextContent :: ActionM BS.ByteString
-getRequestTextContent = do
-  ct <- peeks $ lookupRequestHeader hContentType
-  case fmap parseContentType ct of
     Just ("text/plain", _) ->
-      limitRequestChunks maxTextSize id
-    _ -> result $ response unsupportedMediaType415 [] (mempty :: BSB.Builder)
+      parseTextContent
+    _ -> return ContentUnknown

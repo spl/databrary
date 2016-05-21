@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings, RecordWildCards #-}
 module Databrary.View.Volume
-  ( htmlVolumeView
+  ( htmlVolumeViewLink
+  , htmlVolumeView
   , htmlVolumeEdit
   , htmlVolumeLinksEdit
   , htmlVolumeSearch
@@ -8,6 +9,7 @@ module Databrary.View.Volume
 
 import Control.Monad (when, forM_)
 import Data.Monoid ((<>))
+import Network.HTTP.Types.QueryLike (QueryLike(..))
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as HA
 
@@ -27,6 +29,11 @@ import Databrary.View.Paginate
 import {-# SOURCE #-} Databrary.Controller.Angular
 import {-# SOURCE #-} Databrary.Controller.Party
 import {-# SOURCE #-} Databrary.Controller.Volume
+
+htmlVolumeViewLink :: QueryLike q => VolumeRow -> q -> H.Html
+htmlVolumeViewLink v q =
+  H.a H.! actionLink viewVolume (HTML, volumeId v) q
+    $ H.text $ volumeName v
 
 htmlVolumeView :: Volume -> [Tag] -> RequestContext -> H.Html
 htmlVolumeView v t req = htmlTemplate req Nothing $ \js -> do
@@ -84,8 +91,7 @@ htmlVolumeList js vl = H.ul
       H.! HA.class_ "volume-list-result cf"
       $ do
         H.h1
-          $ H.a H.! actionLink viewVolume (HTML, volumeId $ volumeRow v) js
-          $ H.text $ volumeName $ volumeRow v
+          $ htmlVolumeViewLink (volumeRow v) js
         H.ul
           H.! HA.class_ "flat semicolon"
           $ forM_ (volumeOwners v) $ \(p, o) -> H.li $ do

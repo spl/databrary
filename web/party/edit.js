@@ -1,9 +1,10 @@
 'use strict';
 
 app.controller('party/edit', [
-  '$scope', 'party', 'pageService', function ($scope, party, page) {
+  '$scope', 'displayService', 'routerService', 'party',
+  function ($scope, display, router, party) {
     $scope.party = party;
-    page.display.title = "Edit " + party.name;
+    display.title = "Edit " + party.name;
 
     function leavingSoSoon() {
       return $scope.partyEditForm.resetAll(false, true);
@@ -13,10 +14,10 @@ app.controller('party/edit', [
 
     $scope.$on('$locationChangeStart', function (event, url) {
       /* hacky: */
-      if (url.includes(party.editRoute()))
+      if (url.includes(party.editRoute()) || url.includes(router.profileEdit()))
         return;
       if (!leavingSoSoon())
-        return page.display.cancelRouteChange(event);
+        return display.cancelRouteChange(event);
     });
   }
 ]);

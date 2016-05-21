@@ -10,7 +10,7 @@ import Control.Monad (mfilter)
 #endif
 import Control.Monad (when, unless)
 import qualified Data.ByteString as BS
-import Data.Maybe (isJust)
+import Data.Maybe (isNothing, isJust)
 
 import Databrary.Ops
 import Databrary.Has
@@ -21,6 +21,7 @@ import Databrary.Model.Party
 #if !defined(DEVEL) && !defined(SANDBOX)
 import Databrary.Model.Permission
 #endif
+import Databrary.Model.Notification.Types
 import Databrary.HTTP.Path.Parser
 import Databrary.Action.Run
 import Databrary.Action
@@ -28,6 +29,7 @@ import Databrary.Controller.Paths
 import Databrary.Controller.Form
 import Databrary.Controller.Login
 import Databrary.Controller.Angular
+import Databrary.Controller.Notification
 import Databrary.View.Token
 
 lookupPasswordResetAccount :: BS.ByteString -> ActionM (Maybe SiteAuth)
@@ -59,4 +61,7 @@ postPasswordToken = action POST (pathAPI </> pathId) $ \(api, ti) -> withoutAuth
     passwordForm (siteAccount auth)
   changeAccount auth{ accountPasswd = Just pw } -- or should this be withAuth?
   _ <- removeLoginToken tok
+  unless (isNothing $ accountPasswd auth) $
+    createNotification (blankNotification (siteAccount auth) NoticeAccountChange)
+      { notificationParty = Just $ partyRow $ accountParty $ siteAccount auth }
   loginAccount api (view tok) False

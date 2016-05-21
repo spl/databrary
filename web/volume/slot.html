@@ -253,7 +253,7 @@
             <button ng-disabled="!form.comment.text.length" ng-click="addComment(form.comment.text)" class="mini" message="comments.post"></button>
           </div>
 
-          <article ng-repeat="comment in comments" class="panel-comments-comment" ng-class="comment.classes">
+          <article ng-repeat="comment in comments" class="panel-comments-comment" ng-class="comment.classes" id="comment-{{::comment.comment.id}}">
             <div class="row">
               <div class="col-desktop-15 col-tablet-9 col-mobile-6">
                 <footer class="panel-comments-meta" ng-init="party = comment.comment.who">
@@ -266,7 +266,7 @@
                     <div class="portrait-info">
                       <a class="portrait-name" ng-href="{{::party.route()}}" ng-bind="::party.name"></a>
                       <span class="portrait-extra">
-                        <time datetime="comment.comment.time | date:'yyyy-MM-dd HH:mm:ss Z'" pubdate ng-bind="::comment.comment.time | date:'MMMM d, yyyy'"></time>
+                        <time datetime="{{::comment.comment.time | date:'yyyy-MM-dd HH:mm:ss Z'}}" ng-bind="::comment.comment.time | date:'MMMM d, yyyy'"></time>
                       </span>
                     </div>
                   </aside>

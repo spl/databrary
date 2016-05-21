@@ -7,6 +7,10 @@
       "type": "string",
       "pattern": "^[12][0-9]{3}-[01][0-9]-[0-3][0-9]$"
     },
+    "numeric": {
+      "type": "string",
+      "pattern": "^[0-9]*(\\.[0-9]*)?$"
+    },
     "citation": {
       "description": "Publications/products corresponding to study volumes.",
       "type": "object",
@@ -137,10 +141,11 @@
             "WV","WI","WY"]
         },
         "info": {"type": "string"},
-        "gestational age": {"type": "number"},
+        "gestational age": {"$ref": "#/definitions/numeric"},
         "pregnancy term": {"type": "string",
           "enum": ["Full term","Preterm"]
-        }
+        },
+        "birth weight": {"$ref": "#/definitions/numeric"}
       },
       "required": ["key", "category"],
       "additionalProperties": false

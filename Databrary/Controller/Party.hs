@@ -74,7 +74,7 @@ partyJSONField p "parents" o = do
     return $ (if admin then authorizeJSON a else mempty)
       <> "party" JSON..=: (partyJSON ap JSON..<> "authorization" JSON..=? acc)
       <> "expired" JSON..=? (True <? admin && authorizeExpired a now))
-    =<< lookupAuthorizedParents p admin
+    =<< lookupAuthorizedParents p (admin ?!> PermissionNONE)
   where
   admin = view p >= PermissionADMIN
   auth = admin && o == Just "authorization"
@@ -82,7 +82,7 @@ partyJSONField p "children" _ =
   Just . JSON.mapObjects (\a ->
     let ap = authorizeChild (authorization a) in
     (if admin then authorizeJSON a else mempty) <> "party" JSON..=: partyJSON ap)
-    <$> lookupAuthorizedChildren p admin
+    <$> lookupAuthorizedChildren p (admin ?!> PermissionNONE)
   where admin = view p >= PermissionADMIN
 partyJSONField p "volumes" o = (?$>) (view p >= PermissionADMIN) $
   fmap (JSON.mapRecords id) . mapM vf =<< lookupPartyVolumes p PermissionREAD

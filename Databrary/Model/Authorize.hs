@@ -19,7 +19,6 @@ import Control.Monad (when)
 import Data.Int (Int64)
 import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
-import Database.PostgreSQL.Typed.Query (PGQuery, unsafeModifyQuery)
 
 import Databrary.Has (peek, view)
 import qualified Databrary.JSON as JSON
@@ -38,19 +37,21 @@ selfAuthorize :: Party -> Authorize
 selfAuthorize p =
   Authorize (Authorization (if partyId (partyRow p) == partyId (partyRow nobodyParty) then minBound else maxBound) p p) Nothing
 
-filterAll :: PGQuery a b => Bool -> a -> a
-filterAll True = id
-filterAll False = (`unsafeModifyQuery` (<> "WHERE (expires IS NULL OR expires > CURRENT_TIMESTAMP) AND (site > 'PUBLIC' OR member > 'NONE') ORDER BY party.name"))
-
-lookupAuthorizedParents :: (MonadDB c m, MonadHasIdentity c m) => Party -> Bool -> m [Authorize]
-lookupAuthorizedParents child al = do
+lookupAuthorizedParents :: (MonadDB c m, MonadHasIdentity c m) => Party -> Maybe Permission -> m [Authorize]
+lookupAuthorizedParents child perm = do
   ident <- peek
-  dbQuery $ filterAll al $(selectQuery (selectAuthorizeParent 'child 'ident) "$")
+  dbQuery $ maybe
+    $(selectQuery (selectAuthorizeParent 'child 'ident) "$")
+    (\p -> $(selectQuery (selectAuthorizeParent 'child 'ident) "$WHERE (expires IS NULL OR expires > CURRENT_TIMESTAMP) AND site >= ${p} AND member >= ${p} AND (site <> 'NONE' OR member <> 'NONE')"))
+    perm
 
-lookupAuthorizedChildren :: (MonadDB c m, MonadHasIdentity c m) => Party -> Bool -> m [Authorize]
-lookupAuthorizedChildren parent al = do
+lookupAuthorizedChildren :: (MonadDB c m, MonadHasIdentity c m) => Party -> Maybe Permission -> m [Authorize]
+lookupAuthorizedChildren parent perm = do
   ident <- peek
-  dbQuery $ filterAll al $(selectQuery (selectAuthorizeChild 'parent 'ident) "$")
+  dbQuery $ maybe
+    $(selectQuery (selectAuthorizeChild 'parent 'ident) "$")
+    (\p -> $(selectQuery (selectAuthorizeChild 'parent 'ident) "$WHERE (expires IS NULL OR expires > CURRENT_TIMESTAMP) AND site >= ${p} AND member >= ${p} AND (site <> 'NONE' OR member <> 'NONE')"))
+    perm
 
 lookupAuthorize :: (MonadDB c m, MonadHasIdentity c m) => Party -> Party -> m (Maybe Authorize)
 lookupAuthorize child parent =

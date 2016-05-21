@@ -14,7 +14,9 @@ import Control.Monad (when, unless)
 import Control.Monad.Trans.Class (lift)
 import qualified Crypto.BCrypt as BCrypt
 import qualified Data.ByteString as BS
+import Data.Function (on)
 import Data.Maybe (fromMaybe)
+import qualified Network.Wai as Wai
 
 import Databrary.Ops
 import Databrary.Has
@@ -23,6 +25,7 @@ import Databrary.Model.Id.Types
 import Databrary.Model.Party
 import Databrary.Model.Identity
 import Databrary.Model.Permission
+import Databrary.Model.Notification
 import Databrary.Model.Token
 import Databrary.HTTP.Cookie
 import Databrary.HTTP.Form.Deform
@@ -31,6 +34,7 @@ import Databrary.Action
 import Databrary.Controller.Paths
 import Databrary.Controller.Form
 import Databrary.Controller.Angular
+import Databrary.Controller.Notification
 import Databrary.View.Login
 
 import {-# SOURCE #-} Databrary.Controller.Root
@@ -81,9 +85,15 @@ postLogout = action POST (pathAPI </< "user" </< "logout") $ \api -> withAuth $ 
     HTML -> peeks $ otherRouteResponse [cook] viewRoot HTML
   where cook = clearCookie "session"
 
+userJSONField :: BS.ByteString -> Maybe BS.ByteString -> ActionM (Maybe JSON.Encoding)
+userJSONField "notifications" _ = Just . JSON.toEncoding <$> countUserNotifications
+userJSONField _ _ = return Nothing
+
 viewUser :: ActionRoute ()
-viewUser = action GET (pathJSON </< "user") $ \() -> withAuth $
-  peeks $ okResponse [] . JSON.recordEncoding . identityJSON
+viewUser = action GET (pathJSON </< "user") $ \() -> withAuth $ do
+  i <- peeks identityJSON
+  q <- JSON.jsonQuery userJSONField =<< peeks Wai.queryString
+  return $ okResponse [] (i JSON..<> q)
 
 postUser :: ActionRoute API
 postUser = action POST (pathAPI </< "user") $ \api -> withAuth $ do
@@ -103,6 +113,11 @@ postUser = action POST (pathAPI </< "user") $ \api -> withAuth $ do
       , accountPasswd = passwd <|> accountPasswd auth
       }
   changeAccount auth'
+  when (on (/=) (accountEmail . siteAccount) auth' auth || on (/=) accountPasswd auth' auth) $
+    createNotification (blankNotification acct NoticeAccountChange) -- use old acct (email)
+      { notificationParty = Just $ partyRow $ accountParty acct
+      , notificationDelivered = DeliveryAsync -- force immediate delivery
+      }
   case api of
     JSON -> return $ okResponse [] $ JSON.recordEncoding $ partyJSON $ accountParty $ siteAccount auth'
     HTML -> peeks $ otherRouteResponse [] viewParty (api, TargetProfile)

@@ -1,7 +1,8 @@
 'use strict';
 
 app.directive('volumeEditFundingForm', [
-  'pageService', function (page) {
+  'messageService', 'constantService', 'displayService',
+  function (messages, constants, display) {
     var link = function ($scope) {
       var volume = $scope.volume;
       var form = $scope.volumeEditFundingForm;
@@ -27,13 +28,13 @@ app.directive('volumeEditFundingForm', [
       });
 
       $scope.selectFn = function (found) {
-        page.messages.clear(form);
+        messages.clear(form);
         if (form.data.some(function (funding) {
               return funding.funder.id === found.id;
             })) {
-          page.messages.add({
+          messages.add({
             type: 'yellow',
-            body: page.constants.message('funding.search.repeat', found.name),
+            body: constants.message('funding.search.repeat', found.name),
             owner: form
           });
           return;
@@ -46,7 +47,7 @@ app.directive('volumeEditFundingForm', [
         });
 
         //warning: next line is template dependent! if classnames or structure change this may no longer work
-        page.display.scrollTo('fieldset.funding-grant:last');
+        display.scrollTo('fieldset.funding-grant:last');
       };
     };
 

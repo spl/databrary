@@ -1,8 +1,8 @@
 'use strict';
 
 app.directive('partyNetwork', [
-  '$rootScope', '$sce', '$location', 'constantService', 'messageService', 'modelService',
-  function ($rootScope, $sce, $location, constants, messages, models) {
+  'modelService',
+  function (models) {
     return {
     restrict: 'E',
     templateUrl: 'party/network.html',

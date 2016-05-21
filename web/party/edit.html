@@ -25,6 +25,10 @@
             <party-edit-account-form></party-edit-account-form>
           </wizard-page>
 
+          <wizard-page name="notifications" wizard-disabled="party.institution || !party.checkPermission(page.permission.SUPER)">
+            <party-edit-notifications></party-edit-notifications>
+          </wizard-page>
+
           <wizard-page name="apply" wizard-disabled="!party.checkPermission(page.permission.ADMIN)">
             <party-edit-apply-form></party-edit-apply-form>
           </wizard-page>

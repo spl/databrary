@@ -14,10 +14,10 @@ import Network.HTTP.Types (methodPost, hContentType)
 import qualified Databrary.Store.Config as C
 
 data Static = Static
-  { staticAuthorizeAddr :: BS.ByteString
-  , staticAssistAddr :: BS.ByteString
-  , staticInvestigator :: Maybe HC.Request
-  , staticKey :: BS.ByteString -> HMAC Hash.SHA256
+  { staticAuthorizeAddr :: !BS.ByteString
+  , staticAssistAddr :: !BS.ByteString
+  , staticInvestigator :: !(Maybe HC.Request)
+  , staticKey :: !(BS.ByteString -> HMAC Hash.SHA256)
   }
 
 initStatic :: C.Config -> IO Static

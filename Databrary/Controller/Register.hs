@@ -9,9 +9,10 @@ module Databrary.Controller.Register
 
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as BSB
-import qualified Data.ByteString.Lazy as BSL
 import Data.Monoid ((<>))
 import qualified Data.Text as T
+import qualified Data.Text.Lazy as TL
+import qualified Data.Text.Lazy.Encoding as TLE
 
 import Databrary.Ops
 import Databrary.Has
@@ -33,14 +34,14 @@ import Databrary.Controller.Token
 import Databrary.Controller.Angular
 import Databrary.View.Register
 
-resetPasswordMail :: Either BS.ByteString SiteAuth -> T.Text -> (Maybe BSL.ByteString -> BSL.ByteString) -> ActionM ()
+resetPasswordMail :: Either BS.ByteString SiteAuth -> T.Text -> (Maybe TL.Text -> TL.Text) -> ActionM ()
 resetPasswordMail (Left email) subj body =
   sendMail [Left email] [] subj (body Nothing)
 resetPasswordMail (Right auth) subj body = do
   tok <- loginTokenId =<< createLoginToken auth True
   req <- peek
   sendMail [Right $ view auth] [] subj
-    (body $ Just $ BSB.toLazyByteString $ actionURL (Just req) viewLoginToken (HTML, tok) [])
+    (body $ Just $ TLE.decodeLatin1 $ BSB.toLazyByteString $ actionURL (Just req) viewLoginToken (HTML, tok) [])
 
 viewRegister :: ActionRoute ()
 viewRegister = action GET (pathHTML </< "user" </< "register") $ \() -> withAuth $ do

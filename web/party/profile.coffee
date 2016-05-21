@@ -1,8 +1,8 @@
 'use strict'
 
 app.controller 'party/profile', [
-  '$rootScope', '$scope', '$location', '$filter', '$sce', 'displayService', 'constantService', 'modelService', 'messageService', 'party'
-  ($rootScope, $scope, $location, $filter, $sce, display, constants, models, messages, party) ->
+  '$scope', '$location', '$sce', 'displayService', 'constantService', 'messageService', 'party'
+  ($scope, $location, $sce, display, constants, messages, party) ->
     display.title = party.name
     $scope.party = party
 
@@ -58,7 +58,7 @@ app.controller 'party/profile', [
         if $scope.editable
           $scope.selected.editAccess(@party)
         else if t
-          $location.url(party.editRoute(t)+'#auth-'+@party.id)
+          $location.url(party.editRoute(t, @party.id))
 
     class Volume extends Item
       constructor: (@volume) ->
@@ -130,7 +130,7 @@ app.controller 'party/profile', [
       unless a.member || a.site
         messages.add
           type: 'yellow',
-          body: $sce.trustAsHtml('<span>' + constants.message('auth.notice.pending', {sce:$sce.HTML}, a.party.name) + ' <a href="' + party.editRoute('grant') + '#auth-' + a.party.id + '">Manage</a>.</span>')
+          body: $sce.trustAsHtml('<span>' + constants.message('auth.notice.pending', {sce:$sce.HTML}, a.party.name) + ' <a href="' + party.editRoute('grant', a.party.id) + '">Manage</a>.</span>')
     parties.collaborators = (Party.all[pi] for pi of collaborators)
 
     stringSort = (a,b) -> +(a > b) || +(a == b) - 1
@@ -138,7 +138,9 @@ app.controller 'party/profile', [
 
     volumes.individual.type = "individual"
     volumes.collaborator.type = "collaborator"
-    $scope.volumes = [volumes.individual, volumes.collaborator]
+    $scope.volumes = [volumes.individual]
+    if volumes.collaborator.length
+      $scope.volumes.push(volumes.collaborator)
     for ii, il of volumes.inherited
       p = Party.all[ii]
       il.type = "inherited"

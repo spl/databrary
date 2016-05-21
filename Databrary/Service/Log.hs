@@ -40,15 +40,14 @@ initLog def conf = do
     "stdout" -> Just <$> newStdoutLoggerSet buf
     "stderr" -> Just <$> newStderrLoggerSet buf
     _ -> do
-      check $ spec $ fromMaybe 0 num
-      mapM_ (rotate . spec) num
+      check file
+      mapM_ (rotate . FileLogSpec file size) (num :: Maybe Int)
       Just <$> newFileLoggerSet buf file
   where
   file = fromMaybe def $ conf C.! "file"
   buf = fromMaybe defaultBufSize $ conf C.! "buf"
   num = conf C.! "rotate"
   size = fromMaybe (1024*1024) $ conf C.! "size"
-  spec = FileLogSpec file size
 
 initLogs :: C.Config -> IO Logs
 initLogs conf = Logs

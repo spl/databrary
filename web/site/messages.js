@@ -1,10 +1,11 @@
 'use strict';
 
 app.directive('messages', [
-  'pageService', function (page) {
+  'messageService',
+  function (messages) {
     var controller = ['$scope', function ($scope) {
       return ($scope.messages = {
-        list: page.messages.list
+        list: messages.list
       });
     }];
 

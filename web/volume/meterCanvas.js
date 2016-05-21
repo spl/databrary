@@ -4,7 +4,7 @@ app.directive('volumeMeterCanvas', [
   function () {
     return {
       restrict: 'A',
-      link: function($scope, $element, $attrs) {
+      link: function($scope, $element) {
         var meterCanvas = $element[0];
         meterCanvas.height = 300;
         meterCanvas.width = 300;

@@ -1,6 +1,6 @@
 <ul class="flat activity">
   <li ng-repeat="act in ::activity">
-    <small class="activity-timestamp">{{::act.when | date:'medium'}}</small> 
+    <time class="activity-timestamp" datetime="{{::act.when | date:'yyyy-MM-dd HH:mm:ss Z'}}" ng-bind="::act.when | date:'medium'"></time> 
     <a ng-if="::act.user >= 0" load-party="act.user" ng-href="{{::party.route()}}" class="activity-user" ng-bind="::party.name"></a> 
     <span ng-bind="::activityAction(act)"></span> 
 

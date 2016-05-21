@@ -6,6 +6,7 @@ module Databrary.Model.Container
   , lookupVolumeContainer
   , lookupVolumeContainers
   , lookupVolumeTopContainer
+  , containerIsVolumeTop
   , addContainer
   , changeContainer
   , removeContainer
@@ -64,6 +65,11 @@ lookupVolumeContainers vol =
 lookupVolumeTopContainer :: MonadDB c m => Volume -> m Container
 lookupVolumeTopContainer vol =
   dbQuery1' $ fmap ($ vol) $(selectQuery selectVolumeContainer "$WHERE container.volume = ${volumeId $ volumeRow vol} ORDER BY container.id LIMIT 1")
+
+containerIsVolumeTop :: MonadDB c m => Container -> m Bool
+containerIsVolumeTop Container{ containerRow = ContainerRow{ containerTop = False } } = return False
+containerIsVolumeTop c = not <$>
+  dbExecute1 [pgSQL|SELECT FROM container WHERE volume = ${volumeId $ volumeRow $ containerVolume c} AND id < ${containerId $ containerRow c} LIMIT 1|]
 
 addContainer :: MonadAudit c m => Container -> m Container
 addContainer bc = do

@@ -2,27 +2,27 @@
   <div class="wrap toolbar-sandbox" ng-if="::page.constants.sandbox">
     Welcome to the <strong>Databrary demo site</strong>. Explore Databrary in action and try out some of our features here!
   </div>
-  <div class="wrap toolbar-main" ng-class="{'hover-nav-bg': hoverNav}">
+  <div class="wrap toolbar-main" ng-class="{'hover-nav-bg':hover==='nav'}">
     <div class="row">
-      <div class="title cf col-desktop-9" ng-class="{'col-tablet-7 col-mobile-3': !hoverNav&&page.models.Login.isLoggedIn(), 'col-tablet-6 col-mobile-2': !hoverNav&&!page.models.Login.isLoggedIn(),'col-mobile-6':hoverNav}">
+      <div class="title cf col-desktop-9" ng-class="{'col-tablet-6 col-mobile-3': (hover!=='nav')&&page.models.Login.isLoggedIn(), 'col-tablet-6 col-mobile-2': (hover!=='nav')&&!page.models.Login.isLoggedIn(),'col-mobile-6':hover==='nav'}">
         <div class="toolbar-site" ng-show="page.$route.current.controller!=='site/home'">
           <a ng-class="::{sandbox:page.constants.sandbox}" ng-href="{{::page.router.index()}}" title="Databrary: An Open Data Library"></a>
         </div>
 
         <nav class="toolbar-nav cf">
           <ul class="toolbar-nav-ul inline-block flat cf">
-            <li ng-class="{'hide-tablet hide-desktop': !hoverNav}">
-              <a href="" class="toolbar-nav-toggle" ng-click="hoverNavToggle($event)">
-                <img src="/web/icons/navmenu.svg" class="icon" ng-show="!hoverNav">
-                <img src="/web/icons/backarrow.svg" class="icon" ng-show="hoverNav">
+            <li ng-class="{'hide-tablet hide-desktop':hover!=='nav'}">
+              <a href="" class="toolbar-nav-toggle" ng-click="hoverToggle('nav', $event)">
+                <img src="/web/icons/navmenu.svg" class="toolbar-icon icon" ng-show="hover!=='nav'">
+                <img src="/web/icons/backarrow.svg" class="toolbar-icon icon" ng-show="hover==='nav'">
               </a>
             </li>
-            <li ng-class="{'hide-mobile':!hoverNav}">
+            <li ng-class="{'hide-mobile':hover!=='nav'}">
               <a ng-href="{{::page.router.search()}}?volume"><span><b>Volumes</b></span></a>
             </li>
-            <li ng-class="{'hide-mobile':!hoverNav}">
+            <li ng-class="{'hide-mobile':hover!=='nav'}">
               <a href="//databrary.org/news.html">News</a>
-            <li ng-class="{'hide-mobile':!hoverNav}">
+            <li ng-class="{'hide-mobile':hover!=='nav'}">
               <a href="//databrary.org/about.html"><span>About</span></a>
               <ul class="flat">
                 <li><a href="//databrary.org/about/mission.html">Mission</a></li>
@@ -33,7 +33,7 @@
                 <li><a href="//databrary.org/about/support-page.html">Support</a></li>
               </ul>
             </li>
-            <li ng-class="{'hide-mobile':!hoverNav}">
+            <li ng-class="{'hide-mobile':hover!=='nav'}">
               <a href="//databrary.org/access.html"><span>Access</span></a>
               <ul class="flat">
                 <li><a href="//databrary.org/access/faq.html">FAQ</a></li>
@@ -42,7 +42,7 @@
                 <li><a href="//databrary.org/access/policies.html">Policies</a></li>
               </ul>
             </li>
-            <li ng-class="{'hide-mobile':!hoverNav}">
+            <li ng-class="{'hide-mobile':hover!=='nav'}">
               <a href="//databrary.org/community.html"><span>Community</span></a>
               <ul class="flat">
                 <li><a ng-href="{{::page.router.search()}}?volume=false&f.party_authorization={{::page.constants.permission.EDIT}}&f.party_is_institution=false">Authorized Investigators</a></li>
@@ -54,7 +54,7 @@
         </nav>
       </div>
 
-      <div class="toolbar-user" ng-class="{'col-mobile-3': page.models.Login.isLoggedIn(), 'col-mobile-4': !page.models.Login.isLoggedIn()}" ng-if="!hoverNav">
+      <div class="toolbar-user" ng-class="{'col-mobile-3': page.models.Login.isLoggedIn(), 'col-mobile-4': !page.models.Login.isLoggedIn()}" ng-if="hover!=='nav'">
 
         <span ng-if="!page.models.Login.isLoggedIn()">
           <a ng-href="{{::page.router.login()}}">login</a>
@@ -65,27 +65,31 @@
         </span>
 
         <span ng-if="page.models.Login.isLoggedIn()">
-          <a href="" ng-class="{'toolbar-superuser': page.models.Login.user.superuser !== undefined, on: !!page.models.Login.user.superuser}" ng-click="hoverUserToggle($event)">
+          <a href="" ng-click="hoverToggle('notifications', $event)" tooltip="'Notifications'">
+            <span class="toolbar-icon icon notification" ng-class="{new:page.models.Login.user.notifications}"></span>
+          </a>
+
+          <a href="" ng-class="::{'toolbar-superuser': page.models.Login.user.superuser !== undefined, on: !!page.models.Login.user.superuser}" ng-click="hoverToggle('user', $event)">
             <img ng-src="{{::page.models.Login.user.avatarRoute()}}" class="toolbar-avatar">
             <span class="username hide-mobile hide-tablet" ng-bind="::page.models.Login.user.name"></span>
           </a>
         </span>
 
-        <a href="" ng-click="hoverSearchToggle($event)" class="toolbar-search-toggle">
-          <img src="/web/icons/search.svg" class="icon">
+        <a href="" ng-click="hoverToggle('search', $event)" class="toolbar-search-toggle">
+          <img src="/web/icons/search.svg" class="toolbar-icon icon">
           <span class="hide-mobile hide-tablet">Search</span>
         </a>
 
-        <span class="sep">|</span>
+        <span class="sep"></span>
 
         <a href="//databrary.org/about/support.html" id="toolbar-contact" target="_blank" tooltip="'Get help or contact us with comments, problems, and suggestions'">
-          <span class="icon contact"></span>
+          <span class="toolbar-icon icon contact"></span>
           <span class="hide-mobile hide-tablet">Contact</span>
         </a>
 
       </div>
 
-      <section class="toolbar-hover user" ng-if="page.models.Login.isLoggedIn() && hoverUser" click-elsewhere="hoverUserToggle()">
+      <section class="toolbar-hover user" ng-if="page.models.Login.isLoggedIn() && hover==='user'" click-elsewhere="hoverToggle()">
         <div class="row">
           <div class="toolbar-user-menu">
             <ul class="flat">
@@ -110,7 +114,7 @@
         </div>
       </section>
 
-      <section class="toolbar-hover search" click-elsewhere="hoverSearchToggle()" ng-if="hoverSearch">
+      <section class="toolbar-hover search" click-elsewhere="hoverToggle()" ng-if="hover==='search'">
         <div class="toolbar-search">
           <ng-form class="search-form">
             <div class="search-form-search">
@@ -118,6 +122,10 @@
             </div>
           </ng-form>
         </div>
+      </section>
+
+      <section ng-if="hover==='notifications'" click-elsewhere="hoverToggle()" class="toolbar-hover toolbar-notifications-panel">
+        <notifications close="hoverToggle()"></notifications>
       </section>
 
     </div>

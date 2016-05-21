@@ -275,6 +275,19 @@ app.provider('routerService', [
       reloadOnSearch: false,
     });
 
+    routes.profileEdit = makeRoute(controllers.viewProfileEdit, [], {
+      controller: 'party/edit',
+      templateUrl: 'party/edit.html',
+      resolve: {
+        party: [
+          'modelService', function (models) {
+            return models.Login.user.get(['parents', 'children']);
+          }
+        ],
+      },
+      reloadOnSearch: false,
+    });
+
     routes.partyActivity = makeRoute(controllers.viewPartyActivity, ['id'], {
       controller: 'party/activity',
       templateUrl: 'party/activity.html',

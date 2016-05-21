@@ -10,9 +10,10 @@ app.directive('hint', [
         constants.message('access.' + a, 'You');
     });
 
-    _.each(constants.release, function (a) {
-      hints['release-' + a] =
-        constants.message('release.' + a + '.title') + ': ' + constants.message('release.' + a + '.description');
+    _.each(constants.releases, function (a) {
+      var r = constants.release[a];
+      hints['release-' + r] =
+        constants.message('release.' + r + '.title') + ': ' + constants.message('release.' + r + '.description');
     });
 
     _.each(constants.format, function (a) {
