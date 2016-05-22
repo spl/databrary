@@ -15,7 +15,7 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.Text.Lazy as TL
 import Data.Time (UTCTime(..), fromGregorian, addGregorianYearsRollOver)
-import Network.HTTP.Types (noContent204, StdMethod(DELETE))
+import Network.HTTP.Types (noContent204)
 
 import Databrary.Ops
 import Databrary.Has (peek, peeks)

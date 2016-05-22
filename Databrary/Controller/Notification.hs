@@ -21,7 +21,7 @@ import Data.Function (on)
 import Data.List (groupBy)
 import Data.Time.Clock (getCurrentTime, addUTCTime)
 import Database.PostgreSQL.Typed (pgSQL)
-import Network.HTTP.Types (StdMethod(DELETE), noContent204)
+import Network.HTTP.Types (noContent204)
 import qualified Text.Regex.Posix as Regex
 
 import Databrary.Has

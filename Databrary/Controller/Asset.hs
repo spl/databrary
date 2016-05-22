@@ -25,7 +25,7 @@ import Data.Monoid ((<>))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Database.PostgreSQL.Typed.Range as Range
-import Network.HTTP.Types (StdMethod(DELETE), conflict409)
+import Network.HTTP.Types (conflict409)
 import qualified Network.Wai as Wai
 import Network.Wai.Parse (FileInfo(..))
 

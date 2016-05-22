@@ -14,7 +14,7 @@ import Control.Monad (when, unless)
 import Control.Monad.Trans.Class (lift)
 import Data.Maybe (isNothing, fromMaybe)
 import qualified Data.Text as T
-import Network.HTTP.Types (StdMethod(DELETE), noContent204, conflict409)
+import Network.HTTP.Types (noContent204, conflict409)
 
 import Databrary.Ops
 import Databrary.Has

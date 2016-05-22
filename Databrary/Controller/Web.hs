@@ -9,12 +9,14 @@ import Data.ByteArray.Encoding (convertToBase, Base(Base16))
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import Data.Char (isAscii, isAlphaNum, toLower)
+import qualified Data.Invertible as I
 import Data.Maybe (isJust)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Network.HTTP.Types (notFound404, hContentEncoding)
 import qualified Network.Wai as Wai
 import System.Posix.FilePath (joinPath, splitDirectories)
+import qualified Web.Route.Invertible as R
 
 import Databrary.Ops
 import Databrary.Has
@@ -55,7 +57,7 @@ parseStaticPath = fmap (StaticPath . joinPath) . mapM component where
   component c = TE.encodeUtf8 c <? (not (T.null c) && T.head c /= '.' && T.all ok c)
 
 pathStatic :: PathParser (Maybe StaticPath)
-pathStatic = (parseStaticPath :<->: maybe [] (map TE.decodeLatin1 . splitDirectories . staticFilePath)) >$< PathAny
+pathStatic = (parseStaticPath I.:<->: maybe [] (map TE.decodeLatin1 . splitDirectories . staticFilePath)) >$< R.manyI R.parameter
 
 webFile :: ActionRoute (Maybe StaticPath)
 webFile = action GET ("web" >/> pathStatic) $ \sp -> withoutAuth $ do

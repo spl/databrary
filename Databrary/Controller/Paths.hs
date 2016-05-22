@@ -13,7 +13,9 @@ module Databrary.Controller.Paths
   , pathTagId
   ) where
 
-import qualified Data.Isomorphism as I
+import qualified Data.Invertible as I
+import Data.String (fromString)
+import qualified Web.Route.Invertible as R
 
 import Databrary.Model.Kind
 import Databrary.Model.Id.Types
@@ -22,24 +24,24 @@ import Databrary.Model.Container.Types
 import Databrary.Model.Segment
 import Databrary.Model.Slot.Types
 import Databrary.Model.Tag.Types
-import Databrary.HTTP.Path.Types
+import Databrary.HTTP.Path
 import Databrary.HTTP.Path.Parser
 
 idIso :: IdType a I.<-> Id a
-idIso = [I.isoCase|a <-> Id a|]
+idIso = [I.biCase|a <-> Id a|]
 
 pathIdWith :: forall a . (Kinded a) => PathParser (IdType a) -> PathParser (Id a)
-pathIdWith p = PathFixed (kindOf (undefined :: a)) >/> idIso >$< p
+pathIdWith p = fromString (kindOf (undefined :: a)) >/> idIso >$< p
 
 pathId :: forall a . (PathParameter (IdType a), Kinded a) => PathParser (Id a)
-pathId = pathIdWith PathParameter
+pathId = pathIdWith R.parameter
 
 data PartyTarget
   = TargetProfile
   | TargetParty (Id Party)
 
 pathPartyTarget :: PathParser PartyTarget
-pathPartyTarget = [I.isoCase|
+pathPartyTarget = [I.biCase|
     Left () <-> TargetProfile
     Right i <-> TargetParty i
   |] >$< ("profile" |/| pathId)
@@ -50,25 +52,25 @@ data AuthorizeTarget = AuthorizeTarget
   }
 
 pathAuthorizeTarget :: PathParser AuthorizeTarget
-pathAuthorizeTarget = [I.isoCase|(a, t) <-> AuthorizeTarget a t|] >$<
+pathAuthorizeTarget = [I.biCase|(a, t) <-> AuthorizeTarget a t|] >$<
   (I.isRight >$< ("authorize" |/| "apply")
-   </> idIso >$< PathParameter)
+   </> idIso >$< R.parameter)
 
 newtype VolumeAccessTarget = VolumeAccessTarget
   { volumeAccessTarget :: Id Party
   }
 
 pathVolumeAccessTarget :: PathParser VolumeAccessTarget
-pathVolumeAccessTarget = "access" >/> [I.isoCase|i <-> VolumeAccessTarget (Id i)|] >$< PathParameter
+pathVolumeAccessTarget = "access" >/> [I.biCase|i <-> VolumeAccessTarget (Id i)|] >$< R.parameter
 
 slotIdIso :: (Id Container, Segment) I.<-> SlotId
-slotIdIso = [I.isoCase|(c, s) <-> SlotId c s|]
+slotIdIso = [I.biCase|(c, s) <-> SlotId c s|]
 
 pathSegment :: PathParser Segment
-pathSegment = fullSegment =/= PathParameter
+pathSegment = fullSegment =/= R.parameter
 
 pathSlot :: PathParser SlotId
-pathSlot = slotIdIso >$< (idIso >$< PathParameter </> pathSegment)
+pathSlot = slotIdIso >$< (idIso >$< R.parameter </> pathSegment)
 
 pathSlotId :: PathParser (Id Slot)
 pathSlotId = pathIdWith pathSlot
@@ -79,6 +81,6 @@ data TagId = TagId
   }
 
 pathTagId :: PathParser TagId
-pathTagId = [I.isoCase|(b, t) <-> TagId b t|] >$<
-  (I.isRight >$< ("tag" |/| "keyword") </> PathParameter)
+pathTagId = [I.biCase|(b, t) <-> TagId b t|] >$<
+  (I.isRight >$< ("tag" |/| "keyword") </> R.parameter)
 

@@ -18,6 +18,7 @@ import Data.Maybe (fromMaybe, isNothing)
 import Data.Monoid ((<>))
 import System.Exit (ExitCode(..))
 import Text.Read (readMaybe)
+import qualified Web.Route.Invertible as R
 
 import Databrary.Ops
 import Databrary.Has (view, peek, peeks, focusIO)
@@ -59,7 +60,7 @@ transcodeArgs t@Transcode{..} = do
   auth <- peeks $ transcodeAuth t
   return $
     [ "-s", toFilePath f
-    , "-r", BSLC.unpack $ BSB.toLazyByteString $ routeURL (Just req) remoteTranscode (transcodeId t) <> BSB.string8 "?auth=" <> BSB.byteString auth
+    , "-r", BSLC.unpack $ BSB.toLazyByteString $ routeURL (Just req) (R.requestActionRoute remoteTranscode (transcodeId t)) [("auth", Just auth)]
     , "--" ]
     ++ maybe [] (\l -> ["-ss", show l]) lb
     ++ maybe [] (\u -> ["-t", show $ u - fromMaybe 0 lb]) (upperBound rng)

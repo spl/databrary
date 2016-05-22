@@ -28,6 +28,7 @@ import qualified Database.PostgreSQL.Typed.Range as Range
 import qualified Text.ParserCombinators.ReadP as RP
 import qualified Text.ParserCombinators.ReadPrec as RP (lift, readPrec_to_P, minPrec)
 import Text.Read (readMaybe, readPrec)
+import qualified Web.Route.Invertible as R
 
 import Databrary.Ops
 import qualified Databrary.JSON as JSON
@@ -104,6 +105,9 @@ instance JSON.FromJSON Segment where
       [p] -> return $ maybe Range.empty Range.point p
       [l, u] -> return $ Range.normal l u
       _ -> fail "Segment array too long"
+
+instance R.Parameter T.Text Segment where
+  renderParameter s = T.pack $ showSegmentWith (shows . offsetMillis) s ""
 
 fullSegment :: Segment
 fullSegment = Segment Range.full

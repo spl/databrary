@@ -5,7 +5,8 @@ module Databrary.Controller.VolumeState
   ) where
 
 import Data.Maybe (fromMaybe)
-import Network.HTTP.Types (StdMethod(PUT, DELETE), noContent204)
+import Network.HTTP.Types (noContent204)
+import qualified Web.Route.Invertible as R
 
 import qualified Databrary.JSON as JSON
 import Databrary.Model.Id
@@ -21,7 +22,7 @@ import Databrary.Controller.Paths
 import Databrary.Controller.Volume
 
 postVolumeState :: ActionRoute (Id Volume, VolumeStateKey)
-postVolumeState = action PUT (pathJSON >/> pathId </> "state" >/> PathParameter) $ \(vi, k) -> withAuth $ do
+postVolumeState = action PUT (pathJSON >/> pathId </> "state" >/> R.parameter) $ \(vi, k) -> withAuth $ do
   v <- getVolume PermissionEDIT vi
   s <- runForm Nothing $ do
     j <- deform
@@ -36,7 +37,7 @@ postVolumeState = action PUT (pathJSON >/> pathId </> "state" >/> PathParameter)
   return $ emptyResponse noContent204 []
 
 deleteVolumeState :: ActionRoute (Id Volume, VolumeStateKey)
-deleteVolumeState = action DELETE (pathJSON >/> pathId </> "state" >/> PathParameter) $ \(vi, k) -> withAuth $ do
+deleteVolumeState = action DELETE (pathJSON >/> pathId </> "state" >/> R.parameter) $ \(vi, k) -> withAuth $ do
   v <- getVolume PermissionEDIT vi
   r <- removeVolumeState v k
   return $ okResponse [] $ JSON.toEncoding r

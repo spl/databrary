@@ -1,87 +1,40 @@
 {-# LANGUAGE ExistentialQuantification, RecordWildCards, ImpredicativeTypes, GeneralizedNewtypeDeriving #-}
 module Databrary.HTTP.Route
-  ( Route(..)
-  , route
-  , RouteMap
-  , fromRouteList
-  , lookupRoute
+  ( Route
   , routeURL
   , routeURI
   ) where
 
 import Prelude hiding (lookup)
 
-import qualified Control.Invariant.Functor as Inv
 import qualified Data.ByteString.Builder as BSB
-import qualified Data.ByteString.Lazy.Char8 as BSLC
-import qualified Data.Isomorphism as I
-import Data.Maybe (fromMaybe)
+import qualified Data.ByteString.Char8 as BSC
 import Data.Monoid ((<>))
-import Network.HTTP.Types (StdMethod)
+import Network.HTTP.Types (Query, simpleQueryToQuery, renderQuery)
 import Network.URI (URI(..), nullURI)
 import qualified Network.Wai as Wai
+import qualified Web.Route.Invertible as R
+import qualified Web.Route.Invertible.URI as R
+import qualified Web.Route.Invertible.Internal as R
 
 import Databrary.HTTP
 import Databrary.HTTP.Request
-import Databrary.HTTP.Path.Types
-import qualified Databrary.HTTP.Path.Map as PM
-import Databrary.HTTP.Path.Parser
-import Databrary.HTTP.Path
-import qualified Databrary.HTTP.Method.Map as MM
 
-data Route r a = Route
-  { routeMethod :: !StdMethod
-  , routeMultipart :: !Bool
-  , routePath :: PathParser a
-  , routeAction :: a -> r
-  }
+type Route a r = R.RouteAction r a
 
-instance Inv.Functor (Route r) where
-  fmap f r = r
-    { routePath = Inv.fmap f $ routePath r
-    , routeAction = routeAction r . I.isoFrom f
-    }
+routeURL :: Maybe Request -> R.Request -> Query -> BSB.Builder
+routeURL w r q = bh (R.requestHost r)
+  <> encodePath' (R.requestPath r)
+    ((simpleQueryToQuery $ R.paramsQuerySimple $ R.requestQuery r) ++ q)
+  where
+  bh [] = foldMap (BSB.byteString . requestHost) w
+  bh [x] = BSB.byteString x
+  bh (x:l) = bh l <> BSB.char7 '.' <> BSB.byteString x
 
-type RouteResult r = PathElements -> r
+routeURI :: Maybe Wai.Request -> R.Request -> Query -> URI
+routeURI req r q = (maybe nullURI requestURI req)
+  { uriPath = uriPath ruri
+  , uriQuery = BSC.unpack $ renderQuery True $ (simpleQueryToQuery $ R.paramsQuerySimple $ R.requestQuery r) ++ q
+  } where
+  ruri = R.requestURI r
 
-data RouteCase r = RouteCase
-  { _routeMethod :: !StdMethod
-  , _routeElements :: PathElements
-  , _routeResult :: RouteResult r
-  }
-
-route :: Route r a -> [RouteCase r]
-route Route{ routeMethod = m, routePath = p, routeAction = f } = cf <$> pathCases p where
-  cf (e, rf) = RouteCase m e $ \r -> fromMaybe (error $ "route: " ++ (BSLC.unpack $ BSB.toLazyByteString $ encodePathSegments' $ elementsPath r)) $ do
-    (v, []) <- rf r
-    return $ f v
-
-newtype RouteMap r = RouteMap (PM.PathMap (MM.MethodMap (RouteResult r)))
-  deriving (Monoid)
-
-singleton :: RouteCase r -> RouteMap r
-singleton (RouteCase a p r) = RouteMap $
-  PM.singleton p (MM.singleton a r)
-
-fromRouteList :: [[RouteCase r]] -> RouteMap r
-fromRouteList = foldMap singleton . concat
-
-lookupRoute :: Wai.Request -> RouteMap r -> Either [StdMethod] r
-lookupRoute q (RouteMap m) = do
-  (p, mm) <- maybe (Left []) Right $ PM.lookup (Wai.pathInfo q) m
-  r <- MM.lookup (Wai.requestMethod q) mm
-  return $ r p
-
-routeBuilder :: Route r a -> a -> BSB.Builder
-routeBuilder Route{ routePath = p } a =
-  encodePathSegments' $ elementsPath $ producePath p a
-
-routeURL :: Maybe Wai.Request -> Route r a -> a -> BSB.Builder
-routeURL req r a =
-  maybe id ((<>) . BSB.byteString . requestHost) req $ routeBuilder r a
-
-routeURI :: Maybe Wai.Request -> Route r a -> a -> URI
-routeURI req r a = (maybe nullURI requestURI req)
-  { uriPath = BSLC.unpack $ BSB.toLazyByteString $ routeBuilder r a
-  , uriQuery = ""
-  }
