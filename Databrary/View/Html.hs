@@ -61,11 +61,11 @@ actionLink :: QueryLike q => R.RouteAction r a -> r -> q -> H.Attribute
 actionLink r a = HA.href . actionValue r a
 
 actionForm :: Route r a -> a -> JSOpt -> H.Html -> H.Html
-actionForm R.RouteAction{ R.actionRoute = r } a j = H.form
+actionForm r a j = H.form
   H.! HA.method (H.unsafeByteStringValue $ R.renderParameter $ R.requestMethod rr)
   H.!? (not $ BS.null $ R.requestContentType rr, HA.enctype $ byteStringValue $ R.requestContentType rr)
   H.! HA.action (builderValue $ routeURL Nothing rr (toQuery j))
-  where rr = R.requestRoute r a
+  where rr = R.requestActionRoute r a
 
 (!?) :: Markup.Attributable h => h -> Maybe H.Attribute -> h
 h !? Nothing = h
