@@ -129,14 +129,14 @@
 
           <div class="slot-toolbar" ng-if="::editing" ng-switch="editing" ng-class="{'slot-toolbar-bg': editing!==true}">
             <div ng-switch-when="true">
-              <button ng-if="::slot !== slot.volume.top" ng-click="addRecord()" class="mini">Add record</button>
-              <button ng-if="!!current.record" ng-click="current.remove()" class="mini">Remove record</button>
-              <button ng-if="!!current.record" ng-click="current.rePosition()" class="mini">Position record</button>
-              &#32;
               <button ng-click="addBlank()" class="mini">Add file</button>
               <button ng-if="!!(current.asset || current.file) && !current.pending" ng-click="current.remove()" class="mini">Remove file</button>
               <button ng-if="!!(current.asset || current.file) && !current.pending" class="mini" flow-btn>Replace file</button>
               <button ng-if="!!current.asset" ng-click="current.rePosition()" class="mini">Position file</button>
+              &#32;
+              <button ng-if="::slot !== slot.volume.top" ng-click="addRecord()" class="mini">Add record</button>
+              <button ng-if="!!current.record" ng-click="current.remove()" class="mini">Remove record</button>
+              <button ng-if="!!current.record" ng-click="current.rePosition()" class="mini">Position record</button>
               &#32;
               <button ng-if="current.excerpt.on === false" ng-click="current.editExcerpt()" class="mini">Highlight on volume</button>
               <button ng-if="current.excerpt.on === true" ng-click="current.editExcerpt()" class="mini"><span ng-if="::current.excerpt.full">Remove</span><span ng-if="::!current.excerpt.full">Edit</span> highlight</button>
