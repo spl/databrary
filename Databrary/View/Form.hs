@@ -36,7 +36,6 @@ import Databrary.Model.Time
 import Databrary.Model.Token
 import Databrary.Model.Identity
 import Databrary.Action
-import Databrary.HTTP.Route (routeMethod)
 import Databrary.HTTP.Form
 import Databrary.HTTP.Form.Errors
 import Databrary.HTTP.Form.View
@@ -157,7 +156,7 @@ htmlForm :: T.Text -> ActionRoute a -> a -> FormHtml f -> (JSOpt -> H.Html) -> R
 htmlForm title act arg form body req = liftWith $ \run -> do
   htmlTemplate req (Just title) $ \js -> do
     actionForm act arg js $ do
-      (_, err) <- run $ when (routeMethod act /= GET) (csrfForm req) >> form
+      (_, err) <- run $ when (actionMethod act arg /= GET) (csrfForm req) >> form
       errorLists $ allFormErrors err
       H.input
         H.! HA.type_ "submit"

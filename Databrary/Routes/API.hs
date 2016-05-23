@@ -13,10 +13,12 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Version (showVersion)
 import qualified Network.HTTP.Types as HTTP
+import qualified Web.Route.Invertible as R
 
 import Paths_databrary (version)
 import Databrary.HTTP.Route
 import Databrary.HTTP.Path.Swagger
+import Databrary.Web.Routes
 import Databrary.Model.Enum
 import Databrary.Model.Permission
 import Databrary.Model.Id.Types
@@ -148,15 +150,15 @@ okResp desc schema = Response (Just HTTP.ok200)
 
 op :: T.Text -> Route r a -> a -> T.Text -> T.Text -> [Parameter] -> [Response] -> (T.Text, Object)
 op i rte arg summary desc param resp =
-  ( swaggerPath (routePath rte) arg $ pathParameters param
-  , HM.singleton (T.toLower $ TE.decodeLatin1 $ HTTP.renderStdMethod $ routeMethod rte) $ object
+  ( swaggerPath p $ pathParameters param
+  , HM.singleton (maybe "unknown" (T.toLower . TE.decodeLatin1 . R.renderParameter) m) $ object
     [ "operationId" .= i
     , "summary" .= summary
     , "description" .= desc
     , "parameters" .= param
     , "responses" .= object (map responseJSON resp)
     ]
-  )
+  ) where RequestValues m p = routeActionValues rte arg
 
 instance HasFields (T.Text, Object) where
   (t, o) .++ l = (t, o .++ l)

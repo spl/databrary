@@ -9,13 +9,15 @@ module Databrary.Controller.Container
   , containerDownloadName
   ) where
 
+import Control.Arrow (second)
 import Control.Monad (when, unless, mfilter)
+import qualified Data.Invertible as I
 import Data.Maybe (isJust, fromMaybe, maybeToList)
 import qualified Data.Text as T
-import Network.HTTP.Types (StdMethod(DELETE), noContent204, movedPermanently301, conflict409)
+import Network.HTTP.Types (noContent204, movedPermanently301, conflict409)
+import qualified Web.Route.Invertible as R
 
 import Databrary.Ops
-import qualified Databrary.Iso as I
 import Databrary.Has
 import qualified Databrary.JSON as JSON
 import Databrary.Model.Id
@@ -55,7 +57,7 @@ containerDownloadName Container{ containerRow = ContainerRow{..} } =
     T.pack (show containerId) : maybeToList containerName
 
 viewContainer :: ActionRoute (API, (Maybe (Id Volume), Id Container))
-viewContainer = I.second (I.second $ slotContainerId . unId I.:<->: containerSlotId) I.<$> viewSlot
+viewContainer = second (second $ slotContainerId . unId I.:<->: containerSlotId) `R.mapActionRoute` viewSlot
 
 containerForm :: Container -> DeformActionM () Container
 containerForm c = do

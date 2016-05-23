@@ -5,10 +5,11 @@ module Databrary.Controller.Format
   ) where
 
 import Control.Monad.Reader (asks)
+import qualified Data.Invertible as I
 import Data.Monoid ((<>))
 import System.Posix.FilePath (splitFileName, splitExtension)
+import qualified Web.Route.Invertible as R
 
-import Databrary.Iso.Types (invMap)
 import Databrary.Model.Format
 import Databrary.HTTP.Path.Parser
 import Databrary.Action.Run
@@ -18,7 +19,7 @@ import Databrary.Controller.Angular
 import Databrary.View.Format
 
 formatIcon :: ActionRoute Format
-formatIcon = invMap pf fp webFile where
+formatIcon = (pf I.:<->: fp) `R.mapActionRoute` webFile where
   fp f = Just $ staticPath
     [ "images", "filetype", "16px"
     , case formatExtension f of { e:_ -> e ; _ -> "_blank" } <> ".svg"

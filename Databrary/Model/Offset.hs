@@ -17,6 +17,7 @@ import Numeric (showSigned, showFFloat, readSigned, readDec)
 import qualified Text.ParserCombinators.ReadP as RP
 import qualified Text.ParserCombinators.ReadPrec as RP (lift)
 import Text.Read (readMaybe, Read(readPrec))
+import qualified Web.Route.Invertible as R
 
 import qualified Databrary.JSON as JSON
 
@@ -94,4 +95,7 @@ instance JSON.FromJSON Offset where
   parseJSON (JSON.String s) = maybe (fail "Invalid offset string") return $ readMaybe $ T.unpack s
   parseJSON (JSON.Bool False) = return 0
   parseJSON _ = fail "Invalid offset"
+
+instance R.Parameter T.Text Offset where
+  renderParameter = T.pack . show . offsetMillis
 

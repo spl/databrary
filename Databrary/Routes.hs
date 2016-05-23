@@ -3,7 +3,8 @@ module Databrary.Routes
   ( routeMap
   ) where
 
-import Databrary.HTTP.Route
+import Web.Route.Invertible (RouteMap, routes, routeCase)
+
 import Databrary.Action
 import Databrary.Controller.Root
 import Databrary.Controller.Login
@@ -39,7 +40,7 @@ import Databrary.Controller.Notification
 import Databrary.Controller.API
 
 routeMap :: RouteMap Action
-routeMap = fromRouteList
+routeMap = routes
   [ route viewRoot
   , route viewRobotsTxt
 
@@ -164,4 +165,5 @@ routeMap = fromRouteList
   , route viewSwagger
 
   , route webFile
-  ]
+  ] where
+  route = routeCase

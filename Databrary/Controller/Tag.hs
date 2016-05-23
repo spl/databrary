@@ -7,7 +7,8 @@ module Databrary.Controller.Tag
 
 import Control.Monad (unless)
 import qualified Data.Text as T
-import Network.HTTP.Types (StdMethod(DELETE), conflict409)
+import Network.HTTP.Types (conflict409)
+import qualified Web.Route.Invertible as R
 
 import Databrary.Has
 import Databrary.Ops
@@ -33,7 +34,7 @@ _tagNameForm :: DeformActionM f TagName
 _tagNameForm = deformMaybe' "Invalid tag name." . validateTag =<< deform
 
 queryTags :: ActionRoute (Maybe TagName)
-queryTags = action GET (pathJSON >/> "tags" >/> pathMaybe PathParameter) $ \t -> withoutAuth $
+queryTags = action GET (pathJSON >/> "tags" >/> pathMaybe R.parameter) $ \t -> withoutAuth $
   okResponse [] . JSON.toEncoding <$> termTags t 16
 
 tagResponse :: API -> TagUse -> ActionM Response

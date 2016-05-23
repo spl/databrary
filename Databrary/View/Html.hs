@@ -18,11 +18,11 @@ module Databrary.View.Html
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Lazy as BSL
-import Data.Monoid ((<>))
-import Network.HTTP.Types (Query, QueryLike(..), renderQueryBuilder, renderStdMethod)
+import Network.HTTP.Types (Query, QueryLike(..))
 import qualified Text.Blaze.Internal as Markup
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as HA
+import qualified Web.Route.Invertible as R
 
 import Blaze.ByteString.Builder.Html.Word (fromHtmlEscapedByteString, fromHtmlEscapedLazyByteString)
 import Databrary.Action.Route
@@ -54,17 +54,18 @@ byteStringValue = unsafeBuilderValue . fromHtmlEscapedByteString
 builderValue :: BSB.Builder -> H.AttributeValue
 builderValue = lazyByteStringValue . BSB.toLazyByteString
 
-actionValue :: QueryLike q => Route r a -> a -> q -> H.AttributeValue
+actionValue :: QueryLike q => R.RouteAction r a -> r -> q -> H.AttributeValue
 actionValue r a q = builderValue $ actionURL Nothing r a $ toQuery q
 
-actionLink :: QueryLike q => Route r a -> a -> q -> H.Attribute
+actionLink :: QueryLike q => R.RouteAction r a -> r -> q -> H.Attribute
 actionLink r a = HA.href . actionValue r a
 
 actionForm :: Route r a -> a -> JSOpt -> H.Html -> H.Html
-actionForm r@Route{ routeMethod = g, routeMultipart = p } a j = H.form
-  H.! HA.method (H.unsafeByteStringValue (renderStdMethod g))
-  H.!? (p, HA.enctype "multipart/form-data")
-  H.! HA.action (builderValue $ routeURL Nothing r a <> renderQueryBuilder True (toQuery j))
+actionForm r a j = H.form
+  H.! HA.method (H.unsafeByteStringValue $ R.renderParameter $ R.requestMethod rr)
+  H.!? (not $ BS.null $ R.requestContentType rr, HA.enctype $ byteStringValue $ R.requestContentType rr)
+  H.! HA.action (builderValue $ routeURL Nothing rr (toQuery j))
+  where rr = R.requestActionRoute r a
 
 (!?) :: Markup.Attributable h => h -> Maybe H.Attribute -> h
 h !? Nothing = h

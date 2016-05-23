@@ -7,7 +7,7 @@ module Databrary.Controller.Excerpt
 import Control.Monad (unless, when)
 import Data.Maybe (isNothing)
 import qualified Data.Text as T
-import Network.HTTP.Types (StdMethod(DELETE), conflict409)
+import Network.HTTP.Types (conflict409)
 
 import Databrary.Has
 import qualified Databrary.JSON as JSON
