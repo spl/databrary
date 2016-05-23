@@ -503,9 +503,9 @@ app.directive 'spreadsheet', [
               if v?
                 v = info.metric.options[v]
               else if Editing && info.col.first
+                cell.classList.add('add')
                 cell.classList.add('button')
-                v = 'new'
-                # TODO: styling for add folder button
+                v = 'add folder'
             when 'summary'
               if info.d.global && Editing
                 cell.classList.add('spreadsheet-global-record-cell')
