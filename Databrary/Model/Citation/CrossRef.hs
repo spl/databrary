@@ -53,7 +53,7 @@ lookupCitation uri hcm = runMaybeT $ do
   cite <- may $ JSON.parseMaybe parseCitation j
   -- empirically this is UTF-8, but does not say so:
   lift $ handle
-    (\(e :: HC.HttpException) -> return cite) -- this actually happens fairly often
+    (\(_ :: HC.HttpException) -> return cite) -- this actually happens fairly often
     $ (\h -> cite{ citationHead = TL.toStrict $ TLE.decodeUtf8 $ HC.responseBody h }) <$>
       HC.httpLbs (requestAcceptContent "text/x-bibliography;style=apa" req) hcm
   where
