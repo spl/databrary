@@ -83,7 +83,7 @@ mailNotification msg Notification{..} = case notificationNotice of
       "Your authorization under " <> party <> " has been revoked. To review and apply for authorizations, go to: "
       <> partyEdit target [("page", "apply")]
   NoticeAuthorizeExpiring ->
-    "Your authorization under " <> party <> " will expire within a week Please contact them and request that they renew your authorization."
+    "Your authorization under " <> party <> " will expire within a week. Please contact them and request that they renew your authorization."
   NoticeAuthorizeExpired ->
     "Your authorization under " <> party <> " has expired. Please contact them and request that they renew your authorization."
   NoticeAuthorizeChildRequest ->
@@ -93,7 +93,7 @@ mailNotification msg Notification{..} = case notificationNotice of
     agent <> " " <> granted <> " authorization to " <> party <> ". To review this authorization, go to: "
     <> partyEdit target [("page", "grant"), partyq]
   NoticeAuthorizeChildExpiring ->
-    party'S <> " authorization will expire within a week If you would like to renew their authorization, go to: "
+    party'S <> " authorization will expire within a week. If you would like to renew their authorization, go to: "
     <> partyEdit target [("page", "grant"), partyq]
   NoticeAuthorizeChildExpired ->
     party'S <> " authorization has expired. If you would like to renew their authorization, go to: "
