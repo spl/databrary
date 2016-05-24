@@ -70,11 +70,18 @@ app.directive('volumeEditOverviewForm', [
           return;
         }
 
+        form.$setSubmitted();
         models.cite(doi[1])
           .then(function (res) {
-            form.data.name = res.title;
-            form.data.citation = res;
-            delete res.title;
+            form.$setUnsubmitted();
+            if (res.title)
+              form.data.name = res.title;
+            if (res.head)
+              form.data.citation.head = res.head;
+            if (res.url)
+              form.data.citation.url = res.url;
+            if (res.year)
+              form.data.citation.year = res.year;
 
             form.validator.server({});
             form.$setDirty();
@@ -85,6 +92,7 @@ app.directive('volumeEditOverviewForm', [
               owner: form
             });
           }, function () {
+            form.$setUnsubmitted();
             messages.add({
               type: 'red',
               body: constants.message('volume.edit.autodoi.citation.error'),
