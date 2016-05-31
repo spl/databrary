@@ -544,7 +544,8 @@ app.directive 'spreadsheet', [
             if width > 1
               td.setAttribute("colspan", width-1)
               td.classList.add('prompt')
-              td.appendChild(document.createTextNode("\u2190 add " + info.category.name))
+              console.log(info.c)
+              td.appendChild(document.createTextNode("\u2190 add " + info.category.name)) if info.c != 'slot'
             else
               info.tr.removeChild(td)
           else
