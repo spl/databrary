@@ -5,10 +5,10 @@ app.directive('validator', [
   function ($sce, constants) {
     var pre = function ($scope, $element, $attrs) {
       $scope.validator = {};
-      $scope.validator.label = $attrs.label && constants.message($attrs.label);
+      $scope.validator.label = $attrs.label && constants.message($attrs.label,{sce:$sce.HTML});
       if ('required' in $attrs)
         $scope.validator.label += ' (required)';
-      $scope.validator.prefix = $scope.validator.label ? '<strong>' + $sce.getTrustedHtml($scope.validator.label) + ':</strong> ' : '';
+      $scope.validator.prefix = $scope.validator.label ? '<strong>' + $scope.validator.label + ':</strong> ' : '';
     };
 
     var post = function ($scope, $element, $attrs, form) {
