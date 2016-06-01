@@ -466,6 +466,7 @@ app.directive 'spreadsheet', [
           slot = info.slot
           if info.col.first && info.d
             if info.c == 'asset'
+              cell.classList.add('clickable')
               a = cell.appendChild(document.createElement('a'))
               icon = a.appendChild(document.createElement('img'))
               asset = info.asset
