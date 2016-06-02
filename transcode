@@ -93,6 +93,7 @@ if [[ $r -ne 0 ]] ; then
 	rm -f "$OUT"
 else
 	sha1=`sha1sum "$OUT"`
+	rm -f "$id.args"
 fi
 
 # sha1 arg is split to work around weird HPC error:
