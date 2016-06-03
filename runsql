@@ -170,7 +170,8 @@ elif [[ $1 = restore ]] ; then
 		set -- unreset.dump
 	fi
 	dbreset 1
-	exec pg_restore "${args[@]}" -d "${db[db]}" -O "$@"
+	pg_restore "${args[@]}" -d "${db[db]}" -O "$@" || true
+	psql "${args[@]}" -U postgres "${db[db]}" -f ${top}pgranges/pgranges.sql
 else
 	usage
 	exit 1

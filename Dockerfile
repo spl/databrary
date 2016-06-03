@@ -26,7 +26,7 @@ RUN curl -L https://www.haskell.org/ghc/dist/${ghc%[a-z]}/ghc-${ghc}-x86_64-deb7
   cd ghc-${ghc} && \
   ./configure && make install
 
-ARG cabal=1.22.8.0
+ARG cabal=1.22.9.0
 RUN curl -L http://hackage.haskell.org/package/cabal-install-${cabal}/cabal-install-${cabal}.tar.gz | tar -xzf- && \
   cd cabal-install-${cabal} && \
   EXTRA_CONFIGURE_OPTS= ./bootstrap.sh --global
