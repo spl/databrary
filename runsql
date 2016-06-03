@@ -35,10 +35,13 @@ if [[ -n ${db[pass]} && ! -f ~/.pgpass ]] ; then
 fi
 
 declare -a args
+sock=${db[sock]:-/run/postgresql/.s.PGSQL.${db[port]}}
+sock=${sock%/.s.PGSQL.*}
 if [[ -n ${db[host]} ]] ; then
-	args=(-h ${db[host]} -p ${db[port]})
+	host=1
+	args=(-h "${db[host]}" -p ${db[port]})
 elif [[ -n ${db[sock]} ]] ; then
-	args=(-h ${db[sock]%/.s.PGSQL.*})
+	args=(-h "$sock")
 fi
 args=("${args[@]}" -U ${db[user]})
 while [[ $1 = -?* ]] ; do
@@ -171,7 +174,7 @@ elif [[ $1 = restore ]] ; then
 	fi
 	dbreset 1
 	pg_restore "${args[@]}" -d "${db[db]}" -O "$@" || true
-	psql "${args[@]}" -U postgres "${db[db]}" -f ${top}pgranges/pgranges.sql
+	psql "${args[@]}" -U postgres -h "$sock" "${db[db]}" -f ${top}pgranges/pgranges.sql
 else
 	usage
 	exit 1
