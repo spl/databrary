@@ -66,7 +66,8 @@ app.directive('volumeEditAccessForm', [
           form.data.push({
             new: true,
             party: p,
-            individual: 0
+            individual: 0,
+            children: 0
           });
           display.scrollTo('fieldset .access-grant:last');
         }
