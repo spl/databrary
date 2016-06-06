@@ -58,7 +58,7 @@ joinActivitiesWith f (a1:a1r) = maybe al
           | onActivityTime diffUTCTime a2 a1 >= 1 = al
           | ((==) `on` auditIdentity . activityAudit) a1 a2, Just a <- af a2 = a : joinActivitiesWith f (c a2r)
           | otherwise = la (c . (a2 :)) a2r
-        la c [] = joinActivitiesWith f $ c []
+        la c [] = a1 : joinActivitiesWith f (c [])
     in la id a1r)
   $ f a1
   where al = a1 : joinActivitiesWith f a1r
