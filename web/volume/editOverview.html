@@ -26,8 +26,8 @@
     <validator name="citation.url" label="volume.edit.autodoi.title">
       <input type="text" name="citation.url" ng-model="volumeEditOverviewForm.data.citation.url" placeholder="10.XXXX/XXXXXXXXX" ng-pattern="/^((doi:|hdl:)?10\.[\.0-9]+|ftp:/|http:/|https:/)//">
     </validator>
-    <div message="volume.edit.autodoi.instructions"></div>
     <button class="mini" ng-disabled="!page.constants.regex.doi.test(volumeEditOverviewForm.data.citation.url) || volumeEditOverviewForm.doi.$pristine || volumeEditOverviewForm.$submitted" ng-click="volumeEditOverviewForm.autoDOI()" message="volume.edit.autodoi.lookup"></button>
+    <div message="volume.edit.autodoi.instructions"></div>
   </fieldset></ng-form>
 
   <fieldset class="skinny" ng-if="volumeEditOverviewForm.data.published !== undefined">
