@@ -60,7 +60,7 @@ fi
 IFS='
 '
 if [[ -n $hpc ]] ; then
-	rate=100000
+	rate=80000
 	sec=$[60+`stat -c %s "$IN"`/$rate]
 	if [[ $sec -gt 604800 ]] ; then
 		sec=604800
