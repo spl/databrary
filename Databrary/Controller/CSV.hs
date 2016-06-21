@@ -1,12 +1,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Databrary.Controller.CSV
-  ( csvVolume
+  ( csvResponse
+  , csvVolume
   , volumeCSV
   ) where
 
 import Control.Arrow (second)
 import qualified Data.ByteString as BS
-import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Char8 as BSC
 import Data.Foldable (fold)
 import Data.Function (on)
@@ -33,6 +33,12 @@ import Databrary.HTTP.Path.Parser
 import Databrary.Action
 import Databrary.Controller.Paths
 import Databrary.Controller.Volume
+
+csvResponse :: [[BS.ByteString]] -> BS.ByteString -> Response
+csvResponse csv save = okResponse
+  [ (hContentType, "text/csv;charset=utf-8")
+  , ("content-disposition", "attachment; filename=" <> quoteHTTP (save <> ".csv"))
+  ] $ buildCSV csv
 
 type Records = [[Record]]
 type Metrics = [[Metric]]
@@ -91,7 +97,7 @@ dataRow hl@((c,m):hl') rll@(~rl@(r:_):rll') = case compare c rc of
   where rc = recordCategory $ recordRow r
 dataRow _ _ = []
 
-volumeCSV :: Volume -> [(Container, [RecordSlot])] -> ActionM BSB.Builder
+volumeCSV :: Volume -> [(Container, [RecordSlot])] -> ActionM [[BS.ByteString]]
 volumeCSV vol crsl = do
   mets <- map getMetric' <$> lookupVolumeMetrics vol
   -- FIXME if volume metrics can be reordered
@@ -101,14 +107,11 @@ volumeCSV vol crsl = do
         foldl' updateHeaders [] $ map snd crl
       cr c r = tshow (containerId $ containerRow c) : tmaybe tenc (containerName $ containerRow c) : maybe (if containerTop (containerRow c) then "materials" else BS.empty) BSC.pack (formatContainerDate c) : tmaybe tshow (containerRelease c) : dataRow hl r
       hr = "session-id" : "session-name" : "session-date" : "session-release" : headerRow hl
-  return $ buildCSV $ hr : map (uncurry cr) crl
+  return $ hr : map (uncurry cr) crl
 
 csvVolume :: ActionRoute (Id Volume)
 csvVolume = action GET (pathId </< "csv") $ \vi -> withAuth $ do
   vol <- getVolume PermissionPUBLIC vi
   _:r <- lookupVolumeContainersRecords vol
   csv <- volumeCSV vol r
-  return $ okResponse
-    [ (hContentType, "text/csv;charset=utf-8")
-    , ("content-disposition", "attachment; filename=" <> quoteHTTP (makeFilename (volumeDownloadName vol) <> ".csv"))
-    ] csv
+  return $ csvResponse csv (makeFilename (volumeDownloadName vol))

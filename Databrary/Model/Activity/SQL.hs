@@ -79,7 +79,7 @@ selectActivityAsset = targetActivitySelector "asset" $
 selectActivityAssetSlot :: Selector
 selectActivityAssetSlot = targetActivitySelector "slot_asset" $
   addSelects 'ActivityAssetSlot
-    (selector "slot_asset" $ SelectColumn "slot_asset" "asset")
+    (selectColumn "slot_asset" "asset")
     [selectOutput $ selectSlotId "slot_asset"]
 
 selectActivityExcerpt :: Selector

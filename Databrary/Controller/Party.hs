@@ -11,6 +11,7 @@ module Databrary.Controller.Party
   , viewAvatar
   , queryParties
   , adminParties
+  , csvParties
   ) where
 
 import Control.Applicative (optional)
@@ -40,6 +41,7 @@ import Databrary.Model.Asset
 import Databrary.Model.AssetSlot
 import Databrary.Model.AssetSegment
 import Databrary.Model.Format
+import Databrary.Model.Notification (Notice(NoticeNewsletter), lookupNoticePartyAuthorization)
 import Databrary.Store.Temp
 import Databrary.HTTP.Path.Parser
 import Databrary.HTTP.Form.Deform
@@ -53,6 +55,7 @@ import Databrary.Controller.Form
 import Databrary.Controller.Angular
 import Databrary.Controller.AssetSegment
 import Databrary.Controller.Web
+import Databrary.Controller.CSV
 import Databrary.View.Party
 
 getParty :: Maybe Permission -> PartyTarget -> ActionM Party
@@ -225,3 +228,18 @@ adminParties = action GET ("party" </< "admin") $ \() -> withAuth $ do
   pf <- runForm (Just $ htmlPartyAdmin mempty []) partySearchForm
   p <- findParties pf
   peeks $ blankForm . htmlPartyAdmin pf p
+
+csvParties :: ActionRoute ()
+csvParties = action GET ("party" </< "csv") $ \() -> withAuth $ do
+  checkMemberADMIN
+  pl <- lookupNoticePartyAuthorization NoticeNewsletter
+  return $ csvResponse 
+    [ [ BSC.pack $ show $ partyId $ partyRow p
+      , TE.encodeUtf8 $ partySortName $ partyRow p
+      , c TE.encodeUtf8 $ partyPreName $ partyRow p
+      , c accountEmail $ partyAccount p
+      , c (BSC.pack . show) a
+      , BSC.pack $ show $ fromEnum d
+      ]
+    | (p, a, d) <- pl ] "party"
+  where c = maybe BS.empty

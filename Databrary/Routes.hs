@@ -72,6 +72,7 @@ routeMap = routes
   , route deleteParty
   , route queryParties
   , route adminParties
+  , route csvParties
 
   , route viewVolume
   , route postVolume

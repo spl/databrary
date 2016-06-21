@@ -1,8 +1,12 @@
 {-# LANGUAGE TemplateHaskell #-}
 module Databrary.Model.Notification.SQL
-  ( selectTargetNotification
+  ( selectNotifyDelivery
+  , selectTargetNotification
   , selectNotification
+  , selectPartyAuthorizationNotify
   ) where
+
+import qualified Language.Haskell.TH as TH
 
 import Databrary.Has
 import Databrary.Model.SQL.Select
@@ -21,6 +25,20 @@ import Databrary.Model.Tag.Types
 import Databrary.Model.Tag.SQL
 import Databrary.Model.Comment.Types
 import Databrary.Model.Notification.Types
+
+selectNotifyDelivery :: Selector
+selectNotifyDelivery = selectMap (TH.VarE 'fromMaybeDelivery `TH.AppE`) $ selectColumn "notify_view" "delivery"
+
+makePartyAuthorizationNotice :: (Party, Maybe Permission) -> Delivery -> (Party, Maybe Permission, Delivery)
+makePartyAuthorizationNotice (p, a) d = (p, a, d)
+
+selectPartyAuthorizationNotify :: TH.Name -- ^ 'Identity'
+  -> Selector -- ^ @('Party', Maybe 'Permission', 'Delivery')@
+selectPartyAuthorizationNotify ident = selectJoin 'makePartyAuthorizationNotice
+  [ selectPartyAuthorization ident
+  , joinOn "id = target"
+    selectNotifyDelivery
+  ]
 
 makeNotification :: Id Notification -> Notice -> Timestamp -> Delivery -> Maybe Permission -> Maybe (Id Container) -> Maybe Segment -> Maybe (Id Asset) -> Maybe Release -> Maybe (Id Comment) -> PartyRow -> Maybe PartyRow -> Maybe VolumeRow -> Maybe Tag -> Account -> Notification
 makeNotification i n t d e c s a r m w p v g u = Notification i (view u) n t d w p v e c s a r m g

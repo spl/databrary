@@ -2,6 +2,7 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Databrary.Model.Notification.Notice
   ( Delivery(..)
+  , fromMaybeDelivery
   , periodicDelivery
   , Notice(..)
   , noticeId
@@ -27,6 +28,10 @@ import Databrary.Model.Periodic
 import Databrary.Model.Notification.Boot
 
 makeDBEnum "notice_delivery" "Delivery"
+
+fromMaybeDelivery :: Maybe Delivery -> Delivery
+fromMaybeDelivery (Just d) = d
+fromMaybeDelivery Nothing = DeliveryNone
 
 periodicDelivery :: Maybe Period -> Delivery
 periodicDelivery (Just PeriodDaily) = DeliveryDaily

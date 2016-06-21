@@ -3,6 +3,7 @@ module Databrary.Model.SQL.Select
   ( SelectOutput(..)
   , Selector(..)
   , selector
+  , selectColumn
   , selectColumns
   , addSelects
   , fromMap
@@ -30,7 +31,7 @@ import qualified Language.Haskell.TH as TH
 import Databrary.Service.DB (useTDB)
 
 data SelectOutput
-  = SelectColumn { selectTable, selectColumn :: String }
+  = SelectColumn { _selectTable, _selectColumn :: String }
   | SelectExpr String
   | OutputJoin { outputNullable :: !Bool, outputJoiner :: TH.Name, outputJoin :: [SelectOutput] }
   | OutputMap { outputNullable :: !Bool, outputMapper :: TH.Exp -> TH.Exp, outputMap :: SelectOutput }
@@ -97,6 +98,9 @@ data Selector = Selector
 
 selector :: String -> SelectOutput -> Selector
 selector t o = Selector o t (',':t)
+
+selectColumn :: String -> String -> Selector
+selectColumn t c = selector t $ SelectColumn t c
 
 selectColumns :: TH.Name -> String -> [String] -> Selector
 selectColumns f t c =

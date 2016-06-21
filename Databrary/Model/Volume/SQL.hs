@@ -41,7 +41,7 @@ selectVolume :: TH.Name -- ^ @'Identity'@
 selectVolume i = selectJoin 'makeVolume
   [ selectPermissionVolume
   , maybeJoinOn "volume.id = volume_owners.volume"
-    $ selector "volume_owners" $ SelectColumn "volume_owners" "owners"
+    $ selectColumn "volume_owners" "owners"
   , joinOn "volume_permission.permission >= 'PUBLIC'::permission"
     $ selector ("LATERAL (VALUES (CASE WHEN ${identitySuperuser " ++ is ++ "} THEN enum_last(NULL::permission) ELSE volume_access_check(volume.id, ${view " ++ is ++ " :: Id Party}) END)) AS volume_permission (permission)")
     $ SelectColumn "volume_permission" "permission"

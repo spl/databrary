@@ -24,6 +24,7 @@ import Databrary.Ops
 import Databrary.Has (view, peek, peeks)
 import Databrary.Store.Asset
 import Databrary.Store.Filename
+import Databrary.Store.CSV (buildCSV)
 import Databrary.Store.Zip
 import Databrary.Model.Id
 import Databrary.Model.Permission
@@ -154,7 +155,7 @@ zipVolume = action GET (pathId </< "zip") $ \vi -> withAuth $ do
   top:cr <- lookupVolumeContainersRecords v
   let cr' = filter ((`RS.member` s) . containerId . containerRow . fst) cr
   csv <- null cr' ?!$> volumeCSV v cr'
-  z <- volumeZipEntry v top s csv a
+  z <- volumeZipEntry v top s (buildCSV <$> csv) a
   auditVolumeDownload (not $ null a) v
   zipResponse (BSC.pack $ "databrary-" ++ show (volumeId $ volumeRow v) ++ if idSetIsFull s then "" else "-partial") [z]
 
