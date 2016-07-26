@@ -1,3 +1,4 @@
+# This dockerfile is not in use, but specifies system installs and dependencies for running Databrary
 # Assumes Docker version 1.11.0
 
 FROM centos:7
