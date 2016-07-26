@@ -1,14 +1,14 @@
 Name:                databrary
 Version:             1
 Synopsis:            Databrary
-Description:         An experimental rewrite of Databrary (http://databrary.org, http://github.com/databrary/databrary) in Haskell.
+Description:         Video data sharing library designed for human subjects research (http://databrary.org) in Haskell.
 License:             GPL-3
 License-file:        COPYING
 Author:              Dylan Simon
 Maintainer:          dylan@dylex.net
-Stability:           Experimental
+Stability:           Provisional
 Category:            Web
-Tested-with:         GHC == 7.10.2
+Tested-with:         GHC == 7.10.3
 Build-type:          Custom
 Cabal-version:       >=1.22
 
