@@ -1,3 +1,5 @@
+# Assumes Docker version 1.11.0
+
 FROM centos:7
 MAINTAINER "Dylan Simon" <dylan@databrary.org>
 ENV container docker
