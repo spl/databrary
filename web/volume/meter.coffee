@@ -80,14 +80,7 @@ app.directive 'volumeMeter', [
             body: message.map($sce.trustAsHtml)
         return
 
-      calculate = () ->
-        d = 0
-        t = 0
-        for n, m of metrics
-          d++ if m.run()
-          t++
-        $scope.meter = d / t
-        return
+      for n, m of metrics
+        m.run()
 
-      calculate()
 ]

@@ -1,6 +1,6 @@
 <div class="wizard-step" ng-if="active">
   <header class="wizard-step-header">
-    <span>Your volume is <b>{{100*meter | number:0}}% complete!</b></span>
+    <h2>Did you know?</h2>
   </header>
   <div class="wizard-step-instructions" >
     <span message="wizard.volume-edit-meter.description" message-html></span>
@@ -127,13 +127,13 @@
             Highlights selected
           </span>
           <span ng-click="goto('data',undefined,'<p class=\'message-title\'>Selecting highlights from your data: </p><p>(1/3) Click on the file you wish to highlight from the \'file\' column on the right end of the spreadsheet in order to go to the file viewer. Then click next.</p>','<p>(2/3) You may choose to highlight an entire video or only a specific section. Skip this step if you are highlighting the entire file. Otherwise, select the file you want to create a highlight from, press down and drag over the portion of video that you want to highlight.</p>','<p>(3/3) Click the \'Highlight on volume\' button. If you are highlighting a segment, you have the option of changing the sharing level of that segment in the dropdown that appears.</p><p>You now have a highlight on your volume page!</p>')" ng-if="::!metrics.excerpts.done" class="clickable">
-            Select at least three highlights from your data to represent your volume.
+            Create at least three highlights from your data to represent your volume.
           </span>
         </li>
         <li ng-class="{'volume-meter-done':metrics.thumbnail.done}">
           <span ng-if="::metrics.thumbnail.done">
             <span class="icon done"></span>
-            Thumbnail chosen
+            Volume thumbnail chosen
           </span>
           <span ng-click="goto('data',undefined,'<p class=\'message-title\'>Make a highlight public to use as volume thumbnail:</p><p>(1/2) Select the file you wish to highlight from the \'file\' column on the right end of the spreadsheet. Click next once you are done.</p>','<p>(2/2) Select the segment you want to make a thumbnail. Click the \'Edit highlight\' button and choose \'Public: Available openly to anybody\' in the dropdown. This highlight will default as your volume thumbnail.</p>')" ng-if="::!metrics.thumbnail.done" class="clickable">
             Select a public highlight from a video or image to use as your volume thumbnail.
