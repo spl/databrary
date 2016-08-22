@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE CPP, OverloadedStrings #-}
 module Databrary.Warp
   ( runWarp
   ) where
@@ -22,6 +22,10 @@ runWarp conf rc app =
   run (conf C.! "ssl.key") (certs $ conf C.! "ssl.cert")
     ( Warp.setPort (conf C.! "port")
     $ Warp.setTimeout 300
+#ifndef DEVEL
+    $ Warp.setFdCacheDuration 300
+    $ Warp.setFileInfoCacheDuration 300
+#endif
     $ Warp.setServerName (BSC.pack $ "databrary/" ++ showVersion version)
     $ Warp.setOnException (\req e -> do
       t <- getCurrentTime
