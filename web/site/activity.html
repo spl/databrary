@@ -84,7 +84,7 @@
         <a class="icon download button neutral" ng-href="{{::page.router.rawAssetDownload([act.id])}}" target="_self"></a>
         <dl>
           <span activity-change="act.name" title-message="asset.name.title" ng-bind="::value"></span>
-          <span activity-change="act.classification" title-message="asset.classification" ng-init="release=page.constants.release[value]">
+          <span activity-change="act.classification" title="Release" ng-init="release=page.constants.release[value]">
             <span class="icon release" ng-class="::release"></span>
             {{::release}}
           </span>
