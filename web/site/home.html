@@ -62,14 +62,14 @@
         <span class="button-title"><a ng-href="{{::page.router.profile()}}">Your Profile</a></span>
         <p class="hide-mobile">Manage your data and authorizations.</p>
       </div>
-      <div class="bigbutton">
+      <a ng-href="{{::page.router.search()}}?volume"><div class="bigbutton">
         <img src="/web/icons/home-searchstudy.svg"/>
-        <span class="button-title"><a ng-href="{{::page.router.search()}}?volume">Browse Data</a></span>
-      </div>
-      <div class="bigbutton">
+        <span class="button-title">Browse Data</span>
+      </div></a>
+      <a ng-href="{{::page.router.search()}}?volume=false&f.party_authorization={{::page.constants.permission.EDIT}}&f.party_is_institution=false"><div class="bigbutton">
         <img src="/web/icons/home-userstudy.svg"/>
-        <span class="button-title"><a ng-href="{{::page.router.search()}}?volume=false&f.party_authorization={{::page.constants.permission.EDIT}}&f.party_is_institution=false">Browse People</a></span>
-      </div>
+        <span class="button-title">Browse People</span>
+      </div></a>
     </div>
   </div>
   <div class="wrap">
