@@ -52,7 +52,7 @@ lookupTranscode a =
 
 lookupActiveTranscodes :: MonadDB c m => m [Transcode]
 lookupActiveTranscodes =
-  dbQuery $(selectQuery selectTranscode "WHERE asset.size IS NULL")
+  dbQuery $(selectQuery selectTranscode "WHERE asset.size IS NULL ORDER BY transcode.asset")
 
 minAppend :: Ord a => Maybe a -> Maybe a -> Maybe a
 minAppend (Just x) (Just y) = Just $ min x y
