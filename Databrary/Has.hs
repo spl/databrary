@@ -13,7 +13,7 @@ module Databrary.Has
   , makeHasRec
   ) where
 
-import Control.Monad (unless, liftM, liftM2)
+import Control.Monad (unless, forM, liftM, liftM2)
 import Control.Monad.Base (MonadBase(..))
 import Control.Monad.IO.Class (MonadIO(..))
 import Control.Monad.Reader (MonadReader, ReaderT(..), reader, withReaderT)
@@ -62,7 +62,7 @@ focusIO f = liftIO . f =<< peek
 
 getFieldType :: TH.Name -> TH.Name -> TH.TypeQ
 getFieldType tn fn = do
-  TH.VarI _ (TH.ArrowT `TH.AppT` TH.ConT tn' `TH.AppT` ft) _ _ <- TH.reify fn
+  TH.VarI _ (TH.ArrowT `TH.AppT` TH.ConT tn' `TH.AppT` ft) _ <- TH.reify fn
   unless (tn' == tn) $ fail $ show tn ++ "." ++ show fn ++ ": field from wrong type: " ++ show tn'
   return ft
 
@@ -80,14 +80,14 @@ makeHasFor tn fs = concat <$> mapM
   tt = TH.ConT tn
   concatM i f l = liftM2 (++) i (liftM concat $ mapM f l)
 
-makeHasRec :: TH.Name -> [TH.Name] -> TH.DecsQ
+makeHasRec :: TH.Name -> [TH.Name] -> TH.Q [TH.Dec]
 makeHasRec tn fs = do
   TH.ClassI _ il <- TH.reify ''Has
-  makeHasFor tn =<< mapM (\fn -> do
+  x <- forM fs $ \fn -> do
     ft <- getFieldType tn fn
-    return (fn, ft, [ st
-      | TH.InstanceD _ (TH.ConT hs `TH.AppT` st `TH.AppT` ft') _ <- il
+    (return :: (TH.Name, TH.Type, [TH.Type]) -> TH.Q (TH.Name, TH.Type, [TH.Type])) (fn, ft, [ st
+      | TH.InstanceD _ _ (TH.ConT hs `TH.AppT` st `TH.AppT` ft') _ <- il
       , hs == ''Has
       , ft' == ft
-      ]))
-    fs
+      ])
+  makeHasFor tn x

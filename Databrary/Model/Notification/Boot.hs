@@ -17,9 +17,9 @@ makeNotice :: TH.DecsQ
 makeNotice = do
   nl <- runTDB $ dbQuery [pgSQL|SELECT id, name FROM notice WHERE id >= 0 ORDER BY id|]
   return
-    [ TH.DataD [] typn [] (map (\(_, n) -> TH.NormalC (conn n) []) nl)
-      [''Eq, ''Ord, ''Enum, ''Ix, ''Bounded, ''Typeable]
-    , TH.InstanceD [] (TH.ConT ''Show `TH.AppT` TH.ConT typn)
+    [ TH.DataD [] typn [] Nothing (map (\(_, n) -> TH.NormalC (conn n) []) nl)
+      (map TH.ConT [''Eq, ''Ord, ''Enum, ''Ix, ''Bounded, ''Typeable])
+    , TH.InstanceD Nothing [] (TH.ConT ''Show `TH.AppT` TH.ConT typn)
       [ TH.FunD 'show $ map (\(_, n) -> TH.Clause [TH.ConP (conn n) []]
         (TH.NormalB $ TH.LitE $ TH.StringL n) []) nl
       ]

@@ -15,6 +15,7 @@ import Data.ByteString.Lazy.Internal (defaultChunkSize)
 import Data.Function (on)
 import qualified Data.JsonSchema.Draft4 as JS
 import Data.List (find)
+import qualified Data.List.NonEmpty as NE
 import Data.Maybe (isJust, fromMaybe, isNothing)
 import Data.Monoid ((<>))
 import Data.Time.Format (parseTimeM, defaultTimeLocale)
@@ -58,8 +59,9 @@ loadSchema = do
   schema <- lift $ getDataFileName "volume.json"
   r <- lift $ withBinaryFile schema ReadMode (\h ->
     P.parseWith (BS.hGetSome h defaultChunkSize) J.json' BS.empty)
-  js <- ExceptT . return . left (return . T.pack) $ J.eitherJSON =<< P.eitherResult r
-  ExceptT $ return $ left (map (T.pack . show)) $ JS.checkSchema (JS.SchemaCache js mempty) (JS.SchemaContext Nothing js)
+  js :: JS.Schema <- ExceptT . return . left (return . T.pack) $ J.eitherJSON =<< P.eitherResult r
+  ExceptT $ return $ left (NE.toList . fmap (T.pack . show)) $ JS.checkSchema mempty $
+    JS.SchemaWithURI {JS._swSchema = js, JS._swURI = Nothing}
 
 throwPE :: T.Text -> IngestM a
 throwPE = JE.throwCustomError

@@ -54,9 +54,9 @@ outputParser :: SelectOutput -> StateT [TH.Name] TH.Q TH.Exp
 outputParser (OutputJoin mb f ol) = do
   fi <- lift $ TH.reify f
   (fe, ft) <- case fi of
-    TH.ClassOpI _ t _ _ -> return (TH.VarE f, t)
-    TH.DataConI _ t _ _ -> return (TH.ConE f, t)
-    TH.VarI _ t _ _ -> return (TH.VarE f, t)
+    TH.ClassOpI _ t _ -> return (TH.VarE f, t)
+    TH.DataConI _ t _ -> return (TH.ConE f, t)
+    TH.VarI _ t _ -> return (TH.VarE f, t)
     _ -> die "wrong kind"
   if mb
     then do
