@@ -8,9 +8,9 @@ module Databrary.Web.Generate
 import Control.Monad (when, unless)
 import Control.Monad.Except (throwError)
 import Control.Monad.IO.Class (liftIO)
-import System.Directory (createDirectoryIfMissing)
+import System.Directory (createDirectoryIfMissing, copyFile)
 import System.FilePath (splitFileName, takeDirectory)
-import System.Posix.Files (createLink, rename)
+import System.Posix.Files (rename)
 
 import Paths_databrary (getDataFileName)
 import Databrary.Files
@@ -68,5 +68,5 @@ webLinkDataFile s fo@(f, _) = do
   webRegenerate (do
     r <- removeFile f
     unless r $ createDirectoryIfMissing False $ takeDirectory (webFileAbs f)
-    createLink wf (webFileAbs f))
+    copyFile wf (webFileAbs f))
     [wf] [] fo
