@@ -1,0 +1,23 @@
+resolver: lts-6.27
+
+system-ghc: true
+
+flags:
+  databrary:
+    devel: true
+
+extra-deps:
+- Piso-0.1
+- Stream-0.4.7.2
+- TypeCompose-0.9.12
+- arrows-0.4.4.1
+- file-embed-0.0.9.1
+- hjsonpointer-0.3.0.2
+- hjsonschema-0.9.0.0
+- invertible-0.1.2
+- lazysmallcheck-0.6
+- mtlparse-0.1.4.0
+- posix-paths-0.2.1.0
+- postgresql-typed-0.4.5
+- regexpr-0.5.4
+- web-inv-route-0.1.1
