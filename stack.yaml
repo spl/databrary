@@ -1,0 +1,17 @@
+resolver: lts-7.14
+
+flags:
+  invertible:
+    piso: false
+    hlist: false
+
+extra-deps:
+  - Stream-0.4.7.2
+  - TypeCompose-0.9.12
+  - arrows-0.4.4.1
+  - invertible-0.1.2
+  - lazysmallcheck-0.6
+  - partial-isomorphisms-0.2.2
+  - posix-paths-0.2.1.0
+  - postgresql-typed-0.4.5
+  - web-inv-route-0.1.1
