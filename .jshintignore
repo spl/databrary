@@ -1,0 +1,2 @@
+# Ignore imported libraries whose code is not under our control.
+web/lib/
